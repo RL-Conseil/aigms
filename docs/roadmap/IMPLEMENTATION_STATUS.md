@@ -48,15 +48,35 @@ Tous verts au 7 septembre 2026.
 |---|---|
 | Dépôt GitHub `RL-Conseil/aigms` | privé, existant |
 | Supabase local (Docker) | opérationnel, 15 migrations appliquées |
-| Supabase distant `xsagbzrgoljzgorwvsir` | **non provisionné** — voir `docs/architecture/CURRENT_STATE.md` §5 |
-| Vercel | **non provisionné** |
-| CI GitHub Actions | écrite ; nécessite le scope `workflow` sur le jeton `gh` |
+| Supabase distant `aigms-supabase` (`xsagbzrgoljzgorwvsir`, eu-west-1) | **provisionné** : 15 migrations appliquées, jeu de démonstration chargé, étanchéité vérifiée par l'API |
+| Vercel | **non provisionné** — en attente d'une connexion au bon compte |
+| CI GitHub Actions | écrite ; le push nécessite le scope `workflow` sur le jeton `gh` |
+
+## Vérification du projet distant
+
+Effectuée par appels API le 7 septembre 2026 :
+
+| Contrôle | Résultat |
+|---|---|
+| Lecture anonyme de `tenant` et `ai_use_case` | refusée (42501) |
+| Écriture anonyme de `tenant` | refusée (42501) |
+| `app.log_audit` atteignable depuis l'API publique | non — le schéma `app` n'est pas exposé |
+| Connexion `officer@rl-conseil.demo` puis lecture | 3 cas d'usage de son tenant |
+| `evaluate_gate` sur `UC-2026-0001` | 8/8 préconditions satisfaites |
+| Lecture par l'officer du second tenant | tableau vide |
 
 ## Suite immédiate
 
-1. Habiliter le jeton GitHub (`gh auth refresh -s workflow`) et pousser la CI.
-2. Lier le projet Supabase distant et appliquer les 15 migrations.
-3. Créer le projet Vercel et y reporter les variables d'environnement.
-4. Sprint 8 complet : dépôt de fichiers via Supabase Storage.
-5. Formulaires d'écriture : intake, risque, décision, changement.
-6. Sprint 14 puis 15.
+1. Habiliter le jeton GitHub (`gh auth refresh -h github.com -u rlabrador -s workflow`)
+   et pousser le commit de CI.
+2. Créer le projet Vercel et y reporter les variables d'environnement.
+3. Sprint 8 complet : dépôt de fichiers via Supabase Storage.
+4. Formulaires d'écriture : intake, risque, décision, changement.
+5. Sprint 14 puis 15.
+
+## Point de vigilance
+
+Le jeu de démonstration est chargé sur le projet distant avec des comptes dont
+le mot de passe est connu de tous (`Demo!Passw0rd`). Ces comptes ne portent que des
+données fictives, mais le projet ne doit pas être promu en production sans les
+supprimer ou en changer les mots de passe.

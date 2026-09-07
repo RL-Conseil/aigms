@@ -23,7 +23,9 @@
     "destructiveOperationsRequireConfirmation": true,
     "allowedSchemas": ["public", "app"],
     "preferredMode": "migrations-first",
-    "notes": "Le serveur MCP Supabase de cette session est rattache a une autre organisation et n'a pas acces a ce projet. Les migrations s'appliquent via le CLI Supabase (supabase link + supabase db push)."
+    "projectName": "aigms-supabase",
+    "region": "eu-west-1",
+    "notes": "Le serveur MCP Supabase de cette session est rattache a l'organisation kccjtvwusyuedbjlcwte et n'a pas acces a ce projet (organisation kxrprvzkleccysyzoylt). Les migrations s'appliquent via le CLI Supabase : supabase link --project-ref xsagbzrgoljzgorwvsir puis supabase db push."
   },
   "github": {
     "enabled": true,

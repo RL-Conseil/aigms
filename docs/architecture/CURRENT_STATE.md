@@ -61,7 +61,8 @@ vérité produit sont les fichiers `.md`. Voir `docs/adr/ADR-0001-repository-lay
 | GitHub | `gh` v2.45 ; deux comptes locaux : `richard-affinity`, `rlabrador` | Repo cible `RL-Conseil/aigms` (privé, existant, non vide) accessible **uniquement** via `rlabrador` |
 | GitHub — scope `workflow` | Absent sur le token `rlabrador` | Bloquant pour pousser `.github/workflows/` — voir §5 |
 | Vercel | CLI v54.18.1, connecté en tant que `affinity-2575`, team `richard-2575s-projects` | Aucun projet AIGMS existant |
-| Supabase (MCP) | Connecté à l'organisation `affinityhousefactory64@gmail.com's Org` | **N'a pas accès** au projet cible `xsagbzrgoljzgorwvsir` (permission refusée) |
+| Supabase (MCP) | Connecté à l'organisation `affinityhousefactory64@gmail.com's Org` | **N'a pas accès** au projet cible `xsagbzrgoljzgorwvsir` — le provisionnement passe par le CLI |
+| Supabase (projet cible) | `aigms-supabase`, `eu-west-1`, PostgreSQL 17, actif | Retenu comme base du produit |
 | Supabase CLI | Non installé globalement | Ajouté en devDependency du projet |
 | Node.js | v22.22.3 / npm 10.9.8 | Conforme |
 | Docker | v29.5.3 | Disponible pour `supabase start` local |
@@ -85,7 +86,7 @@ intégralement à construire :
 | # | Point | Impact | Traitement |
 |---|---|---|---|
 | B1 | Le token GitHub `rlabrador` n'a pas le scope `workflow` | Le push des fichiers `.github/workflows/*` sera rejeté par GitHub | Les fichiers CI sont écrits dans le repo local ; l'utilisateur doit exécuter `gh auth refresh -h github.com -u rlabrador -s workflow` avant le premier push |
-| B2 | Le serveur MCP Supabase n'a pas accès au projet `xsagbzrgoljzgorwvsir` | Impossible d'appliquer les migrations via MCP | Approche **migrations-first** via Supabase CLI : les migrations sont versionnées dans `supabase/migrations/` et appliquées avec `supabase link` + `supabase db push`, ce qui nécessite un `SUPABASE_ACCESS_TOKEN` et le mot de passe base fournis par l'utilisateur en `.env.local` |
+| B2 | Le serveur MCP Supabase n'a pas accès au projet `xsagbzrgoljzgorwvsir` : il est rattaché à l'organisation `kccjtvwusyuedbjlcwte`, le projet appartient à `kxrprvzkleccysyzoylt` | Impossible d'appliquer les migrations via MCP | **Résolu** — approche migrations-first via le CLI Supabase : `supabase link --project-ref xsagbzrgoljzgorwvsir` puis `supabase db push`, avec un `SUPABASE_ACCESS_TOKEN` en `.env.local`. Les 15 migrations et le jeu de démonstration sont appliqués ; l'étanchéité a été vérifiée par appels API |
 | B3 | Aucun `project-access.json` pour AIGMS | Règle CCOWORK n°3 non satisfaite | Créé en Sprint 0 à la racine du projet |
 
 Aucun de ces points n'empêche la construction du Sprint 0 : le code, les migrations,
