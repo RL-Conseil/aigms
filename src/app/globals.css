@@ -1,0 +1,26 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-ink-50: oklch(0.98 0.004 260);
+  --color-ink-100: oklch(0.95 0.006 260);
+  --color-ink-200: oklch(0.9 0.008 260);
+  --color-ink-400: oklch(0.62 0.014 260);
+  --color-ink-600: oklch(0.45 0.018 260);
+  --color-ink-900: oklch(0.24 0.02 260);
+
+  --color-brand-500: oklch(0.52 0.13 245);
+  --color-brand-600: oklch(0.45 0.14 245);
+
+  --color-ok-600: oklch(0.52 0.13 155);
+  --color-warn-600: oklch(0.62 0.14 75);
+  --color-stop-600: oklch(0.55 0.19 25);
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--color-ink-50);
+  color: var(--color-ink-900);
+}

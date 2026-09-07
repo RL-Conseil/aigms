@@ -1,0 +1,50 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+
+# next.js
+.next/
+out/
+build/
+next-env.d.ts
+
+# testing
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.playwright/
+
+# production / env
+.env
+.env.local
+.env*.local
+.env.production
+
+# vercel / supabase
+.vercel
+supabase/.temp/
+supabase/.branches/
+
+# os / editors
+.DS_Store
+*.pem
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# logs
+npm-debug.log*
+yarn-error.log*
+*.tsbuildinfo
+
+# archives et binaires de travail (sources de verite = .md)
+*.zip
+*.docx
+*.xlsx
+*.url
+*.pdf
+*.excalidraw
+OLD/

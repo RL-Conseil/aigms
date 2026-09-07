@@ -1,0 +1,45 @@
+{
+  "projectCode": "AIGMS",
+  "projectName": "AIGMS — AI Governance Management System",
+  "gmail": {
+    "enabled": false,
+    "account": null,
+    "allowedSendAs": [],
+    "allowedGroups": [],
+    "readLabels": [],
+    "sendPolicy": "explicit-confirmation"
+  },
+  "drive": {
+    "enabled": false,
+    "allowedSharedDriveIds": [],
+    "allowedFolderIds": [],
+    "defaultFolderId": null
+  },
+  "supabase": {
+    "enabled": true,
+    "projectRef": "xsagbzrgoljzgorwvsir",
+    "url": "https://xsagbzrgoljzgorwvsir.supabase.co",
+    "contentPolicy": "migrations-only",
+    "destructiveOperationsRequireConfirmation": true,
+    "allowedSchemas": ["public", "app"],
+    "preferredMode": "migrations-first",
+    "notes": "Le serveur MCP Supabase de cette session est rattache a une autre organisation et n'a pas acces a ce projet. Les migrations s'appliquent via le CLI Supabase (supabase link + supabase db push)."
+  },
+  "github": {
+    "enabled": true,
+    "repository": "RL-Conseil/aigms",
+    "visibility": "private",
+    "account": "rlabrador",
+    "notes": "Le jeton gh du compte rlabrador n'a pas le scope 'workflow' : requis pour pousser .github/workflows/."
+  },
+  "vercel": {
+    "enabled": true,
+    "team": "richard-2575s-projects",
+    "project": null,
+    "notes": "Projet non encore cree."
+  },
+  "agents": {
+    "project-context": ["read.project.files"],
+    "supabase-migrations": ["sql.generate_migration", "supabase.read"]
+  }
+}
