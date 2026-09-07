@@ -108,10 +108,42 @@ if (!res.ok) {
 console.log(`Deploiement ${deployment.id} (${deployment.target ?? 'preview'})`)
 console.log(`URL         https://${deployment.url}`)
 
-// Alias lisible et stable par branche : l'URL ne change pas d'un deploiement
-// a l'autre, ce qui evite d'avoir a se repasser un lien a chaque fois.
-let aliasUrl = null
-if (!target) {
+// Attente de la fin du build : un lien annonce doit etre un lien qui repond,
+// et Vercel refuse d'aliaser un deploiement qui n'est pas encore pret.
+process.stdout.write('Build ')
+let ready = false
+for (let i = 0; i < 120; i += 1) {
+  const status = await fetch(
+    `https://api.vercel.com/v13/deployments/${deployment.id}?teamId=${TEAM}`,
+    { headers: { Authorization: `Bearer ${TOKEN}` } },
+  ).then((r) => r.json())
+
+  if (status.readyState === 'READY') {
+    ready = true
+    break
+  }
+  if (status.readyState === 'ERROR' || status.readyState === 'CANCELED') {
+    console.log(`\nEchec du build : ${status.readyState}`)
+    console.log(`Journal : https://vercel.com/${TEAM}/${PROJECT}/${deployment.id}`)
+    process.exit(1)
+  }
+  process.stdout.write('.')
+  await new Promise((r) => setTimeout(r, 5000))
+}
+
+if (!ready) {
+  console.log('\nBuild toujours en cours. Suivre son avancement sur le tableau de bord Vercel.')
+  process.exit(1)
+}
+
+console.log('\nPret.')
+
+// Alias lisible et stable par branche : l'URL ne change pas d'un deploiement a
+// l'autre, ce qui evite d'avoir a se repasser un lien a chaque fois. Il se pose
+// une fois le build termine, jamais avant.
+if (target) {
+  console.log(`https://${deployment.url}`)
+} else {
   const slug = branch.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase()
   const alias = `${PROJECT}-${slug}.vercel.app`
   const aliasRes = await fetch(
@@ -123,33 +155,9 @@ if (!target) {
     },
   )
   if (aliasRes.ok) {
-    aliasUrl = `https://${alias}`
-    console.log(`Alias       ${aliasUrl}`)
+    console.log(`https://${alias}`)
   } else {
-    console.log(`Alias       non pose (${aliasRes.status}) — utiliser l'URL ci-dessus`)
+    console.log(`Alias non pose (${aliasRes.status}) : ${await aliasRes.text()}`)
+    console.log(`https://${deployment.url}`)
   }
 }
-
-// Attente de la fin du build : un lien annonce doit etre un lien qui repond.
-process.stdout.write('Build ')
-for (let i = 0; i < 60; i += 1) {
-  const status = await fetch(
-    `https://api.vercel.com/v13/deployments/${deployment.id}?teamId=${TEAM}`,
-    { headers: { Authorization: `Bearer ${TOKEN}` } },
-  ).then((r) => r.json())
-
-  if (status.readyState === 'READY') {
-    console.log('\nPret.')
-    console.log(aliasUrl ?? `https://${deployment.url}`)
-    process.exit(0)
-  }
-  if (status.readyState === 'ERROR' || status.readyState === 'CANCELED') {
-    console.log(`\nEchec du build : ${status.readyState}`)
-    console.log(`Journal : https://vercel.com/${TEAM}/${PROJECT}/${deployment.id}`)
-    process.exit(1)
-  }
-  process.stdout.write('.')
-  await new Promise((r) => setTimeout(r, 5000))
-}
-
-console.log('\nBuild toujours en cours. Suivre son avancement sur le tableau de bord Vercel.')
