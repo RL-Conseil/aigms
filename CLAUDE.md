@@ -58,5 +58,53 @@ Ne pas :
 Pour chaque sprint : inspecter -> décomposer -> coder verticalement -> tester -> documenter -> ADR si décision structurante -> bilan.
 Ne pas créer dix écrans CRUD avant qu'un workflow critique fonctionne de bout en bout.
 
+## Flux de travail Git et déploiement
+
+Règle posée par le propriétaire du dépôt le 7 septembre 2026. Elle prévaut sur
+toute habitude de travail contraire.
+
+### Branches
+
+| Branche | Rôle | Qui pousse |
+|---|---|---|
+| `main` | production — déployée sur `aigms.vercel.app` | **le propriétaire seul** |
+| `dev` | intégration, copie de `main`, Preview permanente | Claude Code |
+| `feat/<sujet>` | une branche par demande, créée depuis `dev` | Claude Code |
+
+**Ne jamais pousser sur `main`.** La mise en production relève du seul
+propriétaire, après validation sur une Preview. Cela vaut aussi pour un
+correctif d'apparence anodine.
+
+### Cycle pour chaque nouvelle demande
+
+1. Partir de `dev` à jour : `git switch dev && git pull`.
+2. Créer `feat/<sujet>` — un sujet, une branche.
+3. Développer, puis **corriger en local** : `npm run typecheck`, `npm run lint`,
+   `npm run test`. Ces vérifications sont rapides et n'ouvrent aucun navigateur.
+4. Committer et **toujours pousser la branche de feature** :
+   `git push -u origin feat/<sujet>`.
+5. **Proposer systématiquement le déploiement en Preview** :
+   `npm run deploy:preview`, puis transmettre l'URL.
+6. Attendre la validation. Le propriétaire décide seul de la promotion vers
+   `main`.
+
+### Ne pas faire tourner l'application en local
+
+Le poste de développement est lent : `npm run dev`, `npm run start` et les
+tests Playwright ne doivent pas être lancés pour donner à voir un résultat. La
+visualisation se fait **sur la Preview Vercel**, jamais sur `localhost`.
+
+Restent en local, parce qu'ils sont rapides et sans interface : la vérification
+des types, le lint, les tests unitaires, les tests RLS et les migrations sur la
+stack Supabase locale.
+
+### Déploiement
+
+`npm run deploy:preview` depuis la branche courante. Le script pose un alias
+stable par branche (`aigms-<branche>.vercel.app`), attend la fin du build et
+n'annonce l'URL qu'une fois le déploiement prêt.
+
+`npm run deploy:prod` refuse de s'exécuter depuis une branche autre que `main`.
+
 ## Definition of Done
 Migration + RLS + types + validation serveur + UI + tests + audit log si sensible + documentation.

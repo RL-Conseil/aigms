@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "description": "AIGMS - AI Governance Management System",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -15,6 +17,8 @@
     "test:rls": "vitest run --project rls",
     "test:unit": "vitest run --project unit",
     "test:e2e": "playwright test",
+    "deploy:preview": "node scripts/deploy-vercel.mjs",
+    "deploy:prod": "node scripts/deploy-vercel.mjs production",
     "db:push": "supabase db push",
     "db:reset": "supabase db reset",
     "db:diff": "supabase db diff",
