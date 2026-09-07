@@ -36,9 +36,13 @@
   },
   "vercel": {
     "enabled": true,
-    "team": "richard-2575s-projects",
-    "project": null,
-    "notes": "Projet non encore cree."
+    "team": "rlabradors-projects",
+    "teamId": "team_EpSGhRhqme39AX6zVEfe57Y4",
+    "project": "aigms",
+    "projectId": "prj_E4fqSiDIhmsliWOmWUjiW73K2RbE",
+    "productionUrl": "https://aigms.vercel.app",
+    "deploymentProtection": "sso, all_except_custom_domains",
+    "notes": "Le lien Git du projet pointe sur rlabrador/aigms (depot vide) : l'App GitHub Vercel n'a pas acces a l'organisation RL-Conseil. Les deploiements se font par API tant que ce lien n'est pas corrige. Aucune cle service_role n'est configuree : le code applicatif ne l'utilise pas."
   },
   "agents": {
     "project-context": ["read.project.files"],

@@ -49,7 +49,7 @@ Tous verts au 7 septembre 2026.
 | Dépôt GitHub `RL-Conseil/aigms` | privé, existant |
 | Supabase local (Docker) | opérationnel, 15 migrations appliquées |
 | Supabase distant `aigms-supabase` (`xsagbzrgoljzgorwvsir`, eu-west-1) | **provisionné** : 15 migrations appliquées, jeu de démonstration chargé, étanchéité vérifiée par l'API |
-| Vercel | **non provisionné** — en attente d'une connexion au bon compte |
+| Vercel | **provisionné** : projet `aigms` (équipe `rlabradors-projects`), variables d'environnement posées, production en ligne sur `aigms.vercel.app` derrière la protection SSO d'équipe |
 | CI GitHub Actions | écrite ; le push nécessite le scope `workflow` sur le jeton `gh` |
 
 ## Vérification du projet distant
@@ -65,14 +65,23 @@ Effectuée par appels API le 7 septembre 2026 :
 | `evaluate_gate` sur `UC-2026-0001` | 8/8 préconditions satisfaites |
 | Lecture par l'officer du second tenant | tableau vide |
 
+## Deux liens à rétablir
+
+1. **CI** — le jeton GitHub `rlabrador` n'a pas le scope `workflow` : le commit
+   contenant `.github/workflows/ci.yml` attend en local.
+   `gh auth refresh -h github.com -u rlabrador -s workflow` puis `git push`.
+2. **Vercel ↔ GitHub** — le projet Vercel est lié à `rlabrador/aigms`, un dépôt
+   vide, alors que le code vit dans `RL-Conseil/aigms`. L'App GitHub de Vercel
+   n'ayant pas accès à cette organisation, le lien ne peut pas être posé par
+   API. Installer l'App (https://github.com/apps/vercel) sur `RL-Conseil`, puis
+   relier le projet : les déploiements redeviendront automatiques à chaque push.
+   D'ici là, ils se font par appel API depuis le poste de développement.
+
 ## Suite immédiate
 
-1. Habiliter le jeton GitHub (`gh auth refresh -h github.com -u rlabrador -s workflow`)
-   et pousser le commit de CI.
-2. Créer le projet Vercel et y reporter les variables d'environnement.
-3. Sprint 8 complet : dépôt de fichiers via Supabase Storage.
-4. Formulaires d'écriture : intake, risque, décision, changement.
-5. Sprint 14 puis 15.
+1. Sprint 8 complet : dépôt de fichiers via Supabase Storage.
+2. Formulaires d'écriture : intake, risque, décision, changement.
+3. Sprint 14 puis 15.
 
 ## Point de vigilance
 
