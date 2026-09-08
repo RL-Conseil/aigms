@@ -56,7 +56,7 @@ export function TransitionPanel({
 
         <div>
           <label htmlFor="rationale" className="block text-xs font-medium text-ink-600">
-            Justification
+            Motif de la transition
           </label>
           <textarea
             id="rationale"

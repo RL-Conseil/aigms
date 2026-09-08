@@ -7,6 +7,12 @@ import { Lifecycle } from '@/components/lifecycle'
 import { TransitionPanel } from '@/components/transition-panel'
 import { UI_TRANSITIONS } from '@/lib/domain/transitions'
 import {
+  AcceptRiskForm,
+  ClassificationPanel,
+  RiskPanel,
+  TriagePanel,
+} from '@/components/governance/use-case-panels'
+import {
   AUTONOMY_LABELS,
   DECISION_STATUS_LABELS,
   DECISION_TYPE_LABELS,
@@ -37,8 +43,9 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
       `id, business_ref, name, purpose, business_process, expected_benefit, status,
        autonomy_level, criticality, decision_impact, users_description, affected_persons,
        data_description, involves_personal_data, involves_vulnerable_persons,
-       next_review_at, status_changed_at, organization_id,
-       organization:organization_id (id, name)`,
+       next_review_at, status_changed_at, organization_id, activity_id,
+       organization:organization_id (id, name),
+       activity:activity_id (id, name, process:process_id (name))`,
     )
     .eq('id', id)
     .maybeSingle()
@@ -60,6 +67,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
     { data: changes },
     { data: timeline },
     { data: gateData },
+    { data: memberships },
   ] = await Promise.all([
     supabase
       .from('regulatory_classification')
@@ -116,10 +124,25 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
       .order('occurred_at', { ascending: false })
       .limit(30),
     supabase.rpc('evaluate_gate', { p_use_case_id: id, p_target: 'PRODUCTION' }),
+    supabase
+      .from('membership')
+      .select('user:user_id (id, full_name, email, job_title)')
+      .eq('status', 'active'),
   ])
 
   const gate = gateData as GateResult | null
   const organization = useCase.organization as unknown as { id: string; name: string } | null
+  const activity = useCase.activity as unknown as
+    | { id: string; name: string; process: { name: string } | null }
+    | null
+
+  const people = (memberships ?? [])
+    .map((m) => m.user as unknown as { id: string; full_name: string | null; email: string; job_title: string | null } | null)
+    .filter((u): u is NonNullable<typeof u> => Boolean(u))
+    .map((u) => ({
+      id: u.id,
+      label: u.full_name ? `${u.full_name}${u.job_title ? ` — ${u.job_title}` : ''}` : u.email,
+    }))
 
   return (
     <Shell
@@ -130,7 +153,11 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
           : []),
       ]}
       title={useCase.name}
-      subtitle={`${useCase.business_ref} — ${useCase.purpose}`}
+      subtitle={
+        activity
+          ? `${useCase.business_ref} · ${activity.process?.name ?? '—'} › ${activity.name}`
+          : `${useCase.business_ref} — non rattaché à une activité`
+      }
       actions={<Badge tone="info">{USE_CASE_STATUS_LABELS[status]}</Badge>}
     >
       <div className="mb-6 rounded-lg border border-ink-200 bg-white p-5">
@@ -143,6 +170,31 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
 
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
+          <div className="flex flex-col gap-3">
+            <TriagePanel
+              useCaseId={id}
+              criticality={useCase.criticality}
+              nextReviewAt={useCase.next_review_at}
+            />
+            <ClassificationPanel
+              useCaseId={id}
+              current={
+                classification
+                  ? {
+                      organization_role: classification.organization_role,
+                      flags: classification.flags as string[],
+                      rationale: classification.rationale,
+                      legal_review_level: classification.legal_review_level,
+                      legal_review_completed: classification.legal_review_completed,
+                      framework_version: classification.framework_version,
+                      next_review_at: classification.next_review_at,
+                    }
+                  : null
+              }
+            />
+            <RiskPanel useCaseId={id} riskCount={risks?.length ?? 0} people={people} />
+          </div>
+
           <Card title="Fiche du cas d'usage">
             <dl className="grid gap-4 sm:grid-cols-2">
               <Field label="Processus métier">{useCase.business_process ?? '—'}</Field>
@@ -225,6 +277,10 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
                         ) : null}
                       </div>
                     </div>
+
+                    {risk.status !== 'accepted' && risk.status !== 'closed' ? (
+                      <AcceptRiskForm riskId={risk.id} useCaseId={id} />
+                    ) : null}
                   </li>
                 ))}
               </ul>

@@ -8,9 +8,9 @@ Version 1.0 — 7 septembre 2026
 |---|---|---|
 | 0 — Foundation | dépôt, environnements, CI, Supabase, migrations, Auth, tenancy, RLS, audit_log, ADR | **Terminé** |
 | 1 — Organization / Context / Roles | organisations, entités, rôles, parties prenantes | **Terminé** : création d'organisation, déclaration de comptes et attribution de rôles depuis l'application, réservées à l'administration ([ADR-0008](../adr/ADR-0008-account-provisioning.md)) |
-| 2 — AI Registry + Intake | cas d'usage, systèmes, modèles, agents, datasets, fournisseurs, cycle de vie | **Terminé** (données et lecture ; formulaire d'intake à venir) |
-| 3 — Triage + pré-classification | criticité, rôle réglementaire, drapeaux, revue juridique | **Terminé** (données et gates) |
-| 4 — Risk Management | scénarios, cotation, traitement, acceptation, revue | **Terminé** |
+| 2 — AI Registry + Intake | cas d'usage, systèmes, modèles, agents, datasets, fournisseurs, cycle de vie | **Terminé** : cartographie des processus, formulaire d'intake, rattachement à une activité |
+| 3 — Triage + pré-classification | criticité, rôle réglementaire, drapeaux, revue juridique | **Terminé** : saisis depuis le dossier du cas d'usage |
+| 4 — Risk Management | scénarios, cotation, traitement, acceptation, revue | **Terminé** : création et acceptation depuis le dossier ; le niveau reste calculé par la base |
 | 5 — AI Impact Assessment | parties prenantes, constats, mesures, revue | **Terminé** |
 | 6 — Human Oversight | autonomie, responsable, déclencheurs, autorité d'arrêt | **Terminé** |
 | 7 — Controls / Requirements / Mapping | référentiels, exigences, contrôles, mapping N:N, applicabilité | **Terminé** |
@@ -39,7 +39,7 @@ par les fonctions de transition réelles : si un gate régresse, le seed échoue
 |---|---|---|
 | `tests/unit` | 12 | libellés et présentation du domaine |
 | `tests/rls` | 75 | isolation cross-tenant, RBAC, transitions interdites, gate production, acceptation de risque, registre de décisions, moteur de réévaluation, journal d'audit, parité interface/base, surface publique |
-| `tests/e2e` | 23 | site public et formulaire de contact ; connexion, parcours complet, refus de gate motivé, tableau de bord |
+| `tests/e2e` | 27 | site public et formulaire de contact ; connexion, parcours complet, refus de gate motivé, tableau de bord |
 
 Tous verts au 7 septembre 2026.
 
@@ -101,6 +101,8 @@ Deux jetons Supabase cohabitent, un par projet : celui qui couvre
 | `/admin/organisations/nouvelle` | session requise, réservée à l'administration plateforme |
 | `/admin/parametres` | session requise — profil, rôle, organisation |
 | `/admin/organizations/[id]/declaration-applicabilite` | session requise — couverture ISO/IEC 42001 exigence par exigence |
+| `/admin/organizations/[id]/processus` | session requise — cartographie des processus et activités |
+| `/admin/organizations/[id]/cas-d-usage/nouveau` | session requise — fiche d'intake |
 
 `src/proxy.ts` ne protège que le préfixe `/admin` ; l'autorisation réelle reste
 portée par la RLS.
@@ -127,6 +129,35 @@ d'authentification.
 L'envoi reste une commodité, jamais un point de passage obligé : une demande
 est enregistrée en base et consultable dans `/admin/contacts` même si Resend
 refuse ou tombe.
+
+## Cartographie orientée processus — incrément 1 sur 4
+
+Le modèle cible de `SPEC_PROCESS` devient :
+`Organisation → Processus → Activité → Cas d'usage IA → Risque → Contrôle →
+Preuve → Décision → Action`.
+
+`process` et `activity` étaient le chaînon manquant : `business_process` n'était
+qu'un champ de texte libre, qu'on pouvait écrire mais pas interroger — donc pas
+agréger, pas cartographier. Il est conservé comme note de contexte, le
+rattachement structuré passant par `ai_use_case.activity_id`.
+
+| Incrément | Contenu | État |
+|---|---|---|
+| 1 | Modèle processus/activité, cartographie, saisie intake, triage, classification, risques | **Terminé** |
+| 2 | Process & Risk Map avec indicateurs par nœud et panneau latéral | à venir |
+| 3 | Control Coverage Map et Risk Heatmap | à venir |
+| 4 | AI Control Graph, couches activables, chemins critiques | à venir |
+
+**Principe retenu pour la fluidité** : la carte n'est pas un rapport qu'on
+consulte, c'est l'établi sur lequel on travaille. Un nœud vide est une
+invitation à saisir — une activité sans usage d'IA propose d'en déclarer un.
+Les formulaires vivent dans des volets, sur la fiche même : on saisit là où l'on
+regarde.
+
+**Point de vocabulaire tranché** : les scores affichés ultérieurement se
+nommeront « santé de la gouvernance », jamais « score de conformité ». Un
+nombre sur 100 dans un outil de gouvernance se lit comme un taux de conformité,
+ce que les interdictions produit excluent explicitement.
 
 ## Référentiels normatifs chargés
 

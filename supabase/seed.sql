@@ -188,6 +188,49 @@ begin;
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","role":"authenticated"}';
 
+-- --- Cartographie des processus -----------------------------------------------
+-- La gouvernance part de l'activité métier : on encadre un usage d'IA parce
+-- qu'il sert un processus, pas l'inverse.
+insert into public.process (id, tenant_id, organization_id, code, name, description, category, display_order, owner_user_id) values
+  ('c1000000-0000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'cccccccc-0000-4000-8000-000000000001', 'PIL', 'Piloter l''entreprise',
+   'Direction, gouvernance, pilotage de la performance.', 'management', 10, '11111111-1111-4111-8111-111111111111'),
+  ('c1000000-0000-4000-8000-000000000002', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'cccccccc-0000-4000-8000-000000000001', 'LIV', 'Livrer',
+   'Préparation, planification et exécution des livraisons clients.', 'core', 20, '22222222-2222-4222-8222-222222222222'),
+  ('c1000000-0000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'cccccccc-0000-4000-8000-000000000001', 'SUP', 'Servir le client',
+   'Relation client, support et réclamations.', 'core', 30, '22222222-2222-4222-8222-222222222222'),
+  ('c1000000-0000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'cccccccc-0000-4000-8000-000000000001', 'RH', 'Gérer les ressources humaines',
+   'Recrutement, intégration, développement des compétences.', 'support', 40, '33333333-3333-4333-8333-333333333333');
+
+insert into public.activity (id, tenant_id, organization_id, process_id, name, description, display_order, business_unit_id, owner_user_id) values
+  ('c2000000-0000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'cccccccc-0000-4000-8000-000000000001', 'c1000000-0000-4000-8000-000000000003',
+   'Traitement des demandes clients', 'Réception, qualification et réponse aux demandes de niveau 1.', 10,
+   'eeeeeeee-0000-4000-8000-000000000001', '22222222-2222-4222-8222-222222222222'),
+  ('c2000000-0000-4000-8000-000000000002', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'cccccccc-0000-4000-8000-000000000001', 'c1000000-0000-4000-8000-000000000003',
+   'Gestion des réclamations', 'Traitement des réclamations et des gestes commerciaux.', 20,
+   'eeeeeeee-0000-4000-8000-000000000001', null),
+  ('c2000000-0000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'cccccccc-0000-4000-8000-000000000001', 'c1000000-0000-4000-8000-000000000004',
+   'Présélection des candidatures', 'Réception et tri des candidatures avant entretien.', 10,
+   'eeeeeeee-0000-4000-8000-000000000002', '33333333-3333-4333-8333-333333333333'),
+  ('c2000000-0000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'cccccccc-0000-4000-8000-000000000001', 'c1000000-0000-4000-8000-000000000004',
+   'Intégration des nouveaux arrivants', 'Parcours d''accueil et montée en compétence.', 20,
+   'eeeeeeee-0000-4000-8000-000000000002', null),
+  ('c2000000-0000-4000-8000-000000000005', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'cccccccc-0000-4000-8000-000000000001', 'c1000000-0000-4000-8000-000000000002',
+   'Planification des tournées', 'Ordonnancement quotidien des livraisons.', 10,
+   'eeeeeeee-0000-4000-8000-000000000001', '22222222-2222-4222-8222-222222222222'),
+  ('c2000000-0000-4000-8000-000000000006', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'cccccccc-0000-4000-8000-000000000001', 'c1000000-0000-4000-8000-000000000001',
+   'Pilotage de la performance', 'Suivi des indicateurs et revues de direction.', 10,
+   null, '11111111-1111-4111-8111-111111111111');
+
 -- --- Fournisseurs -------------------------------------------------------------
 insert into public.vendor (id, tenant_id, organization_id, name, is_model_provider, criticality,
                            country_code, dpa_signed, security_assessed, reversibility_documented,
@@ -328,13 +371,14 @@ set local role authenticated;
 set local request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","role":"authenticated"}';
 
 insert into public.ai_use_case (
-  id, tenant_id, organization_id, business_unit_id, name, purpose, business_process,
+  id, tenant_id, organization_id, business_unit_id, activity_id, name, purpose, business_process,
   expected_benefit, owner_user_id, accountable_user_id, users_description, affected_persons,
   data_description, involves_personal_data, autonomy_level, decision_impact, criticality,
   created_by, next_review_at)
 values (
   'b1000000-0000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001',
   'cccccccc-0000-4000-8000-000000000001', 'eeeeeeee-0000-4000-8000-000000000001',
+  'c2000000-0000-4000-8000-000000000001',
   'Assistant support client',
   'Proposer aux conseillers une réponse rédigée à partir de l''historique des tickets, que le conseiller valide avant envoi.',
   'Traitement des demandes clients niveau 1',
@@ -580,13 +624,14 @@ set local role authenticated;
 set local request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","role":"authenticated"}';
 
 insert into public.ai_use_case (
-  id, tenant_id, organization_id, business_unit_id, name, purpose, business_process,
+  id, tenant_id, organization_id, business_unit_id, activity_id, name, purpose, business_process,
   expected_benefit, owner_user_id, accountable_user_id, users_description, affected_persons,
   data_description, involves_personal_data, involves_vulnerable_persons, autonomy_level,
   decision_impact, criticality, created_by, next_review_at)
 values (
   'b1000000-0000-4000-8000-000000000002', 'aaaaaaaa-0000-4000-8000-000000000001',
   'cccccccc-0000-4000-8000-000000000001', 'eeeeeeee-0000-4000-8000-000000000002',
+  'c2000000-0000-4000-8000-000000000003',
   'Scoring de candidatures',
   'Classer les candidatures reçues par adéquation au poste afin d''orienter la présélection des recruteurs.',
   'Recrutement — présélection',
@@ -735,12 +780,13 @@ set local role authenticated;
 set local request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","role":"authenticated"}';
 
 insert into public.ai_use_case (
-  id, tenant_id, organization_id, business_unit_id, name, purpose, business_process,
+  id, tenant_id, organization_id, business_unit_id, activity_id, name, purpose, business_process,
   expected_benefit, owner_user_id, accountable_user_id, users_description, affected_persons,
   data_description, involves_personal_data, autonomy_level, decision_impact, criticality, created_by)
 values (
   'b1000000-0000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001',
   'cccccccc-0000-4000-8000-000000000001', 'eeeeeeee-0000-4000-8000-000000000001',
+  'c2000000-0000-4000-8000-000000000005',
   'Agent de planification des tournées',
   'Proposer un ordonnancement des tournées de livraison tenant compte des créneaux clients et des contraintes de conduite.',
   'Planification logistique quotidienne',

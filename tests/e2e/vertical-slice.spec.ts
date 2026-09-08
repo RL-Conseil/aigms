@@ -55,7 +55,7 @@ test('le gate refuse la mise en production et explique ce qui manque', async ({ 
   // La demande de transition est refusee cote serveur, avec son motif.
   await page.getByLabel('Transition demandée').selectOption('PRODUCTION')
   await page
-    .getByLabel('Justification')
+    .getByLabel('Motif de la transition')
     .fill('Demande de généralisation soumise par l’exploitation.')
   await page.getByRole('button', { name: 'Demander la transition' }).click()
 
