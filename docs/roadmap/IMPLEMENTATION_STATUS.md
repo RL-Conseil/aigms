@@ -7,7 +7,7 @@ Version 1.0 — 7 septembre 2026
 | Sprint | Périmètre | État |
 |---|---|---|
 | 0 — Foundation | dépôt, environnements, CI, Supabase, migrations, Auth, tenancy, RLS, audit_log, ADR | **Terminé** |
-| 1 — Organization / Context / Roles | organisations, entités, rôles, parties prenantes | **Terminé** (côté données et lecture) |
+| 1 — Organization / Context / Roles | organisations, entités, rôles, parties prenantes | **Terminé** : création d'organisation, déclaration de comptes et attribution de rôles depuis l'application, réservées à l'administration ([ADR-0008](../adr/ADR-0008-account-provisioning.md)) |
 | 2 — AI Registry + Intake | cas d'usage, systèmes, modèles, agents, datasets, fournisseurs, cycle de vie | **Terminé** (données et lecture ; formulaire d'intake à venir) |
 | 3 — Triage + pré-classification | criticité, rôle réglementaire, drapeaux, revue juridique | **Terminé** (données et gates) |
 | 4 — Risk Management | scénarios, cotation, traitement, acceptation, revue | **Terminé** |
@@ -36,9 +36,9 @@ par les fonctions de transition réelles : si un gate régresse, le seed échoue
 
 | Suite | Nombre | Couvre |
 |---|---|---|
-| `tests/unit` | 5 | libellés et présentation du domaine |
-| `tests/rls` | 49 | isolation cross-tenant, RBAC, transitions interdites, gate production, acceptation de risque, registre de décisions, moteur de réévaluation, journal d'audit, parité interface/base, surface publique |
-| `tests/e2e` | 8 | site public et formulaire de contact ; connexion, parcours complet, refus de gate motivé, tableau de bord |
+| `tests/unit` | 8 | libellés et présentation du domaine |
+| `tests/rls` | 58 | isolation cross-tenant, RBAC, transitions interdites, gate production, acceptation de risque, registre de décisions, moteur de réévaluation, journal d'audit, parité interface/base, surface publique |
+| `tests/e2e` | 15 | site public et formulaire de contact ; connexion, parcours complet, refus de gate motivé, tableau de bord |
 
 Tous verts au 7 septembre 2026.
 
@@ -93,7 +93,10 @@ Deux jetons Supabase cohabitent, un par projet : celui qui couvre
 | `/admin` | session requise — portefeuille |
 | `/admin/pilotage` | session requise — tableau de bord OPERATE |
 | `/admin/organizations/[id]`, `/admin/use-cases/[id]` | session requise |
-| `/admin/contacts` | session requise, lecture réservée à l'administration plateforme |
+| `/admin/contacts` | session requise, réservée à l'administration plateforme |
+| `/admin/comptes` | session requise, réservée à l'administration plateforme — comptes et rôles |
+| `/admin/organisations/nouvelle` | session requise, réservée à l'administration plateforme |
+| `/admin/parametres` | session requise — profil, rôle, organisation |
 
 `src/proxy.ts` ne protège que le préfixe `/admin` ; l'autorisation réelle reste
 portée par la RLS.

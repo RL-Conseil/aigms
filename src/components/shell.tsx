@@ -1,10 +1,33 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { Wordmark } from '@/components/logo'
-import { SignOutButton } from '@/components/sign-out-button'
+import { UserMenu } from '@/components/admin/user-menu'
+import { getViewerContext, isAdministrating } from '@/lib/auth/context'
+import { ROLE_LABELS } from '@/lib/domain/roles'
 
-/** Ossature commune : navigation du portefeuille et fil d'Ariane. */
-export function Shell({
+/**
+ * Ossature de l'espace de travail.
+ *
+ * La navigation suit le role : l'administration de la plateforme ouvre les
+ * acces, elle ne pilote pas de gouvernance, et son menu ne propose donc pas ce
+ * qu'elle ne peut de toute facon pas faire. Ce n'est qu'un confort d'affichage :
+ * la RLS refuserait ces actions meme si un lien y menait.
+ */
+
+type NavLink = { href: string; label: string }
+
+const GOVERNANCE_NAV: NavLink[] = [
+  { href: '/admin', label: 'Portefeuille' },
+  { href: '/admin/pilotage', label: 'Pilotage' },
+]
+
+const ADMIN_NAV: NavLink[] = [
+  { href: '/admin', label: 'Portefeuille' },
+  { href: '/admin/comptes', label: 'Comptes et rôles' },
+  { href: '/admin/contacts', label: 'Demandes' },
+]
+
+export async function Shell({
   breadcrumb,
   title,
   subtitle,
@@ -17,6 +40,11 @@ export function Shell({
   actions?: ReactNode
   children: ReactNode
 }) {
+  const viewer = await getViewerContext()
+  const administrating = isAdministrating(viewer)
+  const nav = administrating ? ADMIN_NAV : GOVERNANCE_NAV
+  const roleLabel = viewer?.role ? ROLE_LABELS[viewer.role] : 'Rôle non attribué'
+
   return (
     <div className="min-h-screen">
       <header className="border-b border-ink-200 bg-white">
@@ -24,21 +52,58 @@ export function Shell({
           <Link href="/admin" aria-label="AIGMS, portefeuille">
             <Wordmark size={26} />
           </Link>
+
           <nav className="flex gap-4 text-sm text-ink-600">
-            <Link href="/admin" className="hover:text-ink-900">
-              Portefeuille
-            </Link>
-            <Link href="/admin/pilotage" className="hover:text-ink-900">
-              Pilotage
-            </Link>
-            <Link href="/admin/contacts" className="hover:text-ink-900">
-              Demandes
-            </Link>
+            {nav.map((link) => (
+              <Link key={link.href} href={link.href} className="hover:text-ink-900">
+                {link.label}
+              </Link>
+            ))}
           </nav>
-          <div className="ml-auto">
-            <SignOutButton />
+
+          <div className="ml-auto flex items-center gap-3">
+            {viewer?.tenantName ? (
+              <span className="hidden text-sm text-ink-500 lg:inline">{viewer.tenantName}</span>
+            ) : null}
+            {viewer ? (
+              <UserMenu
+                fullName={viewer.fullName}
+                email={viewer.email}
+                roleLabel={roleLabel}
+                canSettleOrganization={!administrating}
+              />
+            ) : null}
           </div>
         </div>
+
+        {administrating ? (
+          <div className="border-t border-night-900/10 bg-night-900">
+            <div className="mx-auto flex max-w-6xl items-center gap-3 px-6 py-2 text-white">
+              <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden>
+                <path
+                  d="M9 1.8 L15.9 5.4 V9.9 C15.9 13.1 12.9 15.6 9 16.5 C5.1 15.6 2.1 13.1 2.1 9.9 V5.4 Z"
+                  stroke="var(--color-teal-400)"
+                  strokeWidth="1.5"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M6.4 8.9 L8.3 10.8 L11.8 7.2"
+                  stroke="var(--color-teal-400)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <p className="text-[13px]">
+                <span className="font-semibold">Administration de la plateforme.</span>{' '}
+                <span className="text-ink-200">
+                  Vous ouvrez les accès : organisations, comptes et rôles. La gouvernance des cas
+                  d’usage relève des rôles que vous attribuez.
+                </span>
+              </p>
+            </div>
+          </div>
+        ) : null}
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8">

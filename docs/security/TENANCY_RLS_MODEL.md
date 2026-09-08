@@ -25,7 +25,7 @@ ce qui rend les 70 politiques lisibles et vérifiables une à une. Le trigger
 
 | Rôle | Portée | Écrit |
 |---|---|---|
-| `platform_admin` | plateforme | tout, y compris les référentiels |
+| `platform_admin` | plateforme | organisations, comptes, attributions de rôle, référentiels. **Aucun objet de gouvernance** — voir [ADR-0008](../adr/ADR-0008-account-provisioning.md) |
 | `governance_officer` | tenant | objets de gouvernance |
 | `client_admin` | tenant | objets de gouvernance |
 | `system_owner` | organisation | cas d'usage, évaluations, preuves, actions |
@@ -33,6 +33,17 @@ ce qui rend les 70 politiques lisibles et vérifiables une à une. Le trigger
 | `reviewer` | organisation | décisions |
 | `auditor` | organisation | rien — lecture seule, journal d'audit inclus |
 | `executive_viewer` | organisation | rien — lecture seule |
+
+L'administration de la plateforme **ouvre les accès ; elle ne gouverne pas**.
+`has_tenant_role` et `has_organization_role` ne court-circuitent pas sur ce
+privilège : un administrateur n'obtient un rôle de gouvernance que si quelqu'un
+le lui attribue explicitement. Le seul privilège transverse conservé est la
+lecture, par `has_tenant_access` — un exploitant doit pouvoir constater l'état
+d'un portefeuille pour l'administrer.
+
+`app.assignable_roles()` borne ce qu'un administrateur peut attribuer : ni
+`platform_admin`, ni `client_admin`. Un trigger le vérifie, quel que soit le
+chemin d'accès.
 
 `membership.role` porte le rôle par défaut sur le tenant ; `role_assignment` le
 raffine par organisation, avec `valid_until` pour la délégation temporaire.
@@ -98,7 +109,7 @@ que **chaque fonction métier revérifie l'habilitation** — ce que font
 
 ## 6. Couverture de test
 
-`tests/rls/` — 49 assertions, exécutées en série sur la base de démonstration,
+`tests/rls/` — 58 assertions, exécutées en série sur la base de démonstration,
 chaque test dans une transaction annulée :
 
 - **Isolation** : lecture, écriture, ciblage par identifiant, déplacement de
@@ -114,6 +125,10 @@ chaque test dans une transaction annulée :
 - **Surface publique** : `anon` insère une demande de contact et rien d'autre —
   ni lecture, ni modification, ni accès à une autre table, ni dépôt d'une
   demande déjà marquée traitée.
+- **Périmètre de l'administration** : ce qu'elle peut (organisations, comptes,
+  rôles, lecture du portefeuille), ce qu'elle ne peut pas (cas d'usage, risque,
+  décision, contrôle, transition, attribution de `platform_admin` ou de
+  `client_admin`), et ce que les rôles de gouvernance ont perdu au passage.
 
 ## 7. Vérification manuelle
 

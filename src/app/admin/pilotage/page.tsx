@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty } from '@/components/ui'
+import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import {
   DECISION_TYPE_LABELS,
   formatDate,
@@ -19,6 +20,24 @@ import {
  * modele de donnees.
  */
 export default async function DashboardPage() {
+  const viewer = await getViewerContext()
+
+  // L'administration ouvre les acces, elle ne pilote pas. Un tableau de bord
+  // vide serait plus deroutant qu'un refus explicite.
+  if (isAdministrating(viewer)) {
+    return (
+      <Shell title="Pilotage">
+        <Card title="Hors de votre périmètre">
+          <Empty>
+            Le pilotage de la gouvernance revient aux rôles que vous attribuez : AI Governance
+            Officer, responsable du risque, porteur du système. L’administration de la plateforme
+            ouvre les accès et n’instruit aucun dossier.
+          </Empty>
+        </Card>
+      </Shell>
+    )
+  }
+
   const supabase = await createClient()
   const today = new Date().toISOString().slice(0, 10)
 

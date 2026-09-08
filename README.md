@@ -48,9 +48,11 @@ Comptes de démonstration — mot de passe `Demo!Passw0rd` :
 
 | Compte | Rôle |
 |---|---|
+| `admin@rl-conseil.demo` | administration de la plateforme — organisations, comptes et rôles |
 | `officer@rl-conseil.demo` | AI Governance Officer |
-| `owner@izarlink.demo` | porteur de système |
-| `risk@izarlink.demo` | responsable de risque |
+| `owner@izarlink.demo` | porteur du système |
+| `risk@izarlink.demo` | responsable du risque |
+| `reviewer@izarlink.demo` | relecteur des décisions |
 | `auditor@rl-conseil.demo` | auditeur, lecture seule |
 | `officer@autre-cabinet.demo` | second tenant, pour vérifier l'étanchéité |
 

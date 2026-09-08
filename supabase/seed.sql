@@ -42,6 +42,11 @@ values
    extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Noa Lasserre"}', now(), now(),
    '', '', '', '', '', '', '', ''),
+  ('77777777-7777-4777-8777-777777777777', '00000000-0000-0000-0000-000000000000',
+   'authenticated', 'authenticated', 'reviewer@izarlink.demo',
+   extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Yann Cazaux"}', now(), now(),
+   '', '', '', '', '', '', '', ''),
   ('66666666-6666-4666-8666-666666666666', '00000000-0000-0000-0000-000000000000',
    'authenticated', 'authenticated', 'admin@rl-conseil.demo',
    extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
@@ -73,6 +78,8 @@ update public.user_profile set job_title = 'RSSI'
  where id = '33333333-3333-4333-8333-333333333333';
 update public.user_profile set job_title = 'Auditeur interne'
  where id = '44444444-4444-4444-8444-444444444444';
+update public.user_profile set job_title = 'Directeur des opérations'
+ where id = '77777777-7777-4777-8777-777777777777';
 
 -- Administration plateforme : accède au suivi des demandes de contact. Ce
 -- privilège traverse les tenants, il est donc porté par un compte dédié et
@@ -94,6 +101,7 @@ insert into public.membership (tenant_id, user_id, role) values
   ('aaaaaaaa-0000-4000-8000-000000000001', '22222222-2222-4222-8222-222222222222', 'system_owner'),
   ('aaaaaaaa-0000-4000-8000-000000000001', '33333333-3333-4333-8333-333333333333', 'risk_owner'),
   ('aaaaaaaa-0000-4000-8000-000000000001', '44444444-4444-4444-8444-444444444444', 'auditor'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', '77777777-7777-4777-8777-777777777777', 'reviewer'),
   ('aaaaaaaa-0000-4000-8000-000000000001', '66666666-6666-4666-8666-666666666666', 'platform_admin'),
   ('bbbbbbbb-0000-4000-8000-000000000002', '55555555-5555-4555-8555-555555555555', 'governance_officer')
 on conflict do nothing;
@@ -118,7 +126,11 @@ insert into public.role_assignment (tenant_id, organization_id, user_id, role) v
   ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
    '33333333-3333-4333-8333-333333333333', 'risk_owner'),
   ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
-   '44444444-4444-4444-8444-444444444444', 'auditor')
+   '44444444-4444-4444-8444-444444444444', 'auditor'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
+   '22222222-2222-4222-8222-222222222222', 'system_owner'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
+   '77777777-7777-4777-8777-777777777777', 'reviewer')
 on conflict do nothing;
 
 -- -----------------------------------------------------------------------------
@@ -882,7 +894,22 @@ begin
     raise exception 'Seed : l''AIIA de UC-2026-0001 devrait être rouverte par la réévaluation complète.';
   end if;
 
-  raise notice 'Seed AIGMS : parcours de gouvernance vérifié.';
+  select count(*) into v_count
+  from public.membership m
+  where m.tenant_id = 'aaaaaaaa-0000-4000-8000-000000000001'
+    and m.role = 'platform_admin';
+  if v_count <> 1 then
+    raise exception 'Seed : le tenant RL Conseil doit porter exactement un compte d''administration, % trouvé(s)', v_count;
+  end if;
+
+  select count(*) into v_count
+  from public.role_assignment r
+  where r.organization_id = 'cccccccc-0000-4000-8000-000000000001';
+  if v_count < 5 then
+    raise exception 'Seed : IzarLink devrait porter au moins cinq affectations de rôle, % trouvée(s)', v_count;
+  end if;
+
+  raise notice 'Seed AIGMS : parcours de gouvernance et répartition des rôles vérifiés.';
 end;
 $$;
 

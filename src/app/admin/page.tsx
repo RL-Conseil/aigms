@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty } from '@/components/ui'
 import { formatDate } from '@/lib/domain/governance'
+import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 
 /**
  * Vue consultant : le portefeuille d'organisations gouvernees.
@@ -10,6 +11,7 @@ import { formatDate } from '@/lib/domain/governance'
  */
 export default async function PortfolioPage() {
   const supabase = await createClient()
+  const administrating = isAdministrating(await getViewerContext())
 
   const { data: organizations, error } = await supabase
     .from('organization')
@@ -36,6 +38,16 @@ export default async function PortfolioPage() {
     <Shell
       title="Portefeuille"
       subtitle="Organisations dont la gouvernance de l'IA est pilotée depuis ce compte."
+      actions={
+        administrating ? (
+          <Link
+            href="/admin/organisations/nouvelle"
+            className="rounded-md bg-night-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-night-800"
+          >
+            Nouvelle organisation
+          </Link>
+        ) : undefined
+      }
     >
       <Card title="Organisations" subtitle={`${organizations?.length ?? 0} organisation(s)`}>
         {organizations?.length ? (
@@ -69,7 +81,11 @@ export default async function PortfolioPage() {
             })}
           </ul>
         ) : (
-          <Empty>Aucune organisation accessible depuis ce compte.</Empty>
+          <Empty>
+            {administrating
+              ? 'Aucune organisation. Commencez par en créer une : elle accueillera ensuite ses comptes et ses cas d’usage.'
+              : 'Aucune organisation accessible depuis ce compte.'}
+          </Empty>
         )}
       </Card>
     </Shell>

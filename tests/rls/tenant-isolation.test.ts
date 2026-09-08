@@ -31,23 +31,40 @@ describe('Isolation cross-tenant', () => {
   })
 
   it("l'officer du tenant B ne voit aucune donnee du tenant A", async () => {
-    const seen = await asUser(db, DEMO.officerB, async (c) => ({
-      useCases: await countVisible(c, 'ai_use_case'),
-      risks: await countVisible(c, 'risk'),
-      decisions: await countVisible(c, 'governance_decision'),
-      evidence: await countVisible(c, 'evidence'),
-      audit: await countVisible(c, 'audit_log'),
-      controls: await countVisible(c, 'control'),
-    }))
-
-    expect(seen).toEqual({
-      useCases: 0,
-      risks: 0,
-      decisions: 0,
-      evidence: 0,
-      audit: 0,
-      controls: 0,
+    // Le tenant B porte ses propres lignes — ses traces d'administration, par
+    // exemple. Ce qui doit valoir zero, c'est ce qui appartient au tenant A.
+    const fromTenantA = await asUser(db, DEMO.officerB, async (c) => {
+      const counts: Record<string, number> = {}
+      for (const table of [
+        'ai_use_case',
+        'risk',
+        'governance_decision',
+        'evidence',
+        'audit_log',
+        'control',
+      ]) {
+        const { rows } = await c.query<{ n: string }>(
+          `select count(*)::text as n from public.${table} where tenant_id = $1`,
+          [DEMO.tenantA],
+        )
+        counts[table] = Number(rows[0]?.n ?? '0')
+      }
+      return counts
     })
+
+    expect(Object.values(fromTenantA).every((n) => n === 0)).toBe(true)
+  })
+
+  it("l'officer du tenant B voit bien les traces de son propre tenant", async () => {
+    const own = await asUser(db, DEMO.officerB, async (c) => {
+      const { rows } = await c.query<{ n: string }>(
+        'select count(*)::text as n from public.audit_log where tenant_id = $1',
+        [DEMO.tenantB],
+      )
+      return Number(rows[0]?.n ?? '0')
+    })
+
+    expect(own).toBeGreaterThan(0)
   })
 
   it('un cas d usage du tenant A est invisible pour le tenant B, meme cible par son identifiant', async () => {
