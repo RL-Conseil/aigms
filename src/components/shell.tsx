@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
+import { Wordmark } from '@/components/logo'
+import { SignOutButton } from '@/components/sign-out-button'
 
 /** Ossature commune : navigation du portefeuille et fil d'Ariane. */
 export function Shell({
@@ -19,17 +21,23 @@ export function Shell({
     <div className="min-h-screen">
       <header className="border-b border-ink-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-3">
-          <Link href="/portfolio" className="text-sm font-semibold text-ink-900">
-            AIGMS
+          <Link href="/admin" aria-label="AIGMS, portefeuille">
+            <Wordmark size={26} />
           </Link>
           <nav className="flex gap-4 text-sm text-ink-600">
-            <Link href="/portfolio" className="hover:text-ink-900">
+            <Link href="/admin" className="hover:text-ink-900">
               Portefeuille
             </Link>
-            <Link href="/dashboard" className="hover:text-ink-900">
+            <Link href="/admin/pilotage" className="hover:text-ink-900">
               Pilotage
             </Link>
+            <Link href="/admin/contacts" className="hover:text-ink-900">
+              Demandes
+            </Link>
           </nav>
+          <div className="ml-auto">
+            <SignOutButton />
+          </div>
         </div>
       </header>
 

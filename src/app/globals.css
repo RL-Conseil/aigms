@@ -1,19 +1,38 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-ink-50: oklch(0.98 0.004 260);
-  --color-ink-100: oklch(0.95 0.006 260);
-  --color-ink-200: oklch(0.9 0.008 260);
-  --color-ink-400: oklch(0.62 0.014 260);
-  --color-ink-600: oklch(0.45 0.018 260);
-  --color-ink-900: oklch(0.24 0.02 260);
+  /* Encre : bleu nuit desature, du fond au texte principal. */
+  --color-ink-50: oklch(0.99 0.003 240);
+  --color-ink-100: oklch(0.975 0.005 245);
+  --color-ink-200: oklch(0.91 0.008 250);
+  --color-ink-300: oklch(0.84 0.02 250);
+  --color-ink-400: oklch(0.62 0.014 250);
+  --color-ink-500: oklch(0.52 0.015 250);
+  --color-ink-600: oklch(0.45 0.02 250);
+  --color-ink-700: oklch(0.38 0.022 250);
+  --color-ink-900: oklch(0.22 0.03 250);
 
-  --color-brand-500: oklch(0.52 0.13 245);
-  --color-brand-600: oklch(0.45 0.14 245);
+  /* Bleu nuit : surfaces sombres et actions primaires. */
+  --color-night-700: oklch(0.32 0.055 252);
+  --color-night-800: oklch(0.28 0.045 252);
+  --color-night-900: oklch(0.24 0.05 252);
+  --color-night-950: oklch(0.2 0.045 252);
+
+  --color-brand-500: oklch(0.52 0.11 245);
+  --color-brand-600: oklch(0.45 0.11 245);
+  --color-brand-700: oklch(0.38 0.12 245);
+
+  /* Bleu-vert : accent, reserve aux reperes et aux marques de donnees. */
+  --color-teal-400: oklch(0.68 0.115 195);
+  --color-teal-500: oklch(0.6 0.09 200);
+  --color-teal-600: oklch(0.52 0.09 200);
 
   --color-ok-600: oklch(0.52 0.13 155);
   --color-warn-600: oklch(0.62 0.14 75);
   --color-stop-600: oklch(0.55 0.19 25);
+
+  --font-sans: var(--font-plex), 'Segoe UI', system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), Georgia, 'Times New Roman', serif;
 }
 
 :root {
@@ -23,4 +42,9 @@
 body {
   background-color: var(--color-ink-50);
   color: var(--color-ink-900);
+}
+
+/* Ancre les cibles de defilement sous l'en-tete colle. */
+[id] {
+  scroll-margin-top: 84px;
 }

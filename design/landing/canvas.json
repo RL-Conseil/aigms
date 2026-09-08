@@ -1,0 +1,10 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1440, "h": 7200, "title": "Landing — bureau" },
+    { "file": "Mobile.dc.html", "x": 1600, "y": 0, "w": 390, "h": 2600, "title": "Landing — mobile 390" }
+  ],
+  "annotations": [
+    { "id": "sources", "x": 1600, "y": 2700, "w": 390, "text": "Chiffres sourcés :\n• Okta, AI Agents at Work 2026 — 52 % monde, 31 % France, 38 % ont partagé des données sensibles\n• Bpifrance Le Lab / France Num — 26 % des TPE-PME en 2026 contre 13 % en 2024\n• Règlement (UE) 2024/1689, art. 99 — 35 M€/7 %, 15 M€/3 %, 7,5 M€/1 %\n• Règlement (UE) 2026/1744 — report annexe III au 2 décembre 2027\n• Règlement (UE) 2024/2847 — 11 sept. 2026 signalement, 11 déc. 2027 obligations principales, 15 M€/2,5 %\n\nAucune affirmation de certification ni de conformité garantie." }
+  ],
+  "launch": { "view": "focused", "file": "Main.dc.html" }
+}

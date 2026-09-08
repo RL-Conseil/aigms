@@ -42,6 +42,11 @@ values
    extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Noa Lasserre"}', now(), now(),
    '', '', '', '', '', '', '', ''),
+  ('66666666-6666-4666-8666-666666666666', '00000000-0000-0000-0000-000000000000',
+   'authenticated', 'authenticated', 'admin@rl-conseil.demo',
+   extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Inès Duhamel"}', now(), now(),
+   '', '', '', '', '', '', '', ''),
   -- Utilisateur d'un second tenant : sert aux tests d'isolation.
   ('55555555-5555-4555-8555-555555555555', '00000000-0000-0000-0000-000000000000',
    'authenticated', 'authenticated', 'officer@autre-cabinet.demo',
@@ -69,6 +74,13 @@ update public.user_profile set job_title = 'RSSI'
 update public.user_profile set job_title = 'Auditeur interne'
  where id = '44444444-4444-4444-8444-444444444444';
 
+-- Administration plateforme : accède au suivi des demandes de contact. Ce
+-- privilège traverse les tenants, il est donc porté par un compte dédié et
+-- jamais par un officer, dont l'étanchéité est vérifiée par les tests.
+update public.user_profile
+   set job_title = 'Administration plateforme', is_platform_admin = true
+ where id = '66666666-6666-4666-8666-666666666666';
+
 -- -----------------------------------------------------------------------------
 -- Deux tenants : le second n'existe que pour prouver l'étanchéité
 -- -----------------------------------------------------------------------------
@@ -82,6 +94,7 @@ insert into public.membership (tenant_id, user_id, role) values
   ('aaaaaaaa-0000-4000-8000-000000000001', '22222222-2222-4222-8222-222222222222', 'system_owner'),
   ('aaaaaaaa-0000-4000-8000-000000000001', '33333333-3333-4333-8333-333333333333', 'risk_owner'),
   ('aaaaaaaa-0000-4000-8000-000000000001', '44444444-4444-4444-8444-444444444444', 'auditor'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', '66666666-6666-4666-8666-666666666666', 'platform_admin'),
   ('bbbbbbbb-0000-4000-8000-000000000002', '55555555-5555-4555-8555-555555555555', 'governance_officer')
 on conflict do nothing;
 
@@ -872,3 +885,21 @@ begin
   raise notice 'Seed AIGMS : parcours de gouvernance vérifié.';
 end;
 $$;
+
+-- =============================================================================
+-- Demandes de contact déposées depuis la page publique
+-- =============================================================================
+insert into public.contact_request (full_name, email, organization, phone, profile, message, status, created_at, created_on) values
+  ('Hélène Vasseur', 'h.vasseur@groupe-tramontane.example', 'Groupe Tramontane', '+33 5 59 00 00 12',
+   'dsi_rssi_dpo',
+   'Nous déployons un assistant de rédaction sur 300 postes et notre comité d''audit demande qui a autorisé quoi. Nous n''avons aucune trace formalisée.',
+   'new', now() - interval '2 days', (now() - interval '2 days')::date),
+  ('Marc Etcheverry', 'm.etcheverry@sud-ouest-hebergement.example', 'Sud-Ouest Hébergement', null,
+   'conseil_msp_integrateur',
+   'Hébergeur régional, une trentaine de clients PME. Nous cherchons un socle pour lancer une offre de gouvernance IA managée.',
+   'contacted', now() - interval '9 days', (now() - interval '9 days')::date),
+  ('Fatou Ndiaye', 'f.ndiaye@atelier-berthelot.example', 'Ateliers Berthelot', '+33 5 61 00 00 45',
+   'direction',
+   'Scoring de candidatures en test au service RH. Nous voulons savoir si nous sommes concernés par les obligations « haut risque » avant d''aller plus loin.',
+   'qualified', now() - interval '21 days', (now() - interval '21 days')::date)
+on conflict do nothing;

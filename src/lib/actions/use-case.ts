@@ -53,8 +53,8 @@ export async function transitionUseCase(
     return { ok: false, message: error.message }
   }
 
-  revalidatePath(`/use-cases/${parsed.data.useCaseId}`)
-  revalidatePath('/dashboard')
+  revalidatePath(`/admin/use-cases/${parsed.data.useCaseId}`)
+  revalidatePath('/admin/pilotage')
 
   return { ok: true, result: data as TransitionResult }
 }
@@ -86,7 +86,7 @@ export async function screenChangeRequest(
 
   const result = data as { verdict: string; scope: string[]; note: string }
 
-  revalidatePath('/dashboard')
+  revalidatePath('/admin/pilotage')
 
   return { ok: true, verdict: result.verdict, scope: result.scope, message: result.note }
 }

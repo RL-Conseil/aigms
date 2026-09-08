@@ -1,0 +1,144 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; background: oklch(0.99 0.003 240); }
+    a { color: oklch(0.45 0.11 245); text-decoration: none; }
+    a:hover { color: oklch(0.38 0.12 245); }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="width: 390px; background: oklch(0.99 0.003 240); font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif; color: oklch(0.22 0.03 250);">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid oklch(0.92 0.008 250);">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-label="AIGMS">
+        <rect width="32" height="32" rx="7" fill="oklch(0.24 0.05 252)"></rect>
+        <path d="M9 23 L15 9 L18.2 16.4" stroke="white" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M12.1 18.4 H25" stroke="white" stroke-width="2.1" stroke-linecap="round"></path>
+        <circle cx="25" cy="18.4" r="2.9" fill="oklch(0.62 0.11 195)"></circle>
+      </svg>
+      <span style="font-family: 'Newsreader', Georgia, serif; font-size: 19px; font-weight: 600;">AIGMS</span>
+    </div>
+    <button type="button" aria-label="Menu" style="width: 44px; height: 44px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; background: none; border: none; padding: 0;">
+      <span style="display: block; width: 20px; height: 1.7px; background: oklch(0.32 0.02 250);"></span>
+      <span style="display: block; width: 20px; height: 1.7px; background: oklch(0.32 0.02 250);"></span>
+    </button>
+  </header>
+
+  <!-- Hero -->
+  <section style="padding: 40px 20px 44px;">
+    <p style="margin: 0 0 14px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: oklch(0.52 0.09 200);">AI Governance Management System</p>
+    <h1 style="margin: 0 0 18px; font-family: 'Newsreader', Georgia, serif; font-size: 36px; line-height: 1.12; font-weight: 500; letter-spacing: -0.015em; text-wrap: balance;">Gouverner l’IA. Décider. Prouver. Améliorer.</h1>
+    <p style="margin: 0 0 28px; font-size: 17px; line-height: 1.6; color: oklch(0.4 0.02 250); text-wrap: pretty;">Le registre unique des usages d’IA de votre organisation : leurs risques, les décisions qui les autorisent, les contrôles qui les encadrent, et les preuves qui le démontrent.</p>
+    <a href="/contact" style="display: block; padding: 16px 24px; border-radius: 7px; background: oklch(0.24 0.05 252); color: white; font-size: 16px; font-weight: 500; text-align: center; margin-bottom: 14px;">Commençons par 2 cas d’usage réels</a>
+    <p style="margin: 0; font-size: 14px; color: oklch(0.52 0.015 250); text-align: center;">Atelier de qualification — 45 minutes</p>
+  </section>
+
+  <!-- Fiche de decision -->
+  <section style="padding: 0 20px 44px;">
+    <div style="border: 1px solid oklch(0.9 0.01 250); border-radius: 12px; background: white; box-shadow: 0 8px 24px oklch(0.24 0.05 252 / 0.06);">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 18px; border-bottom: 1px solid oklch(0.94 0.006 250);">
+        <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.04em; color: oklch(0.45 0.02 250);">DEC-IA-2026-0042</span>
+        <span style="padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: 500; background: oklch(0.95 0.04 85); color: oklch(0.42 0.1 75); white-space: nowrap;">Approuvé sous conditions</span>
+      </div>
+      <div style="padding: 18px; display: flex; flex-direction: column; gap: 16px;">
+        <div>
+          <p style="margin: 0 0 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: oklch(0.58 0.015 250);">Objet</p>
+          <p style="margin: 0; font-size: 15px; line-height: 1.45;">Mise en production de l’assistant IA du support client</p>
+        </div>
+        <div>
+          <p style="margin: 0 0 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: oklch(0.58 0.015 250);">Conditions</p>
+          <p style="margin: 0; font-size: 14px; line-height: 1.5; color: oklch(0.4 0.02 250);">Validation humaine maintenue avant envoi. Revue hebdomadaire d’échantillon pendant trois mois.</p>
+        </div>
+        <div style="display: flex; gap: 28px;">
+          <div>
+            <p style="margin: 0 0 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: oklch(0.58 0.015 250);">Approbateur</p>
+            <p style="margin: 0; font-size: 14px;">RSSI</p>
+          </div>
+          <div>
+            <p style="margin: 0 0 4px; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: oklch(0.58 0.015 250);">Revue</p>
+            <p style="margin: 0; font-size: 14px;">Dans 6 mois</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Constat -->
+  <section style="padding: 44px 20px; background: oklch(0.24 0.05 252); color: white;">
+    <p style="margin: 0 0 16px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: oklch(0.72 0.08 195);">Le constat</p>
+    <p style="margin: 0 0 24px; font-family: 'Newsreader', Georgia, serif; font-size: 26px; line-height: 1.3; font-weight: 400; text-wrap: pretty;">« Le problème n’est plus d’autoriser ou non ChatGPT. Le problème est de gouverner un portefeuille d’usages IA qui évolue chaque semaine. »</p>
+
+    <div style="background: oklch(0.28 0.045 252); border: 1px solid oklch(0.36 0.04 252); border-radius: 10px; padding: 22px 20px;">
+      <h3 style="margin: 0 0 4px; font-size: 15px; font-weight: 600;">Salariés utilisant des outils d’IA non approuvés</h3>
+      <p style="margin: 0 0 22px; font-size: 12px; color: oklch(0.74 0.02 250);">Enquête Okta, AI Agents at Work, 2026</p>
+      <div style="display: flex; flex-direction: column; gap: 18px;">
+        <div>
+          <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 7px;">
+            <span style="font-size: 13px; color: oklch(0.88 0.01 250);">Ensemble des pays</span>
+            <span style="font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums;">52 %</span>
+          </div>
+          <div style="height: 9px; border-radius: 5px; background: oklch(0.34 0.03 252);"><div style="width: 52%; height: 9px; border-radius: 5px; background: oklch(0.68 0.115 195);"></div></div>
+        </div>
+        <div>
+          <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 7px;">
+            <span style="font-size: 13px; color: oklch(0.88 0.01 250);">France</span>
+            <span style="font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums;">31 %</span>
+          </div>
+          <div style="height: 9px; border-radius: 5px; background: oklch(0.34 0.03 252);"><div style="width: 31%; height: 9px; border-radius: 5px; background: oklch(0.68 0.115 195);"></div></div>
+        </div>
+        <div>
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 14px; margin-bottom: 7px;">
+            <span style="font-size: 13px; line-height: 1.35; color: oklch(0.88 0.01 250);">Ont transmis des informations sensibles sans autorisation</span>
+            <span style="font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums;">38 %</span>
+          </div>
+          <div style="height: 9px; border-radius: 5px; background: oklch(0.34 0.03 252);"><div style="width: 38%; height: 9px; border-radius: 5px; background: oklch(0.68 0.115 195);"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Six questions -->
+  <section style="padding: 44px 20px;">
+    <p style="margin: 0 0 14px; font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: oklch(0.52 0.09 200);">Le test</p>
+    <h2 style="margin: 0 0 28px; font-family: 'Newsreader', Georgia, serif; font-size: 30px; line-height: 1.18; font-weight: 500; letter-spacing: -0.01em;">Six questions auxquelles un dirigeant doit pouvoir répondre</h2>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div style="border: 1px solid oklch(0.91 0.008 250); border-radius: 10px; background: white; padding: 20px;">
+        <span style="display: block; font-family: 'Newsreader', Georgia, serif; font-size: 14px; font-weight: 600; color: oklch(0.6 0.09 200); margin-bottom: 8px;">01</span>
+        <p style="margin: 0 0 6px; font-size: 16px; font-weight: 600;">Quelles IA utilisons-nous ?</p>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: oklch(0.45 0.02 250);">Cas d’usage, systèmes, modèles, agents, jeux de données et fournisseurs, dans un registre unique.</p>
+      </div>
+      <div style="border: 1px solid oklch(0.91 0.008 250); border-radius: 10px; background: white; padding: 20px;">
+        <span style="display: block; font-family: 'Newsreader', Georgia, serif; font-size: 14px; font-weight: 600; color: oklch(0.6 0.09 200); margin-bottom: 8px;">04</span>
+        <p style="margin: 0 0 6px; font-size: 16px; font-weight: 600;">Quels risques avons-nous acceptés ?</p>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: oklch(0.45 0.02 250);">Chaque acceptation porte un responsable humain, une justification et une date de revue.</p>
+      </div>
+      <div style="border: 1px solid oklch(0.91 0.008 250); border-radius: 10px; background: white; padding: 20px;">
+        <span style="display: block; font-family: 'Newsreader', Georgia, serif; font-size: 14px; font-weight: 600; color: oklch(0.6 0.09 200); margin-bottom: 8px;">06</span>
+        <p style="margin: 0 0 6px; font-size: 16px; font-weight: 600;">Pouvons-nous le prouver ?</p>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: oklch(0.45 0.02 250);">Des preuves avec propriétaire, date de validité et statut de fraîcheur, rattachées aux contrôles.</p>
+      </div>
+      <p style="margin: 4px 0 0; font-size: 13px; color: oklch(0.55 0.015 250); text-align: center;">Trois des six questions — les autres suivent sur la page.</p>
+    </div>
+  </section>
+
+  <!-- Appel a l'action -->
+  <section style="padding: 44px 20px; background: oklch(0.24 0.05 252); color: white;">
+    <h2 style="margin: 0 0 16px; font-family: 'Newsreader', Georgia, serif; font-size: 32px; line-height: 1.15; font-weight: 500; letter-spacing: -0.015em;">Commençons par deux cas d’usage réels.</h2>
+    <p style="margin: 0 0 26px; font-size: 16px; line-height: 1.6; color: oklch(0.86 0.015 250);">Quarante-cinq minutes suffisent pour voir ce que donne votre portefeuille IA passé au filtre d’une gouvernance opérationnelle.</p>
+    <a href="/contact" style="display: block; padding: 16px 24px; border-radius: 7px; background: white; color: oklch(0.24 0.05 252); font-size: 16px; font-weight: 600; text-align: center;">Demander l’atelier de qualification</a>
+  </section>
+
+</div>
+</x-dc>
+</body>
+</html>

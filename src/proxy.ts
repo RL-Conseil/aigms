@@ -7,11 +7,12 @@ import { publicEnv } from '@/lib/env'
  *
  * Next.js 16 : ce fichier remplace `middleware.ts`.
  *
- * Le proxy ne decide d'aucune regle metier : il verifie seulement qu'une
- * session existe. L'autorisation reelle est portee par la RLS et par les
+ * Le site public (landing, contact) est ouvert ; seul l'espace /admin exige une
+ * session. Le proxy ne decide d'aucune regle metier : il verifie seulement
+ * qu'une session existe. L'autorisation reelle est portee par la RLS et par les
  * fonctions serveur, jamais par cette couche.
  */
-const PUBLIC_PATHS = ['/login', '/auth/callback']
+const PROTECTED_PREFIX = '/admin'
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
@@ -43,9 +44,8 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
-  const isPublic = PUBLIC_PATHS.some((p) => pathname.startsWith(p))
 
-  if (!user && !isPublic) {
+  if (!user && pathname.startsWith(PROTECTED_PREFIX)) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     url.searchParams.set('next', pathname)
@@ -54,7 +54,7 @@ export async function proxy(request: NextRequest) {
 
   if (user && pathname === '/login') {
     const url = request.nextUrl.clone()
-    url.pathname = '/portfolio'
+    url.pathname = '/admin'
     url.search = ''
     return NextResponse.redirect(url)
   }

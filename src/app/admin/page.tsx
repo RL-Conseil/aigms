@@ -46,7 +46,7 @@ export default async function PortfolioPage() {
                 <li key={org.id} className="flex items-center justify-between gap-4 py-3">
                   <div className="min-w-0">
                     <Link
-                      href={`/organizations/${org.id}`}
+                      href={`/admin/organizations/${org.id}`}
                       className="text-sm font-medium text-brand-600 hover:underline"
                     >
                       {org.name}

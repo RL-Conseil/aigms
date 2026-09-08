@@ -98,7 +98,7 @@ export default async function DashboardPage() {
                 <li key={risk.id} className="flex items-start justify-between gap-3 py-2.5">
                   <div className="min-w-0">
                     <Link
-                      href={`/use-cases/${risk.use_case_id}`}
+                      href={`/admin/use-cases/${risk.use_case_id}`}
                       className="text-sm text-brand-600 hover:underline"
                     >
                       {risk.title}
@@ -125,7 +125,7 @@ export default async function DashboardPage() {
                 <li key={d.id} className="flex items-start justify-between gap-3 py-2.5">
                   <div className="min-w-0">
                     <Link
-                      href={`/use-cases/${d.use_case_id}`}
+                      href={`/admin/use-cases/${d.use_case_id}`}
                       className="text-sm text-brand-600 hover:underline"
                     >
                       {d.subject}
@@ -173,7 +173,7 @@ export default async function DashboardPage() {
                 <li key={a.id} className="flex items-start justify-between gap-3 py-2.5">
                   <div className="min-w-0">
                     <Link
-                      href={`/use-cases/${a.use_case_id}`}
+                      href={`/admin/use-cases/${a.use_case_id}`}
                       className="text-sm text-brand-600 hover:underline"
                     >
                       {a.title}
@@ -198,7 +198,7 @@ export default async function DashboardPage() {
                 <li key={uc.id} className="flex items-start justify-between gap-3 py-2.5">
                   <div className="min-w-0">
                     <Link
-                      href={`/use-cases/${uc.id}`}
+                      href={`/admin/use-cases/${uc.id}`}
                       className="text-sm text-brand-600 hover:underline"
                     >
                       {uc.name}

@@ -1,0 +1,636 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; background: oklch(0.99 0.003 240); }
+    a { color: oklch(0.45 0.11 245); text-decoration: none; }
+    a:hover { color: oklch(0.38 0.12 245); }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="width: 1440px; background: oklch(0.99 0.003 240); font-family: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif; color: oklch(0.22 0.03 250);">
+
+  <!-- ===== Navigation ===== -->
+  <header style="display: flex; align-items: center; justify-content: space-between; padding: 24px 96px; border-bottom: 1px solid oklch(0.92 0.008 250);">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-label="AIGMS">
+        <rect width="32" height="32" rx="7" fill="oklch(0.24 0.05 252)"></rect>
+        <path d="M9 23 L15 9 L18.2 16.4" stroke="white" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M12.1 18.4 H25" stroke="white" stroke-width="2.1" stroke-linecap="round"></path>
+        <circle cx="25" cy="18.4" r="2.9" fill="oklch(0.62 0.11 195)"></circle>
+      </svg>
+      <span style="font-family: 'Newsreader', Georgia, serif; font-size: 21px; font-weight: 600; letter-spacing: -0.01em;">AIGMS</span>
+    </div>
+    <nav style="display: flex; align-items: center; gap: 32px; font-size: 15px; color: oklch(0.42 0.02 250);">
+      <a href="#probleme">Le constat</a>
+      <a href="#methode">La méthode</a>
+      <a href="#decisions">Registre de décisions</a>
+      <a href="#ecosysteme">Écosystème</a>
+      <a href="#calendrier">Calendrier</a>
+      <a href="/contact" style="padding: 9px 18px; border-radius: 6px; background: oklch(0.24 0.05 252); color: white; font-weight: 500;">Prendre rendez-vous</a>
+    </nav>
+  </header>
+
+  <!-- ===== Hero ===== -->
+  <section style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 32px; padding: 96px 96px 88px;">
+    <div style="grid-column: span 7;">
+      <p style="margin: 0 0 20px; font-size: 13px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: oklch(0.52 0.09 200);">AI Governance Management System</p>
+      <h1 style="margin: 0 0 24px; font-family: 'Newsreader', Georgia, serif; font-size: 60px; line-height: 1.08; font-weight: 500; letter-spacing: -0.02em; text-wrap: balance;">Gouverner l’IA.<br>Décider. Prouver. Améliorer.</h1>
+      <p style="margin: 0 0 36px; font-size: 19px; line-height: 1.6; color: oklch(0.4 0.02 250); max-width: 620px; text-wrap: pretty;">Le registre unique des usages d’IA de votre organisation : leurs risques, les décisions qui les autorisent, les contrôles qui les encadrent, et les preuves qui le démontrent.</p>
+      <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 28px;">
+        <a href="/contact" style="padding: 15px 28px; border-radius: 7px; background: oklch(0.24 0.05 252); color: white; font-size: 16px; font-weight: 500;">Commençons par 2 cas d’usage réels</a>
+        <span style="font-size: 15px; color: oklch(0.52 0.015 250);">Atelier de qualification — 45 minutes</span>
+      </div>
+      <p style="margin: 0; font-size: 15px; color: oklch(0.52 0.015 250);">Pour les PME et ETI, et pour les cabinets, MSP et intégrateurs qui gouvernent l’IA de leurs clients.</p>
+    </div>
+
+    <!-- Fiche de decision, apercu produit -->
+    <div style="grid-column: span 5; display: flex; align-items: center;">
+      <div style="width: 100%; border: 1px solid oklch(0.9 0.01 250); border-radius: 12px; background: white; box-shadow: 0 1px 2px oklch(0.24 0.05 252 / 0.04), 0 12px 32px oklch(0.24 0.05 252 / 0.06);">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; border-bottom: 1px solid oklch(0.94 0.006 250);">
+          <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.04em; color: oklch(0.45 0.02 250);">DEC-IA-2026-0042</span>
+          <span style="padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; background: oklch(0.95 0.04 85); color: oklch(0.42 0.1 75);">Approuvé sous conditions</span>
+        </div>
+        <div style="padding: 22px; display: flex; flex-direction: column; gap: 18px;">
+          <div>
+            <p style="margin: 0 0 5px; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: oklch(0.58 0.015 250);">Objet</p>
+            <p style="margin: 0; font-size: 15px; line-height: 1.45;">Mise en production de l’assistant IA du support client</p>
+          </div>
+          <div>
+            <p style="margin: 0 0 5px; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: oklch(0.58 0.015 250);">Conditions</p>
+            <p style="margin: 0; font-size: 14px; line-height: 1.5; color: oklch(0.4 0.02 250);">Validation humaine maintenue avant envoi. Revue hebdomadaire d’échantillon pendant trois mois.</p>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+            <div>
+              <p style="margin: 0 0 5px; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: oklch(0.58 0.015 250);">Approbateur</p>
+              <p style="margin: 0; font-size: 14px;">RSSI</p>
+            </div>
+            <div>
+              <p style="margin: 0 0 5px; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: oklch(0.58 0.015 250);">Revue</p>
+              <p style="margin: 0; font-size: 14px;">Dans 6 mois</p>
+            </div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 7px; padding-top: 4px; border-top: 1px solid oklch(0.94 0.006 250);">
+            <span style="padding: 4px 9px; border-radius: 5px; font-size: 12px; background: oklch(0.96 0.008 250); color: oklch(0.42 0.02 250);">RSK-2026-0001</span>
+            <span style="padding: 4px 9px; border-radius: 5px; font-size: 12px; background: oklch(0.96 0.008 250); color: oklch(0.42 0.02 250);">AIIA-2026-0001</span>
+            <span style="padding: 4px 9px; border-radius: 5px; font-size: 12px; background: oklch(0.96 0.008 250); color: oklch(0.42 0.02 250);">CTL-02</span>
+            <span style="padding: 4px 9px; border-radius: 5px; font-size: 12px; background: oklch(0.96 0.008 250); color: oklch(0.42 0.02 250);">EVD-2026-0002</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Le constat ===== -->
+  <section id="probleme" style="padding: 88px 96px; background: oklch(0.24 0.05 252); color: white;">
+    <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 32px; align-items: start;">
+      <div style="grid-column: span 5;">
+        <p style="margin: 0 0 20px; font-size: 13px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: oklch(0.72 0.08 195);">Le constat</p>
+        <p style="margin: 0 0 28px; font-family: 'Newsreader', Georgia, serif; font-size: 34px; line-height: 1.28; font-weight: 400; letter-spacing: -0.01em; text-wrap: pretty;">« Le problème n’est plus d’autoriser ou non ChatGPT. Le problème est de gouverner un portefeuille d’usages IA qui évolue chaque semaine. »</p>
+        <p style="margin: 0; font-size: 16px; line-height: 1.65; color: oklch(0.82 0.015 250); max-width: 460px;">Copilotes, modèles SaaS, agents, API : les usages se multiplient plus vite que les règles internes. Le risque n’est pas l’outil, c’est l’absence de trace de qui a décidé quoi.</p>
+      </div>
+
+      <!-- Graphique : usage non encadre -->
+      <div style="grid-column: span 7; background: oklch(0.28 0.045 252); border: 1px solid oklch(0.36 0.04 252); border-radius: 12px; padding: 32px 34px;">
+        <h3 style="margin: 0 0 4px; font-size: 16px; font-weight: 600;">Part des salariés utilisant des outils d’IA non approuvés</h3>
+        <p style="margin: 0 0 28px; font-size: 13px; color: oklch(0.74 0.02 250);">Enquête Okta, <span style="font-style: italic;">AI Agents at Work</span>, 2026</p>
+
+        <div style="display: flex; flex-direction: column; gap: 22px;">
+          <div>
+            <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 14px; color: oklch(0.88 0.01 250);">Ensemble des pays étudiés</span>
+              <span style="font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums;">52 %</span>
+            </div>
+            <div style="height: 10px; border-radius: 5px; background: oklch(0.34 0.03 252);">
+              <div style="width: 52%; height: 10px; border-radius: 5px; background: oklch(0.68 0.115 195);"></div>
+            </div>
+          </div>
+
+          <div>
+            <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 14px; color: oklch(0.88 0.01 250);">France</span>
+              <span style="font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums;">31 %</span>
+            </div>
+            <div style="height: 10px; border-radius: 5px; background: oklch(0.34 0.03 252);">
+              <div style="width: 31%; height: 10px; border-radius: 5px; background: oklch(0.68 0.115 195);"></div>
+            </div>
+          </div>
+
+          <div>
+            <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px;">
+              <span style="font-size: 14px; color: oklch(0.88 0.01 250);">Ont transmis des informations professionnelles sensibles à un outil d’IA sans autorisation</span>
+              <span style="font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums;">38 %</span>
+            </div>
+            <div style="height: 10px; border-radius: 5px; background: oklch(0.34 0.03 252);">
+              <div style="width: 38%; height: 10px; border-radius: 5px; background: oklch(0.68 0.115 195);"></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 30px; padding-top: 26px; border-top: 1px solid oklch(0.36 0.04 252); display: flex; align-items: center; gap: 28px;">
+          <div>
+            <p style="margin: 0 0 3px; font-size: 13px; color: oklch(0.74 0.02 250);">TPE et PME françaises utilisant au moins une solution d’IA</p>
+            <p style="margin: 0; font-size: 12px; color: oklch(0.66 0.02 250);">Bpifrance Le Lab et France Num</p>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 14px; margin-left: auto;">
+            <div style="text-align: right;">
+              <p style="margin: 0; font-size: 24px; font-weight: 600; color: oklch(0.7 0.02 250); font-variant-numeric: tabular-nums;">13 %</p>
+              <p style="margin: 0; font-size: 12px; color: oklch(0.66 0.02 250);">2024</p>
+            </div>
+            <svg width="26" height="12" viewBox="0 0 26 12" fill="none" aria-hidden="true">
+              <path d="M1 6 H23 M18 1.5 L23 6 L18 10.5" stroke="oklch(0.68 0.115 195)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+            <div style="text-align: right;">
+              <p style="margin: 0; font-size: 32px; font-weight: 600; color: oklch(0.78 0.115 195); font-variant-numeric: tabular-nums;">26 %</p>
+              <p style="margin: 0; font-size: 12px; color: oklch(0.66 0.02 250);">2026</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Les six questions ===== -->
+  <section style="padding: 88px 96px;">
+    <div style="max-width: 720px; margin-bottom: 52px;">
+      <p style="margin: 0 0 18px; font-size: 13px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: oklch(0.52 0.09 200);">Le test</p>
+      <h2 style="margin: 0 0 16px; font-family: 'Newsreader', Georgia, serif; font-size: 40px; line-height: 1.15; font-weight: 500; letter-spacing: -0.015em;">Six questions auxquelles un dirigeant doit pouvoir répondre</h2>
+      <p style="margin: 0; font-size: 17px; line-height: 1.6; color: oklch(0.42 0.02 250);">Si l’une reste sans réponse documentée, la gouvernance de l’IA n’existe pas encore dans votre organisation.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px;">
+      <div style="border: 1px solid oklch(0.91 0.008 250); border-radius: 10px; background: white; padding: 26px 24px;">
+        <span style="display: block; font-family: 'Newsreader', Georgia, serif; font-size: 15px; font-weight: 600; color: oklch(0.6 0.09 200); margin-bottom: 12px;">01</span>
+        <p style="margin: 0 0 8px; font-size: 17px; font-weight: 600;">Quelles IA utilisons-nous ?</p>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: oklch(0.45 0.02 250);">Cas d’usage, systèmes, modèles, agents, jeux de données et fournisseurs, dans un registre unique.</p>
+      </div>
+      <div style="border: 1px solid oklch(0.91 0.008 250); border-radius: 10px; background: white; padding: 26px 24px;">
+        <span style="display: block; font-family: 'Newsreader', Georgia, serif; font-size: 15px; font-weight: 600; color: oklch(0.6 0.09 200); margin-bottom: 12px;">02</span>
+        <p style="margin: 0 0 8px; font-size: 17px; font-weight: 600;">Qui en est responsable ?</p>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: oklch(0.45 0.02 250);">Un propriétaire opérationnel et un responsable redevable nommés pour chaque usage.</p>
+      </div>
+      <div style="border: 1px solid oklch(0.91 0.008 250); border-radius: 10px; background: white; padding: 26px 24px;">
+        <span style="display: block; font-family: 'Newsreader', Georgia, serif; font-size: 15px; font-weight: 600; color: oklch(0.6 0.09 200); margin-bottom: 12px;">03</span>
+        <p style="margin: 0 0 8px; font-size: 17px; font-weight: 600;">Quelles données utilisent-elles ?</p>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: oklch(0.45 0.02 250);">Nature des données, personnes concernées, articulation avec l’analyse d’impact RGPD.</p>
+      </div>
+      <div style="border: 1px solid oklch(0.91 0.008 250); border-radius: 10px; background: white; padding: 26px 24px;">
+        <span style="display: block; font-family: 'Newsreader', Georgia, serif; font-size: 15px; font-weight: 600; color: oklch(0.6 0.09 200); margin-bottom: 12px;">04</span>
+        <p style="margin: 0 0 8px; font-size: 17px; font-weight: 600;">Quels risques avons-nous acceptés ?</p>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: oklch(0.45 0.02 250);">Chaque acceptation porte un responsable humain, une justification et une date de revue.</p>
+      </div>
+      <div style="border: 1px solid oklch(0.91 0.008 250); border-radius: 10px; background: white; padding: 26px 24px;">
+        <span style="display: block; font-family: 'Newsreader', Georgia, serif; font-size: 15px; font-weight: 600; color: oklch(0.6 0.09 200); margin-bottom: 12px;">05</span>
+        <p style="margin: 0 0 8px; font-size: 17px; font-weight: 600;">Qui a autorisé la mise en production ?</p>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: oklch(0.45 0.02 250);">Une décision datée, motivée, conditionnée, reliée aux risques et aux contrôles.</p>
+      </div>
+      <div style="border: 1px solid oklch(0.91 0.008 250); border-radius: 10px; background: white; padding: 26px 24px;">
+        <span style="display: block; font-family: 'Newsreader', Georgia, serif; font-size: 15px; font-weight: 600; color: oklch(0.6 0.09 200); margin-bottom: 12px;">06</span>
+        <p style="margin: 0 0 8px; font-size: 17px; font-weight: 600;">Pouvons-nous le prouver ?</p>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: oklch(0.45 0.02 250);">Des preuves avec propriétaire, date de validité et statut de fraîcheur, rattachées aux contrôles.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== La methode ===== -->
+  <section id="methode" style="padding: 88px 96px; background: oklch(0.975 0.005 245); border-top: 1px solid oklch(0.93 0.008 250); border-bottom: 1px solid oklch(0.93 0.008 250);">
+    <div style="max-width: 720px; margin-bottom: 52px;">
+      <p style="margin: 0 0 18px; font-size: 13px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: oklch(0.52 0.09 200);">La méthode</p>
+      <h2 style="margin: 0 0 16px; font-family: 'Newsreader', Georgia, serif; font-size: 40px; line-height: 1.15; font-weight: 500; letter-spacing: -0.015em;">Un cycle de management, pas une bibliothèque de registres</h2>
+      <p style="margin: 0; font-size: 17px; line-height: 1.6; color: oklch(0.42 0.02 250);">Chaque étape a une entrée, un responsable, un statut, des critères de sortie, des preuves attendues et une échéance. Un changement significatif rouvre l’évaluation.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin-bottom: 26px;">
+      <div style="background: white; border: 1px solid oklch(0.91 0.008 250); border-radius: 10px; padding: 26px 24px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <circle cx="9" cy="9" r="6.2" stroke="oklch(0.45 0.11 245)" stroke-width="1.7"></circle>
+            <path d="M13.6 13.6 L17.5 17.5" stroke="oklch(0.45 0.11 245)" stroke-width="1.7" stroke-linecap="round"></path>
+          </svg>
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: oklch(0.55 0.02 250);">PLAN</span>
+        </div>
+        <p style="margin: 0 0 8px; font-size: 17px; font-weight: 600;">Discovery &amp; Assess</p>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: oklch(0.45 0.02 250);">Recenser les usages, les qualifier, pré-classifier au regard des textes, coter les risques, mesurer les impacts.</p>
+      </div>
+      <div style="background: white; border: 1px solid oklch(0.91 0.008 250); border-radius: 10px; padding: 26px 24px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <rect x="2.6" y="2.6" width="14.8" height="14.8" rx="3" stroke="oklch(0.45 0.11 245)" stroke-width="1.7"></rect>
+            <path d="M6.6 10 L9 12.4 L13.4 7.6" stroke="oklch(0.45 0.11 245)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: oklch(0.55 0.02 250);">DO</span>
+        </div>
+        <p style="margin: 0 0 8px; font-size: 17px; font-weight: 600;">Build &amp; Connect</p>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: oklch(0.45 0.02 250);">Affecter les contrôles, documenter la supervision humaine, rassembler les preuves, instruire les décisions.</p>
+      </div>
+      <div style="background: white; border: 1px solid oklch(0.91 0.008 250); border-radius: 10px; padding: 26px 24px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M2.6 14.6 L7 9.4 L10.6 12.4 L17.4 5" stroke="oklch(0.45 0.11 245)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M13.4 5 H17.4 V9" stroke="oklch(0.45 0.11 245)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: oklch(0.55 0.02 250);">CHECK + ACT</span>
+        </div>
+        <p style="margin: 0 0 8px; font-size: 17px; font-weight: 600;">Operate</p>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: oklch(0.45 0.02 250);">Suivre les revues dues, les preuves qui expirent, les actions échues, les incidents et les décisions à prendre.</p>
+      </div>
+      <div style="background: white; border: 1px solid oklch(0.9 0.02 200); border-radius: 10px; padding: 26px 24px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <path d="M16.6 10 A6.6 6.6 0 1 1 14.4 5.1" stroke="oklch(0.5 0.1 198)" stroke-width="1.7" stroke-linecap="round"></path>
+            <path d="M10.6 4.6 H15.2 V9.2" stroke="oklch(0.5 0.1 198)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+          <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; color: oklch(0.5 0.08 198);">BOUCLE</span>
+        </div>
+        <p style="margin: 0 0 8px; font-size: 17px; font-weight: 600;">Re-assess</p>
+        <p style="margin: 0; font-size: 14px; line-height: 1.55; color: oklch(0.45 0.02 250);">Un modèle change, l’autonomie augmente, la finalité évolue : le moteur qualifie le changement et rouvre ce qui doit l’être.</p>
+      </div>
+    </div>
+
+    <!-- Pipeline du cycle de vie -->
+    <div style="background: white; border: 1px solid oklch(0.91 0.008 250); border-radius: 10px; padding: 32px 34px;">
+      <p style="margin: 0 0 22px; font-size: 15px; font-weight: 600;">Le cycle de vie d’un cas d’usage, avec ses points de passage obligés</p>
+      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <span style="padding: 8px 14px; border-radius: 6px; font-size: 13px; background: oklch(0.96 0.006 250); color: oklch(0.42 0.02 250);">Intake</span>
+        <span style="color: oklch(0.72 0.01 250);">→</span>
+        <span style="padding: 8px 14px; border-radius: 6px; font-size: 13px; background: oklch(0.96 0.006 250); color: oklch(0.42 0.02 250);">Triage</span>
+        <span style="color: oklch(0.72 0.01 250);">→</span>
+        <span style="padding: 8px 14px; border-radius: 6px; font-size: 13px; background: oklch(0.96 0.006 250); color: oklch(0.42 0.02 250);">Évaluation</span>
+        <span style="color: oklch(0.72 0.01 250);">→</span>
+        <span style="padding: 8px 14px; border-radius: 6px; font-size: 13px; background: oklch(0.96 0.006 250); color: oklch(0.42 0.02 250);">Revue</span>
+        <span style="color: oklch(0.72 0.01 250);">→</span>
+        <span style="padding: 8px 14px; border-radius: 6px; font-size: 13px; background: oklch(0.96 0.006 250); color: oklch(0.42 0.02 250);">Pilote</span>
+        <span style="color: oklch(0.72 0.01 250);">→</span>
+        <span style="display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; background: oklch(0.24 0.05 252); color: white;">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3.5 7.4 L6 9.9 L10.5 4.6" stroke="oklch(0.78 0.115 195)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          Production
+        </span>
+        <span style="color: oklch(0.72 0.01 250);">→</span>
+        <span style="padding: 8px 14px; border-radius: 6px; font-size: 13px; background: oklch(0.96 0.006 250); color: oklch(0.42 0.02 250);">Surveillance</span>
+        <span style="color: oklch(0.72 0.01 250);">→</span>
+        <span style="padding: 8px 14px; border-radius: 6px; font-size: 13px; background: oklch(0.96 0.006 250); color: oklch(0.42 0.02 250);">Changement ou retrait</span>
+      </div>
+      <div style="margin-top: 24px; padding: 18px 20px; border-radius: 8px; background: oklch(0.97 0.008 250); display: flex; gap: 14px; align-items: flex-start;">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="flex-shrink: 0; margin-top: 1px;" aria-hidden="true">
+          <path d="M9 1.8 L15.9 5.4 V9.9 C15.9 13.1 12.9 15.6 9 16.5 C5.1 15.6 2.1 13.1 2.1 9.9 V5.4 Z" stroke="oklch(0.45 0.11 245)" stroke-width="1.5" stroke-linejoin="round"></path>
+          <path d="M6.4 8.9 L8.3 10.8 L11.8 7.2" stroke="oklch(0.45 0.11 245)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+        <p style="margin: 0; font-size: 14px; line-height: 1.6; color: oklch(0.4 0.02 250);"><span style="font-weight: 600; color: oklch(0.24 0.03 250);">Le passage en production est refusé côté serveur</span> tant que les préconditions ne sont pas réunies : classification aboutie, risques traités ou acceptés, évaluation d’impact terminée, revue fournisseur close, supervision humaine approuvée, contrôles obligatoires statués, décision d’autorisation en vigueur, actions bloquantes soldées. Le refus est motivé, précondition par précondition, et journalisé au même titre qu’une autorisation.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Registre de decisions ===== -->
+  <section id="decisions" style="padding: 88px 96px;">
+    <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 40px; align-items: start;">
+      <div style="grid-column: span 6;">
+        <p style="margin: 0 0 18px; font-size: 13px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: oklch(0.52 0.09 200);">Le différenciateur</p>
+        <h2 style="margin: 0 0 20px; font-family: 'Newsreader', Georgia, serif; font-size: 40px; line-height: 1.15; font-weight: 500; letter-spacing: -0.015em;">Le registre de décisions</h2>
+        <p style="margin: 0 0 24px; font-size: 19px; line-height: 1.55; color: oklch(0.3 0.025 250); text-wrap: pretty;">Une gouvernance crédible ne documente pas seulement les risques. Elle documente <span style="font-style: italic;">qui a décidé quoi, pourquoi et sous quelles conditions.</span></p>
+        <p style="margin: 0 0 28px; font-size: 16px; line-height: 1.65; color: oklch(0.42 0.02 250);">C’est la pièce que les autres outils traitent en dernier, et celle qu’un auditeur ouvre en premier. Autorisation d’usage, mise en production, acceptation de risque, exception, suspension, retrait : chaque type de décision a son dossier.</p>
+        <ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px;">
+          <li style="display: flex; gap: 12px; align-items: flex-start;">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="flex-shrink: 0; margin-top: 2px;" aria-hidden="true"><circle cx="9" cy="9" r="8.1" stroke="oklch(0.55 0.09 200)" stroke-width="1.5"></circle><path d="M5.6 9.2 L7.9 11.5 L12.4 6.8" stroke="oklch(0.55 0.09 200)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <span style="font-size: 15px; line-height: 1.55; color: oklch(0.35 0.02 250);"><span style="font-weight: 600;">Aucune approbation automatique.</span> Une décision engageante exige un approbateur humain, une justification et une date d’effet.</span>
+          </li>
+          <li style="display: flex; gap: 12px; align-items: flex-start;">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="flex-shrink: 0; margin-top: 2px;" aria-hidden="true"><circle cx="9" cy="9" r="8.1" stroke="oklch(0.55 0.09 200)" stroke-width="1.5"></circle><path d="M5.6 9.2 L7.9 11.5 L12.4 6.8" stroke="oklch(0.55 0.09 200)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <span style="font-size: 15px; line-height: 1.55; color: oklch(0.35 0.02 250);"><span style="font-weight: 600;">Séparation des rôles.</span> L’auteur d’une décision de mise en production ou d’acceptation de risque ne peut pas l’approuver lui-même.</span>
+          </li>
+          <li style="display: flex; gap: 12px; align-items: flex-start;">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="flex-shrink: 0; margin-top: 2px;" aria-hidden="true"><circle cx="9" cy="9" r="8.1" stroke="oklch(0.55 0.09 200)" stroke-width="1.5"></circle><path d="M5.6 9.2 L7.9 11.5 L12.4 6.8" stroke="oklch(0.55 0.09 200)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <span style="font-size: 15px; line-height: 1.55; color: oklch(0.35 0.02 250);"><span style="font-weight: 600;">Rien ne dort.</span> Acceptations de risque et exceptions portent une date de revue : le tableau de bord les fait remonter à l’échéance.</span>
+          </li>
+          <li style="display: flex; gap: 12px; align-items: flex-start;">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="flex-shrink: 0; margin-top: 2px;" aria-hidden="true"><circle cx="9" cy="9" r="8.1" stroke="oklch(0.55 0.09 200)" stroke-width="1.5"></circle><path d="M5.6 9.2 L7.9 11.5 L12.4 6.8" stroke="oklch(0.55 0.09 200)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <span style="font-size: 15px; line-height: 1.55; color: oklch(0.35 0.02 250);"><span style="font-weight: 600;">Reconstituable.</span> Chaque décision est rattachée aux risques, contrôles et preuves sur lesquels elle s’appuie.</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Un controle, plusieurs referentiels -->
+      <div style="grid-column: span 6;">
+        <div style="border: 1px solid oklch(0.91 0.008 250); border-radius: 12px; background: white; padding: 34px;">
+          <p style="margin: 0 0 6px; font-size: 15px; font-weight: 600;">Un contrôle, plusieurs référentiels</p>
+          <p style="margin: 0 0 30px; font-size: 14px; line-height: 1.55; color: oklch(0.45 0.02 250);">Le même contrôle répond à plusieurs exigences. La preuve est collectée une fois, le plan d’action est unique.</p>
+
+          <div style="display: flex; align-items: center; gap: 26px;">
+            <div style="flex-shrink: 0; padding: 18px 20px; border-radius: 9px; background: oklch(0.24 0.05 252); color: white; text-align: center;">
+              <p style="margin: 0 0 4px; font-size: 11px; letter-spacing: 0.07em; color: oklch(0.78 0.05 200);">CONTRÔLE</p>
+              <p style="margin: 0 0 6px; font-size: 17px; font-weight: 600;">CTL-02</p>
+              <p style="margin: 0; font-size: 12px; line-height: 1.4; color: oklch(0.84 0.015 250); max-width: 118px;">Supervision humaine documentée</p>
+            </div>
+
+            <svg width="34" height="180" viewBox="0 0 34 180" fill="none" style="flex-shrink: 0;" aria-hidden="true">
+              <path d="M0 90 C 16 90, 16 22, 34 22" stroke="oklch(0.84 0.02 250)" stroke-width="1.5"></path>
+              <path d="M0 90 C 16 90, 16 68, 34 68" stroke="oklch(0.84 0.02 250)" stroke-width="1.5"></path>
+              <path d="M0 90 C 16 90, 16 113, 34 113" stroke="oklch(0.84 0.02 250)" stroke-width="1.5"></path>
+              <path d="M0 90 C 16 90, 16 158, 34 158" stroke="oklch(0.84 0.02 250)" stroke-width="1.5"></path>
+            </svg>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; flex-grow: 1;">
+              <div style="padding: 11px 15px; border: 1px solid oklch(0.91 0.008 250); border-radius: 7px;">
+                <p style="margin: 0 0 2px; font-size: 14px; font-weight: 500;">ISO/IEC 42001</p>
+                <p style="margin: 0; font-size: 12px; color: oklch(0.52 0.015 250);">Système de management de l’IA</p>
+              </div>
+              <div style="padding: 11px 15px; border: 1px solid oklch(0.91 0.008 250); border-radius: 7px;">
+                <p style="margin: 0 0 2px; font-size: 14px; font-weight: 500;">Règlement (UE) 2024/1689</p>
+                <p style="margin: 0; font-size: 12px; color: oklch(0.52 0.015 250);">Contrôle humain, article 14</p>
+              </div>
+              <div style="padding: 11px 15px; border: 1px solid oklch(0.91 0.008 250); border-radius: 7px;">
+                <p style="margin: 0 0 2px; font-size: 14px; font-weight: 500;">ISO/IEC 27001</p>
+                <p style="margin: 0; font-size: 12px; color: oklch(0.52 0.015 250);">Sécurité de l’information</p>
+              </div>
+              <div style="padding: 11px 15px; border: 1px solid oklch(0.91 0.008 250); border-radius: 7px;">
+                <p style="margin: 0 0 2px; font-size: 14px; font-weight: 500;">RGPD</p>
+                <p style="margin: 0; font-size: 12px; color: oklch(0.52 0.015 250);">Analyse d’impact, article 35</p>
+              </div>
+            </div>
+          </div>
+
+          <p style="margin: 30px 0 0; padding-top: 20px; border-top: 1px solid oklch(0.94 0.006 250); font-size: 13px; line-height: 1.55; color: oklch(0.52 0.015 250);">AIGMS conserve des références, des résumés internes et des exigences dérivées, versionnés et datés. Il ne reproduit pas le texte des normes et ne délivre aucune certification.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ===== Ecosysteme ===== -->
+  <section id="ecosysteme" style="padding: 88px 96px; background: oklch(0.975 0.005 245); border-top: 1px solid oklch(0.93 0.008 250); border-bottom: 1px solid oklch(0.93 0.008 250);">
+    <div style="max-width: 760px; margin-bottom: 48px;">
+      <p style="margin: 0 0 18px; font-size: 13px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: oklch(0.52 0.09 200);">Écosystème</p>
+      <h2 style="margin: 0 0 16px; font-family: 'Newsreader', Georgia, serif; font-size: 40px; line-height: 1.15; font-weight: 500; letter-spacing: -0.015em;">AIGMS ne remplace pas vos outils. Il les fait converger.</h2>
+      <p style="margin: 0; font-size: 17px; line-height: 1.6; color: oklch(0.42 0.02 250);">Les plateformes spécialisées restent les meilleures sources techniques de contrôle et de preuve. Ce qui manque, c’est la couche où l’on décide, où l’on tranche, et où l’on garde la trace. C’est celle-là qu’AIGMS occupe.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; align-items: stretch;">
+      <div style="grid-column: span 5; background: oklch(0.24 0.05 252); border-radius: 12px; padding: 34px; color: white; display: flex; flex-direction: column; justify-content: center;">
+        <p style="margin: 0 0 6px; font-size: 12px; letter-spacing: 0.08em; color: oklch(0.78 0.05 200);">AIGMS</p>
+        <p style="margin: 0 0 18px; font-family: 'Newsreader', Georgia, serif; font-size: 26px; line-height: 1.25; font-weight: 500;">La couche de décision et de preuve</p>
+        <p style="margin: 0 0 26px; font-size: 15px; line-height: 1.6; color: oklch(0.84 0.015 250);">Registre des usages, risques, impacts, supervision, décisions, contrôles, preuves, incidents, actions.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 6px 12px; border-radius: 5px; font-size: 13px; background: oklch(0.32 0.045 252); color: oklch(0.9 0.01 250);">Cas d’usage</span>
+          <span style="padding: 6px 12px; border-radius: 5px; font-size: 13px; background: oklch(0.32 0.045 252); color: oklch(0.9 0.01 250);">Risques</span>
+          <span style="padding: 6px 12px; border-radius: 5px; font-size: 13px; background: oklch(0.32 0.045 252); color: oklch(0.9 0.01 250);">Décisions</span>
+          <span style="padding: 6px 12px; border-radius: 5px; font-size: 13px; background: oklch(0.32 0.045 252); color: oklch(0.9 0.01 250);">Contrôles</span>
+          <span style="padding: 6px 12px; border-radius: 5px; font-size: 13px; background: oklch(0.32 0.045 252); color: oklch(0.9 0.01 250);">Preuves</span>
+        </div>
+      </div>
+
+      <div style="grid-column: span 7; background: white; border: 1px solid oklch(0.91 0.008 250); border-radius: 12px; padding: 30px 32px;">
+        <p style="margin: 0 0 20px; font-size: 14px; font-weight: 600; color: oklch(0.42 0.02 250);">Ce que chacun fait le mieux</p>
+        <div style="display: flex; flex-direction: column; gap: 0;">
+          <div style="display: grid; grid-template-columns: 190px 1fr; gap: 20px; padding: 14px 0; border-bottom: 1px solid oklch(0.95 0.006 250);">
+            <span style="font-size: 15px; font-weight: 600;">Vanta</span>
+            <span style="font-size: 14px; line-height: 1.5; color: oklch(0.45 0.02 250);">Automatisation de la collecte de preuves et de la conformité</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 190px 1fr; gap: 20px; padding: 14px 0; border-bottom: 1px solid oklch(0.95 0.006 250);">
+            <span style="font-size: 15px; font-weight: 600;">OneTrust</span>
+            <span style="font-size: 14px; line-height: 1.5; color: oklch(0.45 0.02 250);">Gouvernance IA d’entreprise et contrôles à l’exécution</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 190px 1fr; gap: 20px; padding: 14px 0; border-bottom: 1px solid oklch(0.95 0.006 250);">
+            <span style="font-size: 15px; font-weight: 600;">ServiceNow</span>
+            <span style="font-size: 14px; line-height: 1.5; color: oklch(0.45 0.02 250);">Tour de contrôle IA, CMDB et workflows d’entreprise</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 190px 1fr; gap: 20px; padding: 14px 0; border-bottom: 1px solid oklch(0.95 0.006 250);">
+            <span style="font-size: 15px; font-weight: 600;">Microsoft Purview</span>
+            <span style="font-size: 14px; line-height: 1.5; color: oklch(0.45 0.02 250);">Sécurité des données, classification et prévention des fuites</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 190px 1fr; gap: 20px; padding: 16px 0 4px;">
+            <span style="font-size: 15px; font-weight: 600; color: oklch(0.35 0.09 245);">AIGMS</span>
+            <span style="font-size: 14px; line-height: 1.5; color: oklch(0.3 0.025 250);">Le poste de pilotage de l’AI Governance Officer, pour une PME/ETI ou pour un portefeuille de clients</span>
+          </div>
+        </div>
+        <p style="margin: 22px 0 0; padding-top: 18px; border-top: 1px solid oklch(0.94 0.006 250); font-size: 13px; line-height: 1.55; color: oklch(0.52 0.015 250);">Les connecteurs sont conçus en lecture seule et à moindre privilège : AIGMS lit des métadonnées, des statuts et des preuves. Il ne prend pas la main sur vos systèmes.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Calendrier reglementaire ===== -->
+  <section id="calendrier" style="padding: 88px 96px;">
+    <div style="max-width: 760px; margin-bottom: 52px;">
+      <p style="margin: 0 0 18px; font-size: 13px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: oklch(0.52 0.09 200);">Le calendrier</p>
+      <h2 style="margin: 0 0 16px; font-family: 'Newsreader', Georgia, serif; font-size: 40px; line-height: 1.15; font-weight: 500; letter-spacing: -0.015em;">Les échéances bougent. Votre registre doit suivre.</h2>
+      <p style="margin: 0; font-size: 17px; line-height: 1.6; color: oklch(0.42 0.02 250);">Le report des obligations « haut risque » en est la démonstration : une date d’application n’est pas une constante. AIGMS conserve les référentiels sous forme de données versionnées et datées — jamais de dates inscrites en dur dans un écran.</p>
+    </div>
+
+    <!-- Frise -->
+    <div style="border: 1px solid oklch(0.91 0.008 250); border-radius: 12px; background: white; padding: 34px; margin-bottom: 24px;">
+      <p style="margin: 0 0 30px; font-size: 15px; font-weight: 600;">Règlement (UE) 2024/1689 sur l’intelligence artificielle et règlement (UE) 2024/2847 sur la cyber-résilience</p>
+
+      <div style="position: relative; padding-bottom: 8px;">
+        <div style="position: absolute; left: 0; right: 0; top: 9px; height: 2px; background: oklch(0.91 0.008 250);"></div>
+        <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px; position: relative;">
+
+          <div>
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: white; border: 2px solid oklch(0.55 0.09 200); display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+              <div style="width: 8px; height: 8px; border-radius: 50%; background: oklch(0.55 0.09 200);"></div>
+            </div>
+            <p style="margin: 0 0 5px; font-size: 14px; font-weight: 600;">2 février 2025</p>
+            <p style="margin: 0; font-size: 13px; line-height: 1.5; color: oklch(0.45 0.02 250);">Pratiques interdites et obligations de littératie en IA.</p>
+            <p style="margin: 6px 0 0; font-size: 12px; color: oklch(0.55 0.09 200); font-weight: 500;">Applicable</p>
+          </div>
+
+          <div>
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: white; border: 2px solid oklch(0.55 0.09 200); display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+              <div style="width: 8px; height: 8px; border-radius: 50%; background: oklch(0.55 0.09 200);"></div>
+            </div>
+            <p style="margin: 0 0 5px; font-size: 14px; font-weight: 600;">2 août 2026</p>
+            <p style="margin: 0; font-size: 13px; line-height: 1.5; color: oklch(0.45 0.02 250);">Application générale du règlement, y compris le régime de sanctions et les obligations de transparence.</p>
+            <p style="margin: 6px 0 0; font-size: 12px; color: oklch(0.55 0.09 200); font-weight: 500;">Applicable</p>
+          </div>
+
+          <div>
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: white; border: 2px solid oklch(0.55 0.09 200); display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+              <div style="width: 8px; height: 8px; border-radius: 50%; background: oklch(0.55 0.09 200);"></div>
+            </div>
+            <p style="margin: 0 0 5px; font-size: 14px; font-weight: 600;">11 septembre 2026</p>
+            <p style="margin: 0; font-size: 13px; line-height: 1.5; color: oklch(0.45 0.02 250);">Cyber-résilience : obligations de signalement des vulnérabilités activement exploitées.</p>
+            <p style="margin: 6px 0 0; font-size: 12px; color: oklch(0.55 0.09 200); font-weight: 500;">Applicable</p>
+          </div>
+
+          <div>
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: white; border: 2px solid oklch(0.72 0.02 250); margin-bottom: 16px;"></div>
+            <p style="margin: 0 0 5px; font-size: 14px; font-weight: 600;">2 décembre 2027</p>
+            <p style="margin: 0; font-size: 13px; line-height: 1.5; color: oklch(0.45 0.02 250);">Systèmes à haut risque de l’annexe III. Échéance <span style="font-weight: 600;">reportée</span> de seize mois par le règlement (UE) 2026/1744.</p>
+            <p style="margin: 6px 0 0; font-size: 12px; color: oklch(0.55 0.015 250); font-weight: 500;">À venir</p>
+          </div>
+
+          <div>
+            <div style="width: 20px; height: 20px; border-radius: 50%; background: white; border: 2px solid oklch(0.72 0.02 250); margin-bottom: 16px;"></div>
+            <p style="margin: 0 0 5px; font-size: 14px; font-weight: 600;">11 décembre 2027</p>
+            <p style="margin: 0; font-size: 13px; line-height: 1.5; color: oklch(0.45 0.02 250);">Cyber-résilience : obligations principales et marquage CE intégrant la cybersécurité.</p>
+            <p style="margin: 6px 0 0; font-size: 12px; color: oklch(0.55 0.015 250); font-weight: 500;">À venir</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Sanctions -->
+    <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px;">
+      <div style="grid-column: span 7; border: 1px solid oklch(0.91 0.008 250); border-radius: 12px; background: white; padding: 32px 34px;">
+        <h3 style="margin: 0 0 4px; font-size: 15px; font-weight: 600;">Plafonds de sanction prévus par le règlement sur l’IA</h3>
+        <p style="margin: 0 0 26px; font-size: 13px; color: oklch(0.52 0.015 250);">Article 99 — le montant retenu est le plus élevé des deux</p>
+
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          <div>
+            <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 7px;">
+              <span style="font-size: 14px; color: oklch(0.38 0.02 250);">Pratiques interdites</span>
+              <span style="font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums;">35 M€ ou 7 % du chiffre d’affaires mondial</span>
+            </div>
+            <div style="height: 10px; border-radius: 5px; background: oklch(0.96 0.006 250);">
+              <div style="width: 100%; height: 10px; border-radius: 5px; background: oklch(0.32 0.055 252);"></div>
+            </div>
+          </div>
+          <div>
+            <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 7px;">
+              <span style="font-size: 14px; color: oklch(0.38 0.02 250);">Manquements aux obligations, dont haut risque et modèles à usage général</span>
+              <span style="font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums;">15 M€ ou 3 %</span>
+            </div>
+            <div style="height: 10px; border-radius: 5px; background: oklch(0.96 0.006 250);">
+              <div style="width: 43%; height: 10px; border-radius: 5px; background: oklch(0.46 0.075 245);"></div>
+            </div>
+          </div>
+          <div>
+            <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 7px;">
+              <span style="font-size: 14px; color: oklch(0.38 0.02 250);">Informations inexactes fournies aux autorités</span>
+              <span style="font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums;">7,5 M€ ou 1 %</span>
+            </div>
+            <div style="height: 10px; border-radius: 5px; background: oklch(0.96 0.006 250);">
+              <div style="width: 21%; height: 10px; border-radius: 5px; background: oklch(0.62 0.06 240);"></div>
+            </div>
+          </div>
+        </div>
+        <p style="margin: 24px 0 0; padding-top: 18px; border-top: 1px solid oklch(0.94 0.006 250); font-size: 13px; line-height: 1.55; color: oklch(0.52 0.015 250);">Pour les PME et les jeunes entreprises, chaque plafond est ramené au plus faible des deux montants.</p>
+      </div>
+
+      <div style="grid-column: span 5; border: 1px solid oklch(0.91 0.008 250); border-radius: 12px; background: white; padding: 32px 34px; display: flex; flex-direction: column;">
+        <h3 style="margin: 0 0 4px; font-size: 15px; font-weight: 600;">Règlement sur la cyber-résilience</h3>
+        <p style="margin: 0 0 26px; font-size: 13px; color: oklch(0.52 0.015 250);">Produits comportant des éléments numériques</p>
+        <p style="margin: 0 0 6px; font-family: 'Newsreader', Georgia, serif; font-size: 42px; line-height: 1; font-weight: 500; color: oklch(0.32 0.055 252);">15 M€</p>
+        <p style="margin: 0 0 22px; font-size: 15px; color: oklch(0.42 0.02 250);">ou 2,5 % du chiffre d’affaires mondial</p>
+        <p style="margin: 0; font-size: 14px; line-height: 1.6; color: oklch(0.45 0.02 250);">Exigences essentielles de cybersécurité, traitement des vulnérabilités, documentation technique et évaluation de la conformité.</p>
+        <p style="margin: auto 0 0; padding-top: 20px; font-size: 13px; line-height: 1.55; color: oklch(0.52 0.015 250);">Un système d’IA intégré à un produit connecté relève des deux régimes. Un contrôle bien construit sert les deux.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Portefeuille multi-clients ===== -->
+  <section style="padding: 0 96px 88px;">
+    <div style="border: 1px solid oklch(0.91 0.008 250); border-radius: 12px; background: oklch(0.975 0.005 245); padding: 44px;">
+      <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 40px; align-items: center;">
+        <div style="grid-column: span 6;">
+          <p style="margin: 0 0 18px; font-size: 13px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: oklch(0.52 0.09 200);">Cabinets, MSP, intégrateurs</p>
+          <h2 style="margin: 0 0 18px; font-family: 'Newsreader', Georgia, serif; font-size: 34px; line-height: 1.2; font-weight: 500; letter-spacing: -0.015em;">Un portefeuille, pas un client à la fois</h2>
+          <p style="margin: 0 0 22px; font-size: 16px; line-height: 1.65; color: oklch(0.42 0.02 250);">AIGMS est multi-client par construction : chaque organisation cliente est étanche des autres, et vous gardez une vue d’ensemble. De quoi bâtir une offre d’AI Governance Officer externalisé sans repartir d’un tableur à chaque mission.</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <span style="padding: 7px 13px; border-radius: 6px; font-size: 13px; background: white; border: 1px solid oklch(0.91 0.008 250); color: oklch(0.4 0.02 250);">Diagnostic d’entrée</span>
+            <span style="padding: 7px 13px; border-radius: 6px; font-size: 13px; background: white; border: 1px solid oklch(0.91 0.008 250); color: oklch(0.4 0.02 250);">Gouvernance managée</span>
+            <span style="padding: 7px 13px; border-radius: 6px; font-size: 13px; background: white; border: 1px solid oklch(0.91 0.008 250); color: oklch(0.4 0.02 250);">Reporting mensuel</span>
+            <span style="padding: 7px 13px; border-radius: 6px; font-size: 13px; background: white; border: 1px solid oklch(0.91 0.008 250); color: oklch(0.4 0.02 250);">Revenus récurrents</span>
+          </div>
+        </div>
+        <div style="grid-column: span 6;">
+          <div style="background: white; border: 1px solid oklch(0.91 0.008 250); border-radius: 10px; padding: 24px 26px;">
+            <p style="margin: 0 0 18px; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: oklch(0.55 0.015 250);">Ce qui remonte chaque semaine</p>
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px;">
+              <div>
+                <p style="margin: 0 0 3px; font-size: 26px; font-weight: 600; color: oklch(0.55 0.19 25); font-variant-numeric: tabular-nums;">4</p>
+                <p style="margin: 0; font-size: 13px; line-height: 1.4; color: oklch(0.45 0.02 250);">Risques élevés sans traitement abouti</p>
+              </div>
+              <div>
+                <p style="margin: 0 0 3px; font-size: 26px; font-weight: 600; color: oklch(0.58 0.13 75); font-variant-numeric: tabular-nums;">7</p>
+                <p style="margin: 0; font-size: 13px; line-height: 1.4; color: oklch(0.45 0.02 250);">Décisions à instruire ou à revoir</p>
+              </div>
+              <div>
+                <p style="margin: 0 0 3px; font-size: 26px; font-weight: 600; color: oklch(0.58 0.13 75); font-variant-numeric: tabular-nums;">12</p>
+                <p style="margin: 0; font-size: 13px; line-height: 1.4; color: oklch(0.45 0.02 250);">Preuves échues ou proches de l’échéance</p>
+              </div>
+              <div>
+                <p style="margin: 0 0 3px; font-size: 26px; font-weight: 600; color: oklch(0.55 0.19 25); font-variant-numeric: tabular-nums;">3</p>
+                <p style="margin: 0; font-size: 13px; line-height: 1.4; color: oklch(0.45 0.02 250);">Actions bloquantes échues</p>
+              </div>
+              <div>
+                <p style="margin: 0 0 3px; font-size: 26px; font-weight: 600; color: oklch(0.45 0.02 250); font-variant-numeric: tabular-nums;">9</p>
+                <p style="margin: 0; font-size: 13px; line-height: 1.4; color: oklch(0.45 0.02 250);">Revues de cas d’usage dues</p>
+              </div>
+              <div>
+                <p style="margin: 0 0 3px; font-size: 26px; font-weight: 600; color: oklch(0.45 0.02 250); font-variant-numeric: tabular-nums;">1</p>
+                <p style="margin: 0; font-size: 13px; line-height: 1.4; color: oklch(0.45 0.02 250);">Incident ouvert</p>
+              </div>
+            </div>
+            <p style="margin: 20px 0 0; padding-top: 16px; border-top: 1px solid oklch(0.95 0.006 250); font-size: 12px; color: oklch(0.58 0.015 250);">Valeurs d’illustration issues du jeu de démonstration.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Appel a l'action ===== -->
+  <section style="padding: 88px 96px; background: oklch(0.24 0.05 252); color: white;">
+    <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 48px; align-items: start;">
+      <div style="grid-column: span 6;">
+        <h2 style="margin: 0 0 20px; font-family: 'Newsreader', Georgia, serif; font-size: 44px; line-height: 1.12; font-weight: 500; letter-spacing: -0.02em;">Commençons par deux cas d’usage réels.</h2>
+        <p style="margin: 0 0 32px; font-size: 18px; line-height: 1.6; color: oklch(0.86 0.015 250); max-width: 480px;">Quarante-cinq minutes suffisent pour voir ce que donne votre portefeuille IA passé au filtre d’une gouvernance opérationnelle.</p>
+        <a href="/contact" style="display: inline-block; padding: 16px 30px; border-radius: 7px; background: white; color: oklch(0.24 0.05 252); font-size: 16px; font-weight: 600;">Demander l’atelier de qualification</a>
+      </div>
+      <div style="grid-column: span 6;">
+        <p style="margin: 0 0 22px; font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: oklch(0.78 0.05 200);">Ce que vous repartez avec</p>
+        <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 18px;">
+          <li style="display: flex; gap: 16px; align-items: flex-start;">
+            <span style="flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; border: 1px solid oklch(0.5 0.05 252); display: flex; align-items: center; justify-content: center; font-size: 13px; color: oklch(0.88 0.02 250);">1</span>
+            <span style="font-size: 16px; line-height: 1.5; color: oklch(0.9 0.01 250);">Deux usages IA identifiés et cadrés</span>
+          </li>
+          <li style="display: flex; gap: 16px; align-items: flex-start;">
+            <span style="flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; border: 1px solid oklch(0.5 0.05 252); display: flex; align-items: center; justify-content: center; font-size: 13px; color: oklch(0.88 0.02 250);">2</span>
+            <span style="font-size: 16px; line-height: 1.5; color: oklch(0.9 0.01 250);">Leur pré-classification réglementaire, et ce qu’elle implique</span>
+          </li>
+          <li style="display: flex; gap: 16px; align-items: flex-start;">
+            <span style="flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; border: 1px solid oklch(0.5 0.05 252); display: flex; align-items: center; justify-content: center; font-size: 13px; color: oklch(0.88 0.02 250);">3</span>
+            <span style="font-size: 16px; line-height: 1.5; color: oklch(0.9 0.01 250);">Une première carte des risques</span>
+          </li>
+          <li style="display: flex; gap: 16px; align-items: flex-start;">
+            <span style="flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; border: 1px solid oklch(0.5 0.05 252); display: flex; align-items: center; justify-content: center; font-size: 13px; color: oklch(0.88 0.02 250);">4</span>
+            <span style="font-size: 16px; line-height: 1.5; color: oklch(0.9 0.01 250);">Une démonstration d’AIGMS sur vos propres cas</span>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Pied de page ===== -->
+  <footer style="padding: 44px 96px; background: oklch(0.2 0.045 252); color: oklch(0.72 0.015 250);">
+    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 48px;">
+      <div style="max-width: 460px;">
+        <div style="display: flex; align-items: center; gap: 11px; margin-bottom: 14px;">
+          <svg width="26" height="26" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <rect width="32" height="32" rx="7" fill="oklch(0.32 0.055 252)"></rect>
+            <path d="M9 23 L15 9 L18.2 16.4" stroke="white" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M12.1 18.4 H25" stroke="white" stroke-width="2.1" stroke-linecap="round"></path>
+            <circle cx="25" cy="18.4" r="2.9" fill="oklch(0.62 0.11 195)"></circle>
+          </svg>
+          <span style="font-family: 'Newsreader', Georgia, serif; font-size: 17px; font-weight: 600; color: white;">AIGMS</span>
+        </div>
+        <p style="margin: 0; font-size: 13px; line-height: 1.65;">AIGMS aide au cadrage, à la pré-classification, à la documentation et à la preuve. Il ne remplace ni un avis juridique, ni la décision d’un responsable de risque, ni un audit de certification, ni une autorité compétente.</p>
+      </div>
+      <div style="font-size: 13px; line-height: 1.9; text-align: right;">
+        <p style="margin: 0 0 8px; color: oklch(0.58 0.015 250);">Références citées</p>
+        <p style="margin: 0;">ISO/IEC 42001:2023 · ISO/IEC 23894:2023 · ISO/IEC 42005:2025<br>Règlement (UE) 2024/1689 · Règlement (UE) 2026/1744<br>Règlement (UE) 2024/2847 · RGPD · NIST AI RMF</p>
+      </div>
+    </div>
+  </footer>
+
+</div>
+</x-dc>
+</body>
+</html>

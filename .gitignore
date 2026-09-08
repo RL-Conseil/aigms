@@ -48,3 +48,7 @@ yarn-error.log*
 *.pdf
 *.excalidraw
 OLD/
+
+# canvas de design seede (payload de l'editeur, ~2 Mo) : les fichiers sources
+# sont dans design/, le canvas se reconstruit a partir d'eux
+aigms-landing.html

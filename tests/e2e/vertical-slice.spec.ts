@@ -16,9 +16,9 @@ test.beforeEach(async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Portefeuille' })).toBeVisible()
 })
 
-test('un utilisateur non authentifie est renvoye vers la connexion', async ({ page, context }) => {
+test("l'espace d'administration exige une session", async ({ page, context }) => {
   await context.clearCookies()
-  await page.goto('/portfolio')
+  await page.goto('/admin')
   await expect(page).toHaveURL(/\/login/)
 })
 

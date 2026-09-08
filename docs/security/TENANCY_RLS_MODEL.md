@@ -37,6 +37,15 @@ ce qui rend les 70 politiques lisibles et vérifiables une à une. Le trigger
 `membership.role` porte le rôle par défaut sur le tenant ; `role_assignment` le
 raffine par organisation, avec `valid_until` pour la délégation temporaire.
 
+## 2 bis. La seule exception : `contact_request`
+
+`anon` ne dispose d'aucun droit — sauf l'insertion dans `contact_request`, la
+table alimentée par le formulaire de la page publique. L'exception est bornée à
+l'insertion d'une ligne neuve, sans lecture ni modification possible, sur une
+table qui ne porte aucune donnée de gouvernance. Voir
+[ADR-0007](../adr/ADR-0007-public-surface.md) et les neuf tests de
+`tests/rls/contact-request.test.ts`.
+
 ## 3. Contrat de politique
 
 Chaque table métier reçoit deux politiques, générées par une boucle déclarative
@@ -85,10 +94,11 @@ que **chaque fonction métier revérifie l'habilitation** — ce que font
 | `governance_event` | lecture tenant ; écriture uniquement via `app.emit_event` |
 | `framework`, `requirement` | catalogue plateforme, lecture ouverte aux authentifiés, écriture `platform_admin` |
 | `app.business_ref_counter` | RLS activée sans aucune politique : inaccessible hors fonction |
+| `contact_request` | insertion anonyme d'une ligne neuve ; lecture et suivi réservés à `app.is_platform_admin()` |
 
 ## 6. Couverture de test
 
-`tests/rls/` — 45 assertions, exécutées en série sur la base de démonstration,
+`tests/rls/` — 49 assertions, exécutées en série sur la base de démonstration,
 chaque test dans une transaction annulée :
 
 - **Isolation** : lecture, écriture, ciblage par identifiant, déplacement de
@@ -101,6 +111,9 @@ chaque test dans une transaction annulée :
   un utilisateur d'un autre tenant.
 - **Journal** : immuable en modification comme en suppression, écriture directe
   refusée, écriture hors périmètre tenant refusée.
+- **Surface publique** : `anon` insère une demande de contact et rien d'autre —
+  ni lecture, ni modification, ni accès à une autre table, ni dépôt d'une
+  demande déjà marquée traitée.
 
 ## 7. Vérification manuelle
 

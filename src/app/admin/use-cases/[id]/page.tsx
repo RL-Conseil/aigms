@@ -124,7 +124,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
   return (
     <Shell
       breadcrumb={[
-        { href: '/portfolio', label: 'Portefeuille' },
+        { href: '/admin', label: 'Portefeuille' },
         ...(organization
           ? [{ href: `/organizations/${organization.id}`, label: organization.name }]
           : []),

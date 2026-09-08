@@ -1068,6 +1068,65 @@ export type Database = {
           },
         ]
       }
+      contact_request: {
+        Row: {
+          created_at: string
+          created_on: string
+          email: string
+          full_name: string
+          handled_at: string | null
+          handled_by: string | null
+          id: string
+          internal_note: string | null
+          message: string | null
+          organization: string
+          phone: string | null
+          profile: Database["public"]["Enums"]["contact_profile"]
+          status: Database["public"]["Enums"]["contact_request_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_on?: string
+          email: string
+          full_name: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          internal_note?: string | null
+          message?: string | null
+          organization: string
+          phone?: string | null
+          profile?: Database["public"]["Enums"]["contact_profile"]
+          status?: Database["public"]["Enums"]["contact_request_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_on?: string
+          email?: string
+          full_name?: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          internal_note?: string | null
+          message?: string | null
+          organization?: string
+          phone?: string | null
+          profile?: Database["public"]["Enums"]["contact_profile"]
+          status?: Database["public"]["Enums"]["contact_request_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_request_handled_by_fkey"
+            columns: ["handled_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       control: {
         Row: {
           business_ref: string
@@ -3686,7 +3745,18 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      contact_profile:
+        | "direction"
+        | "dsi_rssi_dpo"
+        | "metier"
+        | "conseil_msp_integrateur"
+        | "autre"
+      contact_request_status:
+        | "new"
+        | "contacted"
+        | "qualified"
+        | "archived"
+        | "spam"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3816,7 +3886,22 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      contact_profile: [
+        "direction",
+        "dsi_rssi_dpo",
+        "metier",
+        "conseil_msp_integrateur",
+        "autre",
+      ],
+      contact_request_status: [
+        "new",
+        "contacted",
+        "qualified",
+        "archived",
+        "spam",
+      ],
+    },
   },
 } as const
 

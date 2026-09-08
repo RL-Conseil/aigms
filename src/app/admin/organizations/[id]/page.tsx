@@ -49,7 +49,7 @@ export default async function OrganizationPage({
 
   return (
     <Shell
-      breadcrumb={[{ href: '/portfolio', label: 'Portefeuille' }]}
+      breadcrumb={[{ href: '/admin', label: 'Portefeuille' }]}
       title={organization.name}
       subtitle={`${organization.business_ref} — ${organization.legal_name ?? organization.name}`}
       actions={<Badge>{organization.status}</Badge>}
@@ -66,7 +66,7 @@ export default async function OrganizationPage({
                   <li key={uc.id} className="flex items-center justify-between gap-4 py-3">
                     <div className="min-w-0">
                       <Link
-                        href={`/use-cases/${uc.id}`}
+                        href={`/admin/use-cases/${uc.id}`}
                         className="text-sm font-medium text-brand-600 hover:underline"
                       >
                         {uc.name}
