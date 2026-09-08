@@ -19,12 +19,22 @@ afterAll(async () => {
 
 describe('RBAC', () => {
   it("l'auditeur lit l'ensemble de son perimetre", async () => {
-    const rows = await asUser(db, DEMO.auditorA, async (c) => {
-      const { rows } = await c.query('select id from public.ai_use_case')
-      return rows
-    })
+    // Comparaison a ce que voit l'officer plutot qu'a un decompte fige : les
+    // parcours de bout en bout ecrivent dans la meme base, et un nombre absolu
+    // deviendrait faux au premier cas d'usage cree.
+    const [auditor, officer] = await Promise.all([
+      asUser(db, DEMO.auditorA, async (c) => {
+        const { rows } = await c.query('select id from public.ai_use_case')
+        return rows.length
+      }),
+      asUser(db, DEMO.officerA, async (c) => {
+        const { rows } = await c.query('select id from public.ai_use_case')
+        return rows.length
+      }),
+    ])
 
-    expect(rows.length).toBe(3)
+    expect(auditor).toBe(officer)
+    expect(auditor).toBeGreaterThanOrEqual(3)
   })
 
   it("l'auditeur ne peut pas creer de cas d'usage", async () => {

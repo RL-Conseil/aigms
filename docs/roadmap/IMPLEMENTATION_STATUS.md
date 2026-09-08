@@ -38,8 +38,8 @@ par les fonctions de transition réelles : si un gate régresse, le seed échoue
 | Suite | Nombre | Couvre |
 |---|---|---|
 | `tests/unit` | 12 | libellés et présentation du domaine |
-| `tests/rls` | 75 | isolation cross-tenant, RBAC, transitions interdites, gate production, acceptation de risque, registre de décisions, moteur de réévaluation, journal d'audit, parité interface/base, surface publique |
-| `tests/e2e` | 27 | site public et formulaire de contact ; connexion, parcours complet, refus de gate motivé, tableau de bord |
+| `tests/rls` | 82 | isolation cross-tenant, RBAC, transitions interdites, gate production, acceptation de risque, registre de décisions, moteur de réévaluation, journal d'audit, parité interface/base, surface publique |
+| `tests/e2e` | 29 | site public et formulaire de contact ; connexion, parcours complet, refus de gate motivé, tableau de bord |
 
 Tous verts au 7 septembre 2026.
 
@@ -101,7 +101,7 @@ Deux jetons Supabase cohabitent, un par projet : celui qui couvre
 | `/admin/organisations/nouvelle` | session requise, réservée à l'administration plateforme |
 | `/admin/parametres` | session requise — profil, rôle, organisation |
 | `/admin/organizations/[id]/declaration-applicabilite` | session requise — couverture ISO/IEC 42001 exigence par exigence |
-| `/admin/organizations/[id]/processus` | session requise — cartographie des processus et activités |
+| `/admin/organizations/[id]/processus` | session requise — carte annotée, panneau d'activité, santé de la gouvernance ; la sélection passe par l'URL et se partage |
 | `/admin/organizations/[id]/cas-d-usage/nouveau` | session requise — fiche d'intake |
 
 `src/proxy.ts` ne protège que le préfixe `/admin` ; l'autorisation réelle reste
@@ -144,7 +144,7 @@ rattachement structuré passant par `ai_use_case.activity_id`.
 | Incrément | Contenu | État |
 |---|---|---|
 | 1 | Modèle processus/activité, cartographie, saisie intake, triage, classification, risques | **Terminé** |
-| 2 | Process & Risk Map avec indicateurs par nœud et panneau latéral | à venir |
+| 2 | Process & Risk Map avec indicateurs par nœud et panneau latéral | **Terminé** |
 | 3 | Control Coverage Map et Risk Heatmap | à venir |
 | 4 | AI Control Graph, couches activables, chemins critiques | à venir |
 
@@ -154,10 +154,27 @@ invitation à saisir — une activité sans usage d'IA propose d'en déclarer un
 Les formulaires vivent dans des volets, sur la fiche même : on saisit là où l'on
 regarde.
 
-**Point de vocabulaire tranché** : les scores affichés ultérieurement se
-nommeront « santé de la gouvernance », jamais « score de conformité ». Un
-nombre sur 100 dans un outil de gouvernance se lit comme un taux de conformité,
-ce que les interdictions produit excluent explicitement.
+### La santé de la gouvernance
+
+`app.governance_health(organisation, activité)` produit un indice sur 100,
+accompagné de ses causes. Ce qu'il mesure : **l'entretien du dispositif** —
+risques élevés laissés sans suite, preuves échues, revues en retard, actions
+échues, incidents non clos, contrôles applicables jamais rendus opérants.
+
+Ce qu'il ne mesure pas, et le dit dans sa propre réponse
+(`not_a_measure_of: "conformité réglementaire"`) : la conformité. Un nombre sur
+cent dans un outil de gouvernance se lit spontanément comme un taux de
+conformité, ce que les interdictions produit excluent. L'affichage nomme donc
+l'indice « santé de la gouvernance », montre ses causes à côté de lui, et écrit
+en toutes lettres qu'il n'est pas un taux de conformité.
+
+Trois garde-fous rendent l'indice défendable :
+
+1. **Chaque pénalité est nommée, fixe et plafonnée.** L'indice se recalcule de
+   tête à partir des causes affichées — un test le vérifie arithmétiquement.
+2. **Sans usage d'IA déclaré, aucun indice n'est produit.** Un score sur un
+   périmètre vide serait un chiffre sans objet.
+3. **Il reste soumis à l'habilitation.** Un tenant étranger n'obtient rien.
 
 ## Référentiels normatifs chargés
 

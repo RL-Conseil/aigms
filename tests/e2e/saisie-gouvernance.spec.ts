@@ -21,13 +21,16 @@ test('la cartographie montre les processus, activités et usages rattachés', as
   await page.getByRole('link', { name: 'IzarLink Demo' }).click()
   await page.getByRole('link', { name: 'Processus' }).click()
 
-  await expect(page.getByRole('heading', { name: 'Cartographie des processus' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Processus et risques' })).toBeVisible()
   await expect(page.getByRole('heading', { name: /Servir le client/ })).toBeVisible()
-  await expect(page.getByText('Traitement des demandes clients')).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Assistant support client' })).toBeVisible()
 
-  // Une activité sans usage invite à en déclarer un plutôt que de rester muette.
-  await expect(page.getByText('Aucun usage d’IA déclaré sur cette activité.').first()).toBeVisible()
+  // L'arbre porte les activités ; les usages qu'elles servent apparaissent dans
+  // le panneau, à la sélection.
+  await expect(page.getByRole('link', { name: /Traitement des demandes clients/ })).toBeVisible()
+  await expect(page.getByText('Aucun usage d’IA déclaré.').first()).toBeVisible()
+
+  await page.getByRole('link', { name: /Traitement des demandes clients/ }).click()
+  await expect(page.getByRole('link', { name: 'Assistant support client' })).toBeVisible()
 })
 
 test('un processus et une activité se créent depuis la carte', async ({ page }) => {
@@ -136,4 +139,45 @@ test('un risque ne s’accepte pas sans justification ni date de revue', async (
   await expect(rationale).toHaveAttribute('required', '')
   await expect(page.getByLabel('Date de revue').first()).toHaveAttribute('required', '')
   await expect(page.getByText(/Accepter un risque vous engage nominativement/).first()).toBeVisible()
+})
+
+test('la carte annote chaque activité et son panneau détaille ce qui s’y joue', async ({ page }) => {
+  await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001/processus')
+
+  // L'arbre porte les indicateurs directement sur les activités.
+  await expect(page.getByRole('heading', { name: /Servir le client/ })).toBeVisible()
+  await expect(page.getByText(/contrôles \d+\/\d+/).first()).toBeVisible()
+  await expect(page.getByText(/preuves? à renouveler/).first()).toBeVisible()
+
+  // L'indice porte son cadrage, jamais présenté comme un taux de conformité.
+  await expect(page.getByText(/pas un taux de conformité/)).toBeVisible()
+  await expect(page.getByText(/entretien du dispositif/).first()).toBeVisible()
+
+  // Sélection d'une activité : le panneau s'ouvre, l'URL le retient.
+  await page.getByRole('link', { name: /Présélection des candidatures/ }).click()
+  await expect(page).toHaveURL(/activite=/)
+  const panelPlay = page
+    .locator('section')
+    .filter({ has: page.getByRole('heading', { name: 'Ce qui s’y joue' }) })
+  await expect(panelPlay).toBeVisible()
+  await expect(panelPlay.getByText('Risques élevés ouverts')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Scoring de candidatures' })).toBeVisible()
+
+  // Le panneau propose de déclarer un usage sur cette activité précise.
+  await page.getByRole('link', { name: '+ Déclarer' }).click()
+  await expect(page.getByRole('heading', { name: 'Déclarer un cas d’usage' })).toBeVisible()
+  await expect(page.getByLabel('Activité servie')).toHaveValue(
+    'c2000000-0000-4000-8000-000000000003',
+  )
+})
+
+test('l’indice de santé n’est pas produit sans usage déclaré', async ({ page }) => {
+  // « Intégration des nouveaux arrivants » reste sans usage : les autres tests
+  // du fichier en rattachent, celle-ci non.
+  await page.goto(
+    '/admin/organizations/cccccccc-0000-4000-8000-000000000001/processus?activite=c2000000-0000-4000-8000-000000000004',
+  )
+
+  await expect(page.getByRole('heading', { name: 'Intégration des nouveaux arrivants' })).toBeVisible()
+  await expect(page.getByText('Aucun usage d’IA déclaré sur ce périmètre.')).toBeVisible()
 })
