@@ -24,7 +24,16 @@
     "allowedSchemas": ["public", "app"],
     "preferredMode": "migrations-first",
     "projectName": "aigms-supabase",
+    "role": "production",
     "region": "eu-west-1",
+    "preprod": {
+      "projectRef": "xahqdxwmlewyjpsiuzux",
+      "projectName": "aigms-supabase-preprod",
+      "url": "https://xahqdxwmlewyjpsiuzux.supabase.co",
+      "role": "preview et development",
+      "region": "eu-west-1",
+      "notes": "Jeton d'acces distinct de celui de la production : aucun des deux ne couvre les deux projets."
+    },
     "notes": "Le serveur MCP Supabase de cette session est rattache a l'organisation kccjtvwusyuedbjlcwte et n'a pas acces a ce projet (organisation kxrprvzkleccysyzoylt). Les migrations s'appliquent via le CLI Supabase : supabase link --project-ref xsagbzrgoljzgorwvsir puis supabase db push."
   },
   "github": {

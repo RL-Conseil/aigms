@@ -48,7 +48,8 @@ Tous verts au 7 septembre 2026.
 |---|---|
 | Dépôt GitHub `RL-Conseil/aigms` | privé, existant |
 | Supabase local (Docker) | opérationnel, 15 migrations appliquées |
-| Supabase distant `aigms-supabase` (`xsagbzrgoljzgorwvsir`, eu-west-1) | **provisionné** : 15 migrations appliquées, jeu de démonstration chargé, étanchéité vérifiée par l'API |
+| Supabase `aigms-supabase` (`xsagbzrgoljzgorwvsir`, eu-west-1) | **production** : 16 migrations appliquées. Porte encore le jeu de démonstration, à purger une fois un compte réel créé |
+| Supabase `aigms-supabase-preprod` (`xahqdxwmlewyjpsiuzux`, eu-west-1) | **preprod** : 16 migrations et jeu de démonstration, étanchéité et gates vérifiés par appels API. Sert les déploiements Preview |
 | Vercel | **provisionné** : projet `aigms` (équipe `rlabradors-projects`), variables d'environnement posées, production en ligne sur `aigms.vercel.app` derrière la protection SSO d'équipe |
 | Notification des demandes de contact | **fonctionnelle** : clé Resend chiffrée dans les variables Vercel, envoi depuis `contact@iparenea.fr` sur domaine vérifié, notification vers la même adresse |
 | CI GitHub Actions | écrite ; le push nécessite le scope `workflow` sur le jeton `gh` |
@@ -65,6 +66,22 @@ Effectuée par appels API le 7 septembre 2026 :
 | Connexion `officer@rl-conseil.demo` puis lecture | 3 cas d'usage de son tenant |
 | `evaluate_gate` sur `UC-2026-0001` | 8/8 préconditions satisfaites |
 | Lecture par l'officer du second tenant | tableau vide |
+
+## Environnements
+
+| Environnement | Base | Variables Vercel |
+|---|---|---|
+| Production (`aigms.vercel.app`, branche `main`) | `aigms-supabase` | cible `production` |
+| Preview (une par branche) | `aigms-supabase-preprod` | cibles `preview` et `development` |
+| Poste de développement | stack Supabase locale (Docker) | `.env.local` |
+
+Le poste de développement reste sur la stack Docker : les tests d'isolation
+exigent une connexion Postgres directe et rejouent `db reset` à volonté, ce
+qu'on ne fait pas sur une base partagée. Les migrations remontent donc dans
+l'ordre local → preprod → production, chacune par `supabase db push`.
+
+Deux jetons Supabase cohabitent, un par projet : celui qui couvre
+`aigms-supabase` ne voit pas preprod, et inversement.
 
 ## Structure des routes
 

@@ -68,6 +68,17 @@ Comptes de démonstration — mot de passe `Demo!Passw0rd` :
 | `npm run db:reset` | rejoue migrations et jeu de démonstration |
 | `npm run db:types:local` | régénère les types TypeScript |
 
+## Environnements
+
+| Environnement | Base Supabase |
+|---|---|
+| Production — `aigms.vercel.app`, branche `main` | `aigms-supabase` |
+| Preview — une par branche | `aigms-supabase-preprod` |
+| Poste de développement | stack locale Docker |
+
+Les migrations remontent dans cet ordre, chacune par `supabase db push`. Le
+flux de branches et de déploiement est décrit dans `CLAUDE.md`.
+
 ## Documentation
 
 | Document | Objet |
