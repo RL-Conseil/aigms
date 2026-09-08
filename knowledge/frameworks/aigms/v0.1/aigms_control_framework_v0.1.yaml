@@ -1,0 +1,3062 @@
+framework:
+  id: AIGMS-CF
+  name: AIGMS Control Framework
+  version: '0.1'
+  status: frozen-baseline
+  language: fr
+  description: Référentiel opérationnel de gouvernance, risque, sécurité, exploitation
+    et conformité des systèmes IA.
+  design_principle: Control -> Risk -> Use Case -> Evidence -> Test -> Finding ->
+    Remediation -> Framework Mapping
+  control_count: 120
+  domain_count: 12
+  maturity_scale: 0-4
+domains:
+- code: GOV
+  name: Governance
+  control_count: 12
+  order: 1
+- code: INV
+  name: AI Inventory
+  control_count: 8
+  order: 2
+- code: USE
+  name: Use Case Management
+  control_count: 10
+  order: 3
+- code: RSK
+  name: AI Risk Management
+  control_count: 12
+  order: 4
+- code: DAT
+  name: Data Governance
+  control_count: 12
+  order: 5
+- code: SEC
+  name: AI Security
+  control_count: 12
+  order: 6
+- code: SUP
+  name: Suppliers & Models
+  control_count: 10
+  order: 7
+- code: HUM
+  name: Human Oversight
+  control_count: 8
+  order: 8
+- code: OPS
+  name: AI Operations
+  control_count: 12
+  order: 9
+- code: MON
+  name: Monitoring & Performance
+  control_count: 8
+  order: 10
+- code: INC
+  name: Incident & Resilience
+  control_count: 8
+  order: 11
+- code: CMP
+  name: Compliance & Assurance
+  control_count: 8
+  order: 12
+controls:
+- id: AIGMS-GOV-001
+  domain: GOV
+  title: Politique de gouvernance IA
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-GOV-002
+  domain: GOV
+  title: Périmètre du système de management IA
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-GOV-003
+  domain: GOV
+  title: Rôles et responsabilités
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-GOV-004
+  domain: GOV
+  title: AI Governance Committee
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-GOV-005
+  domain: GOV
+  title: AI System Owner
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-GOV-006
+  domain: GOV
+  title: Risk Owner
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-GOV-007
+  domain: GOV
+  title: Data Owner
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-GOV-008
+  domain: GOV
+  title: Acceptable AI Use Policy
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-GOV-009
+  domain: GOV
+  title: Processus d'approbation IA
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-GOV-010
+  domain: GOV
+  title: Gestion des exceptions
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-GOV-011
+  domain: GOV
+  title: Revue de direction IA
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-GOV-012
+  domain: GOV
+  title: Amélioration continue
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-INV-001
+  domain: INV
+  title: Inventaire central des systèmes IA
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-INV-002
+  domain: INV
+  title: Identification du propriétaire
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-INV-003
+  domain: INV
+  title: Description de la finalité
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-INV-004
+  domain: INV
+  title: Identification des utilisateurs
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-INV-005
+  domain: INV
+  title: Identification des populations affectées
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-INV-006
+  domain: INV
+  title: Modèle, fournisseur et version
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-INV-007
+  domain: INV
+  title: Interfaces et dépendances
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-INV-008
+  domain: INV
+  title: Statut du cycle de vie
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-USE-001
+  domain: USE
+  title: Description du cas d'usage
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-USE-002
+  domain: USE
+  title: Objectif métier
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-USE-003
+  domain: USE
+  title: Valeur attendue
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-USE-004
+  domain: USE
+  title: Parties prenantes
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-USE-005
+  domain: USE
+  title: Utilisateurs
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-USE-006
+  domain: USE
+  title: Décisions influencées
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-USE-007
+  domain: USE
+  title: Niveau d'autonomie
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-USE-008
+  domain: USE
+  title: Impact potentiel
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-USE-009
+  domain: USE
+  title: Criticité
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-USE-010
+  domain: USE
+  title: Décision Go / No-Go
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-RSK-001
+  domain: RSK
+  title: Méthodologie de risques IA
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-RSK-002
+  domain: RSK
+  title: Identification des risques
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-RSK-003
+  domain: RSK
+  title: Évaluation de la probabilité
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-RSK-004
+  domain: RSK
+  title: Évaluation de l'impact
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-RSK-005
+  domain: RSK
+  title: Calcul du niveau de risque
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-RSK-006
+  domain: RSK
+  title: Appétence et tolérance au risque
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-RSK-007
+  domain: RSK
+  title: Plan de traitement
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-RSK-008
+  domain: RSK
+  title: Évaluation du risque résiduel
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-RSK-009
+  domain: RSK
+  title: Acceptation formelle du risque
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-RSK-010
+  domain: RSK
+  title: Revue périodique des risques
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-RSK-011
+  domain: RSK
+  title: Risques émergents
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-RSK-012
+  domain: RSK
+  title: AI Impact Assessment
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-DAT-001
+  domain: DAT
+  title: Inventaire des données IA
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-DAT-002
+  domain: DAT
+  title: Data Owner
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-DAT-003
+  domain: DAT
+  title: Classification des données
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-DAT-004
+  domain: DAT
+  title: Données personnelles
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-DAT-005
+  domain: DAT
+  title: Données sensibles
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-DAT-006
+  domain: DAT
+  title: Données de santé
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-DAT-007
+  domain: DAT
+  title: Provenance et traçabilité
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-DAT-008
+  domain: DAT
+  title: Qualité des données
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-DAT-009
+  domain: DAT
+  title: Minimisation des données
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-DAT-010
+  domain: DAT
+  title: Rétention
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-DAT-011
+  domain: DAT
+  title: Transferts et localisation
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-DAT-012
+  domain: DAT
+  title: Données d'entraînement et de fine-tuning
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SEC-001
+  domain: SEC
+  title: Security by Design IA
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SEC-002
+  domain: SEC
+  title: Identity and Access Management
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SEC-003
+  domain: SEC
+  title: Principe du moindre privilège
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SEC-004
+  domain: SEC
+  title: Gestion des secrets
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SEC-005
+  domain: SEC
+  title: Chiffrement
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SEC-006
+  domain: SEC
+  title: Journalisation de sécurité
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SEC-007
+  domain: SEC
+  title: Protection contre les prompt injections
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SEC-008
+  domain: SEC
+  title: Prévention de l'exfiltration de données
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SEC-009
+  domain: SEC
+  title: Protection contre l'abus des modèles et API
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SEC-010
+  domain: SEC
+  title: Validation des entrées
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SEC-011
+  domain: SEC
+  title: Validation des sorties
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SEC-012
+  domain: SEC
+  title: Tests de sécurité IA
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SUP-001
+  domain: SUP
+  title: Inventaire des fournisseurs IA
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SUP-002
+  domain: SUP
+  title: Due diligence fournisseur
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SUP-003
+  domain: SUP
+  title: Localisation des données
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SUP-004
+  domain: SUP
+  title: Conditions contractuelles d'utilisation
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SUP-005
+  domain: SUP
+  title: Utilisation des données par le fournisseur
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SUP-006
+  domain: SUP
+  title: SLA et engagements de service
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SUP-007
+  domain: SUP
+  title: Assurance de sécurité fournisseur
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SUP-008
+  domain: SUP
+  title: Sous-traitants et sous-processeurs
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SUP-009
+  domain: SUP
+  title: Risque de dépendance fournisseur
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-SUP-010
+  domain: SUP
+  title: Stratégie de sortie et réversibilité
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-HUM-001
+  domain: HUM
+  title: Niveau de supervision humaine
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-HUM-002
+  domain: HUM
+  title: Validation humaine des décisions
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-HUM-003
+  domain: HUM
+  title: Compétence du validateur
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-HUM-004
+  domain: HUM
+  title: Mécanisme d'override
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-HUM-005
+  domain: HUM
+  title: Escalade humaine
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-HUM-006
+  domain: HUM
+  title: Information de l'utilisateur
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-HUM-007
+  domain: HUM
+  title: Formation aux usages IA
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-HUM-008
+  domain: HUM
+  title: AI Literacy
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-OPS-001
+  domain: OPS
+  title: Processus de mise en production
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-OPS-002
+  domain: OPS
+  title: Séparation Dev / Test / Prod
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-OPS-003
+  domain: OPS
+  title: Versionnement des modèles
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-OPS-004
+  domain: OPS
+  title: Versionnement des prompts
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-OPS-005
+  domain: OPS
+  title: Gestion de configuration
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-OPS-006
+  domain: OPS
+  title: Change Management
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-OPS-007
+  domain: OPS
+  title: Rollback
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-OPS-008
+  domain: OPS
+  title: Gestion des dépendances
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-OPS-009
+  domain: OPS
+  title: Capacity Management
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-OPS-010
+  domain: OPS
+  title: Disponibilité
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-OPS-011
+  domain: OPS
+  title: Sauvegarde et restauration
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-OPS-012
+  domain: OPS
+  title: Décommissionnement
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-MON-001
+  domain: MON
+  title: KPI IA
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-MON-002
+  domain: MON
+  title: Qualité des réponses
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-MON-003
+  domain: MON
+  title: Mesure des hallucinations
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-MON-004
+  domain: MON
+  title: Détection du drift
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-MON-005
+  domain: MON
+  title: Latence et performance
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-MON-006
+  domain: MON
+  title: Suivi des coûts
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-MON-007
+  domain: MON
+  title: Adoption et usage
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-MON-008
+  domain: MON
+  title: Revue périodique des performances
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-INC-001
+  domain: INC
+  title: Définition d'un incident IA
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-INC-002
+  domain: INC
+  title: Détection des incidents
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-INC-003
+  domain: INC
+  title: Classification des incidents
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-INC-004
+  domain: INC
+  title: Escalade
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-INC-005
+  domain: INC
+  title: Containment
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-INC-006
+  domain: INC
+  title: Investigation
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-INC-007
+  domain: INC
+  title: Communication
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-INC-008
+  domain: INC
+  title: Retour d'expérience et amélioration
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-CMP-001
+  domain: CMP
+  title: Identification des exigences applicables
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-CMP-002
+  domain: CMP
+  title: Mapping réglementaire
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-CMP-003
+  domain: CMP
+  title: Mapping normatif
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-CMP-004
+  domain: CMP
+  title: Gestion des preuves
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-CMP-005
+  domain: CMP
+  title: Auto-évaluation
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-CMP-006
+  domain: CMP
+  title: Audit interne
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-CMP-007
+  domain: CMP
+  title: Non-conformités
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+- id: AIGMS-CMP-008
+  domain: CMP
+  title: Préparation à l'audit
+  status: draft
+  version: '0.1'
+  control_type: baseline
+  applicability:
+    default: conditional
+  objective: null
+  risks: []
+  requirements: []
+  assessment_questions: []
+  expected_evidence: []
+  tests: []
+  maturity_model:
+    '0': Absent
+    '1': Documenté
+    '2': Implémenté
+    '3': Mesuré
+    '4': Automatisé / Amélioré
+  owner_role: null
+  review_frequency: null
+  framework_mappings: []
+  remediation_guidance: []
+control_profiles:
+- id: AIGMS-PROFILE-01
+  name: Employee GenAI
+  description: Assistants IA généralistes pour collaborateurs.
+- id: AIGMS-PROFILE-02
+  name: Internal RAG
+  description: RAG interne sur procédures, KB et documentation.
+- id: AIGMS-PROFILE-03
+  name: Customer Chatbot
+  description: Chatbot ou assistant conversationnel exposé aux clients.
+- id: AIGMS-PROFILE-04
+  name: AI Assisted Operations
+  description: IA d'assistance aux opérations NOC / exploitation.
+- id: AIGMS-PROFILE-05
+  name: AI Security Operations
+  description: IA d'assistance SOC / cybersécurité.
+- id: AIGMS-PROFILE-06
+  name: Autonomous Agent
+  description: Agent capable d'exécuter des actions sur le SI.
+- id: AIGMS-PROFILE-07
+  name: AI SaaS Provider
+  description: Service IA fourni en mode SaaS.
+- id: AIGMS-PROFILE-08
+  name: AI Infrastructure Provider
+  description: Hébergement, GPU, LLM gateway ou infrastructure IA.
+- id: AIGMS-PROFILE-09
+  name: Sensitive Data AI
+  description: IA traitant des données sensibles ou critiques.
+- id: AIGMS-PROFILE-10
+  name: Healthcare AI
+  description: IA impliquant des données ou usages liés à la santé.
+reference_use_cases:
+- id: UC01
+  name: Copilot bureautique
+  example: Microsoft 365 Copilot / ChatGPT Enterprise / Claude Enterprise pour collaborateurs
+- id: UC02
+  name: IA support client
+  example: Assistant de réponse aux tickets
+- id: UC03
+  name: RAG documentation
+  example: Interrogation de procédures, KB, contrats et documentation
+- id: UC04
+  name: IA NOC
+  example: Analyse d'alarmes réseau et datacenter
+- id: UC05
+  name: IA SOC
+  example: Analyse d'événements cybersécurité
+- id: UC06
+  name: Incident summarization
+  example: Résumé automatique d'incidents
+- id: UC07
+  name: Root Cause Analysis
+  example: Proposition de causes probables d'incidents
+- id: UC08
+  name: Capacity Planning
+  example: Prévision CPU, RAM, stockage et bande passante
+- id: UC09
+  name: Predictive Maintenance
+  example: Anticipation de pannes d'équipements
+- id: UC10
+  name: Ticket classification
+  example: Classification et routage des tickets
+- id: UC11
+  name: Customer chatbot
+  example: Chatbot client cloud / télécom
+- id: UC12
+  name: Contract assistant
+  example: Analyse de SLA, contrats et DPA
+- id: UC13
+  name: Sales assistant
+  example: Génération de propositions commerciales
+- id: UC14
+  name: Customer AI hosting
+  example: Hébergement de workloads IA clients
+- id: UC15
+  name: GPU-as-a-Service
+  example: Infrastructure GPU locale
+- id: UC16
+  name: Managed RAG
+  example: RAG opéré pour le compte d'un client
+- id: UC17
+  name: Managed AI agent
+  example: Agent IA opéré en service managé
+- id: UC18
+  name: HDS + AI
+  example: Traitement IA de données liées à la santé
+autonomy_levels:
+- level: L0
+  label: Information
+- level: L1
+  label: Assistance
+- level: L2
+  label: Recommandation
+- level: L3
+  label: Action après validation humaine
+- level: L4
+  label: Action automatique réversible
+- level: L5
+  label: Action autonome critique
+risk_categories:
+- SECURITY
+- PRIVACY
+- LEGAL
+- REGULATORY
+- OPERATIONAL
+- FINANCIAL
+- REPUTATION
+- HUMAN
+- BIAS
+- TRANSPARENCY
+- RELIABILITY
+- DEPENDENCY
+- SOVEREIGNTY
+evidence_status:
+- VALID
+- EXPIRED
+- MISSING
+- PARTIAL
+- REJECTED

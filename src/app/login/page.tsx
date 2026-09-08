@@ -20,9 +20,11 @@ export default function LoginPage() {
 
       <div className="flex grow items-center justify-center px-6 pb-24">
         <div className="w-full max-w-sm">
-          <h1 className="mb-2 font-serif text-3xl font-medium tracking-tight">Espace de gouvernance</h1>
+          <h1 className="mb-2 font-serif text-3xl font-medium tracking-tight">
+            Accès à l’espace de gouvernance
+          </h1>
           <p className="mb-8 text-[15px] text-ink-600">
-            L’accès est réservé aux comptes ouverts par votre AI Governance Officer.
+            L’accès est réservé aux comptes ouverts par l’administration de la plateforme.
           </p>
 
           <Suspense fallback={null}>
@@ -30,8 +32,8 @@ export default function LoginPage() {
           </Suspense>
 
           <p className="mt-8 border-t border-ink-200 pt-6 text-[13px] leading-relaxed text-ink-500">
-            Mot de passe oublié ou accès à ouvrir : adressez-vous à votre AI Governance Officer, qui
-            gère les comptes de votre organisation.
+            Mot de passe oublié ou accès à ouvrir : adressez-vous à l’administration de la
+            plateforme, qui déclare les comptes et attribue les rôles.
           </p>
         </div>
       </div>

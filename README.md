@@ -96,6 +96,11 @@ flux de branches et de déploiement est décrit dans `CLAUDE.md`.
 Les sources de vérité produit sont dans `00_Governance` à `04_References` ;
 `CLAUDE.md` en fixe l'ordre de lecture.
 
+Le référentiel de contrôles est une donnée métier versionnée, sous
+`knowledge/frameworks/aigms/`. Une baseline publiée ne se modifie pas : toute
+évolution crée une nouvelle version. Le code applicatif ne code jamais un
+contrôle en dur — il les lit depuis le catalogue importé.
+
 ## Périmètre
 
 AIGMS ne construit ni SIEM, ni DLP, ni CMDB, ni ITSM, ni IAM, ni plateforme

@@ -28,6 +28,30 @@ Ce document décrit ce qui **existe en base**, par opposition au modèle cible d
 `framework`, `requirement`, `control`, `control_requirement_map`,
 `control_applicability`, `evidence`, `control_evidence`.
 
+### CONNECT
+`governance_connector`, `connector_sync_run`.
+
+Le contrat d'intégration exigé par la matrice BUILD/CONNECT : source, capacités,
+authentification, portées, objets importés, fréquence, fraîcheur, erreurs,
+propriétaire et rétention. **Aucun secret n'y figure** : la table porte le nom de
+la variable d'environnement qui le détient, et un trigger refuse toute valeur
+ayant l'apparence d'un jeton ([ADR-0009](../adr/ADR-0009-connector-secrets.md)).
+
+### Catalogue de contrôles
+`catalog_framework`, `catalog_version`, `catalog_domain`, `catalog_control`,
+`catalog_profile`, `catalog_reference_use_case`, `catalog_import_job`,
+`catalog_import_error`.
+
+Bibliothèque de contrôles-types importée depuis un paquet versionné, à ne pas
+confondre avec `framework` / `requirement`, qui portent les référentiels
+**normatifs** externes. Un `control` instancié chez un client peut référencer
+son contrôle-type par `catalog_control_id`.
+
+Flux d'import : `UPLOADED → VALIDATED → REVIEWED → IMPORTED → PUBLISHED`, ou
+`UPLOADED → REJECTED`. La validation consigne chaque constat plutôt que
+d'échouer au premier ; l'import est transactionnel ; une baseline publiée est
+gelée par trigger, et se réimporter lui est refusé.
+
 ### Traçabilité
 `audit_log`, `governance_event`.
 

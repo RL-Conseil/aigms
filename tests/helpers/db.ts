@@ -74,17 +74,39 @@ export async function countVisible(client: Client, table: string): Promise<numbe
   return Number(rows[0]?.n ?? '0')
 }
 
-/** Capture l'erreur Postgres d'une requete attendue en echec. */
+/**
+ * Capture l'erreur Postgres d'une requete attendue en echec.
+ *
+ * L'appel est encadre d'un point de reprise : une erreur Postgres avorte la
+ * transaction courante, et sans cela un test ne pourrait plus rien faire apres
+ * avoir verifie un refus. Le point de reprise rend la transaction de nouveau
+ * utilisable.
+ */
+let savepointCounter = 0
+
 export async function expectFailure(
   client: Client,
   sql: string,
   params: unknown[] = [],
 ): Promise<{ message: string; code?: string }> {
+  const savepoint = `expect_failure_${(savepointCounter += 1)}`
+  let inTransaction = true
+
+  try {
+    await client.query(`savepoint ${savepoint}`)
+  } catch {
+    // Hors transaction : l'appelant n'a pas ouvert de bloc, rien a proteger.
+    inTransaction = false
+  }
+
   try {
     await client.query(sql, params)
   } catch (error) {
+    if (inTransaction) await client.query(`rollback to savepoint ${savepoint}`)
     const e = error as { message: string; code?: string }
     return { message: e.message, code: e.code }
   }
+
+  if (inTransaction) await client.query(`release savepoint ${savepoint}`)
   throw new Error(`La requete aurait du echouer : ${sql}`)
 }

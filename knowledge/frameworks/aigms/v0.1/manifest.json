@@ -1,0 +1,19 @@
+{
+  "package": "AIGMS_CONTROL_FRAMEWORK",
+  "version": "0.1",
+  "canonical_file": "aigms_control_framework_v0.1.json",
+  "editable_file": "aigms_control_framework_v0.1.yaml",
+  "flat_control_file": "aigms_controls_v0.1.csv",
+  "import_mode": "upsert",
+  "natural_keys": {
+    "framework": "framework.id + framework.version",
+    "control": "control.id + control.version",
+    "domain": "domain.code"
+  },
+  "expected_behavior": {
+    "preserve_historical_versions": true,
+    "reject_duplicate_ids_same_version": true,
+    "validate_domain_fk": true,
+    "validate_control_count": 120
+  }
+}

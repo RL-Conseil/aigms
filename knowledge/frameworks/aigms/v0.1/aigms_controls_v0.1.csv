@@ -1,0 +1,121 @@
+﻿control_id;domain;title;status;version;control_type;default_applicability
+AIGMS-GOV-001;GOV;Politique de gouvernance IA;draft;0.1;baseline;conditional
+AIGMS-GOV-002;GOV;Périmètre du système de management IA;draft;0.1;baseline;conditional
+AIGMS-GOV-003;GOV;Rôles et responsabilités;draft;0.1;baseline;conditional
+AIGMS-GOV-004;GOV;AI Governance Committee;draft;0.1;baseline;conditional
+AIGMS-GOV-005;GOV;AI System Owner;draft;0.1;baseline;conditional
+AIGMS-GOV-006;GOV;Risk Owner;draft;0.1;baseline;conditional
+AIGMS-GOV-007;GOV;Data Owner;draft;0.1;baseline;conditional
+AIGMS-GOV-008;GOV;Acceptable AI Use Policy;draft;0.1;baseline;conditional
+AIGMS-GOV-009;GOV;Processus d'approbation IA;draft;0.1;baseline;conditional
+AIGMS-GOV-010;GOV;Gestion des exceptions;draft;0.1;baseline;conditional
+AIGMS-GOV-011;GOV;Revue de direction IA;draft;0.1;baseline;conditional
+AIGMS-GOV-012;GOV;Amélioration continue;draft;0.1;baseline;conditional
+AIGMS-INV-001;INV;Inventaire central des systèmes IA;draft;0.1;baseline;conditional
+AIGMS-INV-002;INV;Identification du propriétaire;draft;0.1;baseline;conditional
+AIGMS-INV-003;INV;Description de la finalité;draft;0.1;baseline;conditional
+AIGMS-INV-004;INV;Identification des utilisateurs;draft;0.1;baseline;conditional
+AIGMS-INV-005;INV;Identification des populations affectées;draft;0.1;baseline;conditional
+AIGMS-INV-006;INV;Modèle, fournisseur et version;draft;0.1;baseline;conditional
+AIGMS-INV-007;INV;Interfaces et dépendances;draft;0.1;baseline;conditional
+AIGMS-INV-008;INV;Statut du cycle de vie;draft;0.1;baseline;conditional
+AIGMS-USE-001;USE;Description du cas d'usage;draft;0.1;baseline;conditional
+AIGMS-USE-002;USE;Objectif métier;draft;0.1;baseline;conditional
+AIGMS-USE-003;USE;Valeur attendue;draft;0.1;baseline;conditional
+AIGMS-USE-004;USE;Parties prenantes;draft;0.1;baseline;conditional
+AIGMS-USE-005;USE;Utilisateurs;draft;0.1;baseline;conditional
+AIGMS-USE-006;USE;Décisions influencées;draft;0.1;baseline;conditional
+AIGMS-USE-007;USE;Niveau d'autonomie;draft;0.1;baseline;conditional
+AIGMS-USE-008;USE;Impact potentiel;draft;0.1;baseline;conditional
+AIGMS-USE-009;USE;Criticité;draft;0.1;baseline;conditional
+AIGMS-USE-010;USE;Décision Go / No-Go;draft;0.1;baseline;conditional
+AIGMS-RSK-001;RSK;Méthodologie de risques IA;draft;0.1;baseline;conditional
+AIGMS-RSK-002;RSK;Identification des risques;draft;0.1;baseline;conditional
+AIGMS-RSK-003;RSK;Évaluation de la probabilité;draft;0.1;baseline;conditional
+AIGMS-RSK-004;RSK;Évaluation de l'impact;draft;0.1;baseline;conditional
+AIGMS-RSK-005;RSK;Calcul du niveau de risque;draft;0.1;baseline;conditional
+AIGMS-RSK-006;RSK;Appétence et tolérance au risque;draft;0.1;baseline;conditional
+AIGMS-RSK-007;RSK;Plan de traitement;draft;0.1;baseline;conditional
+AIGMS-RSK-008;RSK;Évaluation du risque résiduel;draft;0.1;baseline;conditional
+AIGMS-RSK-009;RSK;Acceptation formelle du risque;draft;0.1;baseline;conditional
+AIGMS-RSK-010;RSK;Revue périodique des risques;draft;0.1;baseline;conditional
+AIGMS-RSK-011;RSK;Risques émergents;draft;0.1;baseline;conditional
+AIGMS-RSK-012;RSK;AI Impact Assessment;draft;0.1;baseline;conditional
+AIGMS-DAT-001;DAT;Inventaire des données IA;draft;0.1;baseline;conditional
+AIGMS-DAT-002;DAT;Data Owner;draft;0.1;baseline;conditional
+AIGMS-DAT-003;DAT;Classification des données;draft;0.1;baseline;conditional
+AIGMS-DAT-004;DAT;Données personnelles;draft;0.1;baseline;conditional
+AIGMS-DAT-005;DAT;Données sensibles;draft;0.1;baseline;conditional
+AIGMS-DAT-006;DAT;Données de santé;draft;0.1;baseline;conditional
+AIGMS-DAT-007;DAT;Provenance et traçabilité;draft;0.1;baseline;conditional
+AIGMS-DAT-008;DAT;Qualité des données;draft;0.1;baseline;conditional
+AIGMS-DAT-009;DAT;Minimisation des données;draft;0.1;baseline;conditional
+AIGMS-DAT-010;DAT;Rétention;draft;0.1;baseline;conditional
+AIGMS-DAT-011;DAT;Transferts et localisation;draft;0.1;baseline;conditional
+AIGMS-DAT-012;DAT;Données d'entraînement et de fine-tuning;draft;0.1;baseline;conditional
+AIGMS-SEC-001;SEC;Security by Design IA;draft;0.1;baseline;conditional
+AIGMS-SEC-002;SEC;Identity and Access Management;draft;0.1;baseline;conditional
+AIGMS-SEC-003;SEC;Principe du moindre privilège;draft;0.1;baseline;conditional
+AIGMS-SEC-004;SEC;Gestion des secrets;draft;0.1;baseline;conditional
+AIGMS-SEC-005;SEC;Chiffrement;draft;0.1;baseline;conditional
+AIGMS-SEC-006;SEC;Journalisation de sécurité;draft;0.1;baseline;conditional
+AIGMS-SEC-007;SEC;Protection contre les prompt injections;draft;0.1;baseline;conditional
+AIGMS-SEC-008;SEC;Prévention de l'exfiltration de données;draft;0.1;baseline;conditional
+AIGMS-SEC-009;SEC;Protection contre l'abus des modèles et API;draft;0.1;baseline;conditional
+AIGMS-SEC-010;SEC;Validation des entrées;draft;0.1;baseline;conditional
+AIGMS-SEC-011;SEC;Validation des sorties;draft;0.1;baseline;conditional
+AIGMS-SEC-012;SEC;Tests de sécurité IA;draft;0.1;baseline;conditional
+AIGMS-SUP-001;SUP;Inventaire des fournisseurs IA;draft;0.1;baseline;conditional
+AIGMS-SUP-002;SUP;Due diligence fournisseur;draft;0.1;baseline;conditional
+AIGMS-SUP-003;SUP;Localisation des données;draft;0.1;baseline;conditional
+AIGMS-SUP-004;SUP;Conditions contractuelles d'utilisation;draft;0.1;baseline;conditional
+AIGMS-SUP-005;SUP;Utilisation des données par le fournisseur;draft;0.1;baseline;conditional
+AIGMS-SUP-006;SUP;SLA et engagements de service;draft;0.1;baseline;conditional
+AIGMS-SUP-007;SUP;Assurance de sécurité fournisseur;draft;0.1;baseline;conditional
+AIGMS-SUP-008;SUP;Sous-traitants et sous-processeurs;draft;0.1;baseline;conditional
+AIGMS-SUP-009;SUP;Risque de dépendance fournisseur;draft;0.1;baseline;conditional
+AIGMS-SUP-010;SUP;Stratégie de sortie et réversibilité;draft;0.1;baseline;conditional
+AIGMS-HUM-001;HUM;Niveau de supervision humaine;draft;0.1;baseline;conditional
+AIGMS-HUM-002;HUM;Validation humaine des décisions;draft;0.1;baseline;conditional
+AIGMS-HUM-003;HUM;Compétence du validateur;draft;0.1;baseline;conditional
+AIGMS-HUM-004;HUM;Mécanisme d'override;draft;0.1;baseline;conditional
+AIGMS-HUM-005;HUM;Escalade humaine;draft;0.1;baseline;conditional
+AIGMS-HUM-006;HUM;Information de l'utilisateur;draft;0.1;baseline;conditional
+AIGMS-HUM-007;HUM;Formation aux usages IA;draft;0.1;baseline;conditional
+AIGMS-HUM-008;HUM;AI Literacy;draft;0.1;baseline;conditional
+AIGMS-OPS-001;OPS;Processus de mise en production;draft;0.1;baseline;conditional
+AIGMS-OPS-002;OPS;Séparation Dev / Test / Prod;draft;0.1;baseline;conditional
+AIGMS-OPS-003;OPS;Versionnement des modèles;draft;0.1;baseline;conditional
+AIGMS-OPS-004;OPS;Versionnement des prompts;draft;0.1;baseline;conditional
+AIGMS-OPS-005;OPS;Gestion de configuration;draft;0.1;baseline;conditional
+AIGMS-OPS-006;OPS;Change Management;draft;0.1;baseline;conditional
+AIGMS-OPS-007;OPS;Rollback;draft;0.1;baseline;conditional
+AIGMS-OPS-008;OPS;Gestion des dépendances;draft;0.1;baseline;conditional
+AIGMS-OPS-009;OPS;Capacity Management;draft;0.1;baseline;conditional
+AIGMS-OPS-010;OPS;Disponibilité;draft;0.1;baseline;conditional
+AIGMS-OPS-011;OPS;Sauvegarde et restauration;draft;0.1;baseline;conditional
+AIGMS-OPS-012;OPS;Décommissionnement;draft;0.1;baseline;conditional
+AIGMS-MON-001;MON;KPI IA;draft;0.1;baseline;conditional
+AIGMS-MON-002;MON;Qualité des réponses;draft;0.1;baseline;conditional
+AIGMS-MON-003;MON;Mesure des hallucinations;draft;0.1;baseline;conditional
+AIGMS-MON-004;MON;Détection du drift;draft;0.1;baseline;conditional
+AIGMS-MON-005;MON;Latence et performance;draft;0.1;baseline;conditional
+AIGMS-MON-006;MON;Suivi des coûts;draft;0.1;baseline;conditional
+AIGMS-MON-007;MON;Adoption et usage;draft;0.1;baseline;conditional
+AIGMS-MON-008;MON;Revue périodique des performances;draft;0.1;baseline;conditional
+AIGMS-INC-001;INC;Définition d'un incident IA;draft;0.1;baseline;conditional
+AIGMS-INC-002;INC;Détection des incidents;draft;0.1;baseline;conditional
+AIGMS-INC-003;INC;Classification des incidents;draft;0.1;baseline;conditional
+AIGMS-INC-004;INC;Escalade;draft;0.1;baseline;conditional
+AIGMS-INC-005;INC;Containment;draft;0.1;baseline;conditional
+AIGMS-INC-006;INC;Investigation;draft;0.1;baseline;conditional
+AIGMS-INC-007;INC;Communication;draft;0.1;baseline;conditional
+AIGMS-INC-008;INC;Retour d'expérience et amélioration;draft;0.1;baseline;conditional
+AIGMS-CMP-001;CMP;Identification des exigences applicables;draft;0.1;baseline;conditional
+AIGMS-CMP-002;CMP;Mapping réglementaire;draft;0.1;baseline;conditional
+AIGMS-CMP-003;CMP;Mapping normatif;draft;0.1;baseline;conditional
+AIGMS-CMP-004;CMP;Gestion des preuves;draft;0.1;baseline;conditional
+AIGMS-CMP-005;CMP;Auto-évaluation;draft;0.1;baseline;conditional
+AIGMS-CMP-006;CMP;Audit interne;draft;0.1;baseline;conditional
+AIGMS-CMP-007;CMP;Non-conformités;draft;0.1;baseline;conditional
+AIGMS-CMP-008;CMP;Préparation à l'audit;draft;0.1;baseline;conditional

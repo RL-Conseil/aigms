@@ -21,7 +21,8 @@ Version 1.0 — 7 septembre 2026
 | 12 — Incident / CAPA | incident, confinement, cause, CAPA, efficacité | **Terminé** (côté données) |
 | 13 — OPERATE Dashboard | revues dues, risques, décisions, preuves, actions, incidents | **Terminé** |
 | 14 — Audit / Management Review | constats, revue de direction, export | **Non commencé** |
-| 15 — Connector Framework | contrat abstrait, lecture seule, fraîcheur | **Non commencé** |
+| 15 — Connector Framework | contrat abstrait, lecture seule, fraîcheur | **Partiel** : `governance_connector` porte le contrat d'intégration — source, capacités, habilitations, fréquence, fraîcheur, erreurs — et l'écran d'administration le configure. Aucune intégration réelle n'est encore branchée ([ADR-0009](../adr/ADR-0009-connector-secrets.md)) |
+| — Référentiels de contrôles | import, validation, publication d'une bibliothèque de contrôles-types | **Terminé** : flux complet de `IMPORT_SPEC.md`, éprouvé sur le paquet AIGMS Control Framework v0.1 — 12 domaines, 120 contrôles |
 
 ## Vertical slice — critère du prompt de build
 
@@ -36,9 +37,9 @@ par les fonctions de transition réelles : si un gate régresse, le seed échoue
 
 | Suite | Nombre | Couvre |
 |---|---|---|
-| `tests/unit` | 8 | libellés et présentation du domaine |
-| `tests/rls` | 58 | isolation cross-tenant, RBAC, transitions interdites, gate production, acceptation de risque, registre de décisions, moteur de réévaluation, journal d'audit, parité interface/base, surface publique |
-| `tests/e2e` | 16 | site public et formulaire de contact ; connexion, parcours complet, refus de gate motivé, tableau de bord |
+| `tests/unit` | 12 | libellés et présentation du domaine |
+| `tests/rls` | 67 | isolation cross-tenant, RBAC, transitions interdites, gate production, acceptation de risque, registre de décisions, moteur de réévaluation, journal d'audit, parité interface/base, surface publique |
+| `tests/e2e` | 22 | site public et formulaire de contact ; connexion, parcours complet, refus de gate motivé, tableau de bord |
 
 Tous verts au 7 septembre 2026.
 
@@ -94,6 +95,8 @@ Deux jetons Supabase cohabitent, un par projet : celui qui couvre
 | `/admin/pilotage` | session requise — tableau de bord OPERATE |
 | `/admin/organizations/[id]`, `/admin/use-cases/[id]` | session requise |
 | `/admin/contacts` | session requise, réservée à l'administration plateforme |
+| `/admin/connecteurs` | session requise, réservée à l'administration plateforme |
+| `/admin/referentiels` | session requise, réservée à l'administration plateforme |
 | `/admin/comptes` | session requise, réservée à l'administration plateforme — comptes et rôles |
 | `/admin/organisations/nouvelle` | session requise, réservée à l'administration plateforme |
 | `/admin/parametres` | session requise — profil, rôle, organisation |
