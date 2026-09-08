@@ -50,6 +50,7 @@ Tous verts au 7 septembre 2026.
 | Supabase local (Docker) | opérationnel, 15 migrations appliquées |
 | Supabase distant `aigms-supabase` (`xsagbzrgoljzgorwvsir`, eu-west-1) | **provisionné** : 15 migrations appliquées, jeu de démonstration chargé, étanchéité vérifiée par l'API |
 | Vercel | **provisionné** : projet `aigms` (équipe `rlabradors-projects`), variables d'environnement posées, production en ligne sur `aigms.vercel.app` derrière la protection SSO d'équipe |
+| Notification des demandes de contact | **fonctionnelle, en mode test** : clé Resend chiffrée dans les variables Vercel. Le domaine d'envoi n'étant pas vérifié, l'expéditeur est imposé à `onboarding@resend.dev` et le seul destinataire accepté est l'adresse propriétaire du compte Resend. Voir ci-dessous |
 | CI GitHub Actions | écrite ; le push nécessite le scope `workflow` sur le jeton `gh` |
 
 ## Vérification du projet distant
@@ -79,6 +80,29 @@ Effectuée par appels API le 7 septembre 2026 :
 
 `src/proxy.ts` ne protège que le préfixe `/admin` ; l'autorisation réelle reste
 portée par la RLS.
+
+## Notification des demandes de contact
+
+La chaîne fonctionne de bout en bout — formulaire, enregistrement en base,
+appel Resend — mais le compte Resend est en **mode test** : tant qu'aucun
+domaine n'y est vérifié, il refuse tout expéditeur autre que
+`onboarding@resend.dev` et tout destinataire autre que l'adresse propriétaire
+du compte.
+
+Pour notifier `contact@iparenea.fr` :
+
+1. Ajouter `iparenea.fr` sur https://resend.com/domains et poser les
+   enregistrements DNS demandés (SPF, DKIM).
+2. Une fois le domaine vérifié, changer deux variables Vercel :
+   `CONTACT_NOTIFICATION_FROM` vers une adresse de ce domaine (par exemple
+   `AIGMS <aigms@iparenea.fr>`) et `CONTACT_NOTIFICATION_EMAIL` vers
+   `contact@iparenea.fr`.
+3. Redéployer.
+
+Aucune modification de code n'est nécessaire : ces deux valeurs sont des
+variables d'environnement. Et dans tous les cas, l'enregistrement en base ne
+dépend pas de la notification — une demande reste consultable dans
+`/admin/contacts` même si l'envoi échoue.
 
 ## Deux liens à rétablir
 
