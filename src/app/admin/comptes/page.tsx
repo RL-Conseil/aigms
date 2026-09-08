@@ -7,7 +7,7 @@ import { ROLE_LABELS, type AppRole } from '@/lib/domain/roles'
 import { formatDate } from '@/lib/domain/governance'
 
 /**
- * Comptes et roles du portefeuille.
+ * Comptes et roles de la plateforme.
  *
  * L'administration ouvre les acces ; elle ne gouverne pas. Cette page est donc
  * son poste de travail principal : declarer qui entre, avec quel role, sur
@@ -54,7 +54,7 @@ export default async function AccountsPage() {
   return (
     <Shell
       title="Comptes et rôles"
-      subtitle="Qui accède au portefeuille, avec quel rôle et sur quelle organisation."
+      subtitle="Qui accède à la plateforme, avec quel rôle et sur quelle organisation."
       actions={<Badge tone="info">{memberships?.length ?? 0} compte(s)</Badge>}
     >
       <div className="grid gap-5 lg:grid-cols-5">
@@ -117,7 +117,7 @@ export default async function AccountsPage() {
         <div className="lg:col-span-2">
           <Card
             title="Déclarer un compte"
-            subtitle="Le compte est créé, rattaché au portefeuille et doté de son rôle."
+            subtitle="Le compte est créé, rattaché à la plateforme et doté de son rôle."
           >
             <AccountForm organizations={organizations ?? []} />
           </Card>

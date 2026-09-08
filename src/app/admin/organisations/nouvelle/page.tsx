@@ -22,9 +22,9 @@ export default async function NewOrganizationPage() {
 
   return (
     <Shell
-      breadcrumb={[{ href: '/admin', label: 'Portefeuille' }]}
+      breadcrumb={[{ href: '/admin', label: 'Organisations' }]}
       title="Nouvelle organisation"
-      subtitle="Le client entre au portefeuille. Sa gouvernance sera portée par les rôles que vous attribuerez ensuite."
+      subtitle="L’organisation entre sur la plateforme. Sa gouvernance sera portée par les rôles que vous attribuerez ensuite."
     >
       <div className="max-w-3xl">
         <Card title="Identité de l’organisation">

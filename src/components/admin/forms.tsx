@@ -151,7 +151,7 @@ export function AccountForm({
             Organisation <span className="font-normal text-ink-500">(facultatif)</span>
           </label>
           <select id="organizationId" name="organizationId" defaultValue="" className={FIELD}>
-            <option value="">Portefeuille entier</option>
+            <option value="">Toutes les organisations</option>
             {organizations.map((org) => (
               <option key={org.id} value={org.id}>
                 {org.name}

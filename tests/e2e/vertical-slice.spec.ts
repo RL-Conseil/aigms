@@ -13,7 +13,7 @@ test.beforeEach(async ({ page }) => {
   await page.getByLabel('Adresse électronique').fill(OFFICER.email)
   await page.getByLabel('Mot de passe').fill(OFFICER.password)
   await page.getByRole('button', { name: 'Se connecter' }).click()
-  await expect(page.getByRole('heading', { name: 'Portefeuille' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Organisations' })).toBeVisible()
 })
 
 test("l'espace d'administration exige une session", async ({ page, context }) => {

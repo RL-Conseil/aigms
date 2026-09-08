@@ -562,8 +562,8 @@ export default function LandingPage() {
                   <div className="grid gap-2 pt-4 sm:grid-cols-[190px_1fr] sm:gap-5">
                     <dt className="text-[15px] font-semibold text-brand-700">AIGMS</dt>
                     <dd className="text-sm leading-relaxed text-ink-700">
-                      Le poste de pilotage de l’AI Governance Officer, pour une PME/ETI ou pour un
-                      portefeuille de clients
+                      Le poste de pilotage de l’AI Governance Officer, pour une PME/ETI comme pour
+                      un cabinet suivant plusieurs organisations
                     </dd>
                   </div>
                 </dl>

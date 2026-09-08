@@ -36,7 +36,7 @@ export default async function SettingsPage() {
           <Card title="Votre rôle">
             {viewer.role ? (
               <dl className="space-y-3">
-                <Field label="Rôle sur le portefeuille">
+                <Field label="Rôle sur l’ensemble des organisations">
                   <span className="inline-flex items-center gap-2">
                     <Badge tone={administrating ? 'warn' : 'info'}>
                       {ROLE_LABELS[viewer.role]}
@@ -68,8 +68,7 @@ export default async function SettingsPage() {
                     </ul>
                   ) : (
                     <span className="text-sm text-ink-500">
-                      Aucune affectation par organisation : votre rôle porte sur tout le
-                      portefeuille.
+                      Aucune affectation ciblée : votre rôle porte sur toutes les organisations.
                     </span>
                   )}
                 </Field>

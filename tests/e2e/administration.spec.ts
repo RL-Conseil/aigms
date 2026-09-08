@@ -12,7 +12,7 @@ async function signIn(page: import('@playwright/test').Page, who: typeof ADMIN) 
   await page.getByLabel('Adresse électronique').fill(who.email)
   await page.getByLabel('Mot de passe').fill(who.password)
   await page.getByRole('button', { name: 'Se connecter' }).click()
-  await expect(page.getByRole('heading', { name: 'Portefeuille' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Organisations' })).toBeVisible()
 }
 
 test("le bandeau annonce le mode administration des la connexion", async ({ page }) => {
@@ -21,6 +21,20 @@ test("le bandeau annonce le mode administration des la connexion", async ({ page
   await expect(page.getByText('Administration de la plateforme.')).toBeVisible()
   await expect(
     page.getByText('Vous ouvrez les accès : organisations, comptes et rôles.'),
+  ).toBeVisible()
+})
+
+test("le sous-titre distingue administrer et gouverner", async ({ page }) => {
+  await signIn(page, ADMIN)
+  await expect(page.getByText('Les organisations déclarées sur la plateforme.')).toBeVisible()
+
+  await page.getByRole('button', { name: /Inès Duhamel/ }).click()
+  await page.getByRole('menuitem', { name: 'Se déconnecter' }).click()
+  await expect(page).toHaveURL(/\/login/)
+
+  await signIn(page, OFFICER)
+  await expect(
+    page.getByText('Les organisations dont vous pilotez la gouvernance de l’IA.'),
   ).toBeVisible()
 })
 

@@ -38,7 +38,7 @@ par les fonctions de transition réelles : si un gate régresse, le seed échoue
 |---|---|---|
 | `tests/unit` | 8 | libellés et présentation du domaine |
 | `tests/rls` | 58 | isolation cross-tenant, RBAC, transitions interdites, gate production, acceptation de risque, registre de décisions, moteur de réévaluation, journal d'audit, parité interface/base, surface publique |
-| `tests/e2e` | 15 | site public et formulaire de contact ; connexion, parcours complet, refus de gate motivé, tableau de bord |
+| `tests/e2e` | 16 | site public et formulaire de contact ; connexion, parcours complet, refus de gate motivé, tableau de bord |
 
 Tous verts au 7 septembre 2026.
 
@@ -90,7 +90,7 @@ Deux jetons Supabase cohabitent, un par projet : celui qui couvre
 | `/` | publique — page de présentation |
 | `/contact` | publique — formulaire de rappel |
 | `/login` | publique — identifiant et mot de passe, sans récupération |
-| `/admin` | session requise — portefeuille |
+| `/admin` | session requise — organisations |
 | `/admin/pilotage` | session requise — tableau de bord OPERATE |
 | `/admin/organizations/[id]`, `/admin/use-cases/[id]` | session requise |
 | `/admin/contacts` | session requise, réservée à l'administration plateforme |

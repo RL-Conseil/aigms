@@ -88,6 +88,7 @@ flux de branches et de déploiement est décrit dans `CLAUDE.md`.
 | [`docs/architecture/AIGMS_TARGET_ARCHITECTURE.md`](docs/architecture/AIGMS_TARGET_ARCHITECTURE.md) | architecture cible et couches |
 | [`docs/architecture/CURRENT_STATE.md`](docs/architecture/CURRENT_STATE.md) | audit initial du dépôt et des accès |
 | [`docs/domain/DOMAIN_MODEL_IMPLEMENTED.md`](docs/domain/DOMAIN_MODEL_IMPLEMENTED.md) | ce qui existe en base : agrégats, gates, moteur de réévaluation |
+| [`docs/domain/VOCABULAIRE.md`](docs/domain/VOCABULAIRE.md) | les mots tranchés et pourquoi |
 | [`docs/security/TENANCY_RLS_MODEL.md`](docs/security/TENANCY_RLS_MODEL.md) | modèle de tenancy et politiques RLS |
 | [`docs/roadmap/IMPLEMENTATION_STATUS.md`](docs/roadmap/IMPLEMENTATION_STATUS.md) | avancement par sprint |
 | [`docs/adr/`](docs/adr/) | décisions d'architecture |

@@ -211,7 +211,7 @@ export async function createAccount(_previous: Result | null, formData: FormData
     if (assignmentError) {
       return {
         ok: false,
-        message: `Compte rattaché au portefeuille, mais affectation à l’organisation refusée : ${assignmentError.message}`,
+        message: `Compte rattaché, mais affectation à l’organisation refusée : ${assignmentError.message}`,
       }
     }
   }

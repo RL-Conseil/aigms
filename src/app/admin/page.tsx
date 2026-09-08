@@ -6,8 +6,11 @@ import { formatDate } from '@/lib/domain/governance'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 
 /**
- * Vue consultant : le portefeuille d'organisations gouvernees.
- * Aucun filtre par tenant n'est ecrit ici — la RLS s'en charge.
+ * Les organisations dont la gouvernance de l'IA est suivie depuis ce compte.
+ *
+ * Le sous-titre suit le role : administrer des organisations et en gouverner
+ * les usages sont deux metiers, et l'ecran ne raconte pas la meme chose a l'un
+ * et a l'autre. Aucun filtre par tenant n'est ecrit ici — la RLS s'en charge.
  */
 export default async function PortfolioPage() {
   const supabase = await createClient()
@@ -19,7 +22,7 @@ export default async function PortfolioPage() {
     .order('name')
 
   if (error) {
-    throw new Error(`Lecture du portefeuille impossible : ${error.message}`)
+    throw new Error(`Lecture des organisations impossible : ${error.message}`)
   }
 
   const { data: useCases } = await supabase
@@ -36,8 +39,12 @@ export default async function PortfolioPage() {
 
   return (
     <Shell
-      title="Portefeuille"
-      subtitle="Organisations dont la gouvernance de l'IA est pilotée depuis ce compte."
+      title="Organisations"
+      subtitle={
+        administrating
+          ? 'Les organisations déclarées sur la plateforme.'
+          : 'Les organisations dont vous pilotez la gouvernance de l’IA.'
+      }
       actions={
         administrating ? (
           <Link
@@ -49,7 +56,7 @@ export default async function PortfolioPage() {
         ) : undefined
       }
     >
-      <Card title="Organisations" subtitle={`${organizations?.length ?? 0} organisation(s)`}>
+      <Card title="Liste" subtitle={`${organizations?.length ?? 0} organisation(s)`}>
         {organizations?.length ? (
           <ul className="divide-y divide-ink-100">
             {organizations.map((org) => {

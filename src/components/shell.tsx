@@ -17,12 +17,12 @@ import { ROLE_LABELS } from '@/lib/domain/roles'
 type NavLink = { href: string; label: string }
 
 const GOVERNANCE_NAV: NavLink[] = [
-  { href: '/admin', label: 'Portefeuille' },
+  { href: '/admin', label: 'Organisations' },
   { href: '/admin/pilotage', label: 'Pilotage' },
 ]
 
 const ADMIN_NAV: NavLink[] = [
-  { href: '/admin', label: 'Portefeuille' },
+  { href: '/admin', label: 'Organisations' },
   { href: '/admin/comptes', label: 'Comptes et rôles' },
   { href: '/admin/contacts', label: 'Demandes' },
 ]
@@ -49,7 +49,7 @@ export async function Shell({
     <div className="min-h-screen">
       <header className="border-b border-ink-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-3">
-          <Link href="/admin" aria-label="AIGMS, portefeuille">
+          <Link href="/admin" aria-label="AIGMS, organisations">
             <Wordmark size={26} />
           </Link>
 
