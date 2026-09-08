@@ -1,0 +1,306 @@
+{
+  "framework": {
+    "code": "ISO_IEC_42001",
+    "version": "2023",
+    "name": "ISO/IEC 42001:2023 — Annexe A",
+    "publisher": "ISO/IEC",
+    "official_source": "https://www.iso.org/standard/81230.html",
+    "effective_from": "2023-12-01",
+    "control_objective_count": 9,
+    "control_count": 38,
+    "notice": "Ce fichier ne reproduit pas le texte de la norme. Il porte la numérotation de l'Annexe A — un fait, non protégeable — accompagnée de titres et de résumés rédigés en propre, exprimant ce qu'une organisation doit pouvoir démontrer. Le texte officiel s'obtient auprès de l'ISO.",
+    "review": {
+      "status": "à relire",
+      "note": "Première rédaction produite pour AIGMS. Les résumés engagent une interprétation : ils doivent être relus et validés avant tout usage devant un client ou un auditeur."
+    }
+  },
+
+  "objectives": [
+    { "code": "A.2",  "title": "Politiques relatives à l'IA", "order": 1 },
+    { "code": "A.3",  "title": "Organisation interne", "order": 2 },
+    { "code": "A.4",  "title": "Ressources des systèmes d'IA", "order": 3 },
+    { "code": "A.5",  "title": "Évaluation des impacts des systèmes d'IA", "order": 4 },
+    { "code": "A.6",  "title": "Cycle de vie des systèmes d'IA", "order": 5 },
+    { "code": "A.7",  "title": "Données des systèmes d'IA", "order": 6 },
+    { "code": "A.8",  "title": "Information des parties intéressées", "order": 7 },
+    { "code": "A.9",  "title": "Utilisation des systèmes d'IA", "order": 8 },
+    { "code": "A.10", "title": "Relations avec les tiers et les clients", "order": 9 }
+  ],
+
+  "requirements": [
+    {
+      "reference": "A.2.2",
+      "objective": "A.2",
+      "title": "Politique d'IA formalisée",
+      "internal_summary": "L'organisation dispose d'une politique écrite encadrant ses usages d'IA, approuvée à un niveau de direction, diffusée aux personnes concernées et accessible. Elle énonce l'intention, le périmètre et les principes qui guident les décisions.",
+      "aigms_evidence": "Document de politique approuvé, preuve de diffusion, date d'approbation."
+    },
+    {
+      "reference": "A.2.3",
+      "objective": "A.2",
+      "title": "Articulation avec les autres politiques",
+      "internal_summary": "La politique d'IA s'articule avec les politiques existantes — sécurité de l'information, protection des données, qualité, achats — sans les contredire. Les points de recouvrement sont identifiés et arbitrés.",
+      "aigms_evidence": "Tableau d'articulation, mentions croisées dans les politiques concernées."
+    },
+    {
+      "reference": "A.2.4",
+      "objective": "A.2",
+      "title": "Réexamen périodique de la politique",
+      "internal_summary": "La politique est réexaminée à intervalles définis, et lorsqu'un changement significatif le justifie. Le réexamen produit une trace : ce qui a été revu, par qui, et ce qui en résulte.",
+      "aigms_evidence": "Date de dernière revue, décision de reconduction ou de révision, prochaine échéance."
+    },
+
+    {
+      "reference": "A.3.2",
+      "objective": "A.3",
+      "title": "Rôles et responsabilités en matière d'IA",
+      "internal_summary": "Les rôles engagés dans la gouvernance de l'IA sont attribués nominativement et connus des intéressés : qui décide, qui porte le risque, qui exploite, qui contrôle. Les responsabilités sont documentées, non implicites.",
+      "aigms_evidence": "Matrice de rôles, lettres de mission, attributions dans l'outil de gouvernance."
+    },
+    {
+      "reference": "A.3.3",
+      "objective": "A.3",
+      "title": "Signalement des préoccupations",
+      "internal_summary": "Toute personne peut signaler une préoccupation relative à un système d'IA par un canal identifié, sans crainte de conséquence défavorable. Les signalements sont enregistrés et traités.",
+      "aigms_evidence": "Procédure de signalement, registre des signalements et de leur suite."
+    },
+
+    {
+      "reference": "A.4.2",
+      "objective": "A.4",
+      "title": "Documentation des ressources",
+      "internal_summary": "Les ressources mobilisées par chaque système d'IA — données, outils, calcul, compétences humaines — sont recensées et documentées, de façon à savoir de quoi le système dépend.",
+      "aigms_evidence": "Inventaire des ressources rattaché à chaque système."
+    },
+    {
+      "reference": "A.4.3",
+      "objective": "A.4",
+      "title": "Ressources en données",
+      "internal_summary": "Les jeux de données servant au développement et à l'exploitation sont identifiés, avec leur origine, leur nature et les restrictions qui les grèvent.",
+      "aigms_evidence": "Registre des jeux de données, mentions d'origine et de licence."
+    },
+    {
+      "reference": "A.4.4",
+      "objective": "A.4",
+      "title": "Ressources d'outillage",
+      "internal_summary": "Les outils, bibliothèques et environnements employés pour construire et exploiter les systèmes d'IA sont recensés, avec leur version et leur provenance.",
+      "aigms_evidence": "Inventaire d'outillage, versions, dépendances."
+    },
+    {
+      "reference": "A.4.5",
+      "objective": "A.4",
+      "title": "Ressources système et de calcul",
+      "internal_summary": "Les infrastructures d'hébergement, de calcul et de stockage supportant les systèmes d'IA sont documentées, y compris leur localisation et leurs conditions d'exploitation.",
+      "aigms_evidence": "Description d'architecture, localisation d'hébergement, capacités."
+    },
+    {
+      "reference": "A.4.6",
+      "objective": "A.4",
+      "title": "Ressources humaines et compétences",
+      "internal_summary": "Les compétences nécessaires à la conception, à l'exploitation et à la supervision des systèmes d'IA sont déterminées, et les personnes concernées les possèdent ou les acquièrent.",
+      "aigms_evidence": "Référentiel de compétences, attestations de formation, plan de montée en compétence."
+    },
+
+    {
+      "reference": "A.5.2",
+      "objective": "A.5",
+      "title": "Processus d'évaluation d'impact",
+      "internal_summary": "Un processus établi détermine quand une évaluation d'impact est requise, comment elle est conduite et par qui. Il ne dépend pas de l'initiative individuelle.",
+      "aigms_evidence": "Procédure d'évaluation d'impact, critères de déclenchement."
+    },
+    {
+      "reference": "A.5.3",
+      "objective": "A.5",
+      "title": "Documentation des évaluations",
+      "internal_summary": "Chaque évaluation d'impact est consignée : périmètre, méthode, constats, mesures retenues, conclusion et date. Elle est conservée et réexaminable.",
+      "aigms_evidence": "Rapports d'évaluation d'impact datés et versionnés."
+    },
+    {
+      "reference": "A.5.4",
+      "objective": "A.5",
+      "title": "Impacts sur les personnes et les groupes",
+      "internal_summary": "L'évaluation examine les effets du système sur les personnes concernées et sur les groupes, y compris ceux en situation de vulnérabilité, et pas seulement les effets sur l'organisation.",
+      "aigms_evidence": "Identification des parties prenantes affectées, constats par catégorie d'impact."
+    },
+    {
+      "reference": "A.5.5",
+      "objective": "A.5",
+      "title": "Impacts sociétaux",
+      "internal_summary": "L'évaluation prend en compte les effets plus larges du système sur la société et sur l'environnement, au-delà des personnes directement exposées.",
+      "aigms_evidence": "Section dédiée aux effets sociétaux dans l'évaluation d'impact."
+    },
+
+    {
+      "reference": "A.6.1.2",
+      "objective": "A.6",
+      "title": "Objectifs de développement responsable",
+      "internal_summary": "L'organisation fixe et documente les objectifs qui encadrent un développement responsable de ses systèmes d'IA, et les rend opposables aux équipes.",
+      "aigms_evidence": "Objectifs formalisés, rattachement aux projets."
+    },
+    {
+      "reference": "A.6.1.3",
+      "objective": "A.6",
+      "title": "Processus de conception responsable",
+      "internal_summary": "Les processus de conception et de développement intègrent ces objectifs à chaque étape, plutôt que de les vérifier en fin de parcours.",
+      "aigms_evidence": "Description du processus, points de contrôle intégrés."
+    },
+    {
+      "reference": "A.6.2.2",
+      "objective": "A.6",
+      "title": "Exigences et spécification",
+      "internal_summary": "Les exigences auxquelles le système doit répondre sont formulées et spécifiées avant sa construction, y compris les exigences non fonctionnelles de robustesse, d'équité et de sécurité.",
+      "aigms_evidence": "Spécification d'exigences, critères d'acceptation."
+    },
+    {
+      "reference": "A.6.2.3",
+      "objective": "A.6",
+      "title": "Documentation de conception",
+      "internal_summary": "Les choix de conception sont documentés : architecture, modèles retenus, alternatives écartées et raisons de ces choix.",
+      "aigms_evidence": "Dossier de conception, décisions d'architecture."
+    },
+    {
+      "reference": "A.6.2.4",
+      "objective": "A.6",
+      "title": "Vérification et validation",
+      "internal_summary": "Le système est vérifié et validé au regard de ses exigences avant mise en service, selon des critères définis à l'avance. Les résultats sont conservés.",
+      "aigms_evidence": "Plans et rapports de test, jeux d'essai, critères de réussite."
+    },
+    {
+      "reference": "A.6.2.5",
+      "objective": "A.6",
+      "title": "Déploiement",
+      "internal_summary": "Le déploiement suit un processus défini, avec des critères de passage, une autorisation identifiée et une possibilité de retour arrière.",
+      "aigms_evidence": "Procédure de déploiement, autorisation de mise en service, plan de retrait."
+    },
+    {
+      "reference": "A.6.2.6",
+      "objective": "A.6",
+      "title": "Exploitation et surveillance",
+      "internal_summary": "Le système en service est surveillé selon une cadence définie, avec des seuils d'alerte et des responsables identifiés. La dérive de performance est détectable.",
+      "aigms_evidence": "Plan de surveillance, indicateurs suivis, journal des anomalies."
+    },
+    {
+      "reference": "A.6.2.7",
+      "objective": "A.6",
+      "title": "Documentation technique",
+      "internal_summary": "La documentation technique du système est constituée, tenue à jour et suffisante pour qu'un tiers compétent comprenne son fonctionnement et ses limites.",
+      "aigms_evidence": "Dossier technique versionné, limites d'emploi documentées."
+    },
+    {
+      "reference": "A.6.2.8",
+      "objective": "A.6",
+      "title": "Journalisation des événements",
+      "internal_summary": "Les événements pertinents du système sont journalisés de façon à permettre l'analyse a posteriori d'un incident ou d'une décision contestée, avec une durée de conservation définie.",
+      "aigms_evidence": "Politique de journalisation, extraits de journaux, durée de rétention."
+    },
+
+    {
+      "reference": "A.7.2",
+      "objective": "A.7",
+      "title": "Données de développement et d'amélioration",
+      "internal_summary": "Les données servant au développement, à l'entraînement et à l'amélioration continue sont identifiées et encadrées, avec les conditions de leur emploi.",
+      "aigms_evidence": "Registre des jeux de données par usage, conditions d'utilisation."
+    },
+    {
+      "reference": "A.7.3",
+      "objective": "A.7",
+      "title": "Acquisition des données",
+      "internal_summary": "Les modalités d'obtention des données sont documentées et licites : source, base légale ou contractuelle, consentements le cas échéant.",
+      "aigms_evidence": "Contrats et licences de données, base juridique du traitement."
+    },
+    {
+      "reference": "A.7.4",
+      "objective": "A.7",
+      "title": "Qualité des données",
+      "internal_summary": "Les critères de qualité attendus sont définis et vérifiés : exactitude, complétude, représentativité, actualité. Les écarts sont traités.",
+      "aigms_evidence": "Critères de qualité, résultats de contrôle, actions correctives."
+    },
+    {
+      "reference": "A.7.5",
+      "objective": "A.7",
+      "title": "Provenance des données",
+      "internal_summary": "L'origine des données et les transformations qu'elles ont subies sont traçables, de la collecte à l'usage dans le système.",
+      "aigms_evidence": "Traçabilité de bout en bout, journal des transformations."
+    },
+    {
+      "reference": "A.7.6",
+      "objective": "A.7",
+      "title": "Préparation des données",
+      "internal_summary": "Les opérations de préparation — nettoyage, étiquetage, échantillonnage, anonymisation — sont documentées, car elles influent sur le comportement du système.",
+      "aigms_evidence": "Description des traitements de préparation, choix d'échantillonnage."
+    },
+
+    {
+      "reference": "A.8.2",
+      "objective": "A.8",
+      "title": "Documentation du système et information des utilisateurs",
+      "internal_summary": "Les utilisateurs disposent d'une information suffisante sur ce que fait le système, ce qu'il ne fait pas, et comment l'employer correctement.",
+      "aigms_evidence": "Notice d'utilisation, conditions d'emploi, limites annoncées."
+    },
+    {
+      "reference": "A.8.3",
+      "objective": "A.8",
+      "title": "Signalement externe",
+      "internal_summary": "Un moyen permet aux personnes extérieures à l'organisation de signaler un problème lié à un système d'IA, et ces signalements reçoivent une suite.",
+      "aigms_evidence": "Canal de signalement externe, registre et traitement des signalements."
+    },
+    {
+      "reference": "A.8.4",
+      "objective": "A.8",
+      "title": "Communication des incidents",
+      "internal_summary": "Les incidents sont communiqués aux parties concernées selon des critères et des délais définis, en tenant compte des obligations de notification applicables.",
+      "aigms_evidence": "Procédure de communication d'incident, traces des notifications effectuées."
+    },
+    {
+      "reference": "A.8.5",
+      "objective": "A.8",
+      "title": "Information des parties intéressées",
+      "internal_summary": "Les parties intéressées reçoivent l'information qui les concerne sur les systèmes d'IA, selon une politique définie qui identifie qui reçoit quoi.",
+      "aigms_evidence": "Cartographie des parties intéressées, plan de communication."
+    },
+
+    {
+      "reference": "A.9.2",
+      "objective": "A.9",
+      "title": "Processus d'utilisation responsable",
+      "internal_summary": "Des processus encadrent l'emploi des systèmes d'IA au quotidien : qui peut les utiliser, dans quel cadre, avec quelle supervision.",
+      "aigms_evidence": "Règles d'usage, habilitations, plan de supervision humaine."
+    },
+    {
+      "reference": "A.9.3",
+      "objective": "A.9",
+      "title": "Objectifs d'utilisation responsable",
+      "internal_summary": "L'organisation fixe les objectifs qui définissent ce qu'est un usage responsable dans son contexte, et les fait connaître aux utilisateurs.",
+      "aigms_evidence": "Objectifs d'usage documentés, diffusion aux utilisateurs."
+    },
+    {
+      "reference": "A.9.4",
+      "objective": "A.9",
+      "title": "Usage prévu du système",
+      "internal_summary": "L'usage prévu de chaque système est défini, et l'écart entre usage prévu et usage réel est surveillé. Un emploi hors de ce cadre est identifié et traité.",
+      "aigms_evidence": "Finalité déclarée, contrôle de l'usage effectif, traitement des écarts."
+    },
+
+    {
+      "reference": "A.10.2",
+      "objective": "A.10",
+      "title": "Répartition des responsabilités",
+      "internal_summary": "Lorsque plusieurs organisations interviennent sur un système d'IA, la répartition des responsabilités est définie et acceptée par chacune. Aucune zone n'est laissée sans titulaire.",
+      "aigms_evidence": "Matrice de responsabilités entre parties, clauses contractuelles."
+    },
+    {
+      "reference": "A.10.3",
+      "objective": "A.10",
+      "title": "Fournisseurs",
+      "internal_summary": "Les exigences applicables aux fournisseurs sont définies et portées au contrat, et leur respect est vérifié pendant la relation, non seulement à sa signature.",
+      "aigms_evidence": "Exigences contractuelles, revue fournisseur, suivi de conformité."
+    },
+    {
+      "reference": "A.10.4",
+      "objective": "A.10",
+      "title": "Clients",
+      "internal_summary": "Les besoins et attentes des clients à l'égard des systèmes d'IA fournis sont pris en compte, et l'information qui leur est due leur est transmise.",
+      "aigms_evidence": "Recueil des attentes clients, information contractuelle sur les systèmes fournis."
+    }
+  ]
+}

@@ -38,8 +38,8 @@ par les fonctions de transition réelles : si un gate régresse, le seed échoue
 | Suite | Nombre | Couvre |
 |---|---|---|
 | `tests/unit` | 12 | libellés et présentation du domaine |
-| `tests/rls` | 67 | isolation cross-tenant, RBAC, transitions interdites, gate production, acceptation de risque, registre de décisions, moteur de réévaluation, journal d'audit, parité interface/base, surface publique |
-| `tests/e2e` | 22 | site public et formulaire de contact ; connexion, parcours complet, refus de gate motivé, tableau de bord |
+| `tests/rls` | 75 | isolation cross-tenant, RBAC, transitions interdites, gate production, acceptation de risque, registre de décisions, moteur de réévaluation, journal d'audit, parité interface/base, surface publique |
+| `tests/e2e` | 23 | site public et formulaire de contact ; connexion, parcours complet, refus de gate motivé, tableau de bord |
 
 Tous verts au 7 septembre 2026.
 
@@ -100,6 +100,7 @@ Deux jetons Supabase cohabitent, un par projet : celui qui couvre
 | `/admin/comptes` | session requise, réservée à l'administration plateforme — comptes et rôles |
 | `/admin/organisations/nouvelle` | session requise, réservée à l'administration plateforme |
 | `/admin/parametres` | session requise — profil, rôle, organisation |
+| `/admin/organizations/[id]/declaration-applicabilite` | session requise — couverture ISO/IEC 42001 exigence par exigence |
 
 `src/proxy.ts` ne protège que le préfixe `/admin` ; l'autorisation réelle reste
 portée par la RLS.
@@ -126,6 +127,34 @@ d'authentification.
 L'envoi reste une commodité, jamais un point de passage obligé : une demande
 est enregistrée en base et consultable dans `/admin/contacts` même si Resend
 refuse ou tombe.
+
+## Référentiels normatifs chargés
+
+| Référentiel | Ce qui est chargé |
+|---|---|
+| ISO/IEC 42001:2023 | **Annexe A complète** — 38 contrôles de référence en 9 objectifs (A.2 à A.10) — plus trois exigences du corps (6.1.2, 8.4, 9.3) |
+| Règlement (UE) 2024/1689 | Articles 14 et 50 |
+| RGPD | Article 35 |
+| ISO/IEC 42005:2025 | Clause 6.4 |
+
+**Ce que ces données sont, et ne sont pas.** Elles portent la numérotation des
+référentiels — un fait, non protégeable — accompagnée de titres et de résumés
+rédigés en propre, exprimant ce qu'une organisation doit pouvoir démontrer.
+Elles ne reproduisent pas le texte des normes.
+
+Chaque résumé de l'Annexe A porte `review_status = 'to_review'` : un résumé est
+une interprétation, et il engage vis-à-vis d'un client ou d'un auditeur. La
+relecture humaine est un préalable à tout usage commercial, et un test vérifie
+qu'aucun résumé n'a été marqué relu sans l'avoir été.
+
+Le fichier source est `knowledge/frameworks/iso-42001/2023/annexe-a.json`, et la
+migration `0022` en est **générée**. Un test compare les deux à chaque exécution :
+ils ne peuvent pas diverger silencieusement.
+
+ISO/IEC 27001 n'est pas chargée. Le besoin d'AIGMS y est plus étroit — montrer
+qu'un contrôle IA sert aussi la sécurité de l'information, pour éviter la
+double collecte de preuves. Un sous-ensemble ciblé suffirait ; importer les 93
+contrôles d'un référentiel qu'AIGMS ne pilote pas serait disproportionné.
 
 ## Deux liens à rétablir
 

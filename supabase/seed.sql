@@ -137,8 +137,6 @@ on conflict do nothing;
 -- Catalogue de référentiels (plateforme)
 -- -----------------------------------------------------------------------------
 insert into public.framework (id, code, version, name, publisher, official_source, effective_from) values
-  ('f0000000-0000-4000-8000-000000000001', 'ISO_IEC_42001', '2023',
-   'Systèmes de management de l''IA', 'ISO/IEC', 'https://www.iso.org/standard/81230.html', '2023-12-01'),
   ('f0000000-0000-4000-8000-000000000002', 'EU_AI_ACT', '2024/1689',
    'Règlement (UE) 2024/1689 établissant des règles harmonisées concernant l''IA', 'Union européenne',
    'https://eur-lex.europa.eu/eli/reg/2024/1689/oj', '2024-08-01'),
@@ -149,28 +147,35 @@ insert into public.framework (id, code, version, name, publisher, official_sourc
    'https://eur-lex.europa.eu/eli/reg/2016/679/oj', '2018-05-25')
 on conflict (code, version) do nothing;
 
-insert into public.requirement (framework_id, requirement_reference, title, internal_summary, status, effective_from, official_source) values
-  ('f0000000-0000-4000-8000-000000000001', '6.1.2', 'Appréciation des risques liés à l''IA',
+-- Exigences du CORPS des normes, distinctes de l'Annexe A d'ISO 42001 chargee
+-- par la migration 0022. Le rattachement se fait par cle naturelle : les
+-- referentiels peuvent etre poses par une migration ou par un import.
+insert into public.requirement (framework_id, requirement_reference, title, internal_summary, status, effective_from, official_source)
+select f.id, v.reference, v.title, v.summary, v.status::app.requirement_status, v.effective_from::date, v.source
+from (values
+  ('ISO_IEC_42001', '2023', '6.1.2', 'Appréciation des risques liés à l''IA',
    'Résumé interne : définir et appliquer un processus d''appréciation des risques IA, avec critères, responsabilités et réexamen périodique.',
    'requirement', '2023-12-01', 'ISO/IEC 42001:2023'),
-  ('f0000000-0000-4000-8000-000000000001', '8.4', 'Évaluation d''impact des systèmes d''IA',
+  ('ISO_IEC_42001', '2023', '8.4', 'Évaluation d''impact des systèmes d''IA',
    'Résumé interne : conduire une évaluation d''impact des systèmes d''IA et la tenir à jour au cours du cycle de vie.',
    'requirement', '2023-12-01', 'ISO/IEC 42001:2023'),
-  ('f0000000-0000-4000-8000-000000000001', '9.3', 'Revue de direction',
+  ('ISO_IEC_42001', '2023', '9.3', 'Revue de direction',
    'Résumé interne : revue périodique du SMIA par la direction, avec entrées, décisions et actions.',
    'requirement', '2023-12-01', 'ISO/IEC 42001:2023'),
-  ('f0000000-0000-4000-8000-000000000002', 'Art. 14', 'Contrôle humain',
+  ('EU_AI_ACT', '2024/1689', 'Art. 14', 'Contrôle humain',
    'Résumé interne : les systèmes à haut risque sont conçus pour permettre une supervision humaine effective pendant leur utilisation.',
    'requirement', null, 'Règlement (UE) 2024/1689'),
-  ('f0000000-0000-4000-8000-000000000002', 'Art. 50', 'Obligations de transparence',
+  ('EU_AI_ACT', '2024/1689', 'Art. 50', 'Obligations de transparence',
    'Résumé interne : informer les personnes qu''elles interagissent avec un système d''IA et marquer les contenus générés, selon les cas.',
    'requirement', null, 'Règlement (UE) 2024/1689'),
-  ('f0000000-0000-4000-8000-000000000003', '6.4', 'Parties prenantes et impacts',
+  ('ISO_IEC_42005', '2025', '6.4', 'Parties prenantes et impacts',
    'Résumé interne : identifier les parties prenantes affectées et documenter les impacts sur les personnes, les groupes et la société.',
    'guidance', '2025-05-01', 'ISO/IEC 42005:2025'),
-  ('f0000000-0000-4000-8000-000000000004', 'Art. 35', 'Analyse d''impact relative à la protection des données',
+  ('GDPR', '2016/679', 'Art. 35', 'Analyse d''impact relative à la protection des données',
    'Résumé interne : réaliser une AIPD lorsque le traitement est susceptible d''engendrer un risque élevé pour les droits et libertés.',
    'requirement', '2018-05-25', 'Règlement (UE) 2016/679')
+) as v(fw_code, fw_version, reference, title, summary, status, effective_from, source)
+join public.framework f on f.code = v.fw_code and f.version = v.fw_version
 on conflict (framework_id, requirement_reference) do nothing;
 
 commit;
@@ -259,7 +264,20 @@ from (values
   ('CTL-02', 'EU_AI_ACT',     'Art. 14', 'Couvre l''exigence de contrôle humain effectif.'),
   ('CTL-02', 'ISO_IEC_42001', '8.4',   'Contribue à l''évaluation d''impact.'),
   ('CTL-03', 'EU_AI_ACT',     'Art. 50', 'Couvre l''information des personnes.'),
-  ('CTL-08', 'ISO_IEC_42001', '9.3',   'Alimente la revue de direction.')
+  ('CTL-08', 'ISO_IEC_42001', '9.3',   'Alimente la revue de direction.'),
+  -- Annexe A d'ISO/IEC 42001
+  ('CTL-01', 'ISO_IEC_42001', 'A.4.2',   'Le registre documente les ressources de chaque système.'),
+  ('CTL-01', 'ISO_IEC_42001', 'A.9.4',   'Il porte la finalité déclarée de chaque usage.'),
+  ('CTL-02', 'ISO_IEC_42001', 'A.9.2',   'La supervision encadre l''emploi quotidien du système.'),
+  ('CTL-02', 'ISO_IEC_42001', 'A.3.2',   'Elle nomme un responsable et une autorité d''arrêt.'),
+  ('CTL-03', 'ISO_IEC_42001', 'A.8.2',   'L''information des utilisateurs relève de la documentation du système.'),
+  ('CTL-04', 'ISO_IEC_42001', 'A.10.3',  'La revue fournisseur porte les exigences contractuelles.'),
+  ('CTL-04', 'ISO_IEC_42001', 'A.10.2',  'Elle répartit les responsabilités entre les parties.'),
+  ('CTL-05', 'ISO_IEC_42001', 'A.6.2.8', 'La journalisation permet l''analyse a posteriori.'),
+  ('CTL-06', 'ISO_IEC_42001', 'A.6.2.4', 'Le test de biais fait partie de la validation avant service.'),
+  ('CTL-06', 'ISO_IEC_42001', 'A.5.4',   'Il éclaire les impacts sur les personnes et les groupes.'),
+  ('CTL-07', 'ISO_IEC_42001', 'A.4.6',   'La formation entretient les compétences requises.'),
+  ('CTL-08', 'ISO_IEC_42001', 'A.2.4',   'La revue périodique des décisions nourrit le réexamen de la politique.')
 ) as m(control_code, fw_code, req_ref, note)
 join public.control c on c.code = m.control_code and c.organization_id = 'cccccccc-0000-4000-8000-000000000001'
 join public.framework f on f.code = m.fw_code

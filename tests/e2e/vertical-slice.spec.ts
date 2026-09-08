@@ -72,3 +72,25 @@ test('le tableau de bord remonte ce qui appelle une action', async ({ page }) =>
   await expect(page.getByRole('heading', { name: 'Incidents ouverts' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Gates refusés récemment' })).toBeVisible()
 })
+
+test('la Déclaration d’Applicabilité rend compte de la couverture ISO 42001', async ({ page }) => {
+  await page.getByRole('link', { name: 'IzarLink Demo' }).click()
+  await page.getByRole('link', { name: 'Déclaration d’Applicabilité' }).click()
+
+  await expect(
+    page.getByRole('heading', { name: 'Déclaration d’Applicabilité' }),
+  ).toBeVisible()
+  await expect(page.getByText('ISO/IEC 42001:2023, Annexe A')).toBeVisible()
+
+  // Les neuf objectifs de l'Annexe A sont presentes.
+  await expect(page.getByRole('heading', { name: /^A\.2 —/ })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /^A\.10 —/ })).toBeVisible()
+
+  // Les quatre etats de couverture coexistent sur le jeu de demonstration.
+  await expect(page.getByText('Couverte et prouvée').first()).toBeVisible()
+  await expect(page.getByText('Non couverte').first()).toBeVisible()
+
+  // La precaution de non-reproduction du texte normatif est affichee.
+  await expect(page.getByText(/ne reproduisent pas le texte de la norme/)).toBeVisible()
+  await expect(page.getByText('L’Annexe A n’est pas une liste à cocher.')).toBeVisible()
+})

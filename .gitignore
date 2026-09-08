@@ -52,3 +52,8 @@ OLD/
 # canvas de design seede (payload de l'editeur, ~2 Mo) : les fichiers sources
 # sont dans design/, le canvas se reconstruit a partir d'eux
 aigms-landing.html
+
+# fichiers temporaires des suites bureautiques, deposes a cote des .docx ouverts
+~$*
+~WRL*.tmp
+*.tmp

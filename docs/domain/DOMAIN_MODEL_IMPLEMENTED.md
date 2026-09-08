@@ -52,6 +52,28 @@ Flux d'import : `UPLOADED → VALIDATED → REVIEWED → IMPORTED → PUBLISHED`
 d'échouer au premier ; l'import est transactionnel ; une baseline publiée est
 gelée par trigger, et se réimporter lui est refusé.
 
+### Déclaration d'Applicabilité
+
+`app.statement_of_applicability(organization, framework, version)` restitue,
+pour chaque exigence du référentiel, ce qui la couvre chez un client. Quatre
+états :
+
+| État | Signification |
+|---|---|
+| `evidenced` | Un contrôle opérant, avec au moins une preuve rattachée |
+| `operating_without_evidence` | Le contrôle fonctionne, rien ne le démontre encore |
+| `declared` | Un contrôle est rattaché, sans être opérant |
+| `uncovered` | Aucun contrôle ne répond à cette exigence |
+
+La fonction reste soumise à l'habilitation : un utilisateur étranger au tenant
+voit les exigences — le catalogue normatif est ouvert — mais aucun contrôle.
+
+`catalog_domain_objective_map` propose une correspondance entre les domaines du
+catalogue AIGMS et les objectifs de contrôle normatifs. Au niveau du domaine,
+pas du contrôle individuel : proposer 120 × N correspondances automatiques
+produirait du bruit qu'il faudrait démêler. Le rapprochement fin reste un acte
+humain, tracé par `control_requirement_map`.
+
 ### Traçabilité
 `audit_log`, `governance_event`.
 

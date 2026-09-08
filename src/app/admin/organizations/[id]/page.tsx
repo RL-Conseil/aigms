@@ -52,7 +52,17 @@ export default async function OrganizationPage({
       breadcrumb={[{ href: '/admin', label: 'Organisations' }]}
       title={organization.name}
       subtitle={`${organization.business_ref} — ${organization.legal_name ?? organization.name}`}
-      actions={<Badge>{organization.status}</Badge>}
+      actions={
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/admin/organizations/${id}/declaration-applicabilite`}
+            className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
+          >
+            Déclaration d’Applicabilité
+          </Link>
+          <Badge>{organization.status}</Badge>
+        </div>
+      }
     >
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="lg:col-span-2">
