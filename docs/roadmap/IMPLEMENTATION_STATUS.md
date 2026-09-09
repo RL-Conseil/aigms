@@ -38,8 +38,8 @@ par les fonctions de transition réelles : si un gate régresse, le seed échoue
 | Suite | Nombre | Couvre |
 |---|---|---|
 | `tests/unit` | 12 | libellés et présentation du domaine |
-| `tests/rls` | 82 | isolation cross-tenant, RBAC, transitions interdites, gate production, acceptation de risque, registre de décisions, moteur de réévaluation, journal d'audit, parité interface/base, surface publique |
-| `tests/e2e` | 29 | site public et formulaire de contact ; connexion, parcours complet, refus de gate motivé, tableau de bord |
+| `tests/rls` | 90 | isolation cross-tenant, RBAC, transitions interdites, gate production, acceptation de risque, registre de décisions, moteur de réévaluation, journal d'audit, parité interface/base, surface publique |
+| `tests/e2e` | 30 | site public et formulaire de contact ; connexion, parcours complet, refus de gate motivé, tableau de bord |
 
 Tous verts au 7 septembre 2026.
 
@@ -101,7 +101,7 @@ Deux jetons Supabase cohabitent, un par projet : celui qui couvre
 | `/admin/organisations/nouvelle` | session requise, réservée à l'administration plateforme |
 | `/admin/parametres` | session requise — profil, rôle, organisation |
 | `/admin/organizations/[id]/declaration-applicabilite` | session requise — couverture ISO/IEC 42001 exigence par exigence |
-| `/admin/organizations/[id]/processus` | session requise — carte annotée, panneau d'activité, santé de la gouvernance ; la sélection passe par l'URL et se partage |
+| `/admin/organizations/[id]/processus` | session requise — trois lectures du même modèle (`?vue=arbre\|couverture\|risques`) ; sélection et lecture passent par l'URL et se partagent |
 | `/admin/organizations/[id]/cas-d-usage/nouveau` | session requise — fiche d'intake |
 
 `src/proxy.ts` ne protège que le préfixe `/admin` ; l'autorisation réelle reste
@@ -145,7 +145,7 @@ rattachement structuré passant par `ai_use_case.activity_id`.
 |---|---|---|
 | 1 | Modèle processus/activité, cartographie, saisie intake, triage, classification, risques | **Terminé** |
 | 2 | Process & Risk Map avec indicateurs par nœud et panneau latéral | **Terminé** |
-| 3 | Control Coverage Map et Risk Heatmap | à venir |
+| 3 | Control Coverage Map et Risk Heatmap | **Terminé** |
 | 4 | AI Control Graph, couches activables, chemins critiques | à venir |
 
 **Principe retenu pour la fluidité** : la carte n'est pas un rapport qu'on
@@ -153,6 +153,24 @@ consulte, c'est l'établi sur lequel on travaille. Un nœud vide est une
 invitation à saisir — une activité sans usage d'IA propose d'en déclarer un.
 Les formulaires vivent dans des volets, sur la fiche même : on saisit là où l'on
 regarde.
+
+### Trois lectures du même modèle
+
+Un seul écran, trois questions, une seule adresse — `?vue=` :
+
+| Lecture | Ce qu'elle répond |
+|---|---|
+| **Processus** | Que fait l'organisation, et où l'IA intervient |
+| **Couverture** | Ce qui tient réellement : contrôles opérants, prouvés, testés récemment |
+| **Risques** | Où se concentre l'exposition, par processus et par niveau |
+
+Deux partis pris méritent d'être connus. Le **taux de couverture est exigeant** :
+un contrôle ne compte que s'il est opérant *et* prouvé par une preuve validée
+non échue. Un contrôle déclaré sans preuve ne protège personne, et c'est ce
+qu'un auditeur vient vérifier. La **carte thermique compte les risques
+ouverts**, pas le total : un risque accepté est une décision assumée, avec un
+responsable et une date de revue — le laisser clignoter en rouge reviendrait à
+confondre une décision avec une alerte.
 
 ### La santé de la gouvernance
 

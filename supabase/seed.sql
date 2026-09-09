@@ -265,40 +265,40 @@ values
    'Agent optimisant les tournées de livraison.', null, '0.9', false, 'France');
 
 -- --- Contrôles (8) ------------------------------------------------------------
-insert into public.control (id, tenant_id, organization_id, code, name, objective, owner_user_id, status, is_mandatory, frequency, next_test_at)
+insert into public.control (id, tenant_id, organization_id, code, name, objective, owner_user_id, status, is_mandatory, frequency, last_tested_at, next_test_at)
 values
   ('a3000000-0000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
    'CTL-01', 'Registre des cas d''usage IA tenu à jour',
    'Garantir que tout usage d''IA est déclaré, qualifié et rattaché à un responsable.',
-   '11111111-1111-4111-8111-111111111111', 'operating', true, 'Trimestrielle', current_date + interval '2 months'),
+   '11111111-1111-4111-8111-111111111111', 'operating', true, 'Trimestrielle', current_date - interval '18 days', current_date + interval '2 months'),
   ('a3000000-0000-4000-8000-000000000002', 'aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
    'CTL-02', 'Supervision humaine documentée',
    'Assurer qu''un responsable humain peut interrompre le système et connaît ses déclencheurs d''intervention.',
-   '11111111-1111-4111-8111-111111111111', 'operating', true, 'Semestrielle', current_date + interval '4 months'),
+   '11111111-1111-4111-8111-111111111111', 'operating', true, 'Semestrielle', current_date - interval '42 days', current_date + interval '4 months'),
   ('a3000000-0000-4000-8000-000000000003', 'aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
    'CTL-03', 'Information des utilisateurs sur l''usage d''IA',
    'Informer les personnes qu''elles interagissent avec un système d''IA.',
-   '22222222-2222-4222-8222-222222222222', 'implemented', true, 'Annuelle', current_date + interval '8 months'),
+   '22222222-2222-4222-8222-222222222222', 'implemented', true, 'Annuelle', current_date - interval '96 days', current_date + interval '8 months'),
   ('a3000000-0000-4000-8000-000000000004', 'aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
    'CTL-04', 'Revue de sécurité des fournisseurs IA',
    'Évaluer la sécurité, la localisation des données et la réversibilité avant contractualisation.',
-   '33333333-3333-4333-8333-333333333333', 'operating', true, 'Annuelle', current_date + interval '6 months'),
+   '33333333-3333-4333-8333-333333333333', 'operating', true, 'Annuelle', current_date - interval '61 days', current_date + interval '6 months'),
   ('a3000000-0000-4000-8000-000000000005', 'aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
    'CTL-05', 'Journalisation des interactions IA',
    'Conserver une trace exploitable des sollicitations et réponses du système.',
-   '33333333-3333-4333-8333-333333333333', 'implemented', false, 'Continue', current_date + interval '3 months'),
+   '33333333-3333-4333-8333-333333333333', 'implemented', false, 'Continue', current_date - interval '9 days', current_date + interval '3 months'),
   ('a3000000-0000-4000-8000-000000000006', 'aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
    'CTL-06', 'Test de biais avant mise en service',
    'Détecter les écarts de traitement entre groupes avant déploiement.',
-   '11111111-1111-4111-8111-111111111111', 'proposed', false, 'À chaque version', null),
+   '11111111-1111-4111-8111-111111111111', 'proposed', false, 'À chaque version', null, null),
   ('a3000000-0000-4000-8000-000000000007', 'aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
    'CTL-07', 'Formation et littératie IA des utilisateurs',
    'Assurer que les utilisateurs comprennent les limites du système qu''ils exploitent.',
-   '22222222-2222-4222-8222-222222222222', 'implemented', false, 'Annuelle', current_date + interval '5 months'),
+   '22222222-2222-4222-8222-222222222222', 'implemented', false, 'Annuelle', current_date - interval '210 days', current_date + interval '5 months'),
   ('a3000000-0000-4000-8000-000000000008', 'aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
    'CTL-08', 'Revue périodique des décisions de gouvernance',
    'Réexaminer les décisions arrivées à échéance de revue.',
-   '11111111-1111-4111-8111-111111111111', 'operating', false, 'Trimestrielle', current_date + interval '1 month');
+   '11111111-1111-4111-8111-111111111111', 'operating', false, 'Trimestrielle', current_date - interval '27 days', current_date + interval '1 month');
 
 insert into public.control_requirement_map (tenant_id, control_id, requirement_id, coverage_note, mapped_by)
 select 'aaaaaaaa-0000-4000-8000-000000000001', c.id, r.id, m.note, '11111111-1111-4111-8111-111111111111'
