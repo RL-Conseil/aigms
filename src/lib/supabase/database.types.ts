@@ -2159,11 +2159,16 @@ export type Database = {
             | "attestation"
             | "connector_pull"
           external_url: string | null
+          file_name: string | null
+          file_size_bytes: number | null
           id: string
+          mime_type: string | null
           organization_id: string
           owner_user_id: string
           source: string
+          storage_bucket: string | null
           storage_path: string | null
+          superseded_by: string | null
           tenant_id: string
           title: string
           updated_at: string
@@ -2187,11 +2192,16 @@ export type Database = {
             | "attestation"
             | "connector_pull"
           external_url?: string | null
+          file_name?: string | null
+          file_size_bytes?: number | null
           id?: string
+          mime_type?: string | null
           organization_id: string
           owner_user_id: string
           source: string
+          storage_bucket?: string | null
           storage_path?: string | null
+          superseded_by?: string | null
           tenant_id: string
           title: string
           updated_at?: string
@@ -2219,11 +2229,16 @@ export type Database = {
             | "attestation"
             | "connector_pull"
           external_url?: string | null
+          file_name?: string | null
+          file_size_bytes?: number | null
           id?: string
+          mime_type?: string | null
           organization_id?: string
           owner_user_id?: string
           source?: string
+          storage_bucket?: string | null
           storage_path?: string | null
+          superseded_by?: string | null
           tenant_id?: string
           title?: string
           updated_at?: string
@@ -2250,6 +2265,20 @@ export type Database = {
             columns: ["owner_user_id"]
             isOneToOne: false
             referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "evidence"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "evidence_with_freshness"
             referencedColumns: ["id"]
           },
           {
@@ -4707,6 +4736,23 @@ export type Database = {
         Args: { p_activity_id?: string; p_organization_id: string }
         Returns: Json
       }
+      controls_awaiting_evidence: {
+        Args: { p_organization_id: string }
+        Returns: {
+          code: string
+          evidence_count: number
+          id: string
+          is_evidenced: boolean
+          is_mandatory: boolean
+          name: string
+          status:
+            | "proposed"
+            | "implemented"
+            | "operating"
+            | "ineffective"
+            | "retired"
+        }[]
+      }
       evaluate_gate: {
         Args: { p_target: string; p_use_case_id: string }
         Returns: Json
@@ -4714,6 +4760,41 @@ export type Database = {
       evaluate_governance_impact: {
         Args: { p_change_request_id: string }
         Returns: Json
+      }
+      evidence_register: {
+        Args: { p_organization_id: string }
+        Returns: {
+          business_ref: string
+          collected_at: string
+          content_hash: string
+          control_codes: string[]
+          control_count: number
+          evidence_type:
+            | "document"
+            | "url"
+            | "declarative"
+            | "screenshot"
+            | "log_extract"
+            | "attestation"
+            | "connector_pull"
+          external_url: string
+          file_name: string
+          file_size_bytes: number
+          freshness: "fresh" | "expiring" | "expired" | "unknown"
+          id: string
+          mime_type: string
+          owner_name: string
+          source: string
+          storage_bucket: string
+          storage_path: string
+          superseded_by: string
+          title: string
+          valid_until: string
+          validated_at: string
+          validated_by_name: string
+          validation_status: "pending" | "validated" | "rejected" | "superseded"
+          version: string
+        }[]
       }
       governance_health: {
         Args: { p_activity_id?: string; p_organization_id: string }

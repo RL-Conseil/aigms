@@ -260,6 +260,56 @@ qu'un contrôle IA sert aussi la sécurité de l'information, pour éviter la
 double collecte de preuves. Un sous-ensemble ciblé suffirait ; importer les 93
 contrôles d'un référentiel qu'AIGMS ne pilote pas serait disproportionné.
 
+## Le dépôt de preuves
+
+La rupture que le chemin du risque nomme le plus souvent est `no_evidence` :
+un contrôle opère, rien ne le démontre. Elle est désormais réparable depuis la
+plateforme — registre des preuves par organisation, dépôt de fichier,
+validation nominative, rattachement aux contrôles, téléchargement par lien
+signé.
+
+Les règles tiennent en cinq lignes, et elles sont en base
+([ADR-0011](../adr/ADR-0011-evidence-file-custody.md)) :
+
+| Règle | Pourquoi |
+|---|---|
+| Chemin `tenant/organisation/preuve/fichier`, dérivé et jamais saisi | une preuve ne doit pas pouvoir pointer vers l'objet d'un autre client |
+| Empreinte SHA-256 obligatoire dès qu'il y a un fichier | sans elle, on ne démontre pas que la pièce téléchargée est celle qui a été validée |
+| Fichier figé après validation, aucune politique `UPDATE` | modifier après coup ce qu'un validateur a examiné détruit la valeur probante |
+| Validation en son propre nom | c'est un acte, pas un champ |
+| L'administrateur de plateforme ne télécharge pas | extension d'ADR-0008 au seul endroit qui porte des données et non des métadonnées |
+
+Un **dépôt n'est pas une validation** : la pièce arrive « à valider », et
+l'écran le dit.
+
+### Faut-il un écran d'administration du stockage ?
+
+**Non, et probablement jamais sous cette forme.** Compartiment, quota, durée de
+rétention, région : c'est de l'infrastructure. L'exposer en écran donnerait
+l'illusion d'un réglage produit, ouvrirait une surface de configuration qu'il
+faudrait défendre, et n'apporterait aucune garantie de gouvernance
+supplémentaire — la garantie vient des politiques, pas d'un formulaire.
+
+Ce qui manquerait vraiment à un exploitant, c'est de **savoir** où vivent les
+fichiers. C'est rendu, en lecture seule, dans le volet « Où vivent les
+fichiers » du registre : compartiment privé, chemin confiné au client, lien
+signé d'une minute, aucune URL en base.
+
+**Ce que l'hébergement IaaS demandera vraiment**, le jour du sprint dédié :
+
+1. **Copier l'arborescence.** `tenant/organisation/preuve/fichier` se transpose
+   telle quelle sur tout stockage compatible S3. Aucune ligne de la base ne
+   référence Supabase — seulement un couple (compartiment, chemin).
+2. **Reposer l'équivalent des politiques.** C'est le seul point non portable :
+   les politiques de `storage.objects` sont propres à Supabase Storage. Sur un
+   stockage tiers, le contrôle d'accès devra vivre dans le service qui signe les
+   URL, et `app.storage_tenant` reste la règle à réimplémenter.
+3. **Reprendre l'authentification.** GoTrue est l'autre dépendance de plateforme ;
+   elle sort du périmètre du stockage mais pas de celui de la procédure.
+
+C'est cette procédure — et non un écran — qui rendra un hébergement chez un
+tiers réalisable.
+
 ## Deux liens à rétablir
 
 1. **CI** — le jeton GitHub `rlabrador` n'a pas le scope `workflow` : le commit
@@ -274,9 +324,12 @@ contrôles d'un référentiel qu'AIGMS ne pilote pas serait disproportionné.
 
 ## Suite immédiate
 
-1. Sprint 8 complet : dépôt de fichiers via Supabase Storage.
-2. Formulaires d'écriture : intake, risque, décision, changement.
+1. Formulaires d'écriture restants : décision, contrôle, action, incident,
+   fournisseur.
+2. Export du dossier de gouvernance et rapport mensuel.
 3. Sprint 14 puis 15.
+4. Sprint d'hébergement : procédure de portage sur IaaS (voir « Le dépôt de
+   preuves »).
 
 ## Point de vigilance
 

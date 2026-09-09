@@ -61,6 +61,12 @@ export default async function OrganizationPage({
             Processus
           </Link>
           <Link
+            href={`/admin/organizations/${id}/preuves`}
+            className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
+          >
+            Preuves
+          </Link>
+          <Link
             href={`/admin/organizations/${id}/declaration-applicabilite`}
             className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
           >

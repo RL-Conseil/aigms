@@ -34,6 +34,12 @@ se relie à un contrôle — la proximité par cas d'usage partagé ne démontre
 `framework`, `requirement`, `control`, `control_requirement_map`,
 `control_applicability`, `evidence`, `control_evidence`.
 
+`evidence` designe son fichier par le couple (`storage_bucket`, `storage_path`)
+— jamais par une URL — accompagne de `content_hash`, `file_name`,
+`file_size_bytes` et `mime_type`. Le chemin est derive et confine au tenant, le
+fichier est fige apres validation, et `superseded_by` relie une preuve a celle
+qui la remplace (ADR-0011).
+
 ### CONNECT
 `governance_connector`, `connector_sync_run`.
 
