@@ -10,6 +10,12 @@ import {
   type Health,
 } from '@/components/governance/governance-health'
 import {
+  CoverageView,
+  HeatmapView,
+  type CoverageRow,
+  type HeatmapRow,
+} from '@/components/governance/map-views'
+import {
   RISK_LEVEL_LABELS,
   USE_CASE_STATUS_LABELS,
   type RiskLevel,
@@ -62,15 +68,24 @@ function riskTone(level: RiskLevel | null) {
   return 'neutral' as const
 }
 
+const VIEWS = [
+  { key: 'arbre', label: 'Processus' },
+  { key: 'couverture', label: 'Couverture' },
+  { key: 'risques', label: 'Risques' },
+] as const
+
+type ViewKey = (typeof VIEWS)[number]['key']
+
 export default async function ProcessMapPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ activite?: string }>
+  searchParams: Promise<{ activite?: string; vue?: string }>
 }) {
   const { id } = await params
-  const { activite } = await searchParams
+  const { activite, vue } = await searchParams
+  const view: ViewKey = VIEWS.some((v) => v.key === vue) ? (vue as ViewKey) : 'arbre'
   const supabase = await createClient()
 
   const [{ data: organization }, { data: mapRows }, { data: healthData }, { data: processes }] =
@@ -89,6 +104,15 @@ export default async function ProcessMapPage({
 
   const rows = (mapRows ?? []) as MapRow[]
   const health = (healthData ?? { available: false }) as Health
+
+  const [{ data: coverageData }, { data: heatmapData }] = await Promise.all([
+    view === 'couverture'
+      ? supabase.rpc('control_coverage', { p_organization_id: id })
+      : Promise.resolve({ data: null }),
+    view === 'risques'
+      ? supabase.rpc('risk_heatmap', { p_organization_id: id })
+      : Promise.resolve({ data: null }),
+  ])
 
   const selected = activite ? rows.find((r) => r.activity_id === activite) : undefined
 
@@ -127,14 +151,38 @@ export default async function ProcessMapPage({
       title="Processus et risques"
       subtitle="Ce que fait l’organisation, et ce que la gouvernance de l’IA y produit."
       actions={
-        <Link
-          href={`/admin/organizations/${id}/cas-d-usage/nouveau`}
-          className="rounded-md bg-night-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-night-800"
-        >
-          Déclarer un cas d’usage
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <nav aria-label="Lecture de la carte" className="flex rounded-md border border-ink-200 bg-white p-0.5">
+            {VIEWS.map((option) => (
+              <Link
+                key={option.key}
+                href={`/admin/organizations/${id}/processus?vue=${option.key}`}
+                scroll={false}
+                aria-current={view === option.key ? 'page' : undefined}
+                className={`rounded px-3 py-1.5 text-sm ${
+                  view === option.key
+                    ? 'bg-night-900 font-medium text-white'
+                    : 'text-ink-600 hover:bg-ink-100'
+                }`}
+              >
+                {option.label}
+              </Link>
+            ))}
+          </nav>
+          <Link
+            href={`/admin/organizations/${id}/cas-d-usage/nouveau`}
+            className="rounded-md bg-night-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-night-800"
+          >
+            Déclarer un cas d’usage
+          </Link>
+        </div>
       }
     >
+      {view === 'couverture' ? (
+        <CoverageView rows={(coverageData ?? []) as CoverageRow[]} organizationId={id} />
+      ) : view === 'risques' ? (
+        <HeatmapView rows={(heatmapData ?? []) as HeatmapRow[]} organizationId={id} />
+      ) : (
       <div className="grid gap-5 lg:grid-cols-5">
         {/* ---------- Arbre ---------- */}
         <div className="flex flex-col gap-4 lg:col-span-3">
@@ -379,6 +427,7 @@ export default async function ProcessMapPage({
           )}
         </div>
       </div>
+      )}
     </Shell>
   )
 }

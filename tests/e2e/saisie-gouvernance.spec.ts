@@ -181,3 +181,36 @@ test('l’indice de santé n’est pas produit sans usage déclaré', async ({ p
   await expect(page.getByRole('heading', { name: 'Intégration des nouveaux arrivants' })).toBeVisible()
   await expect(page.getByText('Aucun usage d’IA déclaré sur ce périmètre.')).toBeVisible()
 })
+
+test('trois lectures du même modèle : processus, couverture, risques', async ({ page }) => {
+  await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001/processus')
+
+  // --- Couverture ------------------------------------------------------------
+  await page.getByRole('link', { name: 'Couverture', exact: true }).click()
+  await expect(page).toHaveURL(/vue=couverture/)
+  await expect(page.getByRole('heading', { name: 'Couverture des contrôles' })).toBeVisible()
+  await expect(
+    page.getByText(/opérant et prouvé par une preuve validée non échue/),
+  ).toBeVisible()
+
+  const row = page.getByRole('row').filter({ hasText: 'Présélection des candidatures' })
+  await expect(row.getByText('75 %')).toBeVisible()
+  await expect(row.getByText(/\d+ j/)).toBeVisible()
+
+  // --- Risques ---------------------------------------------------------------
+  await page.getByRole('link', { name: 'Risques', exact: true }).click()
+  await expect(page).toHaveURL(/vue=risques/)
+  await expect(page.getByRole('heading', { name: 'Répartition des risques' })).toBeVisible()
+  await expect(page.getByRole('columnheader', { name: 'Critique' })).toBeVisible()
+  await expect(
+    page.getByRole('rowheader', { name: 'Gérer les ressources humaines' }),
+  ).toBeVisible()
+
+  // Un risque accepté n'est pas compté comme ouvert : c'est une décision.
+  await expect(page.getByText(/l’acceptation est une\s+décision assumée/)).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Risques ouverts les plus élevés' })).toBeVisible()
+
+  // --- Retour à l'arbre ------------------------------------------------------
+  await page.getByRole('link', { name: 'Processus', exact: true }).click()
+  await expect(page.getByRole('heading', { name: /Servir le client/ })).toBeVisible()
+})
