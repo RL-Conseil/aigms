@@ -32,7 +32,18 @@ se relie à un contrôle — la proximité par cas d'usage partagé ne démontre
 
 ### Assurance
 `framework`, `requirement`, `control`, `control_requirement_map`,
-`control_applicability`, `evidence`, `control_evidence`.
+`control_applicability`, `evidence`, `control_evidence`,
+`evidence_typology`, `evidence_typology_profile`, `evidence_typology_reference`,
+`soa_decision`.
+
+`organization.ai_activity_profile` porte le role de l'organisation vis-a-vis de
+l'IA au sens d'ISO/IEC 42001. Il commande, via `evidence_typology_profile`, la
+criticite de chaque typologie de preuve, donc le regime de preuve exige par la
+Declaration d'Applicabilite. Nullable : une organisation sans profil declare
+n'en recoit aucun par defaut (ADR-0012).
+
+`soa_decision` porte la regle d'or : chaque exigence de l'Annexe A est
+selectionnee ou exclue, et dans les deux cas justifiee.
 
 `evidence` designe son fichier par le couple (`storage_bucket`, `storage_path`)
 — jamais par une URL — accompagne de `content_hash`, `file_name`,

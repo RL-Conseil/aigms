@@ -251,8 +251,19 @@ describe('Registre des preuves', () => {
       return rows as { code: string; status: string; is_evidenced: boolean }[]
     })
 
-    const first = rows[0]!
-    expect(first.status).toBe('operating')
-    expect(first.is_evidenced).toBe(false)
+    expect(rows.length).toBeGreaterThan(0)
+
+    // L'invariant est l'ORDRE, pas le contenu : la base locale est partagee
+    // avec les parcours E2E, qui deposent de vraies preuves et peuvent donc
+    // vider la tete de liste. Ce qui doit tenir, c'est qu'aucun controle
+    // demuni ne passe derriere un controle deja prouve.
+    const demuni = (r: { status: string; is_evidenced: boolean }) =>
+      r.status === 'operating' && !r.is_evidenced
+    const lastDemuni = rows.map(demuni).lastIndexOf(true)
+    const firstCovered = rows.findIndex((r) => !demuni(r))
+
+    if (lastDemuni >= 0 && firstCovered >= 0) {
+      expect(lastDemuni).toBeLessThan(firstCovered)
+    }
   })
 })

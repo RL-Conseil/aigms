@@ -1,0 +1,389 @@
+{
+  "matrix": {
+    "code": "AIGMS_EVIDENCE_MATRIX",
+    "version": "1",
+    "title": "Matrice des preuves de conformité technique",
+    "source": "04_References/matrice_preuves_iso42001_affinee-4.pdf",
+    "typology_count": 8,
+    "profile_count": 4,
+    "review_status": "to_review",
+    "note": "Les niveaux de criticité et les références normatives sont ceux de la matrice source. Les résumés techniques sont rédigés en propre. Une relecture humaine est un préalable à tout usage commercial."
+  },
+  "profiles": [
+    {
+      "code": "infrastructure_host",
+      "label": "Hébergeur / Infrastructure",
+      "description": "Fournit la capacité de calcul et l'hébergement. Ne conçoit ni n'entraîne de modèle."
+    },
+    {
+      "code": "model_developer",
+      "label": "Développeur / Éditeur d'IA",
+      "description": "Conçoit, entraîne, évalue et publie des modèles ou des systèmes d'IA."
+    },
+    {
+      "code": "integrator_consultant",
+      "label": "Intégrateur / Conseil / ESN",
+      "description": "Assemble, paramètre et déploie des systèmes d'IA pour le compte de tiers."
+    },
+    {
+      "code": "business_user",
+      "label": "Utilisateur métier",
+      "description": "Exploite des systèmes d'IA acquis auprès de tiers dans ses propres processus."
+    }
+  ],
+  "criticality_levels": [
+    "negligible",
+    "low",
+    "moderate",
+    "high",
+    "critical"
+  ],
+  "typologies": [
+    {
+      "code": "ISOL",
+      "ordinal": 1,
+      "name": "Isolation et souveraineté physique (multi-tenancy IA)",
+      "technical_description": "Isolation des calculs, absence de contamination croisée des caches, cloisonnement réseau et effacement obligatoire de la VRAM entre sessions clients.",
+      "deliverables": [
+        "Fichiers YAML Kubernetes (NetworkPolicies, namespaces, taints/tolerations GPU)",
+        "Scripts Terraform",
+        "Logs JSON horodatés d'exécution de purge GPU (nvidia-smi --gpu-reset)"
+      ],
+      "references": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.7.3"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.7.4"
+        },
+        {
+          "framework": "ISO_IEC_27001",
+          "version": "2022",
+          "reference": "A.11"
+        },
+        {
+          "framework": "ISO_IEC_27001",
+          "version": "2022",
+          "reference": "A.12"
+        }
+      ],
+      "criticality": {
+        "infrastructure_host": "critical",
+        "model_developer": "critical",
+        "integrator_consultant": "low",
+        "business_user": "low"
+      }
+    },
+    {
+      "code": "INTG",
+      "ordinal": 2,
+      "name": "Intégrité des données et des systèmes (anti-empoisonnement)",
+      "technical_description": "Protection contre l'altération ou la modification non autorisée des jeux de données d'entraînement et des points de reprise de modèles. Intégrité des pilotes bas niveau.",
+      "deliverables": [
+        "Registre d'empreintes cryptographiques SHA-256 des jeux de données, dans une base immuable",
+        "Rapports d'intégrité de démarrage matériel (Secure Boot, valeurs TPM PCR)"
+      ],
+      "references": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.7.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.7.5"
+        },
+        {
+          "framework": "EU_AI_ACT",
+          "version": "2024/1689",
+          "reference": "Art. 10"
+        }
+      ],
+      "criticality": {
+        "infrastructure_host": "moderate",
+        "model_developer": "critical",
+        "integrator_consultant": "moderate",
+        "business_user": "low"
+      }
+    },
+    {
+      "code": "FAIR",
+      "ordinal": 3,
+      "name": "Éthique, biais et équité algorithmique",
+      "technical_description": "Mesure statistique de la disparité des résultats et évaluation de la représentativité des données au regard des variables protégées, contre les biais discriminatoires.",
+      "deliverables": [
+        "Rapports JSON d'outils d'équité (AIF360, Fairlearn) avec métriques Disparate Impact Ratio et Equalized Odds",
+        "Fiches d'identité standardisées Model Cards / Data Cards"
+      ],
+      "references": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.7.2"
+        },
+        {
+          "framework": "EU_AI_ACT",
+          "version": "2024/1689",
+          "reference": "Art. 10"
+        }
+      ],
+      "criticality": {
+        "infrastructure_host": "negligible",
+        "model_developer": "critical",
+        "integrator_consultant": "high",
+        "business_user": "low"
+      }
+    },
+    {
+      "code": "XAI",
+      "ordinal": 4,
+      "name": "Explicabilité et transparence (XAI)",
+      "technical_description": "Enregistrement des logiques d'attribution de caractéristiques, pour documenter et rendre auditable chaque décision ou prédiction critique du système.",
+      "deliverables": [
+        "Charges utiles d'API conservant les vecteurs SHAP ou LIME",
+        "Logs système des chaînes RAG traçant l'origine des extraits injectés (scores de similarité cosinus)"
+      ],
+      "references": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.10.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.10.4"
+        },
+        {
+          "framework": "EU_AI_ACT",
+          "version": "2024/1689",
+          "reference": "Art. 13"
+        }
+      ],
+      "criticality": {
+        "infrastructure_host": "negligible",
+        "model_developer": "critical",
+        "integrator_consultant": "high",
+        "business_user": "moderate"
+      }
+    },
+    {
+      "code": "ALIGN",
+      "ordinal": 5,
+      "name": "Alignement, garde-fous et validation du modèle",
+      "technical_description": "Évaluations et contrôles menés pour valider la sécurité logique du modèle et s'assurer qu'il reste confiné dans ses paramètres, hallucinations comprises.",
+      "deliverables": [
+        "Rapports de scores de bancs d'essai automatisés (MMLU, AdvGLUE)",
+        "Registres immuables d'annotations et de corrections issus des boucles de validation humaine (RLHF)"
+      ],
+      "references": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "6.1.2"
+        },
+        {
+          "framework": "EU_AI_ACT",
+          "version": "2024/1689",
+          "reference": "Sécurité IA"
+        }
+      ],
+      "criticality": {
+        "infrastructure_host": "negligible",
+        "model_developer": "critical",
+        "integrator_consultant": "high",
+        "business_user": "low"
+      }
+    },
+    {
+      "code": "CYBER",
+      "ordinal": 6,
+      "name": "Cybersécurité spécifique à l'IA",
+      "technical_description": "Journalisation des mécanismes bloquant les attaques propres aux modèles d'IA : injection de consignes, contournement des garde-fous, extraction de modèle, déni de service par consommation de jetons.",
+      "deliverables": [
+        "Flux Syslog/CEF d'une passerelle de sécurité IA capturant les attaques",
+        "Rapports de campagnes de simulation d'attaques adverses (red teaming IA)"
+      ],
+      "references": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.6.2.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.6.2.3"
+        },
+        {
+          "framework": "EU_AI_ACT",
+          "version": "2024/1689",
+          "reference": "Art. 15"
+        }
+      ],
+      "criticality": {
+        "infrastructure_host": "high",
+        "model_developer": "critical",
+        "integrator_consultant": "moderate",
+        "business_user": "moderate"
+      }
+    },
+    {
+      "code": "DRIFT",
+      "ordinal": 7,
+      "name": "Surveillance continue et dérive",
+      "technical_description": "Détection précoce de la dégradation des performances due aux dérives statistiques des données de production, et suivi des interventions humaines de correction.",
+      "deliverables": [
+        "Alertes automatisées d'outils de surveillance (Evidently AI, Whylogs) mesurant la dérive (test de Kolmogorov-Smirnov)",
+        "Journaux d'audit des arbitrages humains (human override)"
+      ],
+      "references": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.10.5"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.10.6"
+        },
+        {
+          "framework": "EU_AI_ACT",
+          "version": "2024/1689",
+          "reference": "Art. 14"
+        },
+        {
+          "framework": "EU_AI_ACT",
+          "version": "2024/1689",
+          "reference": "Art. 61"
+        }
+      ],
+      "criticality": {
+        "infrastructure_host": "negligible",
+        "model_developer": "critical",
+        "integrator_consultant": "moderate",
+        "business_user": "critical"
+      }
+    },
+    {
+      "code": "GREEN",
+      "ordinal": 8,
+      "name": "Empreinte environnementale",
+      "technical_description": "Mesure et historisation de la consommation électrique et de l'efficience énergétique des infrastructures pendant les tâches de calcul intensives.",
+      "deliverables": [
+        "Séries temporelles Prometheus/Grafana issues de l'interface NVML ou d'agents libres (Scaphandre)",
+        "Rapports automatisés d'équivalents CO2 par conteneur ou par tâche"
+      ],
+      "references": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.8.4"
+        },
+        {
+          "framework": "EU_AI_ACT",
+          "version": "2024/1689",
+          "reference": "Art. 40"
+        }
+      ],
+      "criticality": {
+        "infrastructure_host": "critical",
+        "model_developer": "moderate",
+        "integrator_consultant": "low",
+        "business_user": "low"
+      }
+    }
+  ],
+  "unresolved_references": [
+    {
+      "typology": "ISOL",
+      "framework": "ISO_IEC_27001",
+      "version": "2022",
+      "reference": "A.11",
+      "reason": "ISO/IEC 27001 n'est pas chargée dans AIGMS. La référence est conservée telle que la matrice l'énonce."
+    },
+    {
+      "typology": "ISOL",
+      "framework": "ISO_IEC_27001",
+      "version": "2022",
+      "reference": "A.12",
+      "reason": "ISO/IEC 27001 n'est pas chargée dans AIGMS."
+    },
+    {
+      "typology": "INTG",
+      "framework": "EU_AI_ACT",
+      "version": "2024/1689",
+      "reference": "Art. 10",
+      "reason": "Seuls les articles 14 et 50 du règlement sont chargés."
+    },
+    {
+      "typology": "FAIR",
+      "framework": "EU_AI_ACT",
+      "version": "2024/1689",
+      "reference": "Art. 10",
+      "reason": "Seuls les articles 14 et 50 du règlement sont chargés."
+    },
+    {
+      "typology": "XAI",
+      "framework": "EU_AI_ACT",
+      "version": "2024/1689",
+      "reference": "Art. 13",
+      "reason": "Seuls les articles 14 et 50 du règlement sont chargés."
+    },
+    {
+      "typology": "ALIGN",
+      "framework": "EU_AI_ACT",
+      "version": "2024/1689",
+      "reference": "Sécurité IA",
+      "reason": "La matrice désigne un thème, non un article : rien à rapprocher tant que la référence n'est pas précisée."
+    },
+    {
+      "typology": "CYBER",
+      "framework": "EU_AI_ACT",
+      "version": "2024/1689",
+      "reference": "Art. 15",
+      "reason": "Seuls les articles 14 et 50 du règlement sont chargés."
+    },
+    {
+      "typology": "DRIFT",
+      "framework": "ISO_IEC_42001",
+      "version": "2023",
+      "reference": "A.10.5",
+      "reason": "L'Annexe A chargée s'arrête à A.10.4 : cette référence n'y existe pas."
+    },
+    {
+      "typology": "DRIFT",
+      "framework": "ISO_IEC_42001",
+      "version": "2023",
+      "reference": "A.10.6",
+      "reason": "L'Annexe A chargée s'arrête à A.10.4 : cette référence n'y existe pas."
+    },
+    {
+      "typology": "DRIFT",
+      "framework": "EU_AI_ACT",
+      "version": "2024/1689",
+      "reference": "Art. 61",
+      "reason": "Seuls les articles 14 et 50 du règlement sont chargés."
+    },
+    {
+      "typology": "GREEN",
+      "framework": "EU_AI_ACT",
+      "version": "2024/1689",
+      "reference": "Art. 40",
+      "reason": "Seuls les articles 14 et 50 du règlement sont chargés."
+    }
+  ],
+  "reference_warnings": [
+    {
+      "typology": "GREEN",
+      "reference": "A.8.4",
+      "reason": "La référence se résout, mais A.8.4 porte dans l'Annexe A chargée la communication des incidents, non l'empreinte environnementale. Rapprochement à confirmer par un relecteur."
+    }
+  ]
+}

@@ -9,7 +9,18 @@ import {
   EvidenceReviewForm,
   EvidenceUploadForm,
   type ControlChoice,
+  type TypologyChoice,
 } from '@/components/governance/evidence-forms'
+import {
+  EvidenceMatrixCard,
+  type MatrixGap,
+  type TypologyCoverage,
+} from '@/components/governance/evidence-matrix'
+import {
+  CRITICALITY_LABELS,
+  criticalityTone,
+  type ActivityProfile,
+} from '@/lib/domain/activity-profile'
 import { FRESHNESS_LABELS, formatDate, type EvidenceFreshness } from '@/lib/domain/governance'
 
 /**
@@ -44,6 +55,9 @@ type Row = {
   superseded_by: string | null
   control_count: number
   control_codes: string[]
+  typology_code: string | null
+  typology_name: string | null
+  typology_criticality: 'negligible' | 'low' | 'moderate' | 'high' | 'critical' | null
 }
 
 type Control = {
@@ -105,16 +119,34 @@ export default async function EvidencePage({
   const { controle } = await searchParams
   const supabase = await createClient()
 
-  const [{ data: organization }, { data: registerData }, { data: controlData }] = await Promise.all([
-    supabase.from('organization').select('id, name, business_ref').eq('id', id).maybeSingle(),
+  const [
+    { data: organization },
+    { data: registerData },
+    { data: controlData },
+    { data: typologyData },
+    { data: coverageData },
+    { data: gapData },
+  ] = await Promise.all([
+    supabase
+      .from('organization')
+      .select('id, name, business_ref, ai_activity_profile')
+      .eq('id', id)
+      .maybeSingle(),
     supabase.rpc('evidence_register', { p_organization_id: id }),
     supabase.rpc('controls_awaiting_evidence', { p_organization_id: id }),
+    supabase.rpc('evidence_typologies', { p_organization_id: id }),
+    supabase.rpc('typology_coverage', { p_organization_id: id }),
+    supabase.rpc('evidence_matrix_gaps'),
   ])
 
   if (!organization) notFound()
 
   const rows = (registerData ?? []) as Row[]
   const controls = (controlData ?? []) as Control[]
+  const typologies = (typologyData ?? []) as TypologyChoice[]
+  const coverage = (coverageData ?? []) as TypologyCoverage[]
+  const gaps = (gapData ?? []) as MatrixGap[]
+  const profile = (organization.ai_activity_profile ?? null) as ActivityProfile | null
   const choices: ControlChoice[] = controls.map((c) => ({
     id: c.id,
     code: c.code,
@@ -170,6 +202,19 @@ export default async function EvidencePage({
                           {row.version ? ` · v${row.version}` : ''} · déposée par{' '}
                           {row.owner_name ?? '—'}
                         </p>
+                        {row.typology_name ? (
+                          <p className="mt-1.5 text-xs text-ink-600">
+                            <span className="mr-1.5 font-mono text-ink-400">
+                              {row.typology_code}
+                            </span>
+                            {row.typology_name}
+                            {row.typology_criticality ? (
+                              <span className="ml-2 text-ink-400">
+                                criticité {CRITICALITY_LABELS[row.typology_criticality].toLowerCase()}
+                              </span>
+                            ) : null}
+                          </p>
+                        ) : null}
                       </div>
                       <div className="flex shrink-0 gap-2">
                         <Badge tone={validationTone(row.validation_status)}>
@@ -178,6 +223,11 @@ export default async function EvidencePage({
                         <Badge tone={freshnessTone(row.freshness)}>
                           {FRESHNESS_LABELS[row.freshness]}
                         </Badge>
+                        {row.typology_criticality ? (
+                          <Badge tone={criticalityTone(row.typology_criticality)}>
+                            {CRITICALITY_LABELS[row.typology_criticality]}
+                          </Badge>
+                        ) : null}
                       </div>
                     </div>
 
@@ -273,9 +323,12 @@ export default async function EvidencePage({
             <EvidenceUploadForm
               organizationId={id}
               controls={choices}
+              typologies={typologies}
               defaultControlId={controle}
             />
           </Card>
+
+          <EvidenceMatrixCard rows={coverage} profile={profile} gaps={gaps} />
 
           <Card
             title="Contrôles sans preuve valide"

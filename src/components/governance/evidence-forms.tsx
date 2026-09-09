@@ -8,6 +8,12 @@ import {
   type FormState,
 } from '@/lib/actions/evidence'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
+import {
+  ACTIVITY_PROFILE_LABELS,
+  CRITICALITY_LABELS,
+  type ActivityProfile,
+  type EvidenceCriticality,
+} from '@/lib/domain/activity-profile'
 
 /**
  * Saisie du dossier de preuves.
@@ -27,6 +33,18 @@ const EVIDENCE_TYPES = [
   { value: 'declarative', label: 'Déclarative — aucune pièce jointe' },
 ] as const
 
+export type TypologyChoice = {
+  id: string
+  code: string
+  ordinal: number
+  name: string
+  technical_description: string
+  deliverables: string[]
+  normative_references: string[]
+  criticality: EvidenceCriticality | null
+  profile: ActivityProfile | null
+}
+
 export type ControlChoice = {
   id: string
   code: string
@@ -38,10 +56,13 @@ export type ControlChoice = {
 export function EvidenceUploadForm({
   organizationId,
   controls,
+  typologies,
   defaultControlId,
 }: {
   organizationId: string
   controls: ControlChoice[]
+  /** Typologies de la matrice, les plus critiques pour ce profil en tete. */
+  typologies: TypologyChoice[]
   defaultControlId?: string
 }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(
@@ -49,11 +70,78 @@ export function EvidenceUploadForm({
     null,
   )
   const [declarative, setDeclarative] = useState(false)
+  const [typologyId, setTypologyId] = useState('')
   const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
+  const chosen = typologies.find((t) => t.id === typologyId)
+  const profile = typologies[0]?.profile ?? null
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="organizationId" value={organizationId} />
+
+      {/*
+        La typologie se choisit AVANT le reste : elle dit ce qu'il faut
+        consigner et quel livrable est attendu. La poser apres reviendrait a
+        laisser deposer d'abord et se demander ensuite si la piece convient.
+      */}
+      <Field
+        label="Typologie de preuve"
+        htmlFor="evidence-typology"
+        optional
+        hint={
+          profile
+            ? `Classées par criticité pour un profil « ${ACTIVITY_PROFILE_LABELS[profile]} ».`
+            : 'Le rôle de l’organisation vis-à-vis de l’IA n’est pas renseigné : toutes les typologies sont proposées, sans criticité.'
+        }
+      >
+        <select
+          id="evidence-typology"
+          name="typologyId"
+          value={typologyId}
+          onChange={(event) => setTypologyId(event.target.value)}
+          className={FIELD}
+        >
+          <option value="">— Aucune typologie technique</option>
+          {typologies.map((typology) => (
+            <option key={typology.id} value={typology.id}>
+              {typology.criticality ? `${CRITICALITY_LABELS[typology.criticality]} · ` : ''}
+              {typology.name}
+            </option>
+          ))}
+        </select>
+      </Field>
+
+      {chosen ? (
+        <div
+          className={`rounded-md border-l-4 bg-ink-50 px-4 py-3 ${
+            chosen.criticality === 'critical' || chosen.criticality === 'high'
+              ? 'border-stop-600'
+              : chosen.criticality === 'moderate'
+                ? 'border-warn-600'
+                : 'border-ink-300'
+          }`}
+        >
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-500">
+            À consigner
+          </p>
+          <p className="mt-1 text-sm text-ink-800">{chosen.technical_description}</p>
+
+          <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-ink-500">
+            Livrables qui font preuve
+          </p>
+          <ul className="mt-1 flex list-disc flex-col gap-0.5 pl-4 text-sm text-ink-700">
+            {chosen.deliverables.map((deliverable) => (
+              <li key={deliverable}>{deliverable}</li>
+            ))}
+          </ul>
+
+          {chosen.normative_references.length ? (
+            <p className="mt-3 text-xs text-ink-500">
+              {chosen.normative_references.join(' · ')}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       <Field label="Ce que la preuve démontre" htmlFor="evidence-title" error={errors.title}>
         <input

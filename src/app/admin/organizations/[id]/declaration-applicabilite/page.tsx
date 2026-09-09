@@ -3,6 +3,16 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty } from '@/components/ui'
+import { SoaDecisionForm } from '@/components/governance/soa-forms'
+import {
+  ACTIVITY_PROFILE_LABELS,
+  CRITICALITY_LABELS,
+  criticalityTone,
+  GAP_LABELS,
+  REGIME_LABELS,
+  type ActivityProfile,
+  type EvidenceCriticality,
+} from '@/lib/domain/activity-profile'
 
 /**
  * Declaration d'Applicabilite.
@@ -28,6 +38,26 @@ type SoaRow = {
   evidence_count: number
   controls: { code: string; name: string; status: string; is_mandatory: boolean; evidences: number }[]
   coverage: Coverage
+  expected_criticality: EvidenceCriticality | null
+  evidence_regime: 'technical' | 'organisational' | 'exclusion' | 'unspecified'
+  typologies: { code: string; name: string; criticality: EvidenceCriticality | null }[]
+  soa_status: 'selected' | 'excluded' | null
+  soa_justification: string | null
+  decided_by_name: string | null
+  gap: string | null
+  requirement_id?: string
+}
+
+type Readiness = {
+  available: boolean
+  profile?: ActivityProfile | null
+  requirements?: number
+  decided?: number
+  selected?: number
+  excluded?: number
+  undecided?: number
+  technical_expected?: number
+  gaps?: Record<string, number>
 }
 
 const COVERAGE: Record<Coverage, { label: string; tone: 'ok' | 'warn' | 'stop' | 'neutral'; help: string }> = {
@@ -61,18 +91,43 @@ export default async function StatementOfApplicabilityPage({
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: organization }, { data: rows }] = await Promise.all([
-    supabase.from('organization').select('id, name, business_ref').eq('id', id).maybeSingle(),
-    supabase.rpc('statement_of_applicability', {
-      p_organization_id: id,
-      p_framework_code: 'ISO_IEC_42001',
-      p_framework_version: '2023',
-    }),
-  ])
+  const [{ data: organization }, { data: rows }, { data: readinessData }, { data: requirementRows }] =
+    await Promise.all([
+      supabase
+        .from('organization')
+        .select('id, name, business_ref, ai_activity_profile')
+        .eq('id', id)
+        .maybeSingle(),
+      supabase.rpc('statement_of_applicability', {
+        p_organization_id: id,
+        p_framework_code: 'ISO_IEC_42001',
+        p_framework_version: '2023',
+      }),
+      supabase.rpc('soa_readiness', {
+        p_organization_id: id,
+        p_framework_code: 'ISO_IEC_42001',
+        p_framework_version: '2023',
+      }),
+      // La fonction rend la reference, pas l'identifiant : la decision s'ecrit
+      // sur l'exigence, il faut donc les rapprocher.
+      supabase
+        .from('requirement')
+        .select('id, requirement_reference, framework:framework_id!inner(code, version)')
+        .eq('framework.code', 'ISO_IEC_42001')
+        .eq('framework.version', '2023'),
+    ])
 
   if (!organization) notFound()
 
-  const soa = (rows ?? []) as SoaRow[]
+  const readiness = (readinessData ?? { available: false }) as Readiness
+  const profile = (organization.ai_activity_profile ?? null) as ActivityProfile | null
+  const requirementIds = new Map(
+    (requirementRows ?? []).map((r) => [r.requirement_reference, r.id]),
+  )
+  const soa = ((rows ?? []) as SoaRow[]).map((row) => ({
+    ...row,
+    requirement_id: requirementIds.get(row.requirement_reference),
+  }))
   const byObjective = new Map<string, SoaRow[]>()
   for (const row of soa) {
     const list = byObjective.get(row.objective_code) ?? []
@@ -99,10 +154,39 @@ export default async function StatementOfApplicabilityPage({
         <Stat label="Couvertes et prouvées" value={covered} total={soa.length} tone="ok" />
         <Stat label="Partiellement couvertes" value={partial} total={soa.length} tone="warn" />
         <Stat label="Non couvertes" value={uncovered} total={soa.length} tone="stop" />
-        <div className="rounded-lg border border-ink-200 bg-white px-4 py-3">
-          <p className="text-2xl font-semibold tabular-nums text-ink-900">{soa.length}</p>
-          <p className="mt-0.5 text-xs text-ink-600">Contrôles de référence</p>
-        </div>
+        <Stat
+          label="Sans décision portée"
+          value={readiness.undecided ?? 0}
+          total={soa.length}
+          tone="stop"
+        />
+      </div>
+
+      {/*
+        La regle d'or, en tete : c'est le premier defaut qu'un auditeur releve,
+        et le seul qui ne se rattrape pas par un argument.
+      */}
+      <div className="mb-5 rounded-lg border border-ink-200 bg-white px-5 py-4">
+        <p className="text-sm font-semibold text-ink-900">
+          Aucune case vide : chaque exigence est sélectionnée ou exclue, et justifiée
+        </p>
+        <p className="mt-1.5 text-sm leading-relaxed text-ink-600">
+          {readiness.decided ?? 0} exigence(s) décidée(s) sur {soa.length} —{' '}
+          {readiness.selected ?? 0} sélectionnée(s), {readiness.excluded ?? 0} exclue(s).{' '}
+          {profile ? (
+            <>
+              Le profil <strong className="font-medium text-ink-900">
+                « {ACTIVITY_PROFILE_LABELS[profile]} »
+              </strong>{' '}
+              impose une preuve technique sur {readiness.technical_expected ?? 0} d’entre elles.
+            </>
+          ) : (
+            <span className="text-amber-700">
+              Le rôle de l’organisation vis-à-vis de l’IA n’est pas renseigné : aucune criticité ne
+              peut être attribuée, et le régime de preuve reste indéterminé.
+            </span>
+          )}
+        </p>
       </div>
 
       <div className="mb-5 rounded-lg border border-ink-200 bg-white px-5 py-4">
@@ -145,6 +229,26 @@ export default async function StatementOfApplicabilityPage({
                           {row.internal_summary}
                         </p>
 
+                        {row.typologies.length ? (
+                          <p className="mt-2 text-xs text-ink-600">
+                            Matrice des preuves —{' '}
+                            {row.typologies
+                              .map((t) =>
+                                t.criticality
+                                  ? `${t.name} (${CRITICALITY_LABELS[t.criticality].toLowerCase()})`
+                                  : t.name,
+                              )
+                              .join(', ')}
+                          </p>
+                        ) : null}
+
+                        <p className="mt-1.5 text-xs text-ink-500">
+                          <span className="font-medium text-ink-700">
+                            {REGIME_LABELS[row.evidence_regime]?.label}
+                          </span>{' '}
+                          — {REGIME_LABELS[row.evidence_regime]?.expectation}
+                        </p>
+
                         {row.controls.length ? (
                           <ul className="mt-2.5 flex flex-wrap gap-1.5">
                             {row.controls.map((control) => (
@@ -163,11 +267,44 @@ export default async function StatementOfApplicabilityPage({
                             Preuves habituellement attendues : {row.expected_evidence}
                           </p>
                         ) : null}
+
+                        {row.soa_status ? (
+                          <blockquote className="mt-2.5 border-l-2 border-ink-200 pl-3 text-xs leading-relaxed text-ink-600">
+                            <span className="font-medium text-ink-800">
+                              {row.soa_status === 'selected' ? 'Sélectionnée' : 'Exclue'}
+                            </span>
+                            {row.decided_by_name ? ` par ${row.decided_by_name}` : ''} —{' '}
+                            {row.soa_justification}
+                          </blockquote>
+                        ) : null}
+
+                        {row.requirement_id ? (
+                          <SoaDecisionForm
+                            organizationId={id}
+                            requirementId={row.requirement_id}
+                            reference={row.requirement_reference}
+                            currentStatus={row.soa_status}
+                            currentJustification={row.soa_justification}
+                            expectation={REGIME_LABELS[row.evidence_regime]?.expectation ?? ''}
+                          />
+                        ) : null}
                       </div>
 
-                      <Badge tone={COVERAGE[row.coverage].tone}>
-                        {COVERAGE[row.coverage].label}
-                      </Badge>
+                      <div className="flex shrink-0 flex-col items-end gap-1.5">
+                        <Badge tone={COVERAGE[row.coverage].tone}>
+                          {COVERAGE[row.coverage].label}
+                        </Badge>
+                        {row.expected_criticality ? (
+                          <Badge tone={criticalityTone(row.expected_criticality)}>
+                            {CRITICALITY_LABELS[row.expected_criticality]}
+                          </Badge>
+                        ) : null}
+                        {row.gap ? (
+                          <span className="text-xs font-medium text-stop-600">
+                            {GAP_LABELS[row.gap] ?? row.gap}
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
                   </li>
                 ))}

@@ -61,6 +61,11 @@ test("l'administration crée une organisation", async ({ page }) => {
   const name = `Cliente E2E ${Date.now()}`
   await page.getByLabel('Nom d’usage').fill(name)
   await page.getByLabel('Secteur').fill('Services')
+
+  // Le role vis-a-vis de l'IA commande les typologies de preuves attendues :
+  // il se renseigne a la creation, et le formulaire l'exige.
+  await page.getByLabel(/Rôle vis-à-vis de l’IA/).selectOption('integrator_consultant')
+
   await page.getByRole('button', { name: 'Créer l’organisation' }).click()
 
   await expect(page.getByRole('status')).toContainText(name)

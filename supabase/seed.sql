@@ -106,11 +106,18 @@ insert into public.membership (tenant_id, user_id, role) values
   ('bbbbbbbb-0000-4000-8000-000000000002', '55555555-5555-4555-8555-555555555555', 'governance_officer')
 on conflict do nothing;
 
-insert into public.organization (id, tenant_id, name, legal_name, sector, country_code, headcount, status) values
+-- Le profil d'activite au sens d'ISO/IEC 42001 commande les typologies de
+-- preuves attendues : un integrateur ne repond pas de l'alignement d'un modele
+-- qu'il n'entraine pas, un utilisateur metier repond de la derive de celui
+-- qu'il exploite.
+insert into public.organization (id, tenant_id, name, legal_name, sector, country_code, headcount,
+                                 status, ai_activity_profile) values
   ('cccccccc-0000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001',
-   'IzarLink Demo', 'IzarLink SAS', 'Logistique et services numériques', 'FR', 240, 'active'),
+   'IzarLink Demo', 'IzarLink SAS', 'Logistique et services numériques', 'FR', 240, 'active',
+   'integrator_consultant'),
   ('dddddddd-0000-4000-8000-000000000002', 'bbbbbbbb-0000-4000-8000-000000000002',
-   'Client Concurrent', 'Concurrent SA', 'Industrie', 'FR', 90, 'active')
+   'Client Concurrent', 'Concurrent SA', 'Industrie', 'FR', 90, 'active',
+   'business_user')
 on conflict (id) do nothing;
 
 insert into public.business_unit (id, tenant_id, organization_id, name) values
@@ -1003,3 +1010,42 @@ insert into public.contact_request (full_name, email, organization, phone, profi
    'Scoring de candidatures en test au service RH. Nous voulons savoir si nous sommes concernés par les obligations « haut risque » avant d''aller plus loin.',
    'qualified', now() - interval '21 days', (now() - interval '21 days')::date)
 on conflict do nothing;
+
+-- =============================================================================
+-- Déclaration d'Applicabilité — quelques décisions portées
+-- =============================================================================
+-- Cinq exigences décidées sur 38, choisies pour illustrer chacune des issues
+-- que la règle d'or produit. Le reste demeure « à décider » : c'est l'état
+-- réel d'un dossier en cours, et c'est ce qu'un auditeur regarde en premier.
+begin;
+set local role authenticated;
+set local request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","role":"authenticated"}';
+
+insert into public.soa_decision (tenant_id, organization_id, requirement_id, status, justification, decided_by)
+select 'aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
+       r.id, v.status::app.soa_status, v.justification,
+       '11111111-1111-4111-8111-111111111111'
+from (values
+  -- Régime technique attendu — l'explicabilité pèse « élevé » sur un
+  -- intégrateur — et satisfait : contrôle opérant, preuve validée.
+  ('A.10.2', 'selected',
+   'La répartition des responsabilités entre nous et l''éditeur du modèle est contractualisée, et la revue de sécurité du fournisseur est adossée à un rapport validé.'),
+  -- Sélectionnée, mais aucun contrôle ne la sert encore : l'écart se voit.
+  ('A.2.2', 'selected',
+   'La politique d''IA est en cours de formalisation ; son approbation est inscrite au prochain comité de direction. Aucun contrôle ne la porte à ce jour.'),
+  -- Sélectionnée sans aucun contrôle rattaché.
+  ('A.7.3', 'selected',
+   'L''acquisition des données d''entrée relève de nos clients ; nous encadrons contractuellement leur licéité. Procédure à formaliser.'),
+  -- Exclusion contestée : la matrice attend une preuve organisationnelle pour
+  -- ce profil. L''écran le dira, sans effacer la décision.
+  ('A.7.4', 'excluded',
+   'Nous n''entraînons aucun modèle : la qualité des jeux de données d''entraînement ne nous concerne pas.'),
+  -- Exclusion sur une exigence que la matrice ne couvre pas : aucun écart.
+  ('A.5.5', 'excluded',
+   'Nos systèmes n''ont pas d''effet sociétal identifiable au-delà de leurs utilisateurs directs : aucun usage à destination du public ni de traitement de données ouvertes.')
+) as v(reference, status, justification)
+join public.requirement r on r.requirement_reference = v.reference
+join public.framework f on f.id = r.framework_id and f.code = 'ISO_IEC_42001'
+on conflict (organization_id, requirement_id) do nothing;
+
+commit;

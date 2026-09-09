@@ -119,7 +119,7 @@ describe('Declaration d’Applicabilite', () => {
     expect(byRef.get('A.6.2.4')).toBe('declared')
   })
 
-  it("un tenant etranger n'obtient aucune couverture", async () => {
+  it("un tenant etranger n'obtient rien du tout", async () => {
     const rows = await asUser(db, DEMO.officerB, async (c) => {
       const { rows } = await c.query<{ coverage: string }>(
         'select coverage from app.statement_of_applicability($1)',
@@ -128,10 +128,13 @@ describe('Declaration d’Applicabilite', () => {
       return rows
     })
 
-    // Les exigences restent visibles — le catalogue normatif est public — mais
-    // aucun controle du tenant A n'y apparait.
-    expect(rows).toHaveLength(38)
-    expect(rows.every((r) => r.coverage === 'uncovered')).toBe(true)
+    // La fonction rendait auparavant la liste des exigences a tout le monde, au
+    // motif que le catalogue normatif est public. Elle porte desormais les
+    // justifications d'inclusion et d'exclusion du client : la Declaration
+    // n'est plus un extrait de referentiel, c'est un document du client, et
+    // elle se tait hors de son perimetre. Le catalogue reste lisible pour
+    // lui-meme par public.requirement.
+    expect(rows).toHaveLength(0)
   })
 
   it('la correspondance domaine vers objectif est proposee, pas imposee', async () => {

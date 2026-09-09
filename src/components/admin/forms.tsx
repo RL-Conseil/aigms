@@ -8,6 +8,7 @@ import {
   createAccount,
   createOrganization,
 } from '@/lib/actions/admin'
+import { ACTIVITY_PROFILES } from '@/lib/domain/activity-profile'
 import { ASSIGNABLE_ROLES, ROLE_DESCRIPTIONS, ROLE_LABELS } from '@/lib/domain/roles'
 
 type Result = { ok: true; message: string } | { ok: false; message: string }
@@ -99,6 +100,32 @@ export function OrganizationForm() {
           <option value="active">Actif</option>
           <option value="archived">Archivé</option>
         </select>
+      </div>
+
+      {/*
+        Le profil d'activite n'est pas une categorie descriptive : il determine
+        les typologies de preuves attendues et leur criticite, donc ce que la
+        Declaration d'Applicabilite exigera. Il se renseigne ici, une fois.
+      */}
+      <div>
+        <label htmlFor="activityProfile" className="mb-1.5 block text-sm font-medium">
+          Rôle vis-à-vis de l’IA
+          <span className="ml-2 font-normal text-ink-500">ISO/IEC 42001</span>
+        </label>
+        <select id="activityProfile" name="activityProfile" defaultValue="" required className={FIELD}>
+          <option value="" disabled>
+            — Choisir le rôle exercé
+          </option>
+          {ACTIVITY_PROFILES.map((profile) => (
+            <option key={profile.value} value={profile.value}>
+              {profile.label} — {profile.hint}
+            </option>
+          ))}
+        </select>
+        <p className="mt-1.5 text-xs leading-relaxed text-ink-500">
+          Il commande les typologies de preuves attendues et leur criticité. Un hébergeur démontre
+          l’isolation de ses calculs, pas l’équité d’un modèle qu’il n’entraîne pas.
+        </p>
       </div>
 
       <Feedback state={state} />

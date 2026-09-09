@@ -76,6 +76,7 @@ const uploadSchema = z.object({
   validUntil: z.string().trim().optional().or(z.literal('')),
   externalUrl: z.string().trim().url('Adresse invalide.').max(500).optional().or(z.literal('')),
   controlId: z.string().uuid().optional().or(z.literal('')),
+  typologyId: z.string().uuid().optional().or(z.literal('')),
 })
 
 export async function uploadEvidence(
@@ -91,6 +92,7 @@ export async function uploadEvidence(
     validUntil: formData.get('validUntil') ?? '',
     externalUrl: formData.get('externalUrl') ?? '',
     controlId: formData.get('controlId') ?? '',
+    typologyId: formData.get('typologyId') ?? '',
   })
   if (!parsed.success) return firstIssues(parsed.error)
 
@@ -167,6 +169,7 @@ export async function uploadEvidence(
     file_name: hasFile ? file.name : null,
     file_size_bytes: hasFile ? file.size : null,
     mime_type: hasFile ? file.type || 'application/octet-stream' : null,
+    typology_id: input.typologyId || null,
     owner_user_id: user.id,
     validation_status: 'pending',
   })

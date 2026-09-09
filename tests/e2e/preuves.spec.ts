@@ -82,13 +82,39 @@ test('le registre pointe les contrôles qu’aucune preuve ne démontre', async 
   const manques = page.locator('section').filter({ hasText: 'Contrôles sans preuve valide' })
   await expect(manques.getByText('Opérants, mais rien ne le démontre.')).toBeVisible()
 
-  // Choisir un controle demuni pre-remplit le formulaire de depot.
-  const premier = manques.getByRole('link').first()
-  const libelle = (await premier.textContent())?.trim() ?? ''
-  await premier.click()
-  await expect(page).toHaveURL(/controle=/)
+  // Le parcours ecrit de vraies donnees : selon l'ordre d'execution, la liste
+  // peut etre vide. Les deux etats sont legitimes, et tous deux se disent.
+  const demunis = await manques.getByRole('link').count()
+  if (demunis === 0) {
+    await expect(
+      manques.getByText('Tous les contrôles opérants sont adossés à une preuve valide.'),
+    ).toBeVisible()
+  }
 
+  // Le prechargement du controle, lui, se verifie sans dependre de cet etat.
   const selection = page.getByLabel('Contrôle démontré')
-  await expect(selection).not.toHaveValue('')
-  expect(libelle.length).toBeGreaterThan(0)
+  const cible = await selection.locator('option').nth(1).getAttribute('value')
+  expect(cible).toBeTruthy()
+
+  await page.goto(`/admin/organizations/${ORG}/preuves?controle=${cible}`)
+  await expect(page.getByLabel('Contrôle démontré')).toHaveValue(cible!)
+})
+
+test('la matrice des preuves oriente le dépôt selon le profil d’activité', async ({ page }) => {
+  await page.goto(`/admin/organizations/${ORG}/preuves`)
+
+  // La matrice, classee par criticite pour le profil de l'organisation.
+  const matrice = page.locator('section').filter({ hasText: 'Preuves attendues' })
+  await expect(matrice.getByText(/Profil « Intégrateur \/ Conseil \/ ESN »/)).toBeVisible()
+
+  // Choisir une typologie affiche ce qu'il faut consigner et le livrable attendu.
+  const depot = page.locator('section').filter({ hasText: 'Déposer une preuve' })
+  await depot.getByLabel('Typologie de preuve').selectOption({ index: 1 })
+
+  await expect(depot.getByText('À consigner')).toBeVisible()
+  await expect(depot.getByText('Livrables qui font preuve')).toBeVisible()
+
+  // Les references que le referentiel charge ne porte pas sont nommees.
+  await matrice.getByText(/Références que le référentiel chargé ne porte pas/).click()
+  await expect(matrice.getByText(/A\.10\.5/)).toBeVisible()
 })

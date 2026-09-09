@@ -103,8 +103,19 @@ describe('Graphe de gouvernance', () => {
   })
 
   it('note un contrôle opérant sans preuve comme non tenu', async () => {
-    const g = await graph(DEMO.officerA, DEMO.orgA)
-    const nodes = g.nodes ?? []
+    // Le test construit sa premisse plutot que de la supposer : la base locale
+    // est partagee avec les parcours E2E, qui deposent de vraies preuves.
+    const nodes = await asUser(db, DEMO.officerA, async (c) => {
+      await c.query(
+        `delete from public.control_evidence ce
+          using public.control ctl
+          where ctl.id = ce.control_id and ctl.code = 'CTL-09'`,
+      )
+      const { rows } = await c.query<{ g: Graph }>('select app.control_graph($1, null) as g', [
+        DEMO.orgA,
+      ])
+      return rows[0]!.g.nodes ?? []
+    })
 
     const evidenced = nodes.find((n) => n.ref === 'CTL-02')!
     const unevidenced = nodes.find((n) => n.ref === 'CTL-09')!
@@ -139,7 +150,17 @@ describe('Chemin du risque', () => {
   })
 
   it('nomme la rupture à la preuve quand le contrôle opère sans rien démontrer', async () => {
-    const p = await path(DEMO.officerA, DEMO.unevidencedRisk)
+    const p = await asUser(db, DEMO.officerA, async (c) => {
+      await c.query(
+        `delete from public.control_evidence ce
+          using public.control ctl
+          where ctl.id = ce.control_id and ctl.code = 'CTL-09'`,
+      )
+      const { rows } = await c.query<{ p: Path }>('select app.risk_path($1) as p', [
+        DEMO.unevidencedRisk,
+      ])
+      return rows[0]!.p
+    })
 
     expect(p.chain_complete).toBe(false)
     expect(p.break).toBe('no_evidence')
