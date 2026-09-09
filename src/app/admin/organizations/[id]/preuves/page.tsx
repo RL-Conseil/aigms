@@ -246,7 +246,10 @@ export default async function EvidencePage({
                       <EvidenceAttachForm
                         organizationId={id}
                         evidenceId={row.id}
-                        controls={choices}
+                        // Une preuve sert plusieurs controles, mais jamais deux
+                        // fois le meme : on n'offre que ce qui reste a rattacher.
+                        // Le code d'un controle est unique par organisation.
+                        controls={choices.filter((c) => !row.control_codes.includes(c.code))}
                       />
                     </div>
                   </li>

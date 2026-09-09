@@ -232,6 +232,19 @@ export function EvidenceReviewForm({
 // -----------------------------------------------------------------------------
 // Rattachement
 // -----------------------------------------------------------------------------
+/**
+ * Rattachement d'une preuve a un controle supplementaire.
+ *
+ * Une preuve sert souvent plusieurs controles — un rapport d'audit annuel
+ * demontre a la fois la tenue du registre, la revue des fournisseurs et la
+ * formation. La table d'association est donc N–N, et le seul interdit est le
+ * doublon.
+ *
+ * D'ou deux partis pris d'ecran : la liste ne propose QUE des controles pas
+ * encore rattaches — decouvrir un doublon sur un message d'erreur serait le
+ * decouvrir trop tard — et le formulaire se replie, parce que rattacher est un
+ * geste occasionnel qui n'a pas a encombrer chaque ligne du registre.
+ */
 export function EvidenceAttachForm({
   organizationId,
   evidenceId,
@@ -239,6 +252,7 @@ export function EvidenceAttachForm({
 }: {
   organizationId: string
   evidenceId: string
+  /** Controles pas encore rattaches a cette preuve. */
   controls: ControlChoice[]
 }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(
@@ -252,31 +266,43 @@ export function EvidenceAttachForm({
     <form action={formAction} className="flex flex-col gap-2">
       <input type="hidden" name="organizationId" value={organizationId} />
       <input type="hidden" name="evidenceId" value={evidenceId} />
-      <div className="flex flex-wrap items-center gap-2">
-        <label className="sr-only" htmlFor={`attach-${evidenceId}`}>
-          Contrôle à rattacher
-        </label>
-        <select
-          id={`attach-${evidenceId}`}
-          name="controlId"
-          defaultValue=""
-          className={`${FIELD} max-w-xs text-xs`}
-        >
-          <option value="">— Choisir un contrôle</option>
-          {controls.map((control) => (
-            <option key={control.id} value={control.id}>
-              {control.code} — {control.name}
-            </option>
-          ))}
-        </select>
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-md border border-ink-200 px-3 py-1.5 text-xs text-ink-700 hover:bg-ink-100 disabled:opacity-60"
-        >
-          Rattacher
-        </button>
-      </div>
+
+      <details className="group">
+        <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-xs font-medium text-brand-600 hover:underline">
+          <span aria-hidden="true" className="transition-transform group-open:rotate-45">
+            +
+          </span>
+          Rattacher à un autre contrôle
+        </summary>
+
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <label className="sr-only" htmlFor={`attach-${evidenceId}`}>
+            Contrôle à rattacher
+          </label>
+          <select
+            id={`attach-${evidenceId}`}
+            name="controlId"
+            defaultValue=""
+            className={`${FIELD} max-w-xs text-xs`}
+          >
+            <option value="">— Choisir un contrôle</option>
+            {controls.map((control) => (
+              <option key={control.id} value={control.id}>
+                {control.code} — {control.name}
+                {control.is_evidenced ? '' : ' (sans preuve valide)'}
+              </option>
+            ))}
+          </select>
+          <button
+            type="submit"
+            disabled={pending}
+            className="rounded-md border border-ink-200 px-3 py-1.5 text-xs text-ink-700 hover:bg-ink-100 disabled:opacity-60"
+          >
+            Rattacher
+          </button>
+        </div>
+      </details>
+
       <FormFeedback state={state} />
     </form>
   )
