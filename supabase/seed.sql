@@ -114,7 +114,7 @@ insert into public.organization (id, tenant_id, name, legal_name, sector, countr
                                  status, ai_activity_profile) values
   ('cccccccc-0000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001',
    'IzarLink Demo', 'IzarLink SAS', 'Logistique et services numériques', 'FR', 240, 'active',
-   'integrator_consultant'),
+   'infrastructure_host'),
   ('dddddddd-0000-4000-8000-000000000002', 'bbbbbbbb-0000-4000-8000-000000000002',
    'Client Concurrent', 'Concurrent SA', 'Industrie', 'FR', 90, 'active',
    'business_user')

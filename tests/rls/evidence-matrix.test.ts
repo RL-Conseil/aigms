@@ -106,7 +106,7 @@ describe('Typologies attendues d’une organisation', () => {
     })
 
     expect(rows).toHaveLength(source.matrix.typology_count)
-    expect(rows[0]!.profile).toBe('integrator_consultant')
+    expect(rows[0]!.profile).toBe('infrastructure_host')
 
     // L'ordre est décroissant : la plus exigeante d'abord.
     const rank = ['critical', 'high', 'moderate', 'low', 'negligible']
@@ -203,10 +203,10 @@ describe('Déclaration d’Applicabilité ajustée à la criticité', () => {
   })
 
   it('le régime change avec le profil, sur la même exigence', async () => {
-    const asIntegrator = await soa(DEMO.officerA, DEMO.orgA)
-    const asHost = await asUser(db, DEMO.officerA, async (c) => {
+    const asHost = await soa(DEMO.officerA, DEMO.orgA)
+    const asIntegrator = await asUser(db, DEMO.officerA, async (c) => {
       await c.query(
-        "update public.organization set ai_activity_profile = 'infrastructure_host' where id = $1",
+        "update public.organization set ai_activity_profile = 'integrator_consultant' where id = $1",
         [DEMO.orgA],
       )
       const { rows } = await c.query<Row>(
@@ -218,13 +218,21 @@ describe('Déclaration d’Applicabilité ajustée à la criticité', () => {
       return rows
     })
 
-    // A.10.2 releve de l'explicabilite : elevee pour un integrateur,
-    // negligeable pour un hebergeur qui n'entraine ni ne concoit rien.
-    const integrator = asIntegrator.find((r) => r.requirement_reference === 'A.10.2')!
+    // A.10.2 releve de l'explicabilite : negligeable pour un hebergeur qui
+    // n'entraine ni ne concoit rien, elevee pour un integrateur qui deploie
+    // des systemes chez ses clients. Meme exigence, meme base, deux regimes.
     const host = asHost.find((r) => r.requirement_reference === 'A.10.2')!
+    const integrator = asIntegrator.find((r) => r.requirement_reference === 'A.10.2')!
 
-    expect(integrator.evidence_regime).toBe('technical')
     expect(host.evidence_regime).toBe('exclusion')
+    expect(integrator.evidence_regime).toBe('technical')
+
+    // Et symetriquement sur l'isolation, qui pese sur l'hebergeur seul.
+    const hostIsolation = asHost.find((r) => r.requirement_reference === 'A.7.4')!
+    const integratorIsolation = asIntegrator.find((r) => r.requirement_reference === 'A.7.4')!
+
+    expect(hostIsolation.evidence_regime).toBe('technical')
+    expect(integratorIsolation.evidence_regime).toBe('organisational')
   })
 
   it('signale toute exigence laissée sans décision', async () => {

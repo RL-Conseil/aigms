@@ -3,6 +3,14 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty, Field } from '@/components/ui'
+import { ActivityProfileForm } from '@/components/governance/activity-profile-form'
+import {
+  ACTIVITY_PROFILE_LABELS,
+  CRITICALITY_LABELS,
+  criticalityTone,
+  type ActivityProfile,
+  type EvidenceCriticality,
+} from '@/lib/domain/activity-profile'
 import {
   AUTONOMY_LABELS,
   formatDate,
@@ -27,25 +35,43 @@ export default async function OrganizationPage({
 
   const { data: organization } = await supabase
     .from('organization')
-    .select('id, business_ref, name, legal_name, sector, country_code, headcount, status')
+    .select(
+      'id, business_ref, name, legal_name, sector, country_code, headcount, status, ai_activity_profile',
+    )
     .eq('id', id)
     .maybeSingle()
 
   if (!organization) notFound()
 
-  const [{ data: useCases }, { data: vendors }, { data: units }] = await Promise.all([
-    supabase
-      .from('ai_use_case')
-      .select('id, business_ref, name, status, criticality, autonomy_level, next_review_at')
-      .eq('organization_id', id)
-      .order('business_ref'),
-    supabase
-      .from('vendor')
-      .select('id, business_ref, name, criticality, review_status, next_review_at')
-      .eq('organization_id', id)
-      .order('name'),
-    supabase.from('business_unit').select('id, name').eq('organization_id', id).order('name'),
-  ])
+  const [{ data: useCases }, { data: vendors }, { data: units }, { data: typologyRows }] =
+    await Promise.all([
+      supabase
+        .from('ai_use_case')
+        .select('id, business_ref, name, status, criticality, autonomy_level, next_review_at')
+        .eq('organization_id', id)
+        .order('business_ref'),
+      supabase
+        .from('vendor')
+        .select('id, business_ref, name, criticality, review_status, next_review_at')
+        .eq('organization_id', id)
+        .order('name'),
+      supabase.from('business_unit').select('id, name').eq('organization_id', id).order('name'),
+      supabase.rpc('typology_coverage', { p_organization_id: id }),
+    ])
+
+  const profile = (organization.ai_activity_profile ?? null) as ActivityProfile | null
+  const typologies = (typologyRows ?? []) as {
+    code: string
+    name: string
+    criticality: EvidenceCriticality | null
+    evidence_total: number
+    evidence_valid: number
+  }[]
+  // Ce que le rôle retenu rend exigeant, tout de suite : le lien entre le choix
+  // et ses conséquences se perd si l'un et l'autre vivent sur deux écrans.
+  const demanding = typologies.filter(
+    (t) => t.criticality === 'critical' || t.criticality === 'high',
+  )
 
   return (
     <Shell
@@ -114,6 +140,68 @@ export default async function OrganizationPage({
         </div>
 
         <div className="space-y-5">
+          <Card
+            title="Rôle vis-à-vis de l’IA"
+            subtitle={
+              profile
+                ? ACTIVITY_PROFILE_LABELS[profile]
+                : 'Non renseigné — aucune criticité ne peut être attribuée'
+            }
+          >
+            <ActivityProfileForm organizationId={id} current={profile} />
+
+            {profile ? (
+              <div className="mt-4 border-t border-ink-100 pt-3">
+                <p className="mb-2 text-xs font-medium text-ink-600">
+                  Ce que ce rôle rend exigeant
+                </p>
+                {demanding.length ? (
+                  <ul className="flex flex-col gap-1.5">
+                    {demanding.map((typology) => (
+                      <li
+                        key={typology.code}
+                        className="flex items-baseline justify-between gap-2 text-sm"
+                      >
+                        <span className="text-ink-800">
+                          <span className="mr-2 font-mono text-xs text-ink-400">
+                            {typology.code}
+                          </span>
+                          {typology.name}
+                        </span>
+                        <span className="flex shrink-0 items-center gap-2">
+                          <span
+                            className={`text-xs ${
+                              typology.evidence_valid === 0 ? 'text-stop-600' : 'text-ink-500'
+                            }`}
+                          >
+                            {typology.evidence_valid} preuve
+                            {typology.evidence_valid > 1 ? 's' : ''}
+                          </span>
+                          <Badge tone={criticalityTone(typology.criticality)}>
+                            {typology.criticality
+                              ? CRITICALITY_LABELS[typology.criticality]
+                              : '—'}
+                          </Badge>
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <Empty>
+                    Aucune typologie critique ou élevée pour ce rôle. La matrice reste consultable
+                    depuis le registre des preuves.
+                  </Empty>
+                )}
+                <Link
+                  href={`/admin/organizations/${id}/preuves`}
+                  className="mt-3 inline-block text-xs font-medium text-brand-600 hover:underline"
+                >
+                  Voir la matrice complète et déposer une preuve
+                </Link>
+              </div>
+            ) : null}
+          </Card>
+
           <Card title="Contexte">
             <dl className="space-y-3">
               <Field label="Secteur">{organization.sector ?? '—'}</Field>

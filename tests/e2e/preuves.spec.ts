@@ -105,7 +105,7 @@ test('la matrice des preuves oriente le dépôt selon le profil d’activité', 
 
   // La matrice, classee par criticite pour le profil de l'organisation.
   const matrice = page.locator('section').filter({ hasText: 'Preuves attendues' })
-  await expect(matrice.getByText(/Profil « Intégrateur \/ Conseil \/ ESN »/)).toBeVisible()
+  await expect(matrice.getByText(/Profil « Hébergeur \/ Infrastructure »/)).toBeVisible()
 
   // Choisir une typologie affiche ce qu'il faut consigner et le livrable attendu.
   const depot = page.locator('section').filter({ hasText: 'Déposer une preuve' })

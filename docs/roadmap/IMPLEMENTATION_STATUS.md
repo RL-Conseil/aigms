@@ -318,6 +318,12 @@ La matrice ne décide de rien. Elle dit ce qui est attendu ; un humain
 sélectionne ou exclut, et peut la contredire — l'écart est alors **affiché, pas
 effacé**.
 
+Le rôle se **modifie depuis la fiche de l'organisation**, à côté de ce qu'il
+rend exigeant : le lien entre le choix et ses conséquences se perd si l'un et
+l'autre vivent sur deux écrans. Le jeu de démonstration place IzarLink Demo en
+« Hébergeur / Infrastructure » — isolation et empreinte environnementale
+critiques, cybersécurité IA élevée, explicabilité et alignement négligeables.
+
 **Onze références citées par la matrice ne se résolvent pas** : l'Annexe A
 chargée s'arrête à A.10.4, et seuls les articles 14 et 50 du règlement sont
 présents. `app.evidence_matrix_gaps()` les liste, l'écran les affiche, et un

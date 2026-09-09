@@ -27,7 +27,7 @@ test('la Déclaration exige une décision par exigence et nomme le régime de pr
   await expect(
     page.getByText('Aucune case vide : chaque exigence est sélectionnée ou exclue, et justifiée'),
   ).toBeVisible()
-  await expect(page.getByText(/profil.*Intégrateur \/ Conseil \/ ESN/)).toBeVisible()
+  await expect(page.getByText(/profil.*Hébergeur \/ Infrastructure/)).toBeVisible()
   await expect(page.getByText('Sans décision portée')).toBeVisible()
 
   // Le regime attendu figure sur chaque exigence.

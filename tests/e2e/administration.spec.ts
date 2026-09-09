@@ -100,3 +100,29 @@ test("un rôle de gouvernance n'accède pas à la gestion des comptes", async ({
 
   await expect(page.getByRole('heading', { name: 'Accès réservé' })).toBeVisible()
 })
+
+test('le rôle vis-à-vis de l’IA se change depuis la fiche de l’organisation', async ({ page }) => {
+  await signIn(page, OFFICER)
+  await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001')
+
+  const carte = page.locator('section').filter({ hasText: 'Rôle vis-à-vis de l’IA' })
+  await expect(carte.getByText('Hébergeur / Infrastructure').first()).toBeVisible()
+
+  // Le role commande la criticite : ce qu'il rend exigeant s'affiche a cote.
+  await expect(carte.getByText('Ce que ce rôle rend exigeant')).toBeVisible()
+  await expect(carte.getByText(/Isolation et souveraineté physique/)).toBeVisible()
+  await expect(carte.getByText(/Empreinte environnementale/)).toBeVisible()
+
+  // Le changer recalcule ce qui est attendu. On attend l'etat, non le message :
+  // celui du precedent enregistrement est encore a l'ecran, et l'attendre
+  // laisserait le parcours s'achever avant que la seconde ecriture aboutisse.
+  await carte.getByLabel(/Rôle vis-à-vis de l’IA/).selectOption('model_developer')
+  await carte.getByRole('button', { name: 'Enregistrer le rôle' }).click()
+  await expect(carte.getByText(/Éthique, biais et équité/)).toBeVisible()
+
+  // Remis dans l'etat du jeu de demonstration.
+  await carte.getByLabel(/Rôle vis-à-vis de l’IA/).selectOption('infrastructure_host')
+  await carte.getByRole('button', { name: 'Enregistrer le rôle' }).click()
+  await expect(carte.getByText(/Isolation et souveraineté physique/)).toBeVisible()
+  await expect(carte.getByText(/Éthique, biais et équité/)).toHaveCount(0)
+})
