@@ -214,3 +214,37 @@ test('trois lectures du même modèle : processus, couverture, risques', async (
   await page.getByRole('link', { name: 'Processus', exact: true }).click()
   await expect(page.getByRole('heading', { name: /Servir le client/ })).toBeVisible()
 })
+
+test('le graphe relie les couches et le chemin d’un risque nomme sa rupture', async ({ page }) => {
+  await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001/processus?vue=graphe')
+
+  await expect(page.getByRole('heading', { name: 'Graphe de gouvernance' })).toBeVisible()
+  await expect(page.locator('.react-flow__node').first()).toBeVisible()
+
+  // Les couches s'activent : masquer les preuves retire des noeuds du canevas.
+  const before = await page.locator('.react-flow__node').count()
+  await page.getByRole('checkbox', { name: /^Preuves/ }).uncheck()
+  await expect
+    .poll(() => page.locator('.react-flow__node').count())
+    .toBeLessThan(before)
+  await page.getByRole('checkbox', { name: /^Preuves/ }).check()
+
+  const picker = page.locator('section').filter({ hasText: 'Suivre un risque' })
+
+  // --- Une chaîne qui s'arrête à l'intention ---------------------------------
+  await picker.getByRole('link', { name: /Transfert de données de candidats/ }).click()
+  await expect(page).toHaveURL(/risque=/)
+  await expect(page.getByText('Chaîne de maîtrise rompue')).toBeVisible()
+  await expect(page.getByText(/aucun contrôle ne le met en œuvre/)).toBeVisible()
+  await expect(page.getByText('Désigner le contrôle qui met en œuvre le traitement prévu.')).toBeVisible()
+
+  // --- Un risque accepté n'est pas une chaîne rompue -------------------------
+  await picker.getByRole('link', { name: /Dépendance au fournisseur/ }).click()
+  await expect(page.getByText('Risque accepté', { exact: true })).toBeVisible()
+  await expect(page.getByText(/l’acceptation est nominative, justifiée et datée/)).toBeVisible()
+
+  // --- Une chaîne complète ---------------------------------------------------
+  await picker.getByRole('link', { name: /Réponse erronée transmise au client/ }).click()
+  await expect(page.getByText('Chaîne de maîtrise complète')).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Ce qui le tient' })).toBeVisible()
+})

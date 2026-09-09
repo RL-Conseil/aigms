@@ -146,7 +146,7 @@ rattachement structuré passant par `ai_use_case.activity_id`.
 | 1 | Modèle processus/activité, cartographie, saisie intake, triage, classification, risques | **Terminé** |
 | 2 | Process & Risk Map avec indicateurs par nœud et panneau latéral | **Terminé** |
 | 3 | Control Coverage Map et Risk Heatmap | **Terminé** |
-| 4 | AI Control Graph, couches activables, chemins critiques | à venir |
+| 4 | AI Control Graph, couches activables, chemin du risque | **Terminé** |
 
 **Principe retenu pour la fluidité** : la carte n'est pas un rapport qu'on
 consulte, c'est l'établi sur lequel on travaille. Un nœud vide est une
@@ -154,15 +154,16 @@ invitation à saisir — une activité sans usage d'IA propose d'en déclarer un
 Les formulaires vivent dans des volets, sur la fiche même : on saisit là où l'on
 regarde.
 
-### Trois lectures du même modèle
+### Quatre lectures du même modèle
 
-Un seul écran, trois questions, une seule adresse — `?vue=` :
+Un seul écran, quatre questions, une seule adresse — `?vue=` :
 
 | Lecture | Ce qu'elle répond |
 |---|---|
 | **Processus** | Que fait l'organisation, et où l'IA intervient |
 | **Couverture** | Ce qui tient réellement : contrôles opérants, prouvés, testés récemment |
 | **Risques** | Où se concentre l'exposition, par processus et par niveau |
+| **Graphe** | Ce que la hiérarchie ne montre pas : un contrôle partagé, une preuve mutualisée, un risque dont rien ne redescend vers une preuve |
 
 Deux partis pris méritent d'être connus. Le **taux de couverture est exigeant** :
 un contrôle ne compte que s'il est opérant *et* prouvé par une preuve validée
@@ -171,6 +172,43 @@ qu'un auditeur vient vérifier. La **carte thermique compte les risques
 ouverts**, pas le total : un risque accepté est une décision assumée, avec un
 responsable et une date de revue — le laisser clignoter en rouge reviendrait à
 confondre une décision avec une alerte.
+
+### L'AI Control Graph et le chemin du risque
+
+L'arbre montre une hiérarchie. Il ne sait pas montrer ce qui la traverse. Le
+graphe existe pour cela, et pour rien d'autre : six couches de gauche à droite —
+`processus → activité → cas d'usage → risque → contrôle → preuve` — trois
+couches activables (risques, contrôles, preuves) et un placement par barycentre
+qui range chaque couche sous ses parents. Les croisements qui subsistent sont
+ceux qui portent l'information : un contrôle partagé entre deux cas d'usage
+*doit* se voir croiser.
+
+**Le graphe a imposé une correction du modèle.** Rien ne reliait un risque au
+contrôle censé le réduire ; le rapprochement n'aurait pu être qu'inféré — « ces
+contrôles s'appliquent au même cas d'usage » — ce qui ne démontre rien. Le lien
+est désormais déclaré et porté par le plan de traitement
+(`risk_treatment.control_id`). Le graphe distingue donc deux arêtes qu'il ne
+faut jamais confondre : **applicable à** (une décision d'applicabilité) et
+**désigné pour traiter** (une chaîne de maîtrise opposable). Voir
+[ADR-0010](../adr/ADR-0010-declared-risk-control-link.md).
+
+**Le chemin du risque** (`app.risk_path`) rend un verdict plutôt qu'un dessin.
+Il ne dit pas « incomplet » : il nomme le maillon exact où la chaîne rompt,
+parce que les quatre ruptures n'appellent pas la même action.
+
+| Verdict | Ce qui manque | Ce qu'il faut faire |
+|---|---|---|
+| `no_treatment` | aucun plan de traitement | ouvrir un traitement, ou accepter le risque nominativement |
+| `no_control` | un traitement écrit que rien n'exécute | désigner le contrôle qui le met en œuvre |
+| `control_not_operating` | le contrôle désigné n'est pas opérant | le faire passer en état opérant |
+| `no_evidence` | le contrôle opère sans rien démontrer | y rattacher une preuve validée et non échue |
+
+Un **risque accepté n'est pas une chaîne rompue**. L'acceptation est une
+décision humaine nominative, justifiée et datée ; exiger en plus une chaîne
+complète reviendrait à la dénier.
+
+Le jeu de démonstration illustre les cinq issues, une par risque — c'est ce qui
+rend la règle vérifiable plutôt que déclarative.
 
 ### La santé de la gouvernance
 

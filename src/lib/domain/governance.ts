@@ -145,3 +145,19 @@ export function formatDateTime(value: string | null | undefined): string {
     new Date(value),
   )
 }
+
+export const CONTROL_STATUS_LABELS: Record<string, string> = {
+  proposed: 'Proposé',
+  implemented: 'Mis en place',
+  operating: 'Opérant',
+  ineffective: 'Inefficace',
+  retired: 'Retiré',
+}
+
+export const TREATMENT_STATUS_LABELS: Record<string, string> = {
+  planned: 'Planifié',
+  in_progress: 'En cours',
+  implemented: 'Mis en œuvre',
+  verified: 'Vérifié',
+  abandoned: 'Abandonné',
+}

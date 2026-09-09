@@ -24,6 +24,10 @@ export const DEMO = {
   useCaseTriage: 'b1000000-0000-4000-8000-000000000003',
   acceptedRisk: 'b3000000-0000-4000-8000-000000000003',
   untreatedRisk: 'b3000000-0000-4000-8000-000000000005',
+  // Chaque risque de demonstration illustre un verdict distinct de `risk_path`.
+  chainCompleteRisk: 'b3000000-0000-4000-8000-000000000001',
+  unevidencedRisk: 'b3000000-0000-4000-8000-000000000002',
+  notOperatingRisk: 'b3000000-0000-4000-8000-000000000004',
   changeRequest: 'b8000000-0000-4000-8000-000000000001',
 } as const
 
