@@ -298,7 +298,11 @@ values
   ('a3000000-0000-4000-8000-000000000008', 'aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
    'CTL-08', 'Revue périodique des décisions de gouvernance',
    'Réexaminer les décisions arrivées à échéance de revue.',
-   '11111111-1111-4111-8111-111111111111', 'operating', false, 'Trimestrielle', current_date - interval '27 days', current_date + interval '1 month');
+   '11111111-1111-4111-8111-111111111111', 'operating', false, 'Trimestrielle', current_date - interval '27 days', current_date + interval '1 month'),
+  ('a3000000-0000-4000-8000-000000000009', 'aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
+   'CTL-09', 'Filtrage des données sensibles avant sollicitation du modèle',
+   'Empêcher qu''une donnée confidentielle quitte le périmètre maîtrisé dans une sollicitation.',
+   '33333333-3333-4333-8333-333333333333', 'operating', false, 'Continue', current_date - interval '14 days', current_date + interval '2 months');
 
 insert into public.control_requirement_map (tenant_id, control_id, requirement_id, coverage_note, mapped_by)
 select 'aaaaaaaa-0000-4000-8000-000000000001', c.id, r.id, m.note, '11111111-1111-4111-8111-111111111111'
@@ -471,15 +475,17 @@ update public.risk
        acceptance_review_at = current_date + interval '12 months'
  where id = 'b3000000-0000-4000-8000-000000000003';
 
-insert into public.risk_treatment (tenant_id, risk_id, strategy, description, owner_user_id, due_date, status, effectiveness_note) values
+insert into public.risk_treatment (tenant_id, risk_id, strategy, description, owner_user_id, due_date, status, effectiveness_note, control_id) values
   ('aaaaaaaa-0000-4000-8000-000000000001', 'b3000000-0000-4000-8000-000000000001', 'reduce',
    'Validation obligatoire par le conseiller avant envoi, mention systématique des sources utilisées, campagne de sensibilisation aux limites du modèle.',
    '22222222-2222-4222-8222-222222222222', current_date - interval '1 month', 'verified',
-   'Contrôle par sondage sur 50 réponses : aucun envoi non validé constaté.'),
+   'Contrôle par sondage sur 50 réponses : aucun envoi non validé constaté.',
+   'a3000000-0000-4000-8000-000000000002'),
   ('aaaaaaaa-0000-4000-8000-000000000001', 'b3000000-0000-4000-8000-000000000002', 'reduce',
    'Filtrage des données sensibles en amont de l''envoi, clause contractuelle de non-réentraînement, journalisation des sollicitations.',
    '33333333-3333-4333-8333-333333333333', current_date - interval '2 months', 'verified',
-   'Test de filtrage rejoué en recette : motifs sensibles bloqués.');
+   'Test de filtrage rejoué en recette : motifs sensibles bloqués.',
+   'a3000000-0000-4000-8000-000000000009');
 
 insert into public.impact_assessment (id, tenant_id, organization_id, use_case_id, scope_description,
                                       methodology, lifecycle_phase, status, dpia_required, conclusion,
@@ -681,13 +687,16 @@ values
    'privacy', 4, 4, 4, 4, '33333333-3333-4333-8333-333333333333',
    'identified', current_date + interval '1 month', '11111111-1111-4111-8111-111111111111');
 
-insert into public.risk_treatment (tenant_id, risk_id, strategy, description, owner_user_id, due_date, status) values
+insert into public.risk_treatment (tenant_id, risk_id, strategy, description, owner_user_id, due_date, status, control_id) values
   ('aaaaaaaa-0000-4000-8000-000000000001', 'b3000000-0000-4000-8000-000000000004', 'reduce',
    'Test de biais par groupe avant mise en service, revue humaine systématique des candidatures écartées, suivi trimestriel des taux de sélection.',
-   '33333333-3333-4333-8333-333333333333', current_date + interval '2 months', 'in_progress'),
+   '33333333-3333-4333-8333-333333333333', current_date + interval '2 months', 'in_progress',
+   'a3000000-0000-4000-8000-000000000006'),
+  -- Volontairement sans contrôle : le traitement est écrit, rien ne le met
+  -- encore en œuvre. Le chemin du risque s'arrête à l'intention.
   ('aaaaaaaa-0000-4000-8000-000000000001', 'b3000000-0000-4000-8000-000000000005', 'reduce',
    'Signature du DPA, documentation des garanties de transfert, ou relocalisation du traitement en UE.',
-   '33333333-3333-4333-8333-333333333333', current_date + interval '1 month', 'planned');
+   '33333333-3333-4333-8333-333333333333', current_date + interval '1 month', 'planned', null);
 
 insert into public.impact_assessment (id, tenant_id, organization_id, use_case_id, scope_description,
   methodology, lifecycle_phase, status, dpia_required, dpia_reference, performed_by, next_review_at)

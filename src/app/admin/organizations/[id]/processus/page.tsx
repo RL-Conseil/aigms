@@ -15,6 +15,13 @@ import {
   type CoverageRow,
   type HeatmapRow,
 } from '@/components/governance/map-views'
+import { ControlGraph, type Graph } from '@/components/governance/control-graph'
+import {
+  RiskPathPanel,
+  RiskPicker,
+  type RiskChoice,
+  type RiskPath,
+} from '@/components/governance/risk-path'
 import {
   RISK_LEVEL_LABELS,
   USE_CASE_STATUS_LABELS,
@@ -29,10 +36,10 @@ import {
  * le panneau est rendu cote serveur, il n'y a pas d'etat client a synchroniser,
  * et un lien vers une activite precise se partage.
  *
- * Volontairement en HTML et CSS plutot qu'en canevas : une hierarchie se lit
- * aussi bien en arbre, reste accessible au clavier, s'imprime, et ne coute pas
- * une bibliotheque de graphe. Le canevas viendra pour ce qu'il sait faire de
- * mieux — un controle qui traverse plusieurs processus.
+ * L'arbre reste volontairement en HTML et CSS : une hierarchie se lit aussi
+ * bien ainsi, reste accessible au clavier et s'imprime. Le canevas n'arrive que
+ * pour ce qu'un arbre ne sait pas faire — un controle qui traverse plusieurs
+ * processus, une preuve mutualisee — et il vit dans la vue « Graphe ».
  */
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -72,6 +79,7 @@ const VIEWS = [
   { key: 'arbre', label: 'Processus' },
   { key: 'couverture', label: 'Couverture' },
   { key: 'risques', label: 'Risques' },
+  { key: 'graphe', label: 'Graphe' },
 ] as const
 
 type ViewKey = (typeof VIEWS)[number]['key']
@@ -81,10 +89,10 @@ export default async function ProcessMapPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ activite?: string; vue?: string }>
+  searchParams: Promise<{ activite?: string; vue?: string; risque?: string }>
 }) {
   const { id } = await params
-  const { activite, vue } = await searchParams
+  const { activite, vue, risque } = await searchParams
   const view: ViewKey = VIEWS.some((v) => v.key === vue) ? (vue as ViewKey) : 'arbre'
   const supabase = await createClient()
 
@@ -105,14 +113,38 @@ export default async function ProcessMapPage({
   const rows = (mapRows ?? []) as MapRow[]
   const health = (healthData ?? { available: false }) as Health
 
-  const [{ data: coverageData }, { data: heatmapData }] = await Promise.all([
-    view === 'couverture'
-      ? supabase.rpc('control_coverage', { p_organization_id: id })
-      : Promise.resolve({ data: null }),
-    view === 'risques'
-      ? supabase.rpc('risk_heatmap', { p_organization_id: id })
-      : Promise.resolve({ data: null }),
-  ])
+  const [{ data: coverageData }, { data: heatmapData }, { data: graphData }, { data: riskList }, { data: pathData }] =
+    await Promise.all([
+      view === 'couverture'
+        ? supabase.rpc('control_coverage', { p_organization_id: id })
+        : Promise.resolve({ data: null }),
+      view === 'risques'
+        ? supabase.rpc('risk_heatmap', { p_organization_id: id })
+        : Promise.resolve({ data: null }),
+      view === 'graphe'
+        ? supabase.rpc('control_graph', { p_organization_id: id, p_activity_id: null })
+        : Promise.resolve({ data: null }),
+      view === 'graphe'
+        ? supabase
+            .from('risk')
+            .select('id, business_ref, title, inherent_level, residual_level, status')
+            .eq('organization_id', id)
+            .order('business_ref')
+        : Promise.resolve({ data: null }),
+      view === 'graphe' && risque
+        ? supabase.rpc('risk_path', { p_risk_id: risque })
+        : Promise.resolve({ data: null }),
+    ])
+
+  const graph = (graphData ?? { available: false }) as Graph
+  const riskPath = pathData as RiskPath | null
+  const riskChoices: RiskChoice[] = (riskList ?? []).map((r) => ({
+    id: r.id,
+    business_ref: r.business_ref,
+    title: r.title,
+    level: (r.residual_level ?? r.inherent_level) as RiskLevel,
+    status: r.status,
+  }))
 
   const selected = activite ? rows.find((r) => r.activity_id === activite) : undefined
 
@@ -182,6 +214,25 @@ export default async function ProcessMapPage({
         <CoverageView rows={(coverageData ?? []) as CoverageRow[]} organizationId={id} />
       ) : view === 'risques' ? (
         <HeatmapView rows={(heatmapData ?? []) as HeatmapRow[]} organizationId={id} />
+      ) : view === 'graphe' ? (
+        <div className="grid gap-5 lg:grid-cols-5">
+          <div className="lg:col-span-3">
+            <Card
+              title="Graphe de gouvernance"
+              subtitle="Ce que l’arbre ne montre pas : un contrôle partagé, une preuve mutualisée, un risque dont rien ne redescend vers une preuve."
+            >
+              <ControlGraph
+                graph={graph}
+                highlightNodes={riskPath?.highlight_nodes}
+                highlightEdges={riskPath?.highlight_edges}
+              />
+            </Card>
+          </div>
+          <div className="flex flex-col gap-5 lg:col-span-2">
+            {riskPath ? <RiskPathPanel path={riskPath} organizationId={id} /> : null}
+            <RiskPicker risks={riskChoices} organizationId={id} selectedId={risque} />
+          </div>
+        </div>
       ) : (
       <div className="grid gap-5 lg:grid-cols-5">
         {/* ---------- Arbre ---------- */}

@@ -168,6 +168,97 @@ export type Database = {
           },
         ]
       }
+      activity: {
+        Row: {
+          business_ref: string
+          business_unit_id: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          display_order: number
+          id: string
+          name: string
+          organization_id: string
+          owner_user_id: string | null
+          process_id: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          business_ref: string
+          business_unit_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          name: string
+          organization_id: string
+          owner_user_id?: string | null
+          process_id: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          business_ref?: string
+          business_unit_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          name?: string
+          organization_id?: string
+          owner_user_id?: string | null
+          process_id?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_business_unit_id_fkey"
+            columns: ["business_unit_id"]
+            isOneToOne: false
+            referencedRelation: "business_unit"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_process_id_fkey"
+            columns: ["process_id"]
+            isOneToOne: false
+            referencedRelation: "process"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_asset: {
         Row: {
           business_ref: string
@@ -251,6 +342,7 @@ export type Database = {
       ai_use_case: {
         Row: {
           accountable_user_id: string | null
+          activity_id: string | null
           affected_persons: string | null
           autonomy_level: "L0" | "L1" | "L2" | "L3" | "L4"
           business_process: string | null
@@ -290,6 +382,7 @@ export type Database = {
         }
         Insert: {
           accountable_user_id?: string | null
+          activity_id?: string | null
           affected_persons?: string | null
           autonomy_level?: "L0" | "L1" | "L2" | "L3" | "L4"
           business_process?: string | null
@@ -329,6 +422,7 @@ export type Database = {
         }
         Update: {
           accountable_user_id?: string | null
+          activity_id?: string | null
           affected_persons?: string | null
           autonomy_level?: "L0" | "L1" | "L2" | "L3" | "L4"
           business_process?: string | null
@@ -372,6 +466,13 @@ export type Database = {
             columns: ["accountable_user_id"]
             isOneToOne: false
             referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_use_case_activity_id_fkey"
+            columns: ["activity_id"]
+            isOneToOne: false
+            referencedRelation: "activity"
             referencedColumns: ["id"]
           },
           {
@@ -898,6 +999,462 @@ export type Database = {
           },
         ]
       }
+      catalog_control: {
+        Row: {
+          applicability: Json
+          assessment_questions: Json
+          control_code: string
+          control_type: string | null
+          control_version: string
+          created_at: string
+          domain_id: string
+          expected_evidence: Json
+          external_refs: Json
+          framework_mappings: Json
+          id: string
+          maturity_model: Json
+          objective: string | null
+          owner_role: string | null
+          remediation_guidance: Json
+          requirements: Json
+          review_frequency: string | null
+          risks: Json
+          status: string | null
+          tests: Json
+          title: string
+          version_id: string
+        }
+        Insert: {
+          applicability?: Json
+          assessment_questions?: Json
+          control_code: string
+          control_type?: string | null
+          control_version: string
+          created_at?: string
+          domain_id: string
+          expected_evidence?: Json
+          external_refs?: Json
+          framework_mappings?: Json
+          id?: string
+          maturity_model?: Json
+          objective?: string | null
+          owner_role?: string | null
+          remediation_guidance?: Json
+          requirements?: Json
+          review_frequency?: string | null
+          risks?: Json
+          status?: string | null
+          tests?: Json
+          title: string
+          version_id: string
+        }
+        Update: {
+          applicability?: Json
+          assessment_questions?: Json
+          control_code?: string
+          control_type?: string | null
+          control_version?: string
+          created_at?: string
+          domain_id?: string
+          expected_evidence?: Json
+          external_refs?: Json
+          framework_mappings?: Json
+          id?: string
+          maturity_model?: Json
+          objective?: string | null
+          owner_role?: string | null
+          remediation_guidance?: Json
+          requirements?: Json
+          review_frequency?: string | null
+          risks?: Json
+          status?: string | null
+          tests?: Json
+          title?: string
+          version_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_control_domain_id_fkey"
+            columns: ["domain_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_domain"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_control_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_version"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_domain: {
+        Row: {
+          code: string
+          control_count: number | null
+          display_order: number | null
+          id: string
+          name: string
+          version_id: string
+        }
+        Insert: {
+          code: string
+          control_count?: number | null
+          display_order?: number | null
+          id?: string
+          name: string
+          version_id: string
+        }
+        Update: {
+          code?: string
+          control_count?: number | null
+          display_order?: number | null
+          id?: string
+          name?: string
+          version_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_domain_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_version"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_domain_objective_map: {
+        Row: {
+          created_at: string
+          domain_code: string
+          framework_code: string
+          framework_version: string
+          id: string
+          objective_code: string
+          rationale: string
+        }
+        Insert: {
+          created_at?: string
+          domain_code: string
+          framework_code: string
+          framework_version: string
+          id?: string
+          objective_code: string
+          rationale: string
+        }
+        Update: {
+          created_at?: string
+          domain_code?: string
+          framework_code?: string
+          framework_version?: string
+          id?: string
+          objective_code?: string
+          rationale?: string
+        }
+        Relationships: []
+      }
+      catalog_framework: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      catalog_import_error: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          job_id: string
+          message: string
+          path: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          job_id: string
+          message: string
+          path?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          job_id?: string
+          message?: string
+          path?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_import_error_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_import_job"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_import_job: {
+        Row: {
+          declared_control_count: number | null
+          framework_code: string | null
+          framework_version: string | null
+          id: string
+          imported_at: string | null
+          imported_control_count: number | null
+          payload: Json
+          published_at: string | null
+          rejected_reason: string | null
+          source_filename: string
+          source_sha256: string
+          status:
+            | "UPLOADED"
+            | "VALIDATED"
+            | "REVIEWED"
+            | "IMPORTED"
+            | "PUBLISHED"
+            | "REJECTED"
+          tenant_id: string
+          uploaded_at: string
+          uploaded_by: string | null
+          validated_at: string | null
+          version_id: string | null
+        }
+        Insert: {
+          declared_control_count?: number | null
+          framework_code?: string | null
+          framework_version?: string | null
+          id?: string
+          imported_at?: string | null
+          imported_control_count?: number | null
+          payload: Json
+          published_at?: string | null
+          rejected_reason?: string | null
+          source_filename: string
+          source_sha256: string
+          status?:
+            | "UPLOADED"
+            | "VALIDATED"
+            | "REVIEWED"
+            | "IMPORTED"
+            | "PUBLISHED"
+            | "REJECTED"
+          tenant_id: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+          validated_at?: string | null
+          version_id?: string | null
+        }
+        Update: {
+          declared_control_count?: number | null
+          framework_code?: string | null
+          framework_version?: string | null
+          id?: string
+          imported_at?: string | null
+          imported_control_count?: number | null
+          payload?: Json
+          published_at?: string | null
+          rejected_reason?: string | null
+          source_filename?: string
+          source_sha256?: string
+          status?:
+            | "UPLOADED"
+            | "VALIDATED"
+            | "REVIEWED"
+            | "IMPORTED"
+            | "PUBLISHED"
+            | "REJECTED"
+          tenant_id?: string
+          uploaded_at?: string
+          uploaded_by?: string | null
+          validated_at?: string | null
+          version_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_import_job_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_import_job_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_import_job_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_version"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_profile: {
+        Row: {
+          description: string | null
+          id: string
+          name: string
+          profile_code: string
+          version_id: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          name: string
+          profile_code: string
+          version_id: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          name?: string
+          profile_code?: string
+          version_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_profile_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_version"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_reference_use_case: {
+        Row: {
+          example: string | null
+          id: string
+          name: string
+          use_case_code: string
+          version_id: string
+        }
+        Insert: {
+          example?: string | null
+          id?: string
+          name: string
+          use_case_code: string
+          version_id: string
+        }
+        Update: {
+          example?: string | null
+          id?: string
+          name?: string
+          use_case_code?: string
+          version_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_reference_use_case_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_version"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_version: {
+        Row: {
+          created_at: string
+          declared_control_count: number | null
+          declared_domain_count: number | null
+          description: string | null
+          design_principle: string | null
+          framework_id: string
+          id: string
+          imported_at: string | null
+          imported_by: string | null
+          language: string | null
+          maturity_scale: string | null
+          published_at: string | null
+          source_filename: string | null
+          source_sha256: string | null
+          status: "draft" | "frozen" | "published" | "superseded"
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          declared_control_count?: number | null
+          declared_domain_count?: number | null
+          description?: string | null
+          design_principle?: string | null
+          framework_id: string
+          id?: string
+          imported_at?: string | null
+          imported_by?: string | null
+          language?: string | null
+          maturity_scale?: string | null
+          published_at?: string | null
+          source_filename?: string | null
+          source_sha256?: string | null
+          status?: "draft" | "frozen" | "published" | "superseded"
+          updated_at?: string
+          version: string
+        }
+        Update: {
+          created_at?: string
+          declared_control_count?: number | null
+          declared_domain_count?: number | null
+          description?: string | null
+          design_principle?: string | null
+          framework_id?: string
+          id?: string
+          imported_at?: string | null
+          imported_by?: string | null
+          language?: string | null
+          maturity_scale?: string | null
+          published_at?: string | null
+          source_filename?: string | null
+          source_sha256?: string | null
+          status?: "draft" | "frozen" | "published" | "superseded"
+          updated_at?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_version_framework_id_fkey"
+            columns: ["framework_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_framework"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "catalog_version_imported_by_fkey"
+            columns: ["imported_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       change_request: {
         Row: {
           business_ref: string
@@ -1068,6 +1625,94 @@ export type Database = {
           },
         ]
       }
+      connector_sync_run: {
+        Row: {
+          capability:
+            | "asset_inventory"
+            | "control_catalog"
+            | "evidence_pull"
+            | "control_status"
+            | "incident_feed"
+            | "usage_metadata"
+            | "vendor_metadata"
+            | null
+          connector_id: string
+          finished_at: string | null
+          id: string
+          message: string | null
+          objects_kept: number
+          objects_seen: number
+          outcome: "unknown" | "healthy" | "stale" | "error"
+          started_at: string
+          tenant_id: string
+          triggered_by: string | null
+        }
+        Insert: {
+          capability?:
+            | "asset_inventory"
+            | "control_catalog"
+            | "evidence_pull"
+            | "control_status"
+            | "incident_feed"
+            | "usage_metadata"
+            | "vendor_metadata"
+            | null
+          connector_id: string
+          finished_at?: string | null
+          id?: string
+          message?: string | null
+          objects_kept?: number
+          objects_seen?: number
+          outcome?: "unknown" | "healthy" | "stale" | "error"
+          started_at?: string
+          tenant_id: string
+          triggered_by?: string | null
+        }
+        Update: {
+          capability?:
+            | "asset_inventory"
+            | "control_catalog"
+            | "evidence_pull"
+            | "control_status"
+            | "incident_feed"
+            | "usage_metadata"
+            | "vendor_metadata"
+            | null
+          connector_id?: string
+          finished_at?: string | null
+          id?: string
+          message?: string | null
+          objects_kept?: number
+          objects_seen?: number
+          outcome?: "unknown" | "healthy" | "stale" | "error"
+          started_at?: string
+          tenant_id?: string
+          triggered_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connector_sync_run_connector_id_fkey"
+            columns: ["connector_id"]
+            isOneToOne: false
+            referencedRelation: "governance_connector"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connector_sync_run_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "connector_sync_run_triggered_by_fkey"
+            columns: ["triggered_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contact_request: {
         Row: {
           created_at: string
@@ -1130,6 +1775,7 @@ export type Database = {
       control: {
         Row: {
           business_ref: string
+          catalog_control_id: string | null
           code: string
           created_at: string
           frequency: string | null
@@ -1153,6 +1799,7 @@ export type Database = {
         }
         Insert: {
           business_ref: string
+          catalog_control_id?: string | null
           code: string
           created_at?: string
           frequency?: string | null
@@ -1176,6 +1823,7 @@ export type Database = {
         }
         Update: {
           business_ref?: string
+          catalog_control_id?: string | null
           code?: string
           created_at?: string
           frequency?: string | null
@@ -1198,6 +1846,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "control_catalog_control_id_fkey"
+            columns: ["catalog_control_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_control"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "control_organization_id_fkey"
             columns: ["organization_id"]
@@ -1426,6 +2081,10 @@ export type Database = {
             | "change_request"
             | "incident"
             | "use_case"
+            | "process"
+            | "activity"
+            | "vendor"
+            | "ai_asset"
           tenant_id: string
         }
         Insert: {
@@ -1442,6 +2101,10 @@ export type Database = {
             | "change_request"
             | "incident"
             | "use_case"
+            | "process"
+            | "activity"
+            | "vendor"
+            | "ai_asset"
           tenant_id: string
         }
         Update: {
@@ -1458,6 +2121,10 @@ export type Database = {
             | "change_request"
             | "incident"
             | "use_case"
+            | "process"
+            | "activity"
+            | "vendor"
+            | "ai_asset"
           tenant_id?: string
         }
         Relationships: [
@@ -1642,6 +2309,193 @@ export type Database = {
           withdrawn_from?: string | null
         }
         Relationships: []
+      }
+      governance_connector: {
+        Row: {
+          auth_method: string
+          base_url: string | null
+          business_ref: string
+          capabilities: (
+            | "asset_inventory"
+            | "control_catalog"
+            | "evidence_pull"
+            | "control_status"
+            | "incident_feed"
+            | "usage_metadata"
+            | "vendor_metadata"
+          )[]
+          created_at: string
+          created_by: string | null
+          credential_env_var: string | null
+          description: string | null
+          display_name: string
+          health: "unknown" | "healthy" | "stale" | "error"
+          id: string
+          is_read_only: boolean
+          kind:
+            | "vanta"
+            | "onetrust"
+            | "servicenow"
+            | "microsoft_purview"
+            | "microsoft_entra"
+            | "azure"
+            | "github"
+            | "google_workspace"
+            | "jira"
+            | "siem"
+            | "openai_admin"
+            | "anthropic_admin"
+            | "generic_webhook"
+          last_error: string | null
+          last_error_at: string | null
+          last_sync_at: string | null
+          last_tested_at: string | null
+          owner_user_id: string | null
+          retention_note: string | null
+          scopes: string[]
+          source_of_truth: string
+          status:
+            | "draft"
+            | "configured"
+            | "active"
+            | "degraded"
+            | "suspended"
+            | "retired"
+          sync_frequency: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          auth_method?: string
+          base_url?: string | null
+          business_ref: string
+          capabilities: (
+            | "asset_inventory"
+            | "control_catalog"
+            | "evidence_pull"
+            | "control_status"
+            | "incident_feed"
+            | "usage_metadata"
+            | "vendor_metadata"
+          )[]
+          created_at?: string
+          created_by?: string | null
+          credential_env_var?: string | null
+          description?: string | null
+          display_name: string
+          health?: "unknown" | "healthy" | "stale" | "error"
+          id?: string
+          is_read_only?: boolean
+          kind:
+            | "vanta"
+            | "onetrust"
+            | "servicenow"
+            | "microsoft_purview"
+            | "microsoft_entra"
+            | "azure"
+            | "github"
+            | "google_workspace"
+            | "jira"
+            | "siem"
+            | "openai_admin"
+            | "anthropic_admin"
+            | "generic_webhook"
+          last_error?: string | null
+          last_error_at?: string | null
+          last_sync_at?: string | null
+          last_tested_at?: string | null
+          owner_user_id?: string | null
+          retention_note?: string | null
+          scopes?: string[]
+          source_of_truth: string
+          status?:
+            | "draft"
+            | "configured"
+            | "active"
+            | "degraded"
+            | "suspended"
+            | "retired"
+          sync_frequency?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          auth_method?: string
+          base_url?: string | null
+          business_ref?: string
+          capabilities?: (
+            | "asset_inventory"
+            | "control_catalog"
+            | "evidence_pull"
+            | "control_status"
+            | "incident_feed"
+            | "usage_metadata"
+            | "vendor_metadata"
+          )[]
+          created_at?: string
+          created_by?: string | null
+          credential_env_var?: string | null
+          description?: string | null
+          display_name?: string
+          health?: "unknown" | "healthy" | "stale" | "error"
+          id?: string
+          is_read_only?: boolean
+          kind?:
+            | "vanta"
+            | "onetrust"
+            | "servicenow"
+            | "microsoft_purview"
+            | "microsoft_entra"
+            | "azure"
+            | "github"
+            | "google_workspace"
+            | "jira"
+            | "siem"
+            | "openai_admin"
+            | "anthropic_admin"
+            | "generic_webhook"
+          last_error?: string | null
+          last_error_at?: string | null
+          last_sync_at?: string | null
+          last_tested_at?: string | null
+          owner_user_id?: string | null
+          retention_note?: string | null
+          scopes?: string[]
+          source_of_truth?: string
+          status?:
+            | "draft"
+            | "configured"
+            | "active"
+            | "degraded"
+            | "suspended"
+            | "retired"
+          sync_frequency?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "governance_connector_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "governance_connector_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "governance_connector_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       governance_decision: {
         Row: {
@@ -2622,6 +3476,83 @@ export type Database = {
           },
         ]
       }
+      process: {
+        Row: {
+          business_ref: string
+          category: "management" | "core" | "support"
+          code: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          display_order: number
+          id: string
+          name: string
+          organization_id: string
+          owner_user_id: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          business_ref: string
+          category?: "management" | "core" | "support"
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          name: string
+          organization_id: string
+          owner_user_id?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          business_ref?: string
+          category?: "management" | "core" | "support"
+          code?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          display_order?: number
+          id?: string
+          name?: string
+          organization_id?: string
+          owner_user_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "process_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "process_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "process_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "process_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reassessment: {
         Row: {
           business_ref: string
@@ -2923,14 +3854,19 @@ export type Database = {
       requirement: {
         Row: {
           created_at: string
+          display_order: number | null
           effective_from: string | null
+          expected_evidence: string | null
           framework_id: string
           id: string
           internal_summary: string
           last_reviewed_at: string | null
           mapping_owner_id: string | null
+          objective_code: string | null
+          objective_title: string | null
           official_source: string | null
           requirement_reference: string
+          review_status: string
           status: "requirement" | "guidance" | "internal"
           title: string
           updated_at: string
@@ -2938,14 +3874,19 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          display_order?: number | null
           effective_from?: string | null
+          expected_evidence?: string | null
           framework_id: string
           id?: string
           internal_summary: string
           last_reviewed_at?: string | null
           mapping_owner_id?: string | null
+          objective_code?: string | null
+          objective_title?: string | null
           official_source?: string | null
           requirement_reference: string
+          review_status?: string
           status?: "requirement" | "guidance" | "internal"
           title: string
           updated_at?: string
@@ -2953,14 +3894,19 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          display_order?: number | null
           effective_from?: string | null
+          expected_evidence?: string | null
           framework_id?: string
           id?: string
           internal_summary?: string
           last_reviewed_at?: string | null
           mapping_owner_id?: string | null
+          objective_code?: string | null
+          objective_title?: string | null
           official_source?: string | null
           requirement_reference?: string
+          review_status?: string
           status?: "requirement" | "guidance" | "internal"
           title?: string
           updated_at?: string
@@ -3169,6 +4115,7 @@ export type Database = {
       }
       risk_treatment: {
         Row: {
+          control_id: string | null
           created_at: string
           description: string
           due_date: string | null
@@ -3187,6 +4134,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          control_id?: string | null
           created_at?: string
           description: string
           due_date?: string | null
@@ -3205,6 +4153,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          control_id?: string | null
           created_at?: string
           description?: string
           due_date?: string | null
@@ -3223,6 +4172,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "risk_treatment_control_id_fkey"
+            columns: ["control_id"]
+            isOneToOne: false
+            referencedRelation: "control"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "risk_treatment_owner_user_id_fkey"
             columns: ["owner_user_id"]
@@ -3727,6 +4683,30 @@ export type Database = {
       }
     }
     Functions: {
+      commit_catalog_import: { Args: { p_job_id: string }; Returns: Json }
+      control_coverage: {
+        Args: { p_organization_id: string }
+        Returns: {
+          activity_id: string
+          activity_name: string
+          controls_evidenced: number
+          controls_operating: number
+          controls_total: number
+          coverage_percent: number
+          days_since_test: number
+          last_tested_at: string
+          mandatory_settled: number
+          mandatory_total: number
+          max_risk_level: "low" | "moderate" | "high" | "critical"
+          process_id: string
+          process_name: string
+          use_case_count: number
+        }[]
+      }
+      control_graph: {
+        Args: { p_activity_id?: string; p_organization_id: string }
+        Returns: Json
+      }
       evaluate_gate: {
         Args: { p_target: string; p_use_case_id: string }
         Returns: Json
@@ -3735,14 +4715,79 @@ export type Database = {
         Args: { p_change_request_id: string }
         Returns: Json
       }
+      governance_health: {
+        Args: { p_activity_id?: string; p_organization_id: string }
+        Returns: Json
+      }
+      process_map: {
+        Args: { p_organization_id: string }
+        Returns: {
+          activity_id: string
+          activity_name: string
+          activity_order: number
+          activity_ref: string
+          controls_operating: number
+          controls_total: number
+          evidence_stale: number
+          evidence_total: number
+          in_service_count: number
+          max_risk_level: "low" | "moderate" | "high" | "critical"
+          open_high_risks: number
+          open_incidents: number
+          overdue_actions: number
+          process_category: "management" | "core" | "support"
+          process_code: string
+          process_id: string
+          process_name: string
+          process_order: number
+          reviews_due: number
+          use_case_count: number
+        }[]
+      }
+      publish_catalog_version: { Args: { p_version_id: string }; Returns: Json }
+      risk_heatmap: {
+        Args: { p_organization_id: string }
+        Returns: {
+          accepted_count: number
+          open_count: number
+          process_id: string
+          process_name: string
+          process_order: number
+          risk_count: number
+          risk_level: "low" | "moderate" | "high" | "critical"
+        }[]
+      }
+      risk_path: { Args: { p_risk_id: string }; Returns: Json }
       screen_change_request: {
         Args: { p_change_request_id: string }
         Returns: Json
+      }
+      statement_of_applicability: {
+        Args: {
+          p_framework_code?: string
+          p_framework_version?: string
+          p_organization_id: string
+        }
+        Returns: {
+          control_count: number
+          controls: Json
+          coverage: string
+          display_order: number
+          evidence_count: number
+          expected_evidence: string
+          internal_summary: string
+          objective_code: string
+          objective_title: string
+          operating_count: number
+          requirement_reference: string
+          requirement_title: string
+        }[]
       }
       transition_use_case: {
         Args: { p_rationale?: string; p_target: string; p_use_case_id: string }
         Returns: Json
       }
+      validate_catalog_import: { Args: { p_job_id: string }; Returns: Json }
     }
     Enums: {
       contact_profile:

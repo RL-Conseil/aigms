@@ -20,6 +20,12 @@ Ce document décrit ce qui **existe en base**, par opposition au modèle cible d
 `assessment`, `assessment_answer`, `regulatory_classification`, `risk`,
 `risk_treatment`, `impact_assessment`, `impact_stakeholder`, `impact_finding`.
 
+`risk_treatment.control_id` désigne le contrôle qui met en œuvre le traitement.
+Nullable : un risque tout juste identifié n'a pas encore de mesure, et forcer le
+lien produirait une fausse maîtrise. C'est le seul chemin par lequel un risque
+se relie à un contrôle — la proximité par cas d'usage partagé ne démontre rien
+(ADR-0010).
+
 ### Governance
 `human_oversight_plan`, `governance_decision`, `decision_link`,
 `change_request`, `reassessment`, `incident`, `capa`, `action`.
