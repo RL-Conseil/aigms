@@ -7,10 +7,11 @@ import { publicEnv } from '@/lib/env'
  *
  * Next.js 16 : ce fichier remplace `middleware.ts`.
  *
- * Le site public (landing, contact) est ouvert ; seul l'espace /admin exige une
- * session. Le proxy ne decide d'aucune regle metier : il verifie seulement
- * qu'une session existe. L'autorisation reelle est portee par la RLS et par les
- * fonctions serveur, jamais par cette couche.
+ * AIGMS est une application : la seule page ouverte est la mire de connexion,
+ * qui est aussi l'accueil. Tout /admin exige une session. Le proxy ne decide
+ * d'aucune regle metier : il verifie seulement qu'une session existe.
+ * L'autorisation reelle est portee par la RLS et par les fonctions serveur,
+ * jamais par cette couche.
  */
 const PROTECTED_PREFIX = '/admin'
 
@@ -47,12 +48,13 @@ export async function proxy(request: NextRequest) {
 
   if (!user && pathname.startsWith(PROTECTED_PREFIX)) {
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    url.pathname = '/'
     url.searchParams.set('next', pathname)
     return NextResponse.redirect(url)
   }
 
-  if (user && pathname === '/login') {
+  // Une session ouverte n'a rien a faire sur la mire : elle repart au travail.
+  if (user && (pathname === '/' || pathname === '/login')) {
     const url = request.nextUrl.clone()
     url.pathname = '/admin'
     url.search = ''

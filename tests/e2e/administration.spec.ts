@@ -8,7 +8,7 @@ const ADMIN = { email: 'admin@rl-conseil.demo', password: 'Demo!Passw0rd' }
 const OFFICER = { email: 'officer@rl-conseil.demo', password: 'Demo!Passw0rd' }
 
 async function signIn(page: import('@playwright/test').Page, who: typeof ADMIN) {
-  await page.goto('/login')
+  await page.goto('/')
   await page.getByLabel('Adresse électronique').fill(who.email)
   await page.getByLabel('Mot de passe').fill(who.password)
   await page.getByRole('button', { name: 'Se connecter' }).click()

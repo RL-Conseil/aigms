@@ -12,7 +12,7 @@ const OFFICER = { email: 'officer@rl-conseil.demo', password: 'Demo!Passw0rd' }
 const ORG = 'cccccccc-0000-4000-8000-000000000001'
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/login')
+  await page.goto('/')
   await page.getByLabel('Adresse électronique').fill(OFFICER.email)
   await page.getByLabel('Mot de passe').fill(OFFICER.password)
   await page.getByRole('button', { name: 'Se connecter' }).click()

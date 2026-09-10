@@ -43,7 +43,7 @@ export default async function ContactsPage() {
   return (
     <Shell
       title="Demandes de rappel"
-      subtitle="Formulaire de la page publique."
+      subtitle="Archive — la collecte est reprise par le site commercial."
       actions={
         requests?.length ? <Badge tone="info">{requests.length} demande(s)</Badge> : undefined
       }

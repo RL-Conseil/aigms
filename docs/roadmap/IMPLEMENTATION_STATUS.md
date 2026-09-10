@@ -88,13 +88,12 @@ Deux jetons Supabase cohabitent, un par projet : celui qui couvre
 
 | Route | Accès |
 |---|---|
-| `/` | publique — page de présentation |
-| `/contact` | publique — formulaire de rappel |
-| `/login` | publique — identifiant et mot de passe, sans récupération |
+| `/` | **seule page ouverte** — mire de connexion et abstract du produit |
+| `/login` | redirection vers `/`, en conservant `next` |
 | `/admin` | session requise — organisations |
 | `/admin/pilotage` | session requise — tableau de bord OPERATE |
 | `/admin/organizations/[id]`, `/admin/use-cases/[id]` | session requise |
-| `/admin/contacts` | session requise, réservée à l'administration plateforme |
+| `/admin/contacts` | session requise, réservée à l'administration plateforme — archive des demandes reçues avant la fermeture de l'entrée |
 | `/admin/connecteurs` | session requise, réservée à l'administration plateforme |
 | `/admin/referentiels` | session requise, réservée à l'administration plateforme |
 | `/admin/comptes` | session requise, réservée à l'administration plateforme — comptes et rôles |
@@ -107,28 +106,35 @@ Deux jetons Supabase cohabitent, un par projet : celui qui couvre
 `src/proxy.ts` ne protège que le préfixe `/admin` ; l'autorisation réelle reste
 portée par la RLS.
 
-## Notification des demandes de contact
+## La vitrine a quitté l'application
 
-Chaîne vérifiée de bout en bout : formulaire, enregistrement en base, envoi via
-Resend depuis `contact@iparenea.fr` — domaine authentifié DKIM et SPF — vers la
-même adresse. Le champ réponse porte l'adresse du demandeur : répondre au
-message suffit à le recontacter.
+AIGMS est une application SaaS : la page de présentation et le formulaire de
+contact sont repris par le site commercial (https://caritis.fr). Le contenu de
+l'ancienne page d'accueil est exporté dans
+[`03_Commercial/PAGE_ACCUEIL_CARITIS.md`](../../03_Commercial/PAGE_ACCUEIL_CARITIS.md),
+prêt à être remonté ailleurs — textes, tableaux de données des trois graphiques,
+frise réglementaire, précautions à conserver.
 
-Trois variables la pilotent, sans code à modifier pour en changer :
-`RESEND_API_KEY` (chiffrée côté Vercel), `CONTACT_NOTIFICATION_EMAIL` et
-`CONTACT_NOTIFICATION_FROM`.
+Ce que cela change dans le produit
+([ADR-0013](../adr/ADR-0013-application-only-surface.md)) :
 
-**Un piège rencontré, qui vaut d'être noté** : Resend demande par défaut ses
-enregistrements sur le sous-domaine `send.`, déjà occupé sur ce domaine par un
-CNAME vers un autre service d'emailing. Un CNAME excluant tout autre
-enregistrement sur le même nom, le SPF et le MX attendus ne pouvaient pas y
-être posés et la vérification échouait, DKIM valide compris. Le contournement
-est de déclarer le domaine dans Resend avec un autre sous-domaine
-d'authentification.
-
-L'envoi reste une commodité, jamais un point de passage obligé : une demande
-est enregistrée en base et consultable dans `/admin/contacts` même si Resend
-refuse ou tombe.
+- **L'accueil est la mire de connexion.** Une session ouverte y est renvoyée
+  vers `/admin` ; `/login` redirige vers `/` en conservant `next`, parce que
+  l'adresse a circulé.
+- **Aucune inscription libre**, et l'écran le dit. Les comptes sont déclarés par
+  l'administration de la plateforme, qui attribue les rôles (ADR-0008) : un
+  formulaire d'inscription contredirait le modèle d'habilitation dont dépend le
+  registre de décisions.
+- **La surface anonyme est refermée.** `contact_request` était la seule
+  exception à la règle « anon ne dispose d'aucun droit » ; l'exception n'a plus
+  d'objet, et la laisser ouverte maintiendrait une écriture anonyme sans
+  formulaire pour l'émettre. Un test vérifie désormais qu'`anon` ne détient
+  **aucun** droit sur **aucune** table du schéma `public`.
+- **La table et ses données sont conservées.** Les demandes déjà reçues sont des
+  pistes commerciales réelles ; `/admin/contacts` continue de les présenter,
+  comme archive. Ce qui ferme, c'est l'entrée.
+- `RESEND_API_KEY`, `CONTACT_NOTIFICATION_EMAIL` et `CONTACT_NOTIFICATION_FROM`
+  ne sont plus lues par le code. Elles peuvent être retirées de Vercel.
 
 ## Cartographie orientée processus — incrément 1 sur 4
 

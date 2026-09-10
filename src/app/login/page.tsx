@@ -1,42 +1,18 @@
-import type { Metadata } from 'next'
-import Link from 'next/link'
-import { Suspense } from 'react'
-import { LoginForm } from '@/components/login-form'
-import { Wordmark } from '@/components/logo'
+import { redirect } from 'next/navigation'
 
-export const metadata: Metadata = {
-  title: 'Connexion',
-  robots: { index: false, follow: false },
-}
-
-export default function LoginPage() {
-  return (
-    <main className="flex min-h-screen flex-col">
-      <div className="px-6 py-6 lg:px-12">
-        <Link href="/" aria-label="AIGMS, accueil">
-          <Wordmark size={30} />
-        </Link>
-      </div>
-
-      <div className="flex grow items-center justify-center px-6 pb-24">
-        <div className="w-full max-w-sm">
-          <h1 className="mb-2 font-serif text-3xl font-medium tracking-tight">
-            Accès à l’espace de gouvernance
-          </h1>
-          <p className="mb-8 text-[15px] text-ink-600">
-            L’accès est réservé aux comptes ouverts par l’administration de la plateforme.
-          </p>
-
-          <Suspense fallback={null}>
-            <LoginForm />
-          </Suspense>
-
-          <p className="mt-8 border-t border-ink-200 pt-6 text-[13px] leading-relaxed text-ink-500">
-            Mot de passe oublié ou accès à ouvrir : adressez-vous à l’administration de la
-            plateforme, qui déclare les comptes et attribue les rôles.
-          </p>
-        </div>
-      </div>
-    </main>
-  )
+/**
+ * `/login` est conserve comme redirection.
+ *
+ * L'adresse a circule — signets, liens de courriel, documentation. La supprimer
+ * casserait des acces existants pour un gain nul ; la maintenir en double
+ * ferait vivre deux mires. Elle redirige donc vers l'accueil, en conservant le
+ * parametre `next` que le proxy y depose.
+ */
+export default async function LoginRedirect({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>
+}) {
+  const { next } = await searchParams
+  redirect(next?.startsWith('/admin') ? `/?next=${encodeURIComponent(next)}` : '/')
 }
