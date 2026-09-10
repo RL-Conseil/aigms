@@ -455,3 +455,59 @@ export async function acceptRisk(_previous: FormState | null, formData: FormData
   revalidatePath(`/admin/use-cases/${parsed.data.useCaseId}`)
   return { ok: true, message: 'Risque accepté, sous votre responsabilité et avec une date de revue.' }
 }
+
+// =============================================================================
+// Rôle de l'organisation vis-à-vis de l'IA
+// =============================================================================
+// Ce n'est pas une categorie descriptive : il commande les typologies de
+// preuves attendues, leur criticite, et donc le regime de preuve exige par la
+// Declaration d'Applicabilite. Le changer requalifie tout le dossier — d'ou le
+// fait qu'il se modifie ici, sur la fiche du client, et non enfoui dans un
+// ecran d'administration.
+const activityProfileSchema = z.object({
+  organizationId: z.string().uuid(),
+  activityProfile: z.enum([
+    'infrastructure_host',
+    'model_developer',
+    'integrator_consultant',
+    'business_user',
+  ]),
+})
+
+export async function setActivityProfile(
+  _previous: FormState | null,
+  formData: FormData,
+): Promise<FormState> {
+  const parsed = activityProfileSchema.safeParse({
+    organizationId: formData.get('organizationId'),
+    activityProfile: formData.get('activityProfile'),
+  })
+  if (!parsed.success) return firstIssues(parsed.error)
+
+  const supabase = await createClient()
+  // `select` apres `update` n'est pas decoratif : une ecriture ecartee par la
+  // RLS ne leve aucune erreur, elle ne touche aucune ligne. Sans relire ce qui
+  // est revenu, l'ecran annoncerait un enregistrement qui n'a pas eu lieu.
+  const { data, error } = await supabase
+    .from('organization')
+    .update({ ai_activity_profile: parsed.data.activityProfile })
+    .eq('id', parsed.data.organizationId)
+    .select('id')
+
+  if (error) return { ok: false, message: explain(error) }
+  if (!data?.length) {
+    return {
+      ok: false,
+      message: 'Votre rôle ne permet pas de modifier le rôle de cette organisation.',
+    }
+  }
+
+  revalidatePath(`/admin/organizations/${parsed.data.organizationId}`)
+  revalidatePath(`/admin/organizations/${parsed.data.organizationId}/preuves`)
+  revalidatePath(`/admin/organizations/${parsed.data.organizationId}/declaration-applicabilite`)
+  return {
+    ok: true,
+    message:
+      'Rôle enregistré. Les typologies de preuves attendues et le régime exigé par la Déclaration d’Applicabilité sont recalculés.',
+  }
+}

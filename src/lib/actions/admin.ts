@@ -78,6 +78,14 @@ const organizationSchema = z.object({
     .or(z.literal('')),
   headcount: z.coerce.number().int().min(0).max(10_000_000).optional(),
   status: z.enum(['prospect', 'pilot', 'active', 'archived']),
+  // Le profil commande les typologies de preuves attendues : il se renseigne a
+  // la creation, quand la question se pose naturellement.
+  activityProfile: z.enum([
+    'infrastructure_host',
+    'model_developer',
+    'integrator_consultant',
+    'business_user',
+  ]),
 })
 
 export async function createOrganization(_previous: Result | null, formData: FormData): Promise<Result> {
@@ -93,6 +101,7 @@ export async function createOrganization(_previous: Result | null, formData: For
     countryCode: formData.get('countryCode') ?? '',
     headcount: formData.get('headcount') || undefined,
     status: formData.get('status') ?? 'prospect',
+    activityProfile: formData.get('activityProfile'),
   })
 
   if (!parsed.success) {
@@ -110,6 +119,7 @@ export async function createOrganization(_previous: Result | null, formData: For
       country_code: parsed.data.countryCode ? parsed.data.countryCode.toUpperCase() : null,
       headcount: parsed.data.headcount ?? null,
       status: parsed.data.status,
+      ai_activity_profile: parsed.data.activityProfile,
     })
     .select('id, business_ref, name')
     .single()

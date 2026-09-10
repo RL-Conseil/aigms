@@ -2159,13 +2159,19 @@ export type Database = {
             | "attestation"
             | "connector_pull"
           external_url: string | null
+          file_name: string | null
+          file_size_bytes: number | null
           id: string
+          mime_type: string | null
           organization_id: string
           owner_user_id: string
           source: string
+          storage_bucket: string | null
           storage_path: string | null
+          superseded_by: string | null
           tenant_id: string
           title: string
+          typology_id: string | null
           updated_at: string
           valid_until: string | null
           validated_at: string | null
@@ -2187,13 +2193,19 @@ export type Database = {
             | "attestation"
             | "connector_pull"
           external_url?: string | null
+          file_name?: string | null
+          file_size_bytes?: number | null
           id?: string
+          mime_type?: string | null
           organization_id: string
           owner_user_id: string
           source: string
+          storage_bucket?: string | null
           storage_path?: string | null
+          superseded_by?: string | null
           tenant_id: string
           title: string
+          typology_id?: string | null
           updated_at?: string
           valid_until?: string | null
           validated_at?: string | null
@@ -2219,13 +2231,19 @@ export type Database = {
             | "attestation"
             | "connector_pull"
           external_url?: string | null
+          file_name?: string | null
+          file_size_bytes?: number | null
           id?: string
+          mime_type?: string | null
           organization_id?: string
           owner_user_id?: string
           source?: string
+          storage_bucket?: string | null
           storage_path?: string | null
+          superseded_by?: string | null
           tenant_id?: string
           title?: string
+          typology_id?: string | null
           updated_at?: string
           valid_until?: string | null
           validated_at?: string | null
@@ -2253,6 +2271,20 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "evidence_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "evidence"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_superseded_by_fkey"
+            columns: ["superseded_by"]
+            isOneToOne: false
+            referencedRelation: "evidence_with_freshness"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "evidence_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
@@ -2260,10 +2292,117 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "evidence_typology_id_fkey"
+            columns: ["typology_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_typology"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "evidence_validated_by_fkey"
             columns: ["validated_by"]
             isOneToOne: false
             referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evidence_typology: {
+        Row: {
+          code: string
+          created_at: string
+          deliverables: string[]
+          id: string
+          name: string
+          ordinal: number
+          review_status: string
+          technical_description: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          deliverables: string[]
+          id?: string
+          name: string
+          ordinal: number
+          review_status?: string
+          technical_description: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          deliverables?: string[]
+          id?: string
+          name?: string
+          ordinal?: number
+          review_status?: string
+          technical_description?: string
+        }
+        Relationships: []
+      }
+      evidence_typology_profile: {
+        Row: {
+          criticality: "negligible" | "low" | "moderate" | "high" | "critical"
+          profile:
+            | "infrastructure_host"
+            | "model_developer"
+            | "integrator_consultant"
+            | "business_user"
+          typology_id: string
+        }
+        Insert: {
+          criticality: "negligible" | "low" | "moderate" | "high" | "critical"
+          profile:
+            | "infrastructure_host"
+            | "model_developer"
+            | "integrator_consultant"
+            | "business_user"
+          typology_id: string
+        }
+        Update: {
+          criticality?: "negligible" | "low" | "moderate" | "high" | "critical"
+          profile?:
+            | "infrastructure_host"
+            | "model_developer"
+            | "integrator_consultant"
+            | "business_user"
+          typology_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_typology_profile_typology_id_fkey"
+            columns: ["typology_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_typology"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      evidence_typology_reference: {
+        Row: {
+          framework_code: string
+          framework_version: string
+          reference: string
+          typology_id: string
+        }
+        Insert: {
+          framework_code: string
+          framework_version: string
+          reference: string
+          typology_id: string
+        }
+        Update: {
+          framework_code?: string
+          framework_version?: string
+          reference?: string
+          typology_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evidence_typology_reference_typology_id_fkey"
+            columns: ["typology_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_typology"
             referencedColumns: ["id"]
           },
         ]
@@ -3428,6 +3567,12 @@ export type Database = {
       }
       organization: {
         Row: {
+          ai_activity_profile:
+            | "infrastructure_host"
+            | "model_developer"
+            | "integrator_consultant"
+            | "business_user"
+            | null
           business_ref: string
           country_code: string | null
           created_at: string
@@ -3441,6 +3586,12 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_activity_profile?:
+            | "infrastructure_host"
+            | "model_developer"
+            | "integrator_consultant"
+            | "business_user"
+            | null
           business_ref: string
           country_code?: string | null
           created_at?: string
@@ -3454,6 +3605,12 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_activity_profile?:
+            | "infrastructure_host"
+            | "model_developer"
+            | "integrator_consultant"
+            | "business_user"
+            | null
           business_ref?: string
           country_code?: string | null
           created_at?: string
@@ -4294,6 +4451,74 @@ export type Database = {
           },
         ]
       }
+      soa_decision: {
+        Row: {
+          created_at: string
+          decided_at: string
+          decided_by: string | null
+          id: string
+          justification: string
+          organization_id: string
+          requirement_id: string
+          status: "selected" | "excluded"
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string
+          decided_by?: string | null
+          id?: string
+          justification: string
+          organization_id: string
+          requirement_id: string
+          status: "selected" | "excluded"
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string
+          decided_by?: string | null
+          id?: string
+          justification?: string
+          organization_id?: string
+          requirement_id?: string
+          status?: "selected" | "excluded"
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "soa_decision_decided_by_fkey"
+            columns: ["decided_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "soa_decision_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "soa_decision_requirement_id_fkey"
+            columns: ["requirement_id"]
+            isOneToOne: false
+            referencedRelation: "requirement"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "soa_decision_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant: {
         Row: {
           created_at: string
@@ -4707,6 +4932,23 @@ export type Database = {
         Args: { p_activity_id?: string; p_organization_id: string }
         Returns: Json
       }
+      controls_awaiting_evidence: {
+        Args: { p_organization_id: string }
+        Returns: {
+          code: string
+          evidence_count: number
+          id: string
+          is_evidenced: boolean
+          is_mandatory: boolean
+          name: string
+          status:
+            | "proposed"
+            | "implemented"
+            | "operating"
+            | "ineffective"
+            | "retired"
+        }[]
+      }
       evaluate_gate: {
         Args: { p_target: string; p_use_case_id: string }
         Returns: Json
@@ -4714,6 +4956,69 @@ export type Database = {
       evaluate_governance_impact: {
         Args: { p_change_request_id: string }
         Returns: Json
+      }
+      evidence_matrix_gaps: {
+        Args: never
+        Returns: {
+          framework_code: string
+          framework_version: string
+          reference: string
+          typology_code: string
+          typology_name: string
+        }[]
+      }
+      evidence_register: {
+        Args: { p_organization_id: string }
+        Returns: {
+          business_ref: string
+          collected_at: string
+          content_hash: string
+          control_codes: string[]
+          control_count: number
+          evidence_type:
+            | "document"
+            | "url"
+            | "declarative"
+            | "screenshot"
+            | "log_extract"
+            | "attestation"
+            | "connector_pull"
+          external_url: string
+          file_name: string
+          file_size_bytes: number
+          freshness: "fresh" | "expiring" | "expired" | "unknown"
+          id: string
+          mime_type: string
+          owner_name: string
+          source: string
+          storage_bucket: string
+          storage_path: string
+          superseded_by: string
+          title: string
+          valid_until: string
+          validated_at: string
+          validated_by_name: string
+          validation_status: "pending" | "validated" | "rejected" | "superseded"
+          version: string
+        }[]
+      }
+      evidence_typologies: {
+        Args: { p_organization_id: string }
+        Returns: {
+          code: string
+          criticality: "negligible" | "low" | "moderate" | "high" | "critical"
+          deliverables: string[]
+          id: string
+          name: string
+          normative_references: string[]
+          ordinal: number
+          profile:
+            | "infrastructure_host"
+            | "model_developer"
+            | "integrator_consultant"
+            | "business_user"
+          technical_description: string
+        }[]
       }
       governance_health: {
         Args: { p_activity_id?: string; p_organization_id: string }
@@ -4762,6 +5067,14 @@ export type Database = {
         Args: { p_change_request_id: string }
         Returns: Json
       }
+      soa_readiness: {
+        Args: {
+          p_framework_code?: string
+          p_framework_version?: string
+          p_organization_id: string
+        }
+        Returns: Json
+      }
       statement_of_applicability: {
         Args: {
           p_framework_code?: string
@@ -4772,15 +5085,27 @@ export type Database = {
           control_count: number
           controls: Json
           coverage: string
+          decided_by_name: string
           display_order: number
           evidence_count: number
+          evidence_regime: string
+          expected_criticality:
+            | "negligible"
+            | "low"
+            | "moderate"
+            | "high"
+            | "critical"
           expected_evidence: string
+          gap: string
           internal_summary: string
           objective_code: string
           objective_title: string
           operating_count: number
           requirement_reference: string
           requirement_title: string
+          soa_justification: string
+          soa_status: "selected" | "excluded"
+          typologies: Json
         }[]
       }
       transition_use_case: {

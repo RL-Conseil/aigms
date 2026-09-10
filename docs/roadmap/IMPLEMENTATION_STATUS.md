@@ -238,6 +238,7 @@ Trois garde-fous rendent l'indice défendable :
 |---|---|
 | ISO/IEC 42001:2023 | **Annexe A complète** — 38 contrôles de référence en 9 objectifs (A.2 à A.10) — plus trois exigences du corps (6.1.2, 8.4, 9.3) |
 | Règlement (UE) 2024/1689 | Articles 14 et 50 |
+| Matrice des preuves AIGMS v1 | 8 typologies techniques × 4 profils d'activité, avec criticité et livrables attendus |
 | RGPD | Article 35 |
 | ISO/IEC 42005:2025 | Clause 6.4 |
 
@@ -260,6 +261,108 @@ qu'un contrôle IA sert aussi la sécurité de l'information, pour éviter la
 double collecte de preuves. Un sous-ensemble ciblé suffirait ; importer les 93
 contrôles d'un référentiel qu'AIGMS ne pilote pas serait disproportionné.
 
+## Le dépôt de preuves
+
+La rupture que le chemin du risque nomme le plus souvent est `no_evidence` :
+un contrôle opère, rien ne le démontre. Elle est désormais réparable depuis la
+plateforme — registre des preuves par organisation, dépôt de fichier,
+validation nominative, rattachement aux contrôles, téléchargement par lien
+signé.
+
+Les règles tiennent en cinq lignes, et elles sont en base
+([ADR-0011](../adr/ADR-0011-evidence-file-custody.md)) :
+
+| Règle | Pourquoi |
+|---|---|
+| Chemin `tenant/organisation/preuve/fichier`, dérivé et jamais saisi | une preuve ne doit pas pouvoir pointer vers l'objet d'un autre client |
+| Empreinte SHA-256 obligatoire dès qu'il y a un fichier | sans elle, on ne démontre pas que la pièce téléchargée est celle qui a été validée |
+| Fichier figé après validation, aucune politique `UPDATE` | modifier après coup ce qu'un validateur a examiné détruit la valeur probante |
+| Validation en son propre nom | c'est un acte, pas un champ |
+| L'administrateur de plateforme ne télécharge pas | extension d'ADR-0008 au seul endroit qui porte des données et non des métadonnées |
+
+Un **dépôt n'est pas une validation** : la pièce arrive « à valider », et
+l'écran le dit.
+
+### La preuve attendue dépend du rôle exercé vis-à-vis de l'IA
+
+Le registre proposait les mêmes typologies à tout le monde. C'est faux dans les
+deux sens : un hébergeur démontre l'isolation de ses calculs et n'a rien à dire
+sur l'équité d'un modèle qu'il n'entraîne pas ; un utilisateur métier répond de
+la dérive du système qu'il exploite, pas de son alignement.
+
+Une organisation porte donc un **profil d'activité** au sens d'ISO/IEC 42001,
+posé à sa création : hébergeur / infrastructure, développeur / éditeur,
+intégrateur / conseil, utilisateur métier. La **matrice des preuves** — huit
+typologies techniques × quatre profils — en tire une criticité, et de cette
+criticité découle ce que la Déclaration d'Applicabilité exige
+([ADR-0012](../adr/ADR-0012-evidence-matrix-and-soa-regime.md)) :
+
+| Criticité pour le profil | Statut attendu | Ce que la Déclaration exige |
+|---|---|---|
+| critique, élevé | sélectionné | preuve **technique** : décrire la mesure, pointer un livrable |
+| modéré, faible | sélectionné | preuve **organisationnelle** : politique, clause, procédure |
+| négligeable | exclu | **justification formelle d'exclusion**, motivée par le profil |
+
+La **règle d'or** est portée par une contrainte, pas par un écran : aucune
+exigence de l'Annexe A ne reste sans réponse, et les deux branches — sélection
+comme exclusion — exigent une justification écrite d'au moins trente
+caractères. « Non applicable » n'est pas une justification.
+
+Trois écarts sont nommés plutôt que lissés :
+
+- `undecided` — une exigence sans décision portée ;
+- `exclusion_contested` — une exclusion là où la matrice attend une preuve ;
+- `technical_evidence_missing` — un régime technique sans contrôle prouvé.
+
+La matrice ne décide de rien. Elle dit ce qui est attendu ; un humain
+sélectionne ou exclut, et peut la contredire — l'écart est alors **affiché, pas
+effacé**.
+
+Le rôle se **modifie depuis la fiche de l'organisation**, à côté de ce qu'il
+rend exigeant : le lien entre le choix et ses conséquences se perd si l'un et
+l'autre vivent sur deux écrans. Le jeu de démonstration place IzarLink Demo en
+« Hébergeur / Infrastructure » — isolation et empreinte environnementale
+critiques, cybersécurité IA élevée, explicabilité et alignement négligeables.
+
+**Onze références citées par la matrice ne se résolvent pas** : l'Annexe A
+chargée s'arrête à A.10.4, et seuls les articles 14 et 50 du règlement sont
+présents. `app.evidence_matrix_gaps()` les liste, l'écran les affiche, et un
+test vérifie que cette liste correspond exactement à ce que le fichier source
+déclare. Les taire produirait une Déclaration qui paraît complète en omettant
+ce qu'elle ne sait pas rapprocher.
+
+Un point demande un arbitrage : `A.8.4` se résout, mais porte dans l'Annexe A
+chargée la **communication des incidents**, là où la matrice l'invoque pour
+l'empreinte environnementale.
+
+### Faut-il un écran d'administration du stockage ?
+
+**Non, et probablement jamais sous cette forme.** Compartiment, quota, durée de
+rétention, région : c'est de l'infrastructure. L'exposer en écran donnerait
+l'illusion d'un réglage produit, ouvrirait une surface de configuration qu'il
+faudrait défendre, et n'apporterait aucune garantie de gouvernance
+supplémentaire — la garantie vient des politiques, pas d'un formulaire.
+
+Ce qui manquerait vraiment à un exploitant, c'est de **savoir** où vivent les
+fichiers. C'est rendu, en lecture seule, dans le volet « Où vivent les
+fichiers » du registre : compartiment privé, chemin confiné au client, lien
+signé d'une minute, aucune URL en base.
+
+**Ce que l'hébergement IaaS demandera vraiment**, le jour du sprint dédié :
+
+1. **Copier l'arborescence.** `tenant/organisation/preuve/fichier` se transpose
+   telle quelle sur tout stockage compatible S3. Aucune ligne de la base ne
+   référence Supabase — seulement un couple (compartiment, chemin).
+2. **Reposer l'équivalent des politiques.** C'est le seul point non portable :
+   les politiques de `storage.objects` sont propres à Supabase Storage. Sur un
+   stockage tiers, le contrôle d'accès devra vivre dans le service qui signe les
+   URL, et `app.storage_tenant` reste la règle à réimplémenter.
+3. **Reprendre l'authentification.** GoTrue est l'autre dépendance de plateforme ;
+   elle sort du périmètre du stockage mais pas de celui de la procédure.
+
+C'est cette procédure — et non un écran — qui rendra un hébergement chez un
+tiers réalisable.
+
 ## Deux liens à rétablir
 
 1. **CI** — le jeton GitHub `rlabrador` n'a pas le scope `workflow` : le commit
@@ -274,9 +377,12 @@ contrôles d'un référentiel qu'AIGMS ne pilote pas serait disproportionné.
 
 ## Suite immédiate
 
-1. Sprint 8 complet : dépôt de fichiers via Supabase Storage.
-2. Formulaires d'écriture : intake, risque, décision, changement.
+1. Formulaires d'écriture restants : décision, contrôle, action, incident,
+   fournisseur.
+2. Export du dossier de gouvernance et rapport mensuel.
 3. Sprint 14 puis 15.
+4. Sprint d'hébergement : procédure de portage sur IaaS (voir « Le dépôt de
+   preuves »).
 
 ## Point de vigilance
 
