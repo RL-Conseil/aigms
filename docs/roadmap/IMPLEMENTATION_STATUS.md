@@ -390,3 +390,10 @@ Le jeu de démonstration est chargé sur le projet distant avec des comptes dont
 le mot de passe est connu de tous (`Demo!Passw0rd`). Ces comptes ne portent que des
 données fictives, mais le projet ne doit pas être promu en production sans les
 supprimer ou en changer les mots de passe.
+
+## Fonctionnalités différées
+
+Les fonctionnalités décidées mais non implémentées — dont le **registre de
+décisions**, dont le socle serveur est en place et l'interface absente — sont
+consignées dans [`BACKLOG.md`](./BACKLOG.md), avec ce qu'il faut pour les ouvrir
+sans tout re-instruire.
