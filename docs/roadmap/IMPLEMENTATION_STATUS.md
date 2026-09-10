@@ -377,11 +377,12 @@ tiers réalisable.
 
 ## Suite immédiate
 
-1. Formulaires d'écriture restants : décision, contrôle, action, incident,
-   fournisseur.
-2. Export du dossier de gouvernance et rapport mensuel.
-3. Sprint 14 puis 15.
-4. Sprint d'hébergement : procédure de portage sur IaaS (voir « Le dépôt de
+1. Reprise de la disposition des écrans. Elle précède le registre de décisions,
+   dont le placement dépend d'elle.
+2. Formulaires d'écriture restants : contrôle, action, incident, fournisseur.
+3. Export du dossier de gouvernance et rapport mensuel.
+4. Sprint 14 puis 15.
+5. Sprint d'hébergement : procédure de portage sur IaaS (voir « Le dépôt de
    preuves »).
 
 ## Point de vigilance
