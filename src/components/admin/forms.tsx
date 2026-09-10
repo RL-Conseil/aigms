@@ -223,9 +223,10 @@ export function AccountForm({
           placeholder="Au moins douze caractères"
         />
         <p className="mt-1.5 text-xs text-ink-500">
-          À transmettre à la personne par un canal distinct de son adresse électronique. Le
-          changement de mot de passe depuis l’application reste à construire : en attendant, il se
-          fait depuis la console Supabase.
+          À transmettre par un canal distinct de son adresse électronique : la personne reçoit un
+          courriel d’ouverture d’accès — adresse de connexion et rôle — mais jamais son mot de
+          passe. Le changement de mot de passe depuis l’application reste à construire ; en
+          attendant, il se fait depuis la console Supabase.
         </p>
       </div>
 

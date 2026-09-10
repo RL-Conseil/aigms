@@ -106,6 +106,30 @@ Deux jetons Supabase cohabitent, un par projet : celui qui couvre
 `src/proxy.ts` ne protège que le préfixe `/admin` ; l'autorisation réelle reste
 portée par la RLS.
 
+## Courrier système
+
+La plateforme dispose d'un unique point d'envoi, `src/lib/email/mailer.ts`,
+expédiant depuis le compte système `contact@caritis.fr` via Resend — domaine
+vérifié, région `eu-west-1`. Deux variables le pilotent, sans code à modifier :
+`RESEND_API_KEY` et `SYSTEM_EMAIL_FROM`.
+
+Deux principes le façonnent, et ils expliquent sa forme :
+
+1. **L'envoi est une commodité, jamais un point de passage.** Un compte déclaré
+   l'est même si le courriel ne part pas. `sendSystemEmail` ne lève jamais : elle
+   rend un résultat (`not_configured`, `refused`, `unreachable`) que l'appelant
+   présente. Faire échouer une déclaration de compte parce qu'un fournisseur de
+   courriel est indisponible serait une régression de gouvernance.
+2. **Aucun secret ne transite par courriel.** Ni mot de passe, ni jeton. Ce que
+   la plateforme envoie est une information, pas un moyen d'accès. Un test le
+   vérifie sur le contenu du message.
+
+Sans variables — poste de développement, intégration continue — le module se
+tait proprement. Le premier usage câblé est l'**ouverture d'accès** : à la
+déclaration d'un compte, la personne reçoit l'adresse de connexion, son rôle et
+son périmètre. Son mot de passe provisoire continue de se transmettre par un
+autre canal.
+
 ## La vitrine a quitté l'application
 
 AIGMS est une application SaaS : la page de présentation et le formulaire de
