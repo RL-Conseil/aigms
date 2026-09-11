@@ -30,7 +30,9 @@ test("le sous-titre distingue administrer et gouverner", async ({ page }) => {
 
   await page.getByRole('button', { name: /Inès Duhamel/ }).click()
   await page.getByRole('menuitem', { name: 'Se déconnecter' }).click()
-  await expect(page).toHaveURL(/\/login/)
+  // `/login` redirige vers l'accueil : viser l'URL de passage rend le parcours
+  // dependant du moment ou on l'observe. On vise l'etat atteint.
+  await expect(page.getByRole('heading', { name: 'Accès à l’espace de gouvernance' })).toBeVisible()
 
   await signIn(page, OFFICER)
   await expect(

@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty, Field } from '@/components/ui'
 import { ActivityProfileForm } from '@/components/governance/activity-profile-form'
+import { AttentionBar } from '@/components/governance/attention'
+import { attentionFor } from '@/lib/governance/attention'
 import {
   ACTIVITY_PROFILE_LABELS,
   CRITICALITY_LABELS,
@@ -59,6 +61,8 @@ export default async function OrganizationPage({
       supabase.rpc('typology_coverage', { p_organization_id: id }),
     ])
 
+  const attention = await attentionFor(id)
+
   const profile = (organization.ai_activity_profile ?? null) as ActivityProfile | null
   const typologies = (typologyRows ?? []) as {
     code: string
@@ -78,30 +82,20 @@ export default async function OrganizationPage({
       breadcrumb={[{ href: '/admin', label: 'Organisations' }]}
       title={organization.name}
       subtitle={`${organization.business_ref} — ${organization.legal_name ?? organization.name}`}
-      actions={
-        <div className="flex items-center gap-3">
-          <Link
-            href={`/admin/organizations/${id}/processus`}
-            className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
-          >
-            Processus
-          </Link>
-          <Link
-            href={`/admin/organizations/${id}/preuves`}
-            className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
-          >
-            Preuves
-          </Link>
-          <Link
-            href={`/admin/organizations/${id}/declaration-applicabilite`}
-            className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
-          >
-            Déclaration d’Applicabilité
-          </Link>
-          <Badge>{organization.status}</Badge>
-        </div>
-      }
+      organization={{ id, section: 'apercu' }}
+      actions={<Badge>{organization.status}</Badge>}
     >
+      {/*
+        Ce qui appelle une action se lit AVANT le contenu : ouvrir une fiche
+        pour decouvrir en bas de page qu'une preuve a expire depuis trois
+        semaines est une decouverte trop tardive.
+      */}
+      {attention ? (
+        <div className="mb-5">
+          <AttentionBar attention={attention} organizationId={id} />
+        </div>
+      ) : null}
+
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Card

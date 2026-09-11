@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
-import { Badge, Card, Empty } from '@/components/ui'
+import { Badge, Card, Empty, Stat, StatStrip } from '@/components/ui'
 import { SoaDecisionForm } from '@/components/governance/soa-forms'
 import {
   ACTIVITY_PROFILE_LABELS,
@@ -146,11 +146,12 @@ export default async function StatementOfApplicabilityPage({
         { href: '/admin', label: 'Organisations' },
         { href: `/admin/organizations/${id}`, label: organization.name },
       ]}
+      organization={{ id, section: 'soa' }}
       title="Déclaration d’Applicabilité"
       subtitle="ISO/IEC 42001:2023, Annexe A — 38 contrôles de référence en 9 objectifs."
       actions={<Badge tone="info">{organization.business_ref}</Badge>}
     >
-      <div className="mb-5 grid gap-3 sm:grid-cols-4">
+      <StatStrip>
         <Stat label="Couvertes et prouvées" value={covered} total={soa.length} tone="ok" />
         <Stat label="Partiellement couvertes" value={partial} total={soa.length} tone="warn" />
         <Stat label="Non couvertes" value={uncovered} total={soa.length} tone="stop" />
@@ -160,7 +161,7 @@ export default async function StatementOfApplicabilityPage({
           total={soa.length}
           tone="stop"
         />
-      </div>
+      </StatStrip>
 
       {/*
         La regle d'or, en tete : c'est le premier defaut qu'un auditeur releve,
@@ -332,27 +333,3 @@ export default async function StatementOfApplicabilityPage({
   )
 }
 
-function Stat({
-  label,
-  value,
-  total,
-  tone,
-}: {
-  label: string
-  value: number
-  total: number
-  tone: 'ok' | 'warn' | 'stop'
-}) {
-  const color =
-    value === 0 ? 'text-ink-400' : tone === 'ok' ? 'text-emerald-700' : tone === 'warn' ? 'text-amber-700' : 'text-rose-700'
-
-  return (
-    <div className="rounded-lg border border-ink-200 bg-white px-4 py-3">
-      <p className={`text-2xl font-semibold tabular-nums ${color}`}>
-        {value}
-        <span className="text-base font-normal text-ink-400"> / {total}</span>
-      </p>
-      <p className="mt-0.5 text-xs text-ink-600">{label}</p>
-    </div>
-  )
-}

@@ -180,6 +180,7 @@ export default async function ProcessMapPage({
         { href: '/admin', label: 'Organisations' },
         { href: `/admin/organizations/${id}`, label: organization.name },
       ]}
+      organization={{ id, section: 'processus' }}
       title="Processus et risques"
       subtitle="Ce que fait l’organisation, et ce que la gouvernance de l’IA y produit."
       actions={

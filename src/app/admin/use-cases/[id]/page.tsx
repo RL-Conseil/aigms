@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
-import { Badge, Card, Empty, Field } from '@/components/ui'
+import { Badge, Card, Empty, Field, Stat, StatStrip } from '@/components/ui'
+import { Disclosure } from '@/components/forms'
 import { GateChecklist } from '@/components/gate-checklist'
 import { Lifecycle } from '@/components/lifecycle'
 import { TransitionPanel } from '@/components/transition-panel'
@@ -136,6 +137,28 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
     | { id: string; name: string; process: { name: string } | null }
     | null
 
+  // Les quatre chiffres du bandeau. Ils se calculent ici, sur des donnees deja
+  // chargees : un cinquieme appel serait du trafic pour un resultat deja en
+  // memoire.
+  const today = new Date().toISOString().slice(0, 10)
+  const openHighRisks = (risks ?? []).filter(
+    (r) =>
+      ['high', 'critical'].includes((r.residual_level ?? r.inherent_level) as string) &&
+      !['mitigated', 'closed', 'accepted'].includes(r.status),
+  ).length
+  // Un controle obligatoire dont l'applicabilite n'est pas tranchee bloque le
+  // gate PRODUCTION : c'est un acte a poser, pas un volume.
+  const mandatoryUndecided = (controls ?? []).filter((c) => {
+    const control = c.control as unknown as { is_mandatory: boolean } | null
+    return c.status === 'to_determine' && control?.is_mandatory === true
+  }).length
+  const overdueActions = (actions ?? []).filter(
+    (a) => !['done', 'cancelled'].includes(a.status) && a.due_date !== null && a.due_date <= today,
+  ).length
+  const pendingDecisions = (decisions ?? []).filter((d) =>
+    ['draft', 'submitted'].includes(d.status),
+  ).length
+
   const people = (memberships ?? [])
     .map((m) => m.user as unknown as { id: string; full_name: string | null; email: string; job_title: string | null } | null)
     .filter((u): u is NonNullable<typeof u> => Boolean(u))
@@ -160,6 +183,31 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
       }
       actions={<Badge tone="info">{USE_CASE_STATUS_LABELS[status]}</Badge>}
     >
+      {/*
+        La fiche empilait treize cartes de meme poids : le dossier de reference
+        et ce qui appelle une action s'y lisaient pareil. Les chiffres saillants
+        passent en tete, le dossier se replie, et la page s'ouvre sur ce qu'il y
+        a a faire.
+      */}
+      <StatStrip>
+        <Stat
+          label="Risques élevés ouverts"
+          value={openHighRisks}
+          tone="stop"
+        />
+        <Stat
+          label="Contrôles obligatoires non statués"
+          value={mandatoryUndecided}
+          tone="warn"
+        />
+        <Stat label="Actions échues" value={overdueActions} tone="stop" />
+        <Stat
+          label="Décisions à instruire"
+          value={pendingDecisions}
+          tone="warn"
+        />
+      </StatStrip>
+
       <div className="mb-6 rounded-lg border border-ink-200 bg-white p-5">
         <Lifecycle status={status} />
         <p className="mt-3 text-xs text-ink-400">
@@ -195,7 +243,10 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             <RiskPanel useCaseId={id} riskCount={risks?.length ?? 0} people={people} />
           </div>
 
-          <Card title="Fiche du cas d'usage">
+          <Disclosure
+            title="Fiche du cas d’usage"
+            summary="Finalité, utilisateurs, données, portée de la décision"
+          >
             <dl className="grid gap-4 sm:grid-cols-2">
               <Field label="Processus métier">{useCase.business_process ?? '—'}</Field>
               <Field label="Bénéfice attendu">{useCase.expected_benefit ?? '—'}</Field>
@@ -216,11 +267,11 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
                 <Badge tone="stop">Personnes vulnérables</Badge>
               ) : null}
             </div>
-          </Card>
+          </Disclosure>
 
-          <Card
+          <Disclosure
             title="Pré-classification réglementaire"
-            subtitle="Aide au cadrage. Ne vaut pas avis juridique."
+            summary="Aide au cadrage. Ne vaut pas avis juridique."
           >
             {classification ? (
               <div className="space-y-3">
@@ -248,7 +299,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             ) : (
               <Empty>Aucune classification enregistrée.</Empty>
             )}
-          </Card>
+          </Disclosure>
 
           <Card title="Risques" subtitle={`${risks?.length ?? 0} risque(s)`}>
             {risks?.length ? (
@@ -318,7 +369,10 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             )}
           </Card>
 
-          <Card title="Supervision humaine">
+          <Disclosure
+            title="Supervision humaine"
+            summary="Déclencheurs d’intervention, procédures d’arrêt et de reprise"
+          >
             {oversight ? (
               <dl className="space-y-3">
                 <div className="flex items-center gap-2">
@@ -340,7 +394,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             ) : (
               <Empty>Aucun plan de supervision.</Empty>
             )}
-          </Card>
+          </Disclosure>
 
           <Card title="Décisions de gouvernance" subtitle={`${decisions?.length ?? 0} décision(s)`}>
             {decisions?.length ? (
@@ -386,7 +440,10 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             )}
           </Card>
 
-          <Card title="Changements et réévaluations">
+          <Disclosure
+            title="Changements et réévaluations"
+            summary="Ce qui a rouvert l’évaluation, et pourquoi"
+          >
             {changes?.length ? (
               <ul className="space-y-4">
                 {changes.map((change) => {
@@ -432,7 +489,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             ) : (
               <Empty>Aucun changement enregistré.</Empty>
             )}
-          </Card>
+          </Disclosure>
         </div>
 
         <div className="space-y-5">
@@ -502,7 +559,10 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             )}
           </Card>
 
-          <Card title="Journal d'audit" subtitle="Trace immuable des opérations sensibles.">
+          <Disclosure
+            title="Journal d’audit"
+            summary="Trace immuable des opérations sensibles"
+          >
             {timeline?.length ? (
               <ol className="space-y-3">
                 {timeline.map((entry) => (
@@ -518,7 +578,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             ) : (
               <Empty>Aucune entrée de journal accessible depuis ce compte.</Empty>
             )}
-          </Card>
+          </Disclosure>
         </div>
       </div>
     </Shell>

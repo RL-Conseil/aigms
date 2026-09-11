@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Badge, Card, Empty } from '@/components/ui'
+import { Badge, Card, Empty, ScrollTable } from '@/components/ui'
 import { RISK_LEVEL_LABELS, formatDate, type RiskLevel } from '@/lib/domain/governance'
 
 /**
@@ -74,7 +74,7 @@ export function CoverageView({
         subtitle="Un contrôle ne compte que s’il est opérant et prouvé par une preuve validée non échue."
       >
         {withControls.length ? (
-          <div className="-mx-5 overflow-x-auto px-5">
+          <ScrollTable>
             <table className="w-full min-w-[720px] text-sm">
               <thead>
                 <tr className="border-b border-ink-200 text-left text-xs uppercase tracking-wide text-ink-400">
@@ -138,7 +138,7 @@ export function CoverageView({
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollTable>
         ) : (
           <Empty>
             Aucun contrôle affecté à une activité. Les contrôles se rattachent aux cas d’usage par
@@ -209,7 +209,7 @@ export function HeatmapView({
         title="Répartition des risques"
         subtitle="Par processus et par niveau. Le chiffre en gras compte les risques encore ouverts."
       >
-        <div className="-mx-5 overflow-x-auto px-5">
+        <ScrollTable>
           <table className="w-full min-w-[560px] text-sm">
             <thead>
               <tr className="text-left text-xs uppercase tracking-wide text-ink-400">
@@ -266,7 +266,7 @@ export function HeatmapView({
               ))}
             </tbody>
           </table>
-        </div>
+        </ScrollTable>
 
         <p className="mt-4 text-xs leading-relaxed text-ink-500">
           Un risque accepté, traité ou clos n’est plus compté comme ouvert : l’acceptation est une

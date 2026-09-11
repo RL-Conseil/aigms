@@ -4,6 +4,8 @@ import { Wordmark } from '@/components/logo'
 import { UserMenu } from '@/components/admin/user-menu'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import { ROLE_LABELS } from '@/lib/domain/roles'
+import { AttentionDot } from '@/components/governance/attention'
+import { attentionFor, attentionTotal } from '@/lib/governance/attention'
 
 /**
  * Ossature de l'espace de travail.
@@ -12,6 +14,15 @@ import { ROLE_LABELS } from '@/lib/domain/roles'
  * acces, elle ne pilote pas de gouvernance, et son menu ne propose donc pas ce
  * qu'elle ne peut de toute facon pas faire. Ce n'est qu'un confort d'affichage :
  * la RLS refuserait ces actions meme si un lien y menait.
+ *
+ * Elle se lit sur DEUX NIVEAUX. Le premier est stable — ou travailler. Le
+ * second n'apparait qu'a l'interieur d'une organisation et porte ses sections,
+ * chacune avec ce qui y appelle une action. Sans ce second niveau, tout ce qui
+ * relevait d'un client etait enfoui sous sa fiche et ne se trouvait qu'en s'en
+ * souvenant.
+ *
+ * Les pastilles ne decorent pas : elles evitent d'ouvrir quatre ecrans pour
+ * decouvrir qu'il ne s'y passe rien.
  */
 
 type NavLink = { href: string; label: string }
@@ -29,23 +40,42 @@ const ADMIN_NAV: NavLink[] = [
   { href: '/admin/contacts', label: 'Demandes' },
 ]
 
+/** Sections d'une organisation, dans l'ordre ou l'on y travaille. */
+export const ORGANIZATION_SECTIONS = [
+  { key: 'apercu', label: 'Vue d’ensemble', href: '' },
+  { key: 'processus', label: 'Processus et risques', href: '/processus' },
+  { key: 'preuves', label: 'Preuves', href: '/preuves' },
+  { key: 'soa', label: 'Déclaration d’Applicabilité', href: '/declaration-applicabilite' },
+] as const
+
+export type OrganizationSection = (typeof ORGANIZATION_SECTIONS)[number]['key']
+
 export async function Shell({
   breadcrumb,
   title,
   subtitle,
   actions,
+  organization,
   children,
 }: {
   breadcrumb?: { href: string; label: string }[]
   title: string
   subtitle?: string
   actions?: ReactNode
+  /** Renseigne pour afficher le second niveau de navigation. */
+  organization?: { id: string; section: OrganizationSection }
   children: ReactNode
 }) {
   const viewer = await getViewerContext()
   const administrating = isAdministrating(viewer)
   const nav = administrating ? ADMIN_NAV : GOVERNANCE_NAV
   const roleLabel = viewer?.role ? ROLE_LABELS[viewer.role] : 'Rôle non attribué'
+
+  // L'administration n'a pas de gouvernance a suivre : lui compter des retards
+  // qu'elle ne peut pas solder serait une invitation a outrepasser son role.
+  const pending = administrating ? 0 : await attentionTotal()
+  const orgAttention =
+    organization && !administrating ? await attentionFor(organization.id) : null
 
   return (
     <div className="min-h-screen">
@@ -55,10 +85,17 @@ export async function Shell({
             <Wordmark size={26} />
           </Link>
 
-          <nav className="flex gap-4 text-sm text-ink-600">
+          <nav aria-label="Navigation principale" className="flex gap-4 text-sm text-ink-600">
             {nav.map((link) => (
-              <Link key={link.href} href={link.href} className="hover:text-ink-900">
+              <Link
+                key={link.href}
+                href={link.href}
+                className="inline-flex items-baseline hover:text-ink-900"
+              >
                 {link.label}
+                {link.href === '/admin/pilotage' ? (
+                  <AttentionDot count={pending} label="élément(s) appelant une action" />
+                ) : null}
               </Link>
             ))}
           </nav>
@@ -77,6 +114,48 @@ export async function Shell({
             ) : null}
           </div>
         </div>
+
+        {organization ? (
+          <div className="border-t border-ink-100 bg-ink-50">
+            <nav
+              aria-label="Sections de l’organisation"
+              className="mx-auto flex max-w-6xl flex-wrap gap-1 px-6"
+            >
+              {ORGANIZATION_SECTIONS.map((section) => {
+                const active = section.key === organization.section
+                const count =
+                  orgAttention &&
+                  (section.key === 'preuves'
+                    ? orgAttention.stale_evidence + orgAttention.evidence_to_review
+                    : section.key === 'soa'
+                      ? orgAttention.soa_undecided
+                      : section.key === 'processus'
+                        ? orgAttention.high_risks_open
+                        : 0)
+
+                return (
+                  <Link
+                    key={section.key}
+                    href={`/admin/organizations/${organization.id}${section.href}`}
+                    aria-current={active ? 'page' : undefined}
+                    className={`inline-flex items-baseline border-b-2 px-3 py-2.5 text-sm ${
+                      active
+                        ? 'border-brand-600 font-medium text-ink-900'
+                        : 'border-transparent text-ink-600 hover:text-ink-900'
+                    }`}
+                  >
+                    {section.label}
+                    <AttentionDot
+                      count={count ?? 0}
+                      late={section.key === 'processus'}
+                      label="élément(s) appelant une action"
+                    />
+                  </Link>
+                )
+              })}
+            </nav>
+          </div>
+        ) : null}
 
         {administrating ? (
           <div className="border-t border-night-900/10 bg-night-900">
