@@ -9,6 +9,9 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ASSIGNABLE_ROLES, type AppRole } from '@/lib/domain/roles'
+import { accountOpenedEmail } from '@/lib/email/messages'
+import { sendSystemEmail } from '@/lib/email/mailer'
+import { publicEnv } from '@/lib/env'
 
 /**
  * Actes d'administration : creer une organisation, declarer un compte,
@@ -227,8 +230,35 @@ export async function createAccount(_previous: Result | null, formData: FormData
   }
 
 
+  // Le courriel d'ouverture d'acces part APRES le rattachement, et son echec
+  // n'annule rien : un compte declare l'est meme si le fournisseur de courriel
+  // est indisponible. On le dit a l'administrateur plutot que de le taire —
+  // c'est a lui de prevenir la personne autrement.
+  let organizationName: string | null = null
+  if (organizationId) {
+    const { data: organization } = await supabase
+      .from('organization')
+      .select('name')
+      .eq('id', organizationId)
+      .maybeSingle()
+    organizationName = organization?.name ?? null
+  }
+
+  const message = accountOpenedEmail({
+    fullName,
+    role,
+    siteUrl: publicEnv().NEXT_PUBLIC_SITE_URL,
+    organizationName,
+  })
+  const mail = await sendSystemEmail({ to: email, ...message })
+
   revalidatePath('/admin/comptes')
-  return { ok: true, message: `Compte ${email} créé et rattaché.` }
+  return {
+    ok: true,
+    message: mail.sent
+      ? `Compte ${email} créé et rattaché. Courriel d’ouverture d’accès envoyé — le mot de passe provisoire, lui, se transmet par un autre canal.`
+      : `Compte ${email} créé et rattaché. Le courriel d’ouverture d’accès n’est pas parti (${mail.reason}) : prévenez la personne par un autre moyen.`,
+  }
 }
 
 // -----------------------------------------------------------------------------
