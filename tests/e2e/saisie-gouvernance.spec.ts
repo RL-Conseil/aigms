@@ -248,3 +248,27 @@ test('le graphe relie les couches et le chemin d’un risque nomme sa rupture', 
   await expect(page.getByText('Chaîne de maîtrise complète')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Ce qui le tient' })).toBeVisible()
 })
+
+test('la navigation porte l’avancement et les retards', async ({ page }) => {
+  await page.goto('/admin')
+
+  // La liste des organisations dit d'emblee laquelle demande du travail.
+  const ligne = page.locator('li').filter({ hasText: 'IzarLink Demo' }).first()
+  await expect(ligne.getByText(/exigences sans décision|preuve|risque|action/)).toBeVisible()
+
+  await page.getByRole('link', { name: 'IzarLink Demo' }).click()
+
+  // Second niveau de navigation : les sections de l'organisation.
+  const sections = page.getByRole('navigation', { name: 'Sections de l’organisation' })
+  await expect(sections.getByRole('link', { name: /Vue d’ensemble/ })).toBeVisible()
+  await expect(sections.getByRole('link', { name: /Processus et risques/ })).toBeVisible()
+  await expect(sections.getByRole('link', { name: /Déclaration d’Applicabilité/ })).toBeVisible()
+
+  // Ce qui appelle une action se lit avant le contenu, et s'atteint d'un clic.
+  await page.getByRole('link', { name: /exigences sans décision/ }).click()
+  await expect(page).toHaveURL(/declaration-applicabilite/)
+  await expect(sections.getByRole('link', { name: /Déclaration/ })).toHaveAttribute(
+    'aria-current',
+    'page',
+  )
+})

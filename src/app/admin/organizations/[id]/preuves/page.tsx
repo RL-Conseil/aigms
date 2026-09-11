@@ -167,15 +167,13 @@ export default async function EvidencePage({
         { href: '/admin', label: 'Organisations' },
         { href: `/admin/organizations/${id}`, label: organization.name },
       ]}
+      organization={{ id, section: 'preuves' }}
       title="Preuves"
       subtitle="Ce que l’organisation peut produire pour démontrer que ses contrôles tiennent."
       actions={
-        <Link
-          href={`/admin/organizations/${id}/declaration-applicabilite`}
-          className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
-        >
-          Déclaration d’Applicabilité
-        </Link>
+        <Badge tone={toValidate ? 'warn' : 'neutral'}>
+          {rows.length} pièce{rows.length > 1 ? 's' : ''}
+        </Badge>
       }
     >
       <div className="grid gap-5 lg:grid-cols-5">

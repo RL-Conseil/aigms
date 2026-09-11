@@ -106,6 +106,49 @@ Deux jetons Supabase cohabitent, un par projet : celui qui couvre
 `src/proxy.ts` ne protège que le préfixe `/admin` ; l'autorisation réelle reste
 portée par la RLS.
 
+## Une navigation qui donne à lire l'avancement
+
+Reprise de la disposition, premier volet. Le reproche de départ : un menu qui ne
+porte que des noms de pages oblige à ouvrir chaque écran pour savoir s'il s'y
+passe quelque chose, et tout ce qui relevait d'un client était enfoui sous sa
+fiche.
+
+**La navigation se lit désormais sur deux niveaux.** Le premier est stable — où
+travailler : Organisations, Pilotage. Le second n'apparaît qu'à l'intérieur
+d'une organisation et porte ses sections : vue d'ensemble, processus et risques,
+preuves, Déclaration d'Applicabilité.
+
+**Chaque niveau porte ce qui y appelle une action.** `app.attention_by_organization()`
+rend sept compteurs, et pas un de plus :
+
+| Compteur | L'acte qu'il appelle |
+|---|---|
+| actions échues | quelqu'un devait faire quelque chose |
+| incidents ouverts | un fait est survenu et n'est pas clos |
+| risques élevés ouverts | ni traités, ni acceptés |
+| revues en retard | un cas d'usage devait être réexaminé |
+| preuves à renouveler | une preuve validée n'est plus fraîche |
+| preuves à valider | une pièce déposée attend un verdict |
+| exigences sans décision | la règle d'or de la Déclaration |
+
+Trois partis pris, qui expliquent ce qui n'y figure pas :
+
+- **Aucun indicateur de volume.** « 12 cas d'usage » n'appelle aucune action et
+  encombrerait ce qui en appelle une.
+- **Un compteur à zéro ne s'affiche pas.** Un « 0 action échue » occupe la même
+  place qu'un vrai retard et apprend à ne plus regarder.
+- **Un retard n'est pas une attente.** Ce qui aurait déjà dû être fait est en
+  rouge, ce qui attend une main en ambre. La distinction commande la couleur,
+  pas l'inverse.
+
+Chaque compteur est un lien : lire un retard sans pouvoir l'atteindre
+obligerait à le retrouver soi-même. La liste des organisations est ordonnée par
+ce qui appelle le plus d'action, et chaque ligne porte son résumé.
+
+L'administration de la plateforme n'en voit aucun : lui compter des retards
+qu'elle ne peut pas solder serait une invitation à outrepasser son rôle
+(ADR-0008).
+
 ## Courrier système
 
 La plateforme dispose d'un unique point d'envoi, `src/lib/email/mailer.ts`,

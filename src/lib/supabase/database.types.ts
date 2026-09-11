@@ -4908,6 +4908,22 @@ export type Database = {
       }
     }
     Functions: {
+      attention_by_organization: {
+        Args: never
+        Returns: {
+          evidence_to_review: number
+          high_risks_open: number
+          open_incidents: number
+          organization_id: string
+          organization_name: string
+          organization_ref: string
+          overdue_actions: number
+          reviews_due: number
+          soa_undecided: number
+          stale_evidence: number
+          total: number
+        }[]
+      }
       commit_catalog_import: { Args: { p_job_id: string }; Returns: Json }
       control_coverage: {
         Args: { p_organization_id: string }
@@ -4995,6 +5011,14 @@ export type Database = {
           storage_path: string
           superseded_by: string
           title: string
+          typology_code: string
+          typology_criticality:
+            | "negligible"
+            | "low"
+            | "moderate"
+            | "high"
+            | "critical"
+          typology_name: string
           valid_until: string
           validated_at: string
           validated_by_name: string
@@ -5111,6 +5135,16 @@ export type Database = {
       transition_use_case: {
         Args: { p_rationale?: string; p_target: string; p_use_case_id: string }
         Returns: Json
+      }
+      typology_coverage: {
+        Args: { p_organization_id: string }
+        Returns: {
+          code: string
+          criticality: "negligible" | "low" | "moderate" | "high" | "critical"
+          evidence_total: number
+          evidence_valid: number
+          name: string
+        }[]
       }
       validate_catalog_import: { Args: { p_job_id: string }; Returns: Json }
     }

@@ -146,6 +146,7 @@ export default async function StatementOfApplicabilityPage({
         { href: '/admin', label: 'Organisations' },
         { href: `/admin/organizations/${id}`, label: organization.name },
       ]}
+      organization={{ id, section: 'soa' }}
       title="Déclaration d’Applicabilité"
       subtitle="ISO/IEC 42001:2023, Annexe A — 38 contrôles de référence en 9 objectifs."
       actions={<Badge tone="info">{organization.business_ref}</Badge>}

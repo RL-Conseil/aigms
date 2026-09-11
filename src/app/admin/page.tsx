@@ -4,6 +4,8 @@ import { Shell } from '@/components/shell'
 import { Badge, Card, Empty } from '@/components/ui'
 import { formatDate } from '@/lib/domain/governance'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
+import { AttentionSummary } from '@/components/governance/attention'
+import { attentionByOrganization } from '@/lib/governance/attention'
 
 /**
  * Les organisations dont la gouvernance de l'IA est suivie depuis ce compte.
@@ -21,6 +23,7 @@ export default async function PortfolioPage() {
     .select('id, business_ref, name, sector, status, headcount, created_at')
     .order('name')
 
+
   if (error) {
     throw new Error(`Lecture des organisations impossible : ${error.message}`)
   }
@@ -28,6 +31,12 @@ export default async function PortfolioPage() {
   const { data: useCases } = await supabase
     .from('ai_use_case')
     .select('id, organization_id, status')
+
+  // Ce qui appelle une action, organisation par organisation : une liste de
+  // clients sans cet indice oblige a les ouvrir un par un pour savoir lequel
+  // demande du travail.
+  const attention = administrating ? [] : await attentionByOrganization()
+  const attentionByOrg = new Map(attention.map((row) => [row.organization_id, row]))
 
   const countsByOrg = new Map<string, { total: number; production: number }>()
   for (const uc of useCases ?? []) {
@@ -75,6 +84,11 @@ export default async function PortfolioPage() {
                       {org.headcount ? `${org.headcount} personnes` : 'Effectif non renseigné'} ·
                       depuis le {formatDate(org.created_at)}
                     </p>
+                    {attentionByOrg.has(org.id) ? (
+                      <p className="mt-1">
+                        <AttentionSummary attention={attentionByOrg.get(org.id)!} />
+                      </p>
+                    ) : null}
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     <Badge tone="info">{counts.total} cas d&apos;usage</Badge>
