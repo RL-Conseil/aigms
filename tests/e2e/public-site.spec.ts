@@ -1,60 +1,58 @@
 import { expect, test } from '@playwright/test'
 
 /**
- * Site public : la page principale, le parcours vers le formulaire de contact
- * et le depot d'une demande.
+ * Surface ouverte de l'application.
+ *
+ * AIGMS est une application : la vitrine vit sur le site commercial. La seule
+ * page accessible sans session est la mire de connexion, qui est aussi
+ * l'accueil. Ces tests verrouillent cette frontiere — c'est une propriete de
+ * securite autant qu'un choix de produit.
  */
 
-test('la page principale presente AIGMS et son appel a l action', async ({ page }) => {
-  await page.goto('/')
-
-  await expect(
-    page.getByRole('heading', { name: /Gouverner l’IA/ }),
-  ).toBeVisible()
-  await expect(page.getByText('Part des salariés utilisant des outils d’IA non approuvés')).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Le registre de décisions' })).toBeVisible()
-  await expect(
-    page.getByRole('heading', { name: 'AIGMS ne remplace pas vos outils. Il les fait converger.' }),
-  ).toBeVisible()
-
-  // Precaution produit : aucune promesse de certification ou de conformite garantie.
-  await expect(page.getByText(/ne délivre aucune\s+certification/)).toBeVisible()
-})
-
-test('la page principale est consultable sans session', async ({ page, context }) => {
+test('l’accueil est la mire de connexion', async ({ page, context }) => {
   await context.clearCookies()
   await page.goto('/')
-  await expect(page).toHaveURL(/\/$/)
-  await expect(page.getByRole('link', { name: 'Se connecter' })).toBeVisible()
+
+  await expect(page.getByRole('heading', { name: 'Accès à l’espace de gouvernance' })).toBeVisible()
+  await expect(page.getByLabel('Adresse électronique')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Se connecter' })).toBeVisible()
+
+  // Un abstract, pas une page de vente : le discours commercial vit ailleurs.
+  await expect(page.getByText('Gouverner l’IA. Décider. Prouver. Améliorer.')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'caritis.fr' })).toBeVisible()
+
+  // Precaution produit : aucune promesse de certification.
+  await expect(page.getByText(/ne remplace ni un avis juridique/)).toBeVisible()
 })
 
-test('le formulaire de contact enregistre une demande', async ({ page }) => {
+test('les comptes ne s’ouvrent pas librement', async ({ page, context }) => {
+  await context.clearCookies()
   await page.goto('/')
-  await page.getByRole('link', { name: 'Commençons par 2 cas d’usage réels' }).click()
 
-  await expect(
-    page.getByRole('heading', { name: 'Commençons par deux cas d’usage réels.' }),
-  ).toBeVisible()
-
-  // Adresse unique : l'index quotidien refuse un second depot le meme jour.
-  const email = `visiteur-${Date.now()}@exemple-test.fr`
-
-  await page.getByLabel('Nom et prénom').fill('Claire Dubourg')
-  await page.getByLabel('Organisation').fill('Manufacture Dubourg')
-  await page.getByLabel('Adresse électronique professionnelle').fill(email)
-  await page.getByLabel('Vous êtes').selectOption('dsi_rssi_dpo')
-  await page.getByLabel(/Vos usages d’IA/).fill('Assistant de rédaction sur 40 postes.')
-  await page.getByRole('button', { name: 'Demander à être rappelé' }).click()
-
-  await expect(page.getByRole('heading', { name: 'Votre demande est enregistrée.' })).toBeVisible()
+  // Pas d'inscription : les comptes sont declares par l'administration, qui
+  // attribue les roles. Un formulaire d'inscription contredirait le modele.
+  await expect(page.getByText(/Les\s+comptes ne s’ouvrent pas librement/)).toBeVisible()
+  await expect(page.getByRole('link', { name: /inscription|créer un compte/i })).toHaveCount(0)
 })
 
-test('un champ manquant est signale sans perdre la saisie', async ({ page }) => {
-  await page.goto('/contact')
-  await page.getByLabel('Nom et prénom').fill('A')
-  await page.getByLabel('Organisation').fill('Exemple')
-  await page.getByLabel('Adresse électronique professionnelle').fill('test@exemple-test.fr')
-  await page.getByRole('button', { name: 'Demander à être rappelé' }).click()
+test('/login redirige vers l’accueil en conservant la destination', async ({ page, context }) => {
+  await context.clearCookies()
+  await page.goto('/login?next=%2Fadmin%2Fpilotage')
 
-  await expect(page.getByText('Merci d’indiquer votre nom.')).toBeVisible()
+  await expect(page).toHaveURL(/\/\?next=%2Fadmin%2Fpilotage/)
+  await expect(page.getByRole('heading', { name: 'Accès à l’espace de gouvernance' })).toBeVisible()
+})
+
+test('l’espace de gouvernance est fermé sans session', async ({ page, context }) => {
+  await context.clearCookies()
+  await page.goto('/admin/pilotage')
+
+  await expect(page).toHaveURL(/\/\?next=/)
+  await expect(page.getByRole('heading', { name: 'Accès à l’espace de gouvernance' })).toBeVisible()
+})
+
+test('la vitrine et le formulaire de contact ne sont plus servis', async ({ page, context }) => {
+  await context.clearCookies()
+  const response = await page.goto('/contact')
+  expect(response?.status()).toBe(404)
 })

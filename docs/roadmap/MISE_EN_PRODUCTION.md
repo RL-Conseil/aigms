@@ -78,12 +78,12 @@ L'étape 2 vous revient : vous seul poussez sur `main`.
 
 | Contrôle | Attendu |
 |---|---|
-| `GET /` | Page de présentation, sans session |
-| `GET /contact` | Formulaire accessible |
-| `GET /admin` sans session | Redirection vers `/login` |
+| `GET /` | Mire de connexion, sans session |
+| `GET /contact` | 404 — la vitrine vit sur le site commercial |
+| `GET /admin` sans session | Redirection vers `/?next=…` |
 | Connexion avec le compte réel | Bandeau « Administration de la plateforme » |
 | Lecture anonyme de `tenant` et `ai_use_case` | Refusée (401) |
-| Insertion anonyme dans `contact_request` | Acceptée (201), lecture refusée |
+| Insertion anonyme dans `contact_request` | **Refusée** — la surface anonyme est fermée depuis la migration 0030 |
 | `evaluate_gate` sur `UC-2026-0001` | 8/8 tant que le jeu de démonstration est en place |
 | `/admin/connecteurs` et `/admin/referentiels` | Accessibles à l'administration, refusés aux rôles de gouvernance |
 

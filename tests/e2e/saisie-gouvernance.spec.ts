@@ -10,7 +10,7 @@ import { expect, test } from '@playwright/test'
 const OFFICER = { email: 'officer@rl-conseil.demo', password: 'Demo!Passw0rd' }
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/login')
+  await page.goto('/')
   await page.getByLabel('Adresse électronique').fill(OFFICER.email)
   await page.getByLabel('Mot de passe').fill(OFFICER.password)
   await page.getByRole('button', { name: 'Se connecter' }).click()

@@ -9,7 +9,7 @@ import { expect, test } from '@playwright/test'
 const OFFICER = { email: 'officer@rl-conseil.demo', password: 'Demo!Passw0rd' }
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/login')
+  await page.goto('/')
   await page.getByLabel('Adresse électronique').fill(OFFICER.email)
   await page.getByLabel('Mot de passe').fill(OFFICER.password)
   await page.getByRole('button', { name: 'Se connecter' }).click()
@@ -19,7 +19,9 @@ test.beforeEach(async ({ page }) => {
 test("l'espace d'administration exige une session", async ({ page, context }) => {
   await context.clearCookies()
   await page.goto('/admin')
-  await expect(page).toHaveURL(/\/login/)
+  // La mire est desormais l'accueil ; la destination demandee est conservee.
+  await expect(page).toHaveURL(/\/\?next=%2Fadmin/)
+  await expect(page.getByRole('heading', { name: 'Accès à l’espace de gouvernance' })).toBeVisible()
 })
 
 test('le parcours de gouvernance est consultable de bout en bout', async ({ page }) => {
