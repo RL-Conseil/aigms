@@ -11,7 +11,7 @@ Version 1.0 — 8 septembre 2026
 | Domaine de production | `www.aigms.eu` — l'apex `aigms.eu` y redirige en 308. `aigms.vercel.app` reste servi. |
 | `main` | `c7bba41` — le socle et le vertical slice |
 | `dev` | `fe1c02b` |
-| Écart | **25 commits, 14 migrations** (`0017` à `0030`) |
+| Écart | **29 commits, 14 migrations** (`0017` à `0030`) |
 
 **Le déploiement en ligne ne correspond à aucune branche.** Il a été construit
 le 7 septembre depuis `1a76da2e` (« Ajoute la CI GitHub Actions »), commit resté
