@@ -38,13 +38,19 @@ test('le parcours de gouvernance est consultable de bout en bout', async ({ page
   await expect(page.getByRole('heading', { name: 'Supervision humaine' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Décisions de gouvernance' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Changements et réévaluations' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: "Journal d'audit" })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Journal d’audit' })).toBeVisible()
 
   // Le gate production est satisfait pour ce cas d'usage.
   await expect(page.getByText('Préconditions satisfaites')).toBeVisible()
 
-  // La reevaluation declenchee par le changement d'autonomie est visible.
-  await expect(page.getByText('Moteur : Réévaluation complète')).toBeVisible()
+  // La reevaluation declenchee par le changement d'autonomie reste accessible :
+  // le dossier de reference est repliable, pas absent.
+  const changements = page
+    .locator('section')
+    .filter({ hasText: 'Changements et réévaluations' })
+    .first()
+  await changements.getByRole('button').click()
+  await expect(changements.getByText('Moteur : Réévaluation complète')).toBeVisible()
 })
 
 test('le gate refuse la mise en production et explique ce qui manque', async ({ page }) => {
@@ -95,4 +101,26 @@ test('la Déclaration d’Applicabilité rend compte de la couverture ISO 42001'
   // La precaution de non-reproduction du texte normatif est affichee.
   await expect(page.getByText(/ne reproduisent pas le texte de la norme/)).toBeVisible()
   await expect(page.getByText('L’Annexe A n’est pas une liste à cocher.')).toBeVisible()
+})
+
+test('la fiche d’un cas d’usage ouvre sur ce qu’il y a à faire', async ({ page }) => {
+  await page.getByRole('link', { name: 'IzarLink Demo' }).click()
+  await page.getByRole('link', { name: 'Assistant support client' }).click()
+
+  // Les chiffres saillants precedent le dossier.
+  await expect(page.getByText('Risques élevés ouverts')).toBeVisible()
+  await expect(page.getByText('Contrôles obligatoires non statués')).toBeVisible()
+  await expect(page.getByText('Décisions à instruire')).toBeVisible()
+
+  // Le dossier de reference est repliable : il ne s'impose plus au premier coup
+  // d'oeil, mais reste a un clic.
+  const dossier = page.locator('section').filter({ hasText: 'Fiche du cas d’usage' }).first()
+  await expect(dossier.getByRole('heading', { name: 'Fiche du cas d’usage' })).toBeVisible()
+  await expect(dossier.getByText('Bénéfice attendu')).toHaveCount(0)
+  await dossier.getByRole('button').click()
+  await expect(dossier.getByText('Bénéfice attendu')).toBeVisible()
+
+  // Ce qui appelle une action reste ouvert.
+  await expect(page.getByRole('heading', { name: 'Risques' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Gate production' })).toBeVisible()
 })

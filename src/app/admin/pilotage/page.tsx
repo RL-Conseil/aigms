@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
-import { Badge, Card, Empty } from '@/components/ui'
+import { Badge, Card, Empty, Stat, StatStrip } from '@/components/ui'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import {
   DECISION_TYPE_LABELS,
@@ -100,14 +100,14 @@ export default async function DashboardPage() {
       title="Pilotage"
       subtitle="Ce qui appelle une décision, une preuve ou une action cette semaine."
     >
-      <div className="mb-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+      <StatStrip>
         <Stat label="Revues dues" value={dueReviews?.length ?? 0} tone="warn" />
         <Stat label="Risques élevés ouverts" value={criticalRisks.length} tone="stop" />
         <Stat label="Décisions à traiter" value={pendingDecisions?.length ?? 0} tone="warn" />
         <Stat label="Preuves à renouveler" value={evidence?.length ?? 0} tone="warn" />
         <Stat label="Actions échues" value={overdueActions?.length ?? 0} tone="stop" />
         <Stat label="Incidents ouverts" value={incidents?.length ?? 0} tone="stop" />
-      </div>
+      </StatStrip>
 
       <div className="grid gap-5 lg:grid-cols-2">
         <Card title="Risques élevés sans traitement abouti">
@@ -281,25 +281,3 @@ export default async function DashboardPage() {
   )
 }
 
-function Stat({
-  label,
-  value,
-  tone,
-}: {
-  label: string
-  value: number
-  tone: 'warn' | 'stop'
-}) {
-  return (
-    <div className="rounded-lg border border-ink-200 bg-white px-4 py-3">
-      <p
-        className={`text-2xl font-semibold ${
-          value === 0 ? 'text-ink-400' : tone === 'stop' ? 'text-rose-700' : 'text-amber-700'
-        }`}
-      >
-        {value}
-      </p>
-      <p className="mt-0.5 text-xs text-ink-600">{label}</p>
-    </div>
-  )
-}

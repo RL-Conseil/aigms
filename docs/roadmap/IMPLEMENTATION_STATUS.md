@@ -149,6 +149,32 @@ L'administration de la plateforme n'en voit aucun : lui compter des retards
 qu'elle ne peut pas solder serait une invitation à outrepasser son rôle
 (ADR-0008).
 
+### Un gabarit partagé, et des fiches qui ouvrent sur l'essentiel
+
+Second et troisième volets de la reprise.
+
+**Le gabarit.** Trois écrans avaient chacun leur copie du chiffre saillant, avec
+trois seuils de couleur différents : le même zéro apparaissait gris ici, rouge
+là. `Stat`, `StatStrip` et `ScrollTable` vivent désormais dans
+`src/components/ui.tsx`. Règle retenue : **un chiffre ne prend sa couleur que
+s'il appelle une action**, et un zéro n'en appelle jamais. Le défilement
+horizontal appartient au tableau, jamais à la page — un écran de gouvernance se
+lit souvent sur un portable, et une page qui glisse latéralement fait perdre la
+colonne qui nomme la ligne.
+
+**La densité.** La fiche d'un cas d'usage empilait treize cartes de même poids :
+le dossier de référence et ce qui appelle une action s'y lisaient pareil. Elle
+s'ouvre maintenant sur quatre chiffres — risques élevés ouverts, contrôles
+obligatoires non statués, actions échues, décisions à instruire — puis sur les
+volets de travail. Cinq cartes de référence se replient : fiche, détail de la
+pré-classification, supervision humaine, changements et réévaluations, journal
+d'audit. Rien n'est retiré, tout est à un clic.
+
+Un défaut d'accessibilité est apparu en repliant : le titre d'un volet n'était
+pas un titre de document, et replier une section la retirait du plan de la page.
+`Disclosure` porte désormais un `<h2>` — le bouton vit dans le titre, l'inverse
+serait invalide.
+
 ## Courrier système
 
 La plateforme dispose d'un unique point d'envoi, `src/lib/email/mailer.ts`,

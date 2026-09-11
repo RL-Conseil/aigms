@@ -110,28 +110,35 @@ export function Disclosure({
 
   return (
     <section className="rounded-lg border border-ink-200 bg-white">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={shown}
-        className="flex w-full items-center gap-3 px-5 py-3.5 text-left hover:bg-ink-50"
-      >
-        <span aria-hidden className={`size-2 shrink-0 rounded-full ${dot}`} />
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-semibold text-ink-900">{title}</span>
-          {summary ? <span className="block text-xs text-ink-500">{summary}</span> : null}
-        </span>
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          aria-hidden
-          className={`shrink-0 text-ink-400 transition-transform ${shown ? 'rotate-180' : ''}`}
+      {/*
+        Le titre porte un niveau de titre, comme celui d'une carte : replier une
+        section ne doit pas la retirer du plan du document. Le bouton vit DANS
+        le titre — l'inverse serait invalide, un bouton ne contient pas de titre.
+      */}
+      <h2>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={shown}
+          className="flex w-full items-center gap-3 px-5 py-3.5 text-left hover:bg-ink-50"
         >
-          <path d="M4 6.4 L8 10.4 L12 6.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
+          <span aria-hidden className={`size-2 shrink-0 rounded-full ${dot}`} />
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold text-ink-900">{title}</span>
+            {summary ? <span className="block text-xs text-ink-500">{summary}</span> : null}
+          </span>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            aria-hidden
+            className={`shrink-0 text-ink-400 transition-transform ${shown ? 'rotate-180' : ''}`}
+          >
+            <path d="M4 6.4 L8 10.4 L12 6.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      </h2>
 
       {shown ? <div className="border-t border-ink-100 px-5 py-5">{children}</div> : null}
     </section>

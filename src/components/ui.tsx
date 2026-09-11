@@ -57,3 +57,65 @@ export function Field({ label, children }: { label: string; children: ReactNode 
     </div>
   )
 }
+
+/**
+ * Chiffre saillant.
+ *
+ * Trois ecrans en avaient chacun leur copie, avec trois seuils de couleur
+ * differents : le meme zero apparaissait gris ici, rouge la. Un chiffre ne
+ * prend sa couleur que s'il appelle une action, et un zero n'en appelle jamais.
+ */
+export function Stat({
+  label,
+  value,
+  total,
+  tone = 'neutral',
+}: {
+  label: string
+  value: number
+  /** Affiche « value / total » lorsque la part compte plus que le nombre. */
+  total?: number
+  tone?: 'neutral' | 'ok' | 'warn' | 'stop'
+}) {
+  const color =
+    value === 0 || tone === 'neutral'
+      ? 'text-ink-400'
+      : tone === 'ok'
+        ? 'text-ok-600'
+        : tone === 'warn'
+          ? 'text-warn-600'
+          : 'text-stop-600'
+
+  return (
+    <div className="rounded-lg border border-ink-200 bg-white px-4 py-3">
+      <p className={`text-2xl font-semibold tabular-nums ${color}`}>
+        {value}
+        {total !== undefined ? (
+          <span className="text-base font-normal text-ink-400"> / {total}</span>
+        ) : null}
+      </p>
+      <p className="mt-0.5 text-xs text-ink-600">{label}</p>
+    </div>
+  )
+}
+
+/**
+ * Tableau large dans une carte.
+ *
+ * Le defilement horizontal appartient au tableau, jamais a la page : un ecran
+ * de gouvernance se lit souvent sur un portable, et une page qui glisse
+ * lateralement fait perdre la colonne de gauche — celle qui nomme la ligne.
+ */
+export function ScrollTable({ children }: { children: ReactNode }) {
+  return <div className="-mx-5 overflow-x-auto px-5">{children}</div>
+}
+
+/**
+ * Bandeau de chiffres, en tete d'ecran.
+ *
+ * Il repond a « ou en est-on », avant le detail. Deux a quatre chiffres : au
+ * dela, aucun ne ressort.
+ */
+export function StatStrip({ children }: { children: ReactNode }) {
+  return <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{children}</div>
+}
