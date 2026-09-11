@@ -51,7 +51,7 @@ Tous verts au 7 septembre 2026.
 | Supabase local (Docker) | opérationnel, 15 migrations appliquées |
 | Supabase `aigms-supabase` (`xsagbzrgoljzgorwvsir`, eu-west-1) | **production** : 16 migrations appliquées. Porte encore le jeu de démonstration, à purger une fois un compte réel créé |
 | Supabase `aigms-supabase-preprod` (`xahqdxwmlewyjpsiuzux`, eu-west-1) | **preprod** : 16 migrations et jeu de démonstration, étanchéité et gates vérifiés par appels API. Sert les déploiements Preview |
-| Vercel | **provisionné** : projet `aigms` (équipe `rlabradors-projects`), variables d'environnement posées, production en ligne sur `aigms.vercel.app` derrière la protection SSO d'équipe |
+| Vercel | **provisionné** : projet `aigms` (équipe `rlabradors-projects`), variables d'environnement posées. Production sur `www.aigms.eu` — l'apex `aigms.eu` y redirige en 308, et `aigms.vercel.app` reste servi |
 | Notification des demandes de contact | **fonctionnelle** : clé Resend chiffrée dans les variables Vercel, envoi depuis `contact@iparenea.fr` sur domaine vérifié, notification vers la même adresse |
 | CI GitHub Actions | écrite ; le push nécessite le scope `workflow` sur le jeton `gh` |
 

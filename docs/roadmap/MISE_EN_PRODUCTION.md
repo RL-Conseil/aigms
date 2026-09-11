@@ -4,17 +4,35 @@ Version 1.0 — 8 septembre 2026
 
 ## 1. Écart entre la production et `dev`
 
-La production tourne sur le commit `c7bba41` — le socle et le vertical slice.
-Neuf commits l'attendent :
+**Vérifié le 11 septembre 2026.**
 
-| Apport | Ce que la production ne fait pas encore |
+| | |
 |---|---|
-| Site public | La page d'accueil redirige vers l'application ; il n'y a ni page de présentation ni formulaire de contact |
+| Domaine de production | `www.aigms.eu` — l'apex `aigms.eu` y redirige en 308. `aigms.vercel.app` reste servi. |
+| `main` | `c7bba41` — le socle et le vertical slice |
+| `dev` | `fe1c02b` |
+| Écart | **25 commits, 14 migrations** (`0017` à `0030`) |
+
+**Le déploiement en ligne ne correspond à aucune branche.** Il a été construit
+le 7 septembre depuis `1a76da2e` (« Ajoute la CI GitHub Actions »), commit resté
+isolé sur `feat/ci-github-actions` faute du scope `workflow` sur le jeton GitHub,
+et jamais fusionné. Fonctionnellement il équivaut à `main`, mais la provenance
+n'est pas reconstituable depuis l'historique : la prochaine bascule doit repartir
+de `main`.
+
+Ce que la production ne fait pas encore :
+
+| Apport | Ce qui manque en ligne |
+|---|---|
+| Surface de l'application | `/` redirige vers `/login` ; la mire d'accueil, l'abstract et la fermeture de la surface anonyme sont absents |
 | Espace `/admin` | Les écrans vivent à la racine (`/portfolio`, `/dashboard`) |
 | Périmètre d'administration | `is_platform_admin()` court-circuite tous les contrôles de rôle : l'administrateur peut gouverner |
-| Comptes et rôles | Aucun écran de gestion des comptes |
-| Connecteurs | Table et écran absents |
-| Référentiels de contrôles | Catalogue et moteur d'import absents |
+| Comptes et rôles | Aucun écran de gestion des comptes, aucun courriel d'ouverture d'accès |
+| Connecteurs et référentiels | Tables, écrans et moteur d'import absents |
+| ISO/IEC 42001 Annexe A | Référentiel non chargé, Déclaration d'Applicabilité absente |
+| Cartographie orientée processus | Processus, activités, graphe, santé de la gouvernance : rien |
+| Dépôt de preuves | Ni compartiment de stockage, ni registre, ni validation nominative |
+| Matrice des preuves | Profil d'activité et régime de preuve absents |
 | Vocabulaire | L'écran s'appelle encore « Portefeuille » |
 
 ## 2. Le point à trancher avant tout
