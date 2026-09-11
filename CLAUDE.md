@@ -67,7 +67,7 @@ toute habitude de travail contraire.
 
 | Branche | Rôle | Qui pousse |
 |---|---|---|
-| `main` | production — déployée sur `aigms.vercel.app` | **le propriétaire seul** |
+| `main` | production — déployée sur `www.aigms.eu` (l'apex `aigms.eu` y redirige) | **le propriétaire seul** |
 | `dev` | intégration, copie de `main`, Preview permanente | Claude Code |
 | `feat/<sujet>` | une branche par demande, créée depuis `dev` | Claude Code |
 
