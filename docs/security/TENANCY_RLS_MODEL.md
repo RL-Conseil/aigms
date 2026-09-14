@@ -142,3 +142,36 @@ join pg_namespace n on n.oid = c.relnamespace
 where n.nspname = 'public' and c.relkind = 'r'
 order by c.relrowsecurity, policies, c.relname;
 ```
+
+
+## Le journal couvre toutes les tables métier
+
+Version 1.1 — 14 septembre 2026
+
+Sept tables étaient journalisées : preuves, décisions de Déclaration,
+connecteurs, et les actes d'administration. Tout le reste ne l'était pas — un
+contrôle créé, un risque modifié, un traitement **supprimé** ne laissaient
+aucune trace.
+
+La suppression était le cas le plus grave. Les politiques d'écriture couvrent
+`for all`, DELETE compris : un objet de gouvernance pouvait disparaître sans
+qu'on sache qui l'avait retiré, ni ce qu'il contenait — précisément ce qu'un
+dossier d'audit doit pouvoir reconstituer.
+
+`app.audit_business()` journalise création, modification et suppression, avec
+l'état **complet avant et après**. Le déclencheur est posé par une boucle
+déclarative sur 29 tables, comme les politiques RLS de la migration 0014 : même
+contrat pour toutes, et une table oubliée se voit en lisant la liste.
+
+Deux garde-fous complètent le dispositif :
+
+- **`app.audit_coverage_gaps()`** nomme les tables portant un `tenant_id` et
+  dépourvues de déclencheur. Un test exige que la liste reste vide : la
+  prochaine table ajoutée sans journal fera échouer la suite.
+- **L'immuabilité tient sans la RLS.** Sous un rôle d'utilisateur, la RLS suffit
+  — aucune ligne n'est visible en écriture. Le test porte donc sur une connexion
+  privilégiée, où seul le déclencheur `audit_log_immutable` protège.
+
+Trois exclusions, assumées : `audit_log` et `governance_event` sont les journaux
+eux-mêmes ; `connector_sync_run` est la sortie machine d'une synchronisation —
+la journaliser reviendrait à journaliser un journal.

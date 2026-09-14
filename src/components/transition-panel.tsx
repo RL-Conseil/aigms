@@ -81,9 +81,15 @@ export function TransitionPanel({
             id="rationale"
             name="rationale"
             rows={2}
+            required
+            minLength={10}
             className="mt-1 w-full rounded-md border border-ink-200 px-3 py-2 text-sm"
-            placeholder="Motif consigné dans le journal d'audit."
+            placeholder="Pourquoi ce changement d’état, maintenant."
           />
+          <p className="mt-1 text-xs leading-relaxed text-ink-500">
+            Consigné au journal avec la transition — refus compris. C’est la seule phrase qui dira,
+            dans six mois, pourquoi ce cas d’usage a changé d’état.
+          </p>
         </div>
 
         {warn ? (
