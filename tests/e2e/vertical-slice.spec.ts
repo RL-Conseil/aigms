@@ -120,11 +120,10 @@ test('la fiche d’un cas d’usage ouvre sur ce qu’il y a à faire', async ({
 
   // Le dossier de reference est repliable : il ne s'impose plus au premier coup
   // d'oeil, mais reste a un clic.
-  const dossier = page.locator('section').filter({ hasText: 'Fiche du cas d’usage' }).first()
-  await expect(dossier.getByRole('heading', { name: 'Fiche du cas d’usage' })).toBeVisible()
-  await expect(dossier.getByText('Bénéfice attendu')).toHaveCount(0)
-  await dossier.getByRole('button').click()
-  await expect(dossier.getByText('Bénéfice attendu')).toBeVisible()
+  // L'identite du cas d'usage se lit en clair : replier ce qui dit de quoi
+  // l'on parle obligeait a ouvrir un volet pour le savoir.
+  await expect(page.getByText('Bénéfice attendu')).toBeVisible()
+  await expect(page.getByText('Portée de la décision')).toBeVisible()
 
   // Ce qui appelle une action reste ouvert.
   await expect(page.getByRole('heading', { name: 'Risques' })).toBeVisible()

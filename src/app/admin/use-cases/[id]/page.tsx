@@ -159,6 +159,14 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
     ['draft', 'submitted'].includes(d.status),
   ).length
 
+  // Un risque « brut » est un risque jamais recote apres traitement. Ni traite,
+  // ni accepte, ni clos : il pese encore en entier.
+  const unsettled = (risks ?? []).filter(
+    (r) => !['mitigated', 'closed', 'accepted'].includes(r.status),
+  )
+  const unsettledRisks = unsettled.length
+  const unassessedRisks = unsettled.filter((r) => r.residual_level === null).length
+
   const people = (memberships ?? [])
     .map((m) => m.user as unknown as { id: string; full_name: string | null; email: string; job_title: string | null } | null)
     .filter((u): u is NonNullable<typeof u> => Boolean(u))
@@ -217,10 +225,39 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
               ? ` · prochaine revue le ${formatDate(useCase.next_review_at)}`
               : ''}
           </p>
+
+          <dl className="mt-4 grid gap-4 border-t border-ink-100 pt-4 sm:grid-cols-2">
+            <Field label="Processus métier">{useCase.business_process ?? '—'}</Field>
+            <Field label="Bénéfice attendu">{useCase.expected_benefit ?? '—'}</Field>
+            <Field label="Niveau d’autonomie">
+              {AUTONOMY_LABELS[useCase.autonomy_level] ?? useCase.autonomy_level}
+            </Field>
+            <Field label="Criticité">
+              {useCase.criticality ?? 'Non déterminée'}
+            </Field>
+            <Field label="Utilisateurs">{useCase.users_description ?? '—'}</Field>
+            <Field label="Personnes affectées">{useCase.affected_persons ?? '—'}</Field>
+            <Field label="Données">{useCase.data_description ?? '—'}</Field>
+            <Field label="Portée de la décision">{useCase.decision_impact ?? '—'}</Field>
+          </dl>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {useCase.involves_personal_data ? (
+              <Badge tone="warn">Données personnelles</Badge>
+            ) : null}
+            {useCase.involves_vulnerable_persons ? (
+              <Badge tone="stop">Personnes vulnérables</Badge>
+            ) : null}
+          </div>
         </div>
 
         <Card title="Faire évoluer le cas d’usage">
-          <TransitionPanel useCaseId={id} targets={UI_TRANSITIONS[status]} />
+          <TransitionPanel
+            useCaseId={id}
+            targets={UI_TRANSITIONS[status]}
+            unsettledRisks={unsettledRisks}
+            unassessedRisks={unassessedRisks}
+          />
         </Card>
       </div>
 
@@ -248,34 +285,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
                   : null
               }
             />
-            <RiskPanel useCaseId={id} riskCount={risks?.length ?? 0} people={people} />
           </div>
-
-          <Disclosure
-            title="Fiche du cas d’usage"
-            summary="Finalité, utilisateurs, données, portée de la décision"
-          >
-            <dl className="grid gap-4 sm:grid-cols-2">
-              <Field label="Processus métier">{useCase.business_process ?? '—'}</Field>
-              <Field label="Bénéfice attendu">{useCase.expected_benefit ?? '—'}</Field>
-              <Field label="Niveau d'autonomie">
-                {AUTONOMY_LABELS[useCase.autonomy_level] ?? useCase.autonomy_level}
-              </Field>
-              <Field label="Criticité">{useCase.criticality ?? 'Non déterminée'}</Field>
-              <Field label="Utilisateurs">{useCase.users_description ?? '—'}</Field>
-              <Field label="Personnes affectées">{useCase.affected_persons ?? '—'}</Field>
-              <Field label="Données">{useCase.data_description ?? '—'}</Field>
-              <Field label="Portée de la décision">{useCase.decision_impact ?? '—'}</Field>
-            </dl>
-            <div className="mt-4 flex gap-2">
-              {useCase.involves_personal_data ? (
-                <Badge tone="warn">Données personnelles</Badge>
-              ) : null}
-              {useCase.involves_vulnerable_persons ? (
-                <Badge tone="stop">Personnes vulnérables</Badge>
-              ) : null}
-            </div>
-          </Disclosure>
 
           <Disclosure
             title="Pré-classification réglementaire"
@@ -309,7 +319,12 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             )}
           </Disclosure>
 
-          <Card title="Risques" subtitle={`${risks?.length ?? 0} risque(s)`}>
+          <Card
+            title="Risques"
+            subtitle={`${risks?.length ?? 0} risque(s)`}
+            tone={unsettledRisks ? 'warn' : 'neutral'}
+            action={<RiskPanel useCaseId={id} riskCount={risks?.length ?? 0} people={people} />}
+          >
             {risks?.length ? (
               <ul className="divide-y divide-ink-100">
                 {risks.map((risk) => (

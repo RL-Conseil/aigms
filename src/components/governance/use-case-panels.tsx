@@ -9,6 +9,7 @@ import {
   type FormState,
 } from '@/lib/actions/governance'
 import { Disclosure, Field, FIELD, FormFeedback, Submit } from '@/components/forms'
+import { Modal } from '@/components/modal'
 
 /**
  * Etapes de gouvernance saisies depuis la fiche du cas d'usage.
@@ -316,14 +317,17 @@ export function RiskPanel({
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(createRisk, null)
   const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
 
+  // Le volet deplie occupait la colonne au-dessus de la liste des risques :
+  // on lisait le formulaire avant ce qu'il complete. Un risque n'existe que
+  // par son cas d'usage, il se saisit donc SANS quitter la page — mais a la
+  // demande, et depuis la zone qu'il alimente.
   return (
-    <Disclosure
+    <Modal
+      trigger={riskCount ? 'Identifier un risque' : 'Identifier le premier risque'}
       title="Identifier un risque"
-      summary={riskCount ? `${riskCount} risque(s) déjà identifié(s)` : 'À faire — le passage en revue exige au moins un risque'}
-      tone={riskCount ? 'done' : 'todo'}
-      defaultOpen={riskCount === 0}
-      stayOpen={Boolean(state)}
+      description="Le niveau se calcule ; il ne se saisit pas."
     >
+      {() => (
       <form action={formAction} className="flex flex-col gap-4">
         <input type="hidden" name="useCaseId" value={useCaseId} />
 
@@ -416,7 +420,8 @@ export function RiskPanel({
         <FormFeedback state={state} />
         <Submit pending={pending} idle="Enregistrer le risque" />
       </form>
-    </Disclosure>
+      )}
+    </Modal>
   )
 }
 

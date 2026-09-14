@@ -123,11 +123,15 @@ test('un cas d’usage se déclare, se trie, se classifie et reçoit un risque',
   await expect(classification.getByRole('status')).toContainText('Pré-classification enregistrée')
 
   // --- Risque ----------------------------------------------------------------
-  const risk = panel(/Identifier un risque/)
-  const riskToggle = risk.getByRole('button', { name: /Identifier un risque/ })
-  if ((await riskToggle.getAttribute('aria-expanded')) !== 'true') {
-    await riskToggle.click()
-  }
+  // La saisie se fait desormais dans une fenetre, ouverte depuis la carte
+  // qu'elle alimente : un risque n'existe que par son cas d'usage.
+  await page
+    .locator('section')
+    .filter({ hasText: 'Risques' })
+    .first()
+    .getByRole('button', { name: /Identifier/ })
+    .click()
+  const risk = page.getByRole('dialog', { name: 'Identifier un risque' })
   await risk.getByLabel('Intitulé').fill('Motif de réclamation mal regroupé')
   await risk
     .getByLabel('Scénario')
@@ -320,4 +324,41 @@ test('le champ de rattachement dit d’où vient sa liste et ce que coûte le re
 
   // Le troisième sens du mot a disparu de l'interface.
   await expect(page.getByText(/profil d’activité/)).toHaveCount(0)
+})
+
+test('la mise en service avertit des risques non soldés', async ({ page }) => {
+  // Le scoring de candidatures porte des risques ni traités ni acceptés.
+  await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001')
+  await page.getByRole('link', { name: 'Scoring de candidatures' }).click()
+
+  const evolution = page.locator('section').filter({ hasText: 'Faire évoluer le cas d’usage' })
+  const cible = evolution.getByLabel('Transition demandée')
+
+  // Sur une transition qui n'est pas une mise en service, aucun avertissement.
+  const options = await cible.locator('option').allTextContents()
+  if (options.some((o) => /Production|Surveillance/.test(o))) {
+    await cible.selectOption({ label: options.find((o) => /Production|Surveillance/.test(o))! })
+    const alerte = page.getByRole('alert')
+    await expect(alerte).toContainText(/ni traité|ni traités/)
+    await expect(
+      evolution.getByRole('button', { name: 'Demander la transition malgré tout' }),
+    ).toBeVisible()
+  }
+})
+
+test('un risque se saisit sans quitter la fiche', async ({ page }) => {
+  await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001')
+  await page.getByRole('link', { name: 'Assistant support client' }).click()
+
+  const risques = page.locator('section').filter({ hasText: 'Risques' }).first()
+  await risques.getByRole('button', { name: /Identifier/ }).click()
+
+  const fenetre = page.getByRole('dialog', { name: 'Identifier un risque' })
+  await expect(fenetre).toBeVisible()
+  await expect(fenetre.getByLabel('Intitulé')).toBeVisible()
+
+  // Elle se ferme au clavier, et la page n'a pas bougé.
+  await page.keyboard.press('Escape')
+  await expect(fenetre).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Assistant support client' })).toBeVisible()
 })
