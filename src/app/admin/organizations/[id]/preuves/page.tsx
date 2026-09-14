@@ -262,9 +262,9 @@ export default async function EvidencePage({
               <p>
                 <strong className="font-medium text-ink-800">D’où vient le classement des
                 typologies.</strong> Les huit typologies de preuves techniques proviennent d’une
-                matrice interne croisant chacune avec quatre profils d’activité au sens d’ISO/IEC
-                42001 — hébergeur, développeur, intégrateur, utilisateur métier. Le profil déclaré
-                sur la fiche de l’organisation détermine la criticité de chaque typologie, et donc
+                matrice interne croisant chacune avec les quatre rôles vis-à-vis de l’IA au sens
+                d’ISO/IEC 42001 — hébergeur, développeur, intégrateur, utilisateur métier. Le rôle
+                déclaré sur la fiche de l’organisation détermine la criticité de chaque typologie, et donc
                 l’ordre dans lequel elles vous sont proposées. Un hébergeur démontre l’isolation de
                 ses calculs ; il n’a rien à dire sur l’équité d’un modèle qu’il n’entraîne pas.
               </p>

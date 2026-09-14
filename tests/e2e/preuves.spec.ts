@@ -107,12 +107,12 @@ test('le registre pointe les contrôles qu’aucune preuve ne démontre', async 
   await expect(page.getByLabel('Contrôle démontré')).toHaveValue(cible!)
 })
 
-test('la matrice des preuves oriente le dépôt selon le profil d’activité', async ({ page }) => {
+test('la matrice des preuves oriente le dépôt selon le rôle vis-à-vis de l’IA', async ({ page }) => {
   await page.goto(`/admin/organizations/${ORG}/preuves`)
 
   // La matrice, classee par criticite pour le profil de l'organisation.
   const matrice = page.locator('section').filter({ hasText: 'Preuves attendues' })
-  await expect(matrice.getByText(/Profil « Hébergeur \/ Infrastructure »/)).toBeVisible()
+  await expect(matrice.getByText(/Rôle « Hébergeur \/ Infrastructure »/)).toBeVisible()
 
   // Les references que le referentiel charge ne porte pas sont nommees.
   await matrice.getByText(/Références que le référentiel chargé ne porte pas/).click()
@@ -165,7 +165,9 @@ test('le registre s’explique sans quitter la page', async ({ page }) => {
   const note = page.getByRole('dialog', { name: 'Comment lire ce registre' })
 
   // D'ou vient le classement des typologies, et d'ou viennent les controles.
-  await expect(note.getByText(/quatre profils d’activité au sens d’ISO\/IEC\s+42001/)).toBeVisible()
+  await expect(
+    note.getByText(/quatre rôles vis-à-vis de l’IA au sens\s+d’ISO\/IEC 42001/),
+  ).toBeVisible()
   await expect(note.getByText(/soit\s+créés à la main, soit importés depuis un catalogue publié/)).toBeVisible()
   await expect(note.getByText(/jamais deux fois le même/)).toBeVisible()
 

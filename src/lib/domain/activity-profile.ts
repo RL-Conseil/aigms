@@ -78,7 +78,7 @@ export const REGIME_LABELS: Record<string, { label: string; expectation: string 
   exclusion: {
     label: 'Exclusion motivée',
     expectation:
-      'Le profil d’activité ne rencontre pas ce risque : écrire pourquoi ce contrôle ne concerne pas l’organisation.',
+      'Le rôle exercé vis-à-vis de l’IA ne rencontre pas ce risque : écrire pourquoi ce contrôle ne concerne pas l’organisation.',
   },
   unspecified: {
     label: 'Non couverte par la matrice',

@@ -94,7 +94,7 @@ export function SoaDecisionForm({
           rows={3}
           required
           defaultValue={currentJustification ?? ''}
-          placeholder="Pourquoi cette exigence s’applique — ou pourquoi le profil d’activité ne la rencontre pas."
+          placeholder="Pourquoi cette exigence s’applique — ou pourquoi le rôle exercé vis-à-vis de l’IA ne la rencontre pas."
           className={`${FIELD} text-sm`}
         />
 

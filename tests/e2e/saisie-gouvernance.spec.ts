@@ -86,7 +86,7 @@ test('un cas d’usage se déclare, se trie, se classifie et reçoit un risque',
     .getByLabel('Finalité')
     .fill('Regrouper les réclamations par motif afin d’orienter les actions correctives du support.')
   await page
-    .getByLabel('Activité servie')
+    .getByLabel('Activité du processus servie')
     .selectOption({ label: 'Servir le client › Gestion des réclamations' })
   await page.getByLabel('Propriétaire').selectOption({ index: 1 })
   await page.getByLabel('Responsable redevable').selectOption({ index: 1 })
@@ -180,7 +180,7 @@ test('la carte annote chaque activité et son panneau détaille ce qui s’y jou
   // Le panneau propose de déclarer un usage sur cette activité précise.
   await page.getByRole('link', { name: '+ Déclarer' }).click()
   await expect(page.getByRole('heading', { name: 'Déclarer un cas d’usage' })).toBeVisible()
-  await expect(page.getByLabel('Activité servie')).toHaveValue(
+  await expect(page.getByLabel('Activité du processus servie')).toHaveValue(
     'c2000000-0000-4000-8000-000000000003',
   )
 })
@@ -301,4 +301,23 @@ test('la carte explique ses quatre lectures', async ({ page }) => {
 
   await page.keyboard.press('Escape')
   await expect(note).toHaveCount(0)
+})
+
+test('le champ de rattachement dit d’où vient sa liste et ce que coûte le refus', async ({
+  page,
+}) => {
+  await page.goto(
+    '/admin/organizations/cccccccc-0000-4000-8000-000000000001/cas-d-usage/nouveau',
+  )
+
+  // « Activité servie » se lisait comme « branche d'activité ». Le libellé
+  // nomme desormais sa provenance.
+  await expect(page.getByLabel('Activité du processus servie')).toBeVisible()
+  await expect(page.getByText(/au format Processus › Activité/)).toBeVisible()
+
+  // Le refus de rattacher a un coût, et l'écran le dit.
+  await expect(page.getByText(/n’apparaîtra ni dans la carte des processus/)).toBeVisible()
+
+  // Le troisième sens du mot a disparu de l'interface.
+  await expect(page.getByText(/profil d’activité/)).toHaveCount(0)
 })
