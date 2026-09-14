@@ -23,8 +23,13 @@ test('une preuve se dépose, reste à valider, puis se valide nominativement', a
   await page.goto(`/admin/organizations/${ORG}/preuves`)
   await expect(page.getByRole('heading', { name: 'Registre des preuves' })).toBeVisible()
 
+  // Le depot a sa propre page : on consulte un registre cent fois pour y
+  // deposer une fois.
+  await page.getByRole('link', { name: 'Déposer une preuve' }).click()
+  await expect(page).toHaveURL(/preuves\/deposer/)
+
   const titre = `Rapport de test de biais ${Date.now()}`
-  const depot = page.locator('section').filter({ hasText: 'Déposer une preuve' })
+  const depot = page.locator('section').filter({ hasText: 'La pièce et ce qu’elle démontre' })
 
   await depot.getByLabel('Ce que la preuve démontre').fill(titre)
   await depot.getByLabel('Origine').fill('Recette applicative')
@@ -42,8 +47,9 @@ test('une preuve se dépose, reste à valider, puis se valide nominativement', a
 
   await depot.getByRole('button', { name: 'Déposer la preuve' }).click()
 
-  await expect(page.getByText(/un dépôt n’est pas une validation/i)).toBeVisible()
+  await expect(page.getByRole('status')).toContainText('déposée', { timeout: 10_000 })
 
+  await page.goto(`/admin/organizations/${ORG}/preuves`)
   const ligne = page.locator('li').filter({ hasText: titre }).first()
   await expect(ligne.getByText('À valider', { exact: true })).toBeVisible()
   await expect(ligne.getByText(/^sha256:/)).toBeVisible()
@@ -66,9 +72,9 @@ test('une preuve se dépose, reste à valider, puis se valide nominativement', a
 })
 
 test('une preuve sans pièce ni lien est refusée', async ({ page }) => {
-  await page.goto(`/admin/organizations/${ORG}/preuves`)
+  await page.goto(`/admin/organizations/${ORG}/preuves/deposer`)
 
-  const depot = page.locator('section').filter({ hasText: 'Déposer une preuve' })
+  const depot = page.locator('section').filter({ hasText: 'La pièce et ce qu’elle démontre' })
   await depot.getByLabel('Ce que la preuve démontre').fill('Preuve sans rien derrière')
   await depot.getByLabel('Origine').fill('Néant')
   await depot.getByRole('button', { name: 'Déposer la preuve' }).click()
@@ -92,11 +98,12 @@ test('le registre pointe les contrôles qu’aucune preuve ne démontre', async 
   }
 
   // Le prechargement du controle, lui, se verifie sans dependre de cet etat.
+  await page.goto(`/admin/organizations/${ORG}/preuves/deposer`)
   const selection = page.getByLabel('Contrôle démontré')
   const cible = await selection.locator('option').nth(1).getAttribute('value')
   expect(cible).toBeTruthy()
 
-  await page.goto(`/admin/organizations/${ORG}/preuves?controle=${cible}`)
+  await page.goto(`/admin/organizations/${ORG}/preuves/deposer?controle=${cible}`)
   await expect(page.getByLabel('Contrôle démontré')).toHaveValue(cible!)
 })
 
@@ -107,16 +114,18 @@ test('la matrice des preuves oriente le dépôt selon le profil d’activité', 
   const matrice = page.locator('section').filter({ hasText: 'Preuves attendues' })
   await expect(matrice.getByText(/Profil « Hébergeur \/ Infrastructure »/)).toBeVisible()
 
+  // Les references que le referentiel charge ne porte pas sont nommees.
+  await matrice.getByText(/Références que le référentiel chargé ne porte pas/).click()
+  await expect(matrice.getByText(/A\.10\.5/)).toBeVisible()
+
   // Choisir une typologie affiche ce qu'il faut consigner et le livrable attendu.
-  const depot = page.locator('section').filter({ hasText: 'Déposer une preuve' })
+  await page.goto(`/admin/organizations/${ORG}/preuves/deposer`)
+  const depot = page.locator('section').filter({ hasText: 'La pièce et ce qu’elle démontre' })
   await depot.getByLabel('Typologie de preuve').selectOption({ index: 1 })
 
   await expect(depot.getByText('À consigner')).toBeVisible()
   await expect(depot.getByText('Livrables qui font preuve')).toBeVisible()
 
-  // Les references que le referentiel charge ne porte pas sont nommees.
-  await matrice.getByText(/Références que le référentiel chargé ne porte pas/).click()
-  await expect(matrice.getByText(/A\.10\.5/)).toBeVisible()
 })
 
 test('le registre se restreint par état et par typologie', async ({ page }) => {
@@ -147,4 +156,19 @@ test('le registre se restreint par état et par typologie', async ({ page }) => 
   await expect(vide.getByText('Aucune pièce dans ce filtre.')).toBeVisible()
   await vide.getByRole('link', { name: 'Revenir au registre complet' }).click()
   await expect(page).toHaveURL(new RegExp(`${ORG}/preuves$`))
+})
+
+test('le registre s’explique sans quitter la page', async ({ page }) => {
+  await page.goto(`/admin/organizations/${ORG}/preuves`)
+
+  await page.getByRole('button', { name: 'Comment lire ce registre' }).click()
+  const note = page.getByRole('dialog', { name: 'Comment lire ce registre' })
+
+  // D'ou vient le classement des typologies, et d'ou viennent les controles.
+  await expect(note.getByText(/quatre profils d’activité au sens d’ISO\/IEC\s+42001/)).toBeVisible()
+  await expect(note.getByText(/soit\s+créés à la main, soit importés depuis un catalogue publié/)).toBeVisible()
+  await expect(note.getByText(/jamais deux fois le même/)).toBeVisible()
+
+  await page.keyboard.press('Escape')
+  await expect(note).toHaveCount(0)
 })
