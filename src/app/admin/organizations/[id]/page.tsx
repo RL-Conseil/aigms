@@ -84,7 +84,7 @@ export default async function OrganizationPage({
 
   return (
     <Shell
-      breadcrumb={[{ href: '/admin', label: 'Organisations' }]}
+      breadcrumb={[{ href: '/admin/organizations', label: 'Organisations' }]}
       title={organization.name}
       subtitle={[
         `${organization.business_ref} — ${organization.legal_name ?? organization.name}`,

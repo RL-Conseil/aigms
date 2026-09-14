@@ -61,7 +61,7 @@ export default async function DepositEvidencePage({
   return (
     <Shell
       breadcrumb={[
-        { href: '/admin', label: 'Organisations' },
+        { href: '/admin/organizations', label: 'Organisations' },
         { href: `/admin/organizations/${id}`, label: organization.name },
         { href: `/admin/organizations/${id}/preuves`, label: 'Preuves' },
       ]}
