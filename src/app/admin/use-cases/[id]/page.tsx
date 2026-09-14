@@ -6,6 +6,17 @@ import { Disclosure } from '@/components/forms'
 import { GateChecklist } from '@/components/gate-checklist'
 import { Lifecycle } from '@/components/lifecycle'
 import { ApplicabilityForm, RiskTreatmentForm } from '@/components/governance/control-forms'
+import {
+  ActionNote,
+  AuditNote,
+  ChangeNote,
+  ControlNote,
+  DecisionNote,
+  GateNote,
+  ImpactNote,
+  OversightNote,
+  RiskNote,
+} from '@/components/governance/rubric-notes'
 import { TransitionPanel } from '@/components/transition-panel'
 import { UI_TRANSITIONS } from '@/lib/domain/transitions'
 import {
@@ -335,7 +346,12 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             title="Risques"
             subtitle={`${risks?.length ?? 0} risque(s)`}
             tone={unsettledRisks ? 'warn' : 'neutral'}
-            action={<RiskPanel useCaseId={id} riskCount={risks?.length ?? 0} people={people} />}
+            action={
+              <span className="flex items-center gap-2">
+                <RiskPanel useCaseId={id} riskCount={risks?.length ?? 0} people={people} />
+                <RiskNote />
+              </span>
+            }
           >
             {risks?.length ? (
               <ul className="divide-y divide-ink-100">
@@ -394,6 +410,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
           <Card
             title="Évaluation d'impact"
             subtitle="Effets sur les personnes, les groupes et la société (ISO/IEC 42005)."
+            action={<ImpactNote />}
           >
             {impacts?.length ? (
               <ul className="space-y-4">
@@ -422,6 +439,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
 
           <Disclosure
             title="Supervision humaine"
+            aside={<OversightNote />}
             summary="Déclencheurs d’intervention, procédures d’arrêt et de reprise"
           >
             {oversight ? (
@@ -447,7 +465,11 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             )}
           </Disclosure>
 
-          <Card title="Décisions de gouvernance" subtitle={`${decisions?.length ?? 0} décision(s)`}>
+          <Card
+            title="Décisions de gouvernance"
+            subtitle={`${decisions?.length ?? 0} décision(s)`}
+            action={<DecisionNote />}
+          >
             {decisions?.length ? (
               <ul className="divide-y divide-ink-100">
                 {decisions.map((d) => (
@@ -493,6 +515,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
 
           <Disclosure
             title="Changements et réévaluations"
+            aside={<ChangeNote />}
             summary="Ce qui a rouvert l’évaluation, et pourquoi"
           >
             {changes?.length ? (
@@ -546,6 +569,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
         <div className="space-y-5">
           <Disclosure
             title="Gate production"
+            aside={<GateNote />}
             summary={
               gate
                 ? gate.satisfied
@@ -561,6 +585,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
 
           <Disclosure
             title="Contrôles affectés"
+            aside={<ControlNote />}
             summary={`${controls?.length ?? 0} contrôle(s) statué(s) sur ${controlChoices.length} au référentiel`}
             tone={controls?.length ? 'neutral' : 'todo'}
           >
@@ -602,7 +627,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             )}
           </Disclosure>
 
-          <Card title="Actions">
+          <Card title="Actions" action={<ActionNote />}>
             {actions?.length ? (
               <ul className="space-y-2">
                 {actions.map((a) => (
@@ -624,6 +649,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
 
           <Disclosure
             title="Journal d’audit"
+            aside={<AuditNote />}
             summary="Trace immuable des opérations sensibles"
           >
             {timeline?.length ? (
