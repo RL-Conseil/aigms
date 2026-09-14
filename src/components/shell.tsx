@@ -63,7 +63,12 @@ export async function Shell({
   organization,
   children,
 }: {
-  breadcrumb?: { href: string; label: string }[]
+  /**
+   * Fil d'Ariane. Un element sans `href` est la page courante : elle se nomme
+   * mais ne se clique pas — un lien vers soi-meme n'apprend rien et se teste
+   * mal.
+   */
+  breadcrumb?: { href?: string; label: string }[]
   title: string
   subtitle?: string
   actions?: ReactNode
@@ -206,11 +211,17 @@ export async function Shell({
         {breadcrumb?.length ? (
           <nav aria-label="Fil d'Ariane" className="mb-3 text-xs text-ink-400">
             {breadcrumb.map((item, index) => (
-              <span key={item.href}>
+              <span key={item.href ?? item.label}>
                 {index > 0 ? <span className="px-1.5">/</span> : null}
-                <Link href={item.href} className="hover:text-ink-600">
-                  {item.label}
-                </Link>
+                {item.href ? (
+                  <Link href={item.href} className="hover:text-ink-600">
+                    {item.label}
+                  </Link>
+                ) : (
+                  <span aria-current="page" className="text-ink-600">
+                    {item.label}
+                  </span>
+                )}
               </span>
             ))}
           </nav>

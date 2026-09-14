@@ -160,3 +160,27 @@ test('la frise marque les jalons obligatoires et porte l’action qui la fait av
   await controles.getByRole('button').click()
   await expect(controles.getByText('CTL-01')).toBeVisible()
 })
+
+test('le fil d’Ariane d’un cas d’usage ramène à son organisation', async ({ page }) => {
+  await page.goto('/admin/organizations')
+  await page.getByRole('link', { name: 'IzarLink Demo' }).click()
+  await page.getByRole('link', { name: 'Agent de planification des tournées' }).click()
+
+  const fil = page.getByRole('navigation', { name: "Fil d'Ariane" })
+
+  // La page courante se nomme, mais ne se clique pas.
+  await expect(fil).toContainText('Agent de planification des tournées')
+  await expect(
+    fil.getByRole('link', { name: 'Agent de planification des tournées' }),
+  ).toHaveCount(0)
+
+  // Le lien vers l'organisation menait sur un 404 : il lui manquait /admin.
+  await fil.getByRole('link', { name: 'IzarLink Demo' }).click()
+  await expect(page).toHaveURL(/\/admin\/organizations\/cccccccc/)
+  await expect(page.getByRole('heading', { name: 'IzarLink Demo' })).toBeVisible()
+
+  // Et « Organisations » mène bien à la liste, comme son libellé l'annonce.
+  await page.getByRole('navigation', { name: "Fil d'Ariane" }).getByRole('link', { name: 'Organisations' }).click()
+  await expect(page).toHaveURL(/\/admin\/organizations$/)
+  await expect(page.getByRole('heading', { name: 'Organisations gérées' })).toBeVisible()
+})

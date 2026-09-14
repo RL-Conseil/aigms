@@ -22,7 +22,7 @@ export default async function NewOrganizationPage() {
 
   return (
     <Shell
-      breadcrumb={[{ href: '/admin', label: 'Organisations' }]}
+      breadcrumb={[{ href: '/admin/organizations', label: 'Organisations' }]}
       title="Nouvelle organisation"
       subtitle="L’organisation entre sur la plateforme. Sa gouvernance sera portée par les rôles que vous attribuerez ensuite."
     >
