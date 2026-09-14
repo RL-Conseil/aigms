@@ -98,9 +98,11 @@ test('la Déclaration d’Applicabilité rend compte de la couverture ISO 42001'
   await expect(page.getByText('Couverte et prouvée').first()).toBeVisible()
   await expect(page.getByText('Non couverte').first()).toBeVisible()
 
-  // La precaution de non-reproduction du texte normatif est affichee.
+  // La mise en garde et la precaution de non-reproduction du texte normatif
+  // vivent desormais derriere l'icone, a cote du titre.
+  await page.getByRole('button', { name: 'Ce que cette Déclaration est, et n’est pas' }).click()
+  await expect(page.getByText(/C’est un catalogue dans lequel on puise/)).toBeVisible()
   await expect(page.getByText(/ne reproduisent pas le texte de la norme/)).toBeVisible()
-  await expect(page.getByText('L’Annexe A n’est pas une liste à cocher.')).toBeVisible()
 })
 
 test('la fiche d’un cas d’usage ouvre sur ce qu’il y a à faire', async ({ page }) => {
