@@ -7,11 +7,11 @@ import { Disclosure } from '@/components/forms'
 import {
   EvidenceAttachForm,
   EvidenceReviewForm,
-  EvidenceUploadForm,
   type ControlChoice,
   type TypologyChoice,
 } from '@/components/governance/evidence-forms'
 import { SegmentedFilter } from '@/components/governance/segmented-filter'
+import { InfoTip } from '@/components/info-tip'
 import {
   EvidenceMatrixCard,
   type MatrixGap,
@@ -239,9 +239,54 @@ export default async function EvidencePage({
       title="Preuves"
       subtitle="Ce que l’organisation peut produire pour démontrer que ses contrôles tiennent."
       actions={
-        <Badge tone={toValidate ? 'warn' : 'neutral'}>
-          {rows.length} pièce{rows.length > 1 ? 's' : ''}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Badge tone={toValidate ? 'warn' : 'neutral'}>
+            {rows.length} pièce{rows.length > 1 ? 's' : ''}
+          </Badge>
+          <Link
+            href={`/admin/organizations/${id}/preuves/deposer`}
+            className="rounded-md bg-night-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-night-800"
+          >
+            Déposer une preuve
+          </Link>
+          <InfoTip label="Comment lire ce registre" title="Ce que cette page présente">
+            <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
+              <p>
+                Le registre rassemble les pièces que l’organisation peut produire pour démontrer que
+                ses contrôles tiennent. Une preuve n’est comptée comme couvrante que si elle est
+                <strong className="font-medium text-ink-800"> validée</strong> et
+                <strong className="font-medium text-ink-800"> non échue</strong> : c’est ce qu’un
+                auditeur vient vérifier, et c’est le même seuil que le taux de couverture.
+              </p>
+
+              <p>
+                <strong className="font-medium text-ink-800">D’où vient le classement des
+                typologies.</strong> Les huit typologies de preuves techniques proviennent d’une
+                matrice interne croisant chacune avec quatre profils d’activité au sens d’ISO/IEC
+                42001 — hébergeur, développeur, intégrateur, utilisateur métier. Le profil déclaré
+                sur la fiche de l’organisation détermine la criticité de chaque typologie, et donc
+                l’ordre dans lequel elles vous sont proposées. Un hébergeur démontre l’isolation de
+                ses calculs ; il n’a rien à dire sur l’équité d’un modèle qu’il n’entraîne pas.
+              </p>
+
+              <p>
+                <strong className="font-medium text-ink-800">D’où viennent les contrôles.</strong>
+                {' '}Ce sont ceux de l’organisation, déclarés dans son propre référentiel — soit
+                créés à la main, soit importés depuis un catalogue publié. La liste proposée au
+                rattachement ne présente que ceux qui ne sont pas déjà liés à la pièce : une preuve
+                sert souvent plusieurs contrôles, jamais deux fois le même.
+              </p>
+
+              <p>
+                <strong className="font-medium text-ink-800">Le rattachement.</strong> Il déclare
+                qu’une pièce démontre un contrôle. Il se fait au dépôt, ou après coup depuis la
+                ligne de la preuve — on découvre souvent en relisant qu’un rapport sert ailleurs.
+                Un contrôle opérant sans preuve valide reste signalé jusqu’à ce qu’une pièce lui
+                soit rattachée.
+              </p>
+            </div>
+          </InfoTip>
+        </div>
       }
     >
       <div className="grid gap-5 lg:grid-cols-5">
@@ -421,18 +466,6 @@ export default async function EvidencePage({
 
         {/* ---------- Dépôt et manques ---------- */}
         <div className="flex flex-col gap-5 lg:col-span-2">
-          <Card
-            title="Déposer une preuve"
-            subtitle="Un dépôt n’est pas une validation : la pièce arrive « à valider »."
-          >
-            <EvidenceUploadForm
-              organizationId={id}
-              controls={choices}
-              typologies={typologies}
-              defaultControlId={controle}
-            />
-          </Card>
-
           <EvidenceMatrixCard rows={coverage} profile={profile} gaps={gaps} />
 
           <Card
@@ -444,7 +477,7 @@ export default async function EvidencePage({
                 {uncovered.map((control) => (
                   <li key={control.id} className="flex items-baseline justify-between gap-2">
                     <Link
-                      href={`/admin/organizations/${id}/preuves?controle=${control.id}`}
+                      href={`/admin/organizations/${id}/preuves/deposer?controle=${control.id}`}
                       className="text-sm text-brand-600 hover:underline"
                     >
                       <span className="mr-2 font-mono text-xs text-ink-400">{control.code}</span>

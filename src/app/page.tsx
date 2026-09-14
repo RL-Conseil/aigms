@@ -104,11 +104,18 @@ export default function HomePage() {
           ))}
         </dl>
 
-        <p className="border-t border-white/10 pt-8 text-[13px] leading-relaxed text-ink-400">
-          AIGMS aide au cadrage, à la pré-classification, à la documentation et à la preuve. Il ne
-          remplace ni un avis juridique, ni la décision d’un responsable de risque, ni un audit de
-          certification, ni une autorité compétente.
-        </p>
+        <div className="flex flex-col gap-3 border-t border-white/10 pt-8 text-[13px] leading-relaxed text-ink-400">
+          <p>
+            AIGMS se travaille sur un écran de bureau ou une tablette : cartes, matrices et
+            déclarations demandent de la largeur. L’application s’ouvre sur un téléphone, mais on
+            n’y instruit pas un dossier.
+          </p>
+          <p>
+            Il aide au cadrage, à la pré-classification, à la documentation et à la preuve. Il ne
+            remplace ni un avis juridique, ni la décision d’un responsable de risque, ni un audit
+            de certification, ni une autorité compétente.
+          </p>
+        </div>
       </aside>
     </main>
   )

@@ -188,6 +188,16 @@ export async function Shell({
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-8">
+        {/*
+          Averti seulement sur ecran etroit : une mention permanente serait du
+          bruit pour ceux qui sont deja au bon endroit. L'application n'est pas
+          bloquee pour autant — consulter depuis un telephone reste legitime.
+        */}
+        <p className="mb-5 rounded-md border border-warn-600/25 bg-warn-600/5 px-4 py-3 text-[13px] leading-relaxed text-ink-700 sm:hidden">
+          Cet écran est étroit pour AIGMS. Cartes, matrices et déclarations se travaillent sur un
+          poste de bureau ou une tablette ; ici, la consultation passe, la saisie sera inconfortable.
+        </p>
+
         {breadcrumb?.length ? (
           <nav aria-label="Fil d'Ariane" className="mb-3 text-xs text-ink-400">
             {breadcrumb.map((item, index) => (

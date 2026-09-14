@@ -36,6 +36,11 @@ test('la cartographie montre les processus, activités et usages rattachés', as
 test('un processus et une activité se créent depuis la carte', async ({ page }) => {
   await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001/processus')
 
+  // Les formulaires ont leur page : le referentiel de processus se decrit une
+  // fois, il n'a pas a occuper la colonne de detail en permanence.
+  await page.getByRole('link', { name: 'Ajouter un processus' }).click()
+  await expect(page).toHaveURL(/processus\/nouveau/)
+
   const processName = `Acheter ${Date.now()}`
   await page.getByLabel('Nom du processus').fill(processName)
   await page.getByLabel('Code').fill('ACH')
@@ -43,15 +48,23 @@ test('un processus et une activité se créent depuis la carte', async ({ page }
   await page.getByRole('button', { name: 'Créer le processus' }).click()
 
   await expect(page.getByRole('status')).toContainText(processName)
+
+  await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001/processus')
   await expect(page.getByRole('heading', { name: new RegExp(processName) })).toBeVisible({
     timeout: 10_000,
   })
+
+  await page.getByRole('link', { name: 'Ajouter une activité' }).first().click()
+  await expect(page).toHaveURL(/processus\/activite/)
 
   const activityName = `Sélection des fournisseurs ${Date.now()}`
   await page.getByLabel('Processus de rattachement').selectOption({ label: processName })
   await page.getByLabel('Nom de l’activité').fill(activityName)
   await page.getByRole('button', { name: 'Créer l’activité' }).click()
 
+  await expect(page.getByRole('status')).toContainText(activityName, { timeout: 10_000 })
+
+  await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001/processus')
   await expect(page.getByRole('listitem').filter({ hasText: activityName }).first()).toBeVisible({
     timeout: 10_000,
   })
@@ -271,4 +284,19 @@ test('la navigation porte l’avancement et les retards', async ({ page }) => {
     'aria-current',
     'page',
   )
+})
+
+test('la carte explique ses quatre lectures', async ({ page }) => {
+  await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001/processus')
+
+  await page.getByRole('button', { name: 'Comment lire cette carte' }).click()
+  const note = page.getByRole('dialog', { name: 'Comment lire cette carte' })
+
+  await expect(note.getByText(/opérant.*et.*prouvé/s)).toBeVisible()
+  await expect(note.getByText(/Elle compte les risques.*ouverts.*pas le total/s)).toBeVisible()
+  await expect(note.getByText(/un contrôle partagé entre plusieurs cas d’usage/)).toBeVisible()
+  await expect(note.getByText(/Les cases vides comptent autant que les autres/)).toBeVisible()
+
+  await page.keyboard.press('Escape')
+  await expect(note).toHaveCount(0)
 })

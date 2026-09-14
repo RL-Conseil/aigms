@@ -231,6 +231,47 @@ Un compteur à zéro reste affiché dans un filtre, contrairement aux pastilles 
 menu : savoir qu'une catégorie est vide **est** l'information, c'est ce qui évite
 de cliquer pour le découvrir.
 
+### La saisie quitte les écrans de consultation
+
+Sixième volet. Trois formulaires occupaient en permanence une colonne d'écrans
+qu'on vient consulter : le dépôt d'une preuve, l'ajout d'un processus, l'ajout
+d'une activité. On consulte un registre cent fois pour y déposer une fois, et
+on décrit un référentiel de processus une fois puis on l'amende rarement.
+
+Chacun a désormais sa page :
+
+| Page | Depuis |
+|---|---|
+| `/preuves/deposer` | bouton « Déposer une preuve », ou un contrôle démuni |
+| `/processus/nouveau` | carte, encart « Compléter la carte » |
+| `/processus/activite` | idem, ou un processus sans activité |
+
+**Une page plutôt qu'une fenêtre modale.** C'est déjà le motif de la déclaration
+d'un cas d'usage et de la création d'une organisation : un seul motif de saisie
+vaut mieux que deux. Une modale se prête mal à une saisie longue qu'on relit —
+or un processus se nomme une fois et se lit des années.
+
+### Trois écrans s'expliquent eux-mêmes
+
+Les notes `InfoTip` — même icône, même comportement — répondent aux questions
+qu'un nouvel utilisateur pose devant chaque écran :
+
+- **Déclaration d'Applicabilité** : ce que l'Annexe A est, et n'est pas.
+- **Registre des preuves** : le seuil qui compte une preuve comme couvrante, d'où
+  vient le classement des typologies (la matrice croisée avec le profil
+  d'activité déclaré), d'où viennent les contrôles proposés au rattachement, et
+  pourquoi la liste n'offre jamais deux fois le même.
+- **Processus et risques** : ce que chacun des quatre onglets demande au même
+  modèle, et pourquoi les cases vides sont des informations et non des trous.
+
+### Un écran de bureau ou une tablette
+
+Cartes, matrices et déclarations demandent de la largeur. L'accueil l'annonce
+avant la connexion, et l'espace de travail le rappelle **uniquement sur un écran
+étroit** — une mention permanente serait du bruit pour ceux qui sont déjà au bon
+endroit. L'application n'est pas bloquée pour autant : consulter depuis un
+téléphone reste légitime, c'est la saisie qui y est inconfortable.
+
 ## Courrier système
 
 La plateforme dispose d'un unique point d'envoi, `src/lib/email/mailer.ts`,

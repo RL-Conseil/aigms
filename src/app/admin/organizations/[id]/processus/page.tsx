@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty } from '@/components/ui'
-import { ActivityForm, ProcessForm } from '@/components/governance/process-forms'
+import { InfoTip } from '@/components/info-tip'
 import {
   GovernanceHealth,
   Metric,
@@ -96,16 +96,11 @@ export default async function ProcessMapPage({
   const view: ViewKey = VIEWS.some((v) => v.key === vue) ? (vue as ViewKey) : 'arbre'
   const supabase = await createClient()
 
-  const [{ data: organization }, { data: mapRows }, { data: healthData }, { data: processes }] =
+  const [{ data: organization }, { data: mapRows }, { data: healthData }] =
     await Promise.all([
       supabase.from('organization').select('id, name, business_ref').eq('id', id).maybeSingle(),
       supabase.rpc('process_map', { p_organization_id: id }),
       supabase.rpc('governance_health', { p_organization_id: id, p_activity_id: null }),
-      supabase
-        .from('process')
-        .select('id, name')
-        .eq('organization_id', id)
-        .order('display_order'),
     ])
 
   if (!organization) notFound()
@@ -208,6 +203,50 @@ export default async function ProcessMapPage({
           >
             Déclarer un cas d’usage
           </Link>
+          <InfoTip label="Comment lire cette carte" title="Quatre lectures du même modèle">
+            <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
+              <p>
+                Un seul jeu de données, quatre questions. Les onglets ne filtrent pas une liste :
+                ils changent la question posée à la même carte.
+              </p>
+
+              <ul className="flex flex-col gap-2.5">
+                <li>
+                  <strong className="font-medium text-ink-800">Processus</strong> — ce que fait
+                  l’organisation, et où l’IA intervient. L’arbre descend du processus vers ses
+                  activités ; chaque activité annonce ce qui s’y joue, et le panneau de droite
+                  détaille celle qu’on sélectionne.
+                </li>
+                <li>
+                  <strong className="font-medium text-ink-800">Couverture</strong> — ce qui tient
+                  réellement. Un contrôle n’est compté comme couvrant que s’il est
+                  <em> opérant</em> et <em>prouvé</em> par une preuve validée non échue. Un
+                  contrôle déclaré sans preuve ne protège personne, et c’est ce qu’un auditeur
+                  vient vérifier.
+                </li>
+                <li>
+                  <strong className="font-medium text-ink-800">Risques</strong> — la matrice croise
+                  les processus déclarés et les quatre niveaux de risque. Elle compte les risques
+                  <em> ouverts</em>, pas le total : un risque accepté est une décision assumée, avec
+                  un responsable et une date de revue. Le laisser clignoter en rouge reviendrait à
+                  confondre une décision avec une alerte.
+                </li>
+                <li>
+                  <strong className="font-medium text-ink-800">Graphe</strong> — ce qu’une
+                  hiérarchie ne sait pas montrer : un contrôle partagé entre plusieurs cas d’usage,
+                  une preuve mutualisée, un risque dont rien ne redescend vers une preuve. Suivre
+                  un risque met en évidence son chemin, du processus jusqu’à la preuve, et nomme
+                  l’endroit exact où la chaîne rompt.
+                </li>
+              </ul>
+
+              <p className="text-[13px] text-ink-500">
+                Les cases vides comptent autant que les autres : une activité sans usage d’IA
+                déclaré, un processus sans activité, une case de la matrice à zéro sont des
+                informations, pas des trous.
+              </p>
+            </div>
+          </InfoTip>
         </div>
       }
     >
@@ -340,7 +379,14 @@ export default async function ProcessMapPage({
                       <li className="px-5 py-4">
                         <Empty>
                           Aucune activité. Un processus sans activité ne porte aucun usage d’IA
-                          gouvernable.
+                          gouvernable —{' '}
+                          <Link
+                            href={`/admin/organizations/${id}/processus/activite?processus=${process.process_id}`}
+                            className="text-brand-600 hover:underline"
+                          >
+                            en ajouter une
+                          </Link>
+                          .
                         </Empty>
                       </li>
                     ) : null}
@@ -468,12 +514,24 @@ export default async function ProcessMapPage({
                 <GovernanceHealth health={health} />
               </Card>
 
-              <Card title="Ajouter un processus">
-                <ProcessForm organizationId={id} />
-              </Card>
-
-              <Card title="Ajouter une activité">
-                <ActivityForm organizationId={id} processes={processes ?? []} />
+              <Card
+                title="Compléter la carte"
+                subtitle="Le référentiel de processus se décrit une fois, puis s’amende rarement."
+              >
+                <div className="flex flex-wrap gap-3">
+                  <Link
+                    href={`/admin/organizations/${id}/processus/nouveau`}
+                    className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
+                  >
+                    Ajouter un processus
+                  </Link>
+                  <Link
+                    href={`/admin/organizations/${id}/processus/activite`}
+                    className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
+                  >
+                    Ajouter une activité
+                  </Link>
+                </div>
               </Card>
             </>
           )}
