@@ -38,6 +38,17 @@ export const USE_CASE_STATUS_LABELS: Record<UseCaseStatus, string> = {
 }
 
 /** Étapes affichées dans le fil de vie d'un cas d'usage. */
+/**
+ * Jalons obligatoires du cycle de vie.
+ *
+ * Chaque transition est evaluee par `app.evaluate_gate`, mais deux seulement
+ * portent un point de passage substantiel : REVUE exige une pre-classification
+ * et au moins un risque identifie ; PRODUCTION exige huit preconditions, dont
+ * une decision d'autorisation en vigueur. Les distinguer visuellement evite de
+ * decouvrir le refus au moment de le subir.
+ */
+export const GATED_STEPS: UseCaseStatus[] = ['REVIEW', 'PRODUCTION']
+
 export const LIFECYCLE_STEPS: UseCaseStatus[] = [
   'DRAFT',
   'TRIAGE',
