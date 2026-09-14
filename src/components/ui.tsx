@@ -20,19 +20,35 @@ export function Badge({ children, tone = 'neutral' }: { children: ReactNode; ton
   )
 }
 
+/**
+ * Accent lateral d'une carte.
+ *
+ * Il etablit une hierarchie sans deplacer les blocs : ce qui est echu se
+ * distingue de ce qui approche, et une page de six cartes cesse de les
+ * presenter comme egales. Reserve a ce qui appelle une action — un accent
+ * partout ne distingue plus rien.
+ */
+const CARD_ACCENT: Record<'neutral' | 'warn' | 'stop', string> = {
+  neutral: 'border-ink-200',
+  warn: 'border-ink-200 border-l-4 border-l-warn-600',
+  stop: 'border-ink-200 border-l-4 border-l-stop-600',
+}
+
 export function Card({
   title,
   subtitle,
   action,
+  tone = 'neutral',
   children,
 }: {
   title: string
   subtitle?: string
   action?: ReactNode
+  tone?: 'neutral' | 'warn' | 'stop'
   children: ReactNode
 }) {
   return (
-    <section className="rounded-lg border border-ink-200 bg-white">
+    <section className={`rounded-lg border bg-white ${CARD_ACCENT[tone]}`}>
       <header className="flex items-start justify-between gap-4 border-b border-ink-100 px-5 py-3">
         <div>
           <h2 className="text-sm font-semibold text-ink-900">{title}</h2>

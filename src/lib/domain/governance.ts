@@ -161,3 +161,31 @@ export const TREATMENT_STATUS_LABELS: Record<string, string> = {
   verified: 'Vérifié',
   abandoned: 'Abandonné',
 }
+
+export const RISK_STATUS_LABELS: Record<string, string> = {
+  identified: 'Identifié',
+  analysed: 'Analysé',
+  treatment_planned: 'Traitement planifié',
+  treatment_in_progress: 'Traitement en cours',
+  mitigated: 'Traité',
+  accepted: 'Accepté',
+  closed: 'Clos',
+}
+
+export const ACTION_STATUS_LABELS: Record<string, string> = {
+  open: 'Ouverte',
+  in_progress: 'En cours',
+  blocked: 'Bloquée',
+  done: 'Close',
+  cancelled: 'Annulée',
+  overdue: 'Échue',
+}
+
+export const INCIDENT_STATUS_LABELS: Record<string, string> = {
+  OPEN: 'Ouvert',
+  CONTAINED: 'Circonscrit',
+  INVESTIGATING: 'En investigation',
+  ACTION_PLAN: 'Plan d’action',
+  EFFECTIVENESS_REVIEW: 'Revue d’efficacité',
+  CLOSED: 'Clos',
+}

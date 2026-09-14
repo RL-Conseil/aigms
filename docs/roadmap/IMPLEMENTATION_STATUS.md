@@ -175,6 +175,26 @@ pas un titre de document, et replier une section la retirait du plan de la page.
 `Disclosure` porte désormais un `<h2>` — le bouton vit dans le titre, l'inverse
 serait invalide.
 
+### Le pilotage dit de quel client il parle
+
+Quatrième volet. L'écran listait des retards sans jamais nommer l'organisation
+dont ils relevaient — pour un cabinet suivant plusieurs clients, la cible même
+du produit, un risque anonyme oblige à ouvrir la fiche pour savoir de qui il
+s'agit.
+
+- **Chaque ligne porte son client**, dès que plusieurs sont en vue. Sous une vue
+  restreinte, la mention disparaît : elle n'apprendrait rien.
+- **Un filtre par organisation** (`?organisation=`), comme les vues de la carte :
+  rendu serveur, et un lien vers « le pilotage de ce client » se partage. Il
+  n'apparaît qu'à partir de deux organisations suivies.
+- **Les chiffres suivent le filtre.** Un compteur resté global sous une vue
+  restreinte ferait douter de tout l'écran.
+- **Les statuts se lisent en français.** `treatment_in_progress` et
+  `EFFECTIVENESS_REVIEW` s'affichaient bruts.
+- **Une hiérarchie sans déplacer les blocs** : `Card` accepte un accent latéral,
+  rouge pour l'échu, ambre pour ce qui approche, et seulement lorsque la carte
+  porte effectivement quelque chose. Un accent partout ne distingue plus rien.
+
 ## Courrier système
 
 La plateforme dispose d'un unique point d'envoi, `src/lib/email/mailer.ts`,
