@@ -1,0 +1,110 @@
+'use client'
+
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+
+/**
+ * Fenetre de saisie contextuelle.
+ *
+ * Elle sert un cas precis, et un seul : saisir un objet qui n'existe QUE par ce
+ * qu'on est en train de lire — un risque appartient a son cas d'usage, et
+ * quitter la page ferait perdre de vue les autres risques qu'on vient de lire.
+ *
+ * C'est la difference avec un processus ou une activite, qui ont leur page :
+ * ceux-la se decrivent une fois et se lisent des annees, hors du contexte ou on
+ * les a crees. La regle n'est donc pas « modale ou page » mais : **la saisie
+ * reste dans la page quand son objet n'a de sens que dans cette page.**
+ *
+ * Elle se ferme par Echap, par le fond, par le bouton — et rend le defilement
+ * a la page qu'elle recouvre.
+ */
+export function Modal({
+  trigger,
+  title,
+  description,
+  children,
+}: {
+  /** Libelle du bouton qui l'ouvre. */
+  trigger: string
+  title: string
+  description?: string
+  /** Recoit une fonction de fermeture, a appeler apres un enregistrement. */
+  children: (close: () => void) => ReactNode
+}) {
+  const [open, setOpen] = useState(false)
+  const panel = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('keydown', onKey)
+
+    // Le fond ne doit pas defiler sous la fenetre : on perdrait sa place.
+    const previous = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    panel.current?.focus()
+
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = previous
+    }
+  }, [open])
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="rounded-md border border-ink-200 px-3.5 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-100"
+      >
+        {trigger}
+      </button>
+
+      {open ? (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-night-950/40 p-4 sm:p-8"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setOpen(false)
+          }}
+        >
+          <div
+            ref={panel}
+            role="dialog"
+            aria-modal="true"
+            aria-label={title}
+            tabIndex={-1}
+            className="w-full max-w-2xl rounded-lg border border-ink-200 bg-white shadow-[0_1px_2px_rgb(30_42_68/0.04),0_24px_48px_rgb(30_42_68/0.18)] outline-none"
+          >
+            <header className="flex items-start justify-between gap-4 border-b border-ink-100 px-5 py-3.5">
+              <div>
+                <h2 className="text-sm font-semibold text-ink-900">{title}</h2>
+                {description ? (
+                  <p className="mt-0.5 text-xs text-ink-500">{description}</p>
+                ) : null}
+              </div>
+              <button
+                type="button"
+                aria-label="Fermer"
+                onClick={() => setOpen(false)}
+                className="shrink-0 rounded p-1 text-ink-400 hover:bg-ink-100 hover:text-ink-700"
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+                  <path
+                    d="M4 4 L12 12 M12 4 L4 12"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+            </header>
+
+            <div className="px-5 py-5">{children(() => setOpen(false))}</div>
+          </div>
+        </div>
+      ) : null}
+    </>
+  )
+}

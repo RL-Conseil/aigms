@@ -336,6 +336,40 @@ les préconditions manquantes.
 **« Déclarer un cas d'usage » figure aussi sur la vue d'ensemble** — c'est là
 qu'on lit l'inventaire, donc là qu'on constate qu'il en manque un.
 
+### Avertir avant la mise en service, saisir sans quitter la fiche
+
+Neuvième volet.
+
+**Les risques non soldés avertissent avant une mise en service.** Deux trous se
+cachaient derrière la même évidence :
+
+- le gate PRODUCTION ne refuse que sur les risques **élevés ou critiques**
+  (`RISKS_TREATED`) : un risque modéré jamais traité passe sans être vu ;
+- **SURVEILLANCE n'a aucune précondition** — elle tombe dans la branche
+  « transition de reprise ou de suivi » d'`evaluate_gate`.
+
+Le panneau de transition avertit donc lorsque la cible est PRODUCTION ou
+SURVEILLANCE et que des risques ne sont ni traités, ni acceptés, ni clos — en
+distinguant ceux qui n'ont jamais été recotés, où le risque reste brut. **Il
+avertit, il n'empêche pas** : le bouton devient « Demander la transition malgré
+tout ». Bloquer côté écran ce que le serveur autorise déplacerait la règle au
+mauvais endroit ; la taire laisserait mettre en service sous des risques que
+personne n'a soldés.
+
+**Un risque se saisit dans une fenêtre, ouverte depuis la carte qu'il alimente.**
+Le volet dépliant occupait la colonne au-dessus de la liste : on lisait le
+formulaire avant ce qu'il complète.
+
+La règle n'est pas « modale ou page » mais : **la saisie reste dans la page quand
+son objet n'a de sens que dans cette page.** Un risque appartient à son cas
+d'usage, et quitter l'écran ferait perdre de vue les autres risques qu'on vient
+de lire. Un processus, lui, se décrit une fois et se lit des années hors du
+contexte où il a été créé : il garde sa page.
+
+**L'identité du cas d'usage se lit en clair**, sous la ligne de statut, dans la
+zone qui était vide. Replier ce qui dit de quoi l'on parle obligeait à ouvrir un
+volet pour le savoir.
+
 ## Courrier système
 
 La plateforme dispose d'un unique point d'envoi, `src/lib/email/mailer.ts`,

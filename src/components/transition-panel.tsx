@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { transitionUseCase, type ActionState } from '@/lib/actions/use-case'
 import {
   USE_CASE_STATUS_LABELS,
@@ -14,14 +14,32 @@ import { GateChecklist } from '@/components/gate-checklist'
  * Le formulaire n'anticipe aucune regle : il propose les transitions et laisse
  * le serveur repondre. Un refus est affiche avec le detail des preconditions
  * manquantes, ce qui indique quoi corriger.
+ *
+ * UNE SEULE EXCEPTION, et elle avertit sans empecher : les risques non soldes
+ * avant une mise en service. Le gate PRODUCTION ne refuse que sur les risques
+ * ELEVES ou CRITIQUES ; un risque modere jamais traite passe. Et SURVEILLANCE
+ * n'a aucune precondition — c'est une transition de suivi. Dans les deux cas,
+ * le systeme fonctionne sous des risques que personne n'a soldes, et la
+ * personne doit le savoir AVANT de demander la transition, pas le decouvrir
+ * dans le journal d'audit.
  */
+const SERVICE_TARGETS: UseCaseStatus[] = ['PRODUCTION', 'MONITORING']
+
 export function TransitionPanel({
   useCaseId,
   targets,
+  unsettledRisks = 0,
+  unassessedRisks = 0,
 }: {
   useCaseId: string
   targets: UseCaseStatus[]
+  /** Risques ni traites, ni acceptes, ni clos. */
+  unsettledRisks?: number
+  /** Parmi eux, ceux qui n'ont jamais ete recotes : le risque reste brut. */
+  unassessedRisks?: number
 }) {
+  const [target, setTarget] = useState<UseCaseStatus | undefined>(targets[0])
+  const warn = unsettledRisks > 0 && target !== undefined && SERVICE_TARGETS.includes(target)
   const [state, formAction, pending] = useActionState<ActionState | null, FormData>(
     transitionUseCase,
     null,
@@ -44,7 +62,8 @@ export function TransitionPanel({
             id="target"
             name="target"
             className="mt-1 w-full rounded-md border border-ink-200 px-3 py-2 text-sm"
-            defaultValue={targets[0]}
+            value={target}
+            onChange={(event) => setTarget(event.target.value as UseCaseStatus)}
           >
             {targets.map((t) => (
               <option key={t} value={t}>
@@ -67,12 +86,32 @@ export function TransitionPanel({
           />
         </div>
 
+        {warn ? (
+          <p
+            role="alert"
+            className="rounded-md border border-stop-600/30 bg-stop-600/5 px-3.5 py-3 text-xs leading-relaxed text-ink-700"
+          >
+            <strong className="font-semibold text-stop-600">
+              {unsettledRisks} risque{unsettledRisks > 1 ? 's' : ''} ni traité
+              {unsettledRisks > 1 ? 's' : ''} ni accepté{unsettledRisks > 1 ? 's' : ''}
+            </strong>
+            {unassessedRisks > 0
+              ? `, dont ${unassessedRisks} jamais recoté${unassessedRisks > 1 ? 's' : ''} après traitement — le risque reste brut.`
+              : '.'}{' '}
+            {target === 'PRODUCTION'
+              ? 'Le passage en production sera refusé si l’un d’eux est élevé ou critique ; les autres passeront sans être vus.'
+              : 'La mise sous surveillance n’a aucune précondition : rien ne s’y opposera.'}{' '}
+            Traiter ou accepter un risque est un acte nominatif, daté et justifié — le faire après
+            coup ne rétablit pas la trace.
+          </p>
+        ) : null}
+
         <button
           type="submit"
           disabled={pending}
           className="rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-60"
         >
-          {pending ? 'Évaluation…' : 'Demander la transition'}
+          {pending ? 'Évaluation…' : warn ? 'Demander la transition malgré tout' : 'Demander la transition'}
         </button>
       </form>
 
