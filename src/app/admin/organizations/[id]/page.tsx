@@ -6,6 +6,7 @@ import { Badge, Card, Empty } from '@/components/ui'
 import { ActivityProfileForm } from '@/components/governance/activity-profile-form'
 import { AttentionBar } from '@/components/governance/attention'
 import { SegmentedFilter } from '@/components/governance/segmented-filter'
+import { VendorReviewForm } from '@/components/governance/registry-forms'
 import { attentionFor } from '@/lib/governance/attention'
 import {
   ACTIVITY_PROFILE_LABELS,
@@ -17,6 +18,7 @@ import {
 import {
   AUTONOMY_LABELS,
   formatDate,
+  VENDOR_REVIEW_LABELS,
   USE_CASE_STATUS_LABELS,
   type UseCaseStatus,
 } from '@/lib/domain/governance'
@@ -129,16 +131,26 @@ export default async function OrganizationPage({
                 : "Chaque gouvernance part d'un usage réel."
             }
             action={
-              <SegmentedFilter
-                label="Inventaire"
-                param="inventaire"
-                basePath={`/admin/organizations/${id}`}
-                selected={tab === 'fournisseurs' ? 'fournisseurs' : ''}
-                options={[
-                  { key: '', label: 'Cas d’usage IA', count: useCases?.length ?? 0 },
-                  { key: 'fournisseurs', label: 'Fournisseurs', count: vendors?.length ?? 0 },
-                ]}
-              />
+              <div className="flex flex-wrap items-center gap-3">
+                <SegmentedFilter
+                  label="Inventaire"
+                  param="inventaire"
+                  basePath={`/admin/organizations/${id}`}
+                  selected={tab === 'fournisseurs' ? 'fournisseurs' : ''}
+                  options={[
+                    { key: '', label: 'Cas d’usage IA', count: useCases?.length ?? 0 },
+                    { key: 'fournisseurs', label: 'Fournisseurs', count: vendors?.length ?? 0 },
+                  ]}
+                />
+                {tab === 'fournisseurs' ? (
+                  <Link
+                    href={`/admin/organizations/${id}/registre/nouveau`}
+                    className="rounded-md border border-ink-200 px-3.5 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-100"
+                  >
+                    Déclarer un fournisseur
+                  </Link>
+                ) : null}
+              </div>
             }
           >
             {tab === 'fournisseurs' ? (
@@ -153,22 +165,32 @@ export default async function OrganizationPage({
                           {v.next_review_at ? ` · revue le ${formatDate(v.next_review_at)}` : ''}
                         </p>
                       </div>
-                      <Badge
-                        tone={
-                          v.review_status === 'approved' ||
-                          v.review_status === 'approved_with_conditions'
-                            ? 'ok'
-                            : 'warn'
-                        }
-                      >
-                        {v.review_status}
-                      </Badge>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <Badge
+                          tone={
+                            v.review_status === 'approved' ||
+                            v.review_status === 'approved_with_conditions'
+                              ? 'ok'
+                              : 'warn'
+                          }
+                        >
+                          {VENDOR_REVIEW_LABELS[v.review_status] ?? v.review_status}
+                        </Badge>
+                        <VendorReviewForm
+                          organizationId={id}
+                          vendorId={v.id}
+                          name={v.name}
+                          reviewStatus={v.review_status}
+                          nextReviewAt={v.next_review_at}
+                        />
+                      </div>
                     </li>
                   ))}
                 </ul>
               ) : (
                 <Empty>
-                  Aucun fournisseur enregistré. L’édition depuis l’application reste à construire.
+                  Aucun fournisseur enregistré. Tant qu’un tiers impliqué n’est pas déclaré, sa
+                  revue ne peut pas être close — et le gate PRODUCTION l’exige.
                 </Empty>
               )
             ) : useCases?.length ? (
