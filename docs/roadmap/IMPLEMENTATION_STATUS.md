@@ -312,6 +312,30 @@ effectif, entités identifient l'organisation, ils ne sont pas une rubrique à
 consulter — et ses deux inventaires en onglets : cas d'usage d'IA et
 fournisseurs, l'un qu'on gouverne, l'autre dont on dépend.
 
+### La fiche d'un cas d'usage se lit comme un parcours
+
+Huitième volet.
+
+**La frise porte un libellé et ses jalons.** Elle disait où l'on en est ; elle ne
+disait pas où l'on sera arrêté. Chaque transition est évaluée par
+`app.evaluate_gate`, mais deux seulement portent un point de passage
+substantiel — **Revue** (pré-classification et au moins un risque identifié) et
+**Production** (huit préconditions, dont une décision d'autorisation en vigueur).
+Ces deux-là sont marquées, et la légende dit ce que la marque signifie :
+découvrir le refus au moment de le subir était le défaut.
+
+**L'action qui fait avancer se lit à côté de la frise.** « Faire évoluer le cas
+d'usage » vivait en bas de la colonne de droite : lire où l'on en est puis
+chercher ailleurs comment avancer séparait la question de sa réponse.
+
+**Gate production et contrôles affectés se replient.** L'un est un constat qu'on
+relit, l'autre un inventaire ; aucun n'appelle une action par lui-même. Le gate
+s'ouvre néanmoins d'office lorsqu'il n'est pas satisfait, et son résumé compte
+les préconditions manquantes.
+
+**« Déclarer un cas d'usage » figure aussi sur la vue d'ensemble** — c'est là
+qu'on lit l'inventaire, donc là qu'on constate qu'il en manque un.
+
 ## Courrier système
 
 La plateforme dispose d'un unique point d'envoi, `src/lib/email/mailer.ts`,

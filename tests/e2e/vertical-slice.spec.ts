@@ -130,3 +130,34 @@ test('la fiche d’un cas d’usage ouvre sur ce qu’il y a à faire', async ({
   await expect(page.getByRole('heading', { name: 'Risques' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Gate production' })).toBeVisible()
 })
+
+test('la frise marque les jalons obligatoires et porte l’action qui la fait avancer', async ({
+  page,
+}) => {
+  await page.goto('/admin/organizations')
+  await page.getByRole('link', { name: 'IzarLink Demo' }).click()
+
+  // Le bouton de declaration se trouve aussi la ou l'on lit l'inventaire.
+  await expect(page.getByRole('link', { name: 'Déclarer un cas d’usage' })).toBeVisible()
+
+  await page.getByRole('link', { name: 'Assistant support client' }).click()
+
+  // La frise porte un libelle, et nomme ce qu'elle signale.
+  await expect(page.getByText('Fil conducteur du cas d’usage')).toBeVisible()
+  await expect(page.getByText(/Jalon obligatoire — le passage est refusé côté serveur/)).toBeVisible()
+
+  // Revue et Production sont marquees, les autres non.
+  const frise = page.getByRole('listitem').filter({ hasText: 'Production' }).first()
+  await expect(frise).toContainText('jalon obligatoire')
+  const triage = page.getByRole('listitem').filter({ hasText: 'Triage' }).first()
+  await expect(triage).not.toContainText('jalon obligatoire')
+
+  // L'action qui fait avancer se lit a cote de la frise, pas en bas de page.
+  await expect(page.getByRole('heading', { name: 'Faire évoluer le cas d’usage' })).toBeVisible()
+
+  // Gate et controles se replient : ce sont des constats, pas des actions.
+  const controles = page.locator('section').filter({ hasText: 'Contrôles affectés' }).first()
+  await expect(controles.getByText('CTL-01')).toHaveCount(0)
+  await controles.getByRole('button').click()
+  await expect(controles.getByText('CTL-01')).toBeVisible()
+})

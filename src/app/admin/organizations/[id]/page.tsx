@@ -96,7 +96,17 @@ export default async function OrganizationPage({
         .filter(Boolean)
         .join(' · ')}
       organization={{ id, section: 'apercu' }}
-      actions={<Badge>{organization.status}</Badge>}
+      actions={
+        <div className="flex items-center gap-3">
+          <Badge>{organization.status}</Badge>
+          <Link
+            href={`/admin/organizations/${id}/cas-d-usage/nouveau`}
+            className="rounded-md bg-night-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-night-800"
+          >
+            Déclarer un cas d’usage
+          </Link>
+        </div>
+      }
     >
       {/*
         Ce qui appelle une action se lit AVANT le contenu : ouvrir une fiche

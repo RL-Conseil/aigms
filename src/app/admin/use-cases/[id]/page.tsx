@@ -208,12 +208,20 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
         />
       </StatStrip>
 
-      <div className="mb-6 rounded-lg border border-ink-200 bg-white p-5">
-        <Lifecycle status={status} />
-        <p className="mt-3 text-xs text-ink-400">
-          Dernier changement de statut : {formatDateTime(useCase.status_changed_at)}
-          {useCase.next_review_at ? ` · prochaine revue le ${formatDate(useCase.next_review_at)}` : ''}
-        </p>
+      <div className="mb-6 grid gap-5 lg:grid-cols-3">
+        <div className="rounded-lg border border-ink-200 bg-white p-5 lg:col-span-2">
+          <Lifecycle status={status} />
+          <p className="mt-3 border-t border-ink-100 pt-3 text-xs text-ink-400">
+            Dernier changement de statut : {formatDateTime(useCase.status_changed_at)}
+            {useCase.next_review_at
+              ? ` · prochaine revue le ${formatDate(useCase.next_review_at)}`
+              : ''}
+          </p>
+        </div>
+
+        <Card title="Faire évoluer le cas d’usage">
+          <TransitionPanel useCaseId={id} targets={UI_TRANSITIONS[status]} />
+        </Card>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-3">
@@ -493,18 +501,25 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
         </div>
 
         <div className="space-y-5">
-          <Card
+          <Disclosure
             title="Gate production"
-            subtitle="Évalué en continu, sans déclencher de transition."
+            summary={
+              gate
+                ? gate.satisfied
+                  ? 'Préconditions satisfaites'
+                  : `${gate.checks.filter((c) => !c.satisfied).length} précondition(s) manquante(s)`
+                : 'Évalué en continu, sans déclencher de transition'
+            }
+            tone={gate ? (gate.satisfied ? 'done' : 'todo') : 'neutral'}
+            defaultOpen={Boolean(gate && !gate.satisfied)}
           >
             {gate ? <GateChecklist gate={gate} /> : <Empty>Gate non évaluable.</Empty>}
-          </Card>
+          </Disclosure>
 
-          <Card title="Faire évoluer le cas d'usage">
-            <TransitionPanel useCaseId={id} targets={UI_TRANSITIONS[status]} />
-          </Card>
-
-          <Card title="Contrôles affectés">
+          <Disclosure
+            title="Contrôles affectés"
+            summary={`${controls?.length ?? 0} contrôle(s) statué(s) sur ce cas d’usage`}
+          >
             {controls?.length ? (
               <ul className="space-y-2">
                 {controls.map((ca) => {
@@ -537,7 +552,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             ) : (
               <Empty>Aucun contrôle affecté.</Empty>
             )}
-          </Card>
+          </Disclosure>
 
           <Card title="Actions">
             {actions?.length ? (
