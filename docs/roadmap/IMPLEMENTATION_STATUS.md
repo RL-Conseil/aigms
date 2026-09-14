@@ -441,6 +441,43 @@ Ce que ces écrans portent, et qui ne se devine pas :
   approuvé doit être complet », « au-delà de L2, l'autonomie impose une autorité
   d'arrêt nommée » — plutôt que « violates check constraint ».
 
+## Le registre de décisions
+
+Groupe 3, premier volet — et la feature que la page commerciale présente comme
+**le différenciateur** du produit. Le socle serveur existait depuis la migration
+0010 ; il manquait le chemin pour y écrire, et une décision transverse — une
+exception de politique portant sur l'organisation entière — n'était visible
+nulle part.
+
+**Deux actes, deux personnes.** Soumettre énonce ce qui est décidé et pourquoi ;
+se prononcer engage nominativement. Sur une mise en production, une acceptation
+de risque ou une exception, `app.guard_decision_approval` refuse que ce soit la
+même personne. L'écran **ne l'anticipe pas** : il annonce la règle avant la
+saisie, puis présente le refus du serveur tel quel. C'est ce qui donne sa valeur
+au registre — et un test E2E le vérifie en changeant de compte.
+
+Quatre règles vivent en base, et aucune n'est réimplémentée dans l'application :
+approbateur nommé avec justification, énoncé et date d'effet ; séparation des
+rôles ; date de revue sur les décisions à effet durable ; conditions énoncées
+sur une approbation sous conditions. Les refus sont traduits, pas affichés bruts.
+
+**Une section « Décisions »** rejoint la navigation d'une organisation, après
+Preuves. Quatre chiffres en tête — dont **« sans élément probant »**, qui compte
+les décisions ne disant que *qui* a décidé, pas *sur quoi*. Un filtre par état
+mène aux décisions à instruire et aux revues échues.
+
+Deux points relevés au passage :
+
+- **Se prononcer relève de `app.roles_review()`** — officer, client admin,
+  reviewer. Un responsable du risque cote et accepte des risques ; il ne tranche
+  pas les décisions de gouvernance. Il faut donc **au moins deux personnes**
+  parmi ces trois rôles pour que la séparation soit praticable.
+- **La confirmation d'un verdict disparaissait avec le bouton qui l'avait
+  produit.** La revalidation retire le déclencheur une fois la décision tranchée ;
+  `Modal` accepte désormais de masquer son bouton sans se démonter. Sous un
+  filtre « à instruire », la ligne quitte malgré tout la liste — le registre
+  complet est l'endroit où l'on tranche.
+
 ## Courrier système
 
 La plateforme dispose d'un unique point d'envoi, `src/lib/email/mailer.ts`,

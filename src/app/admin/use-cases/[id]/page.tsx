@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
@@ -521,7 +522,19 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
           <Card
             title="Décisions de gouvernance"
             subtitle={`${decisions?.length ?? 0} décision(s)`}
-            action={<DecisionNote />}
+            action={
+              <span className="flex items-center gap-2">
+                {organization ? (
+                  <Link
+                    href={`/admin/organizations/${organization.id}/decisions/nouvelle?cas-d-usage=${id}`}
+                    className="rounded-md border border-ink-200 px-3.5 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-100"
+                  >
+                    Soumettre
+                  </Link>
+                ) : null}
+                <DecisionNote />
+              </span>
+            }
           >
             {decisions?.length ? (
               <ul className="divide-y divide-ink-100">
