@@ -7,6 +7,12 @@ import { GateChecklist } from '@/components/gate-checklist'
 import { Lifecycle } from '@/components/lifecycle'
 import { ApplicabilityForm, RiskTreatmentForm } from '@/components/governance/control-forms'
 import {
+  ImpactForm,
+  LinkAssetForm,
+  LinkVendorForm,
+  OversightForm,
+} from '@/components/governance/registry-forms'
+import {
   ActionNote,
   AuditNote,
   ChangeNote,
@@ -83,6 +89,8 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
     { data: gateData },
     { data: memberships },
     { data: orgControls },
+    { data: orgVendors },
+    { data: orgAssets },
   ] = await Promise.all([
     supabase
       .from('regulatory_classification')
@@ -147,6 +155,8 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
       .from('control')
       .select('id, code, name, status, organization_id')
       .order('code'),
+    supabase.from('vendor').select('id, name, organization_id').order('name'),
+    supabase.from('ai_asset').select('id, name, kind, organization_id').order('name'),
   ])
 
   const gate = gateData as GateResult | null
@@ -188,6 +198,13 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
   const controlChoices = (orgControls ?? [])
     .filter((c) => c.organization_id === useCase.organization_id)
     .map((c) => ({ id: c.id, code: c.code, name: c.name, status: c.status }))
+
+  const vendorChoices = (orgVendors ?? [])
+    .filter((v) => v.organization_id === useCase.organization_id)
+    .map((v) => ({ id: v.id, name: v.name }))
+  const assetChoices = (orgAssets ?? [])
+    .filter((a) => a.organization_id === useCase.organization_id)
+    .map((a) => ({ id: a.id, name: a.name, kind: a.kind }))
 
   const people = (memberships ?? [])
     .map((m) => m.user as unknown as { id: string; full_name: string | null; email: string; job_title: string | null } | null)
@@ -264,13 +281,23 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             <Field label="Portée de la décision">{useCase.decision_impact ?? '—'}</Field>
           </dl>
 
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap items-center gap-2">
             {useCase.involves_personal_data ? (
               <Badge tone="warn">Données personnelles</Badge>
             ) : null}
             {useCase.involves_vulnerable_persons ? (
               <Badge tone="stop">Personnes vulnérables</Badge>
             ) : null}
+            {/*
+              Ce que le cas d'usage emploie, et de qui il depend. Les deux
+              rattachements vivent ici parce qu'ils completent son identite —
+              et parce qu'un fournisseur rattache devient une precondition de
+              mise en production.
+            */}
+            <span className="ml-auto flex flex-wrap gap-2">
+              <LinkAssetForm useCaseId={id} assets={assetChoices} />
+              <LinkVendorForm useCaseId={id} vendors={vendorChoices} />
+            </span>
           </div>
         </div>
 
@@ -410,7 +437,12 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
           <Card
             title="Évaluation d'impact"
             subtitle="Effets sur les personnes, les groupes et la société (ISO/IEC 42005)."
-            action={<ImpactNote />}
+            action={
+              <span className="flex items-center gap-2">
+                <ImpactForm useCaseId={id} />
+                <ImpactNote />
+              </span>
+            }
           >
             {impacts?.length ? (
               <ul className="space-y-4">
@@ -439,7 +471,28 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
 
           <Disclosure
             title="Supervision humaine"
-            aside={<OversightNote />}
+            aside={
+              <span className="flex items-center gap-2">
+                <OversightForm
+                  useCaseId={id}
+                  people={people}
+                  current={
+                    oversight
+                      ? {
+                          status: oversight.status,
+                          intervention_triggers: oversight.intervention_triggers,
+                          override_procedure: oversight.override_procedure,
+                          stop_procedure: oversight.stop_procedure,
+                          monitoring_cadence: oversight.monitoring_cadence,
+                          expected_evidence: oversight.expected_evidence,
+                          not_applicable_rationale: oversight.not_applicable_rationale,
+                        }
+                      : null
+                  }
+                />
+                <OversightNote />
+              </span>
+            }
             summary="Déclencheurs d’intervention, procédures d’arrêt et de reprise"
           >
             {oversight ? (

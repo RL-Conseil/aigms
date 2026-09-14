@@ -409,6 +409,38 @@ Trois choses que ces écrans disent, et qu'il fallait dire :
 Un contrôle sans exigence rattachée est signalé sur sa ligne : il ne compte dans
 aucune Déclaration, et rien ne le disait.
 
+## Le registre devient saisissable
+
+Groupe 2 des écrans d'édition. Quatre objets complètent le dossier d'un cas
+d'usage, et aucun ne pouvait être saisi.
+
+| Objet | Où | Forme |
+|---|---|---|
+| Fournisseur | `/registre/nouveau` | page — il vit dans le référentiel de l'organisation |
+| Actif d'IA (système, modèle, agent, jeu de données) | `/registre/nouveau?nature=actif` | page |
+| Revue tiers d'un fournisseur | onglet Fournisseurs | fenêtre — c'est un acte, pas une propriété |
+| Rattachement actif / fournisseur ↔ cas d'usage | fiche du cas d'usage | fenêtre |
+| Plan de supervision humaine | fiche du cas d'usage | fenêtre |
+| Évaluation d'impact | fiche du cas d'usage | fenêtre |
+
+Fournisseur et actif partagent une page : on déclare un fournisseur puis le
+modèle qu'il fournit, et l'inverse obligerait à revenir.
+
+Ce que ces écrans portent, et qui ne se devine pas :
+
+- **La revue tiers est un acte séparé.** Le gate PRODUCTION exige une revue
+  close pour chaque tiers impliqué ; la déclarer n'est donc pas la conduire, et
+  le message de création le dit.
+- **Les quatre points qu'une revue examine sont posés à la création** — fournit
+  un modèle, contrat de traitement signé, sécurité évaluée, réversibilité
+  documentée — pour éviter d'y revenir en urgence à la mise en service.
+- **Le champ de justification d'une supervision non applicable n'apparaît que
+  lorsqu'il devient exigible.** La base l'impose
+  (`oversight_na_is_justified`) ; l'écran le demande au bon moment.
+- **Les refus des contraintes de supervision sont traduits** : « un plan
+  approuvé doit être complet », « au-delà de L2, l'autonomie impose une autorité
+  d'arrêt nommée » — plutôt que « violates check constraint ».
+
 ## Courrier système
 
 La plateforme dispose d'un unique point d'envoi, `src/lib/email/mailer.ts`,

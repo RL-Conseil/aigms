@@ -200,3 +200,19 @@ export const INCIDENT_STATUS_LABELS: Record<string, string> = {
   EFFECTIVENESS_REVIEW: 'Revue d’efficacité',
   CLOSED: 'Clos',
 }
+
+export const VENDOR_REVIEW_LABELS: Record<string, string> = {
+  not_started: 'Revue non commencée',
+  in_progress: 'Revue en cours',
+  approved: 'Approuvé',
+  approved_with_conditions: 'Approuvé sous conditions',
+  rejected: 'Rejeté',
+  expired: 'Revue échue',
+}
+
+export const ASSET_KIND_LABELS: Record<string, string> = {
+  ai_system: 'Système d’IA',
+  ai_model: 'Modèle',
+  ai_agent: 'Agent',
+  dataset: 'Jeu de données',
+}
