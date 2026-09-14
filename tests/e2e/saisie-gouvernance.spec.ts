@@ -106,9 +106,9 @@ test('un cas d’usage se déclare, se trie, se classifie et reçoit un risque',
   await expect(triage.getByRole('status')).toContainText('Triage enregistré')
 
   // --- Pré-classification ----------------------------------------------------
-  const classification = panel(/Qualifier au regard du règlement/)
+  const classification = panel(/Pré-classifier au regard du règlement/)
   const classificationToggle = classification.getByRole('button', {
-    name: /Qualifier au regard du règlement/,
+    name: /Pré-classifier au regard du règlement/,
   })
   if ((await classificationToggle.getAttribute('aria-expanded')) !== 'true') {
     await classificationToggle.click()

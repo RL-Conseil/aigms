@@ -62,7 +62,7 @@ test('une exclusion d’applicabilité ne passe pas sans justification', async (
   await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000001')
 
   const controles = page.locator('section').filter({ hasText: 'Contrôles affectés' }).first()
-  await controles.getByRole('button').first().click()
+  await controles.getByRole('button', { name: /Contrôles affectés/ }).click()
   await controles.getByRole('button', { name: 'Statuer un contrôle' }).click()
 
   const fenetre = page.getByRole('dialog', { name: 'Applicabilité d’un contrôle' })

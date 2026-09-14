@@ -85,6 +85,7 @@ export function Submit({ pending, children, idle }: { pending: boolean; children
 export function Disclosure({
   title,
   summary,
+  aside,
   defaultOpen = false,
   stayOpen = false,
   tone = 'neutral',
@@ -92,6 +93,11 @@ export function Disclosure({
 }: {
   title: string
   summary?: string
+  /**
+   * Rendu a cote du titre, hors du bouton : un bouton ne contient pas de
+   * bouton. C'est la place de la note explicative d'une rubrique.
+   */
+  aside?: ReactNode
   defaultOpen?: boolean
   /**
    * Maintient le volet ouvert malgre un rechargement du contenu. Apres un
@@ -115,7 +121,8 @@ export function Disclosure({
         section ne doit pas la retirer du plan du document. Le bouton vit DANS
         le titre — l'inverse serait invalide, un bouton ne contient pas de titre.
       */}
-      <h2>
+      <div className="flex items-start">
+      <h2 className="min-w-0 flex-1">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
@@ -139,6 +146,8 @@ export function Disclosure({
           </svg>
         </button>
       </h2>
+      {aside ? <span className="shrink-0 py-3 pr-4">{aside}</span> : null}
+      </div>
 
       {shown ? <div className="border-t border-ink-100 px-5 py-5">{children}</div> : null}
     </section>

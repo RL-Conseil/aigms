@@ -101,3 +101,31 @@ Le renommage aurait par ailleurs touché la table, six fonctions SQL
 (`process_map`, `governance_health`, `control_coverage`, `control_graph`,
 `risk_path`, `attention_by_organization`) et les références métier `ACT-P-`,
 pour un terme moins juste.
+
+
+## « Pré-classification » plutôt que « qualification du risque »
+
+Version 1.2 — 14 septembre 2026
+
+Le volet de saisie s'appelait « Qualifier au regard du règlement », la carte de
+lecture « Pré-classification réglementaire » : deux noms pour une même chose.
+« Qualification générale du risque au regard du règlement » a été envisagé, puis
+écarté.
+
+**Décision** : le volet s'appelle **« Pré-classifier au regard du règlement »**.
+
+Deux raisons :
+
+1. **Le terme est déjà établi** — page commerciale, méthodologie, action
+   serveur, carte de lecture. En introduire un second aurait recréé le défaut
+   que ce document existe pour corriger.
+2. **Le mot « risque » y aurait été faux, et coûteux.** Cette rubrique ne cote
+   aucun risque : elle situe le système au regard du règlement. « Haut risque »
+   y désigne une **catégorie de système**, qui déclenche des obligations ; la
+   cotation d'un risque se fait ailleurs, par vraisemblance et gravité, dans une
+   rubrique qui s'appelle précisément « Risques » et se trouve juste en dessous.
+   Nommer les deux « risque » aurait mis deux sens du mot à trois centimètres
+   l'un de l'autre.
+
+La note de la rubrique énonce explicitement cette distinction : c'est la
+confusion la plus coûteuse de l'écran, et un test E2E la verrouille.

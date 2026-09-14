@@ -50,7 +50,7 @@ test('le parcours de gouvernance est consultable de bout en bout', async ({ page
     .locator('section')
     .filter({ hasText: 'Changements et réévaluations' })
     .first()
-  await changements.getByRole('button').click()
+  await changements.getByRole('button', { name: /Changements et réévaluations/ }).click()
   await expect(changements.getByText('Moteur : Réévaluation complète')).toBeVisible()
 })
 
@@ -157,7 +157,7 @@ test('la frise marque les jalons obligatoires et porte l’action qui la fait av
   // Gate et controles se replient : ce sont des constats, pas des actions.
   const controles = page.locator('section').filter({ hasText: 'Contrôles affectés' }).first()
   await expect(controles.getByText('CTL-01')).toHaveCount(0)
-  await controles.getByRole('button').click()
+  await controles.getByRole('button', { name: /Contrôles affectés/ }).click()
   await expect(controles.getByText('CTL-01')).toBeVisible()
 })
 
@@ -183,4 +183,33 @@ test('le fil d’Ariane d’un cas d’usage ramène à son organisation', async
   await page.getByRole('navigation', { name: "Fil d'Ariane" }).getByRole('link', { name: 'Organisations' }).click()
   await expect(page).toHaveURL(/\/admin\/organizations$/)
   await expect(page.getByRole('heading', { name: 'Organisations gérées' })).toBeVisible()
+})
+
+test('chaque rubrique du dossier s’explique sur place', async ({ page }) => {
+  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000001')
+
+  // Le volet de classification porte le terme etabli, pas un synonyme.
+  await expect(page.getByText('Pré-classifier au regard du règlement')).toBeVisible()
+
+  // Sa note distingue « haut risque » au sens du reglement de la cotation d'un
+  // risque : c'est la confusion la plus couteuse de l'ecran.
+  await page.getByRole('button', { name: 'À quoi sert la pré-classification' }).click()
+  const note = page.getByRole('dialog', { name: 'À quoi sert la pré-classification' })
+  await expect(note.getByText(/« Haut risque » n’est pas un niveau de\s+risque/)).toBeVisible()
+  await page.keyboard.press('Escape')
+
+  // Les autres rubriques en portent une aussi.
+  for (const label of [
+    'À quoi sert le triage',
+    'À quoi sert le registre des risques',
+    'À quoi sert le gate',
+    'À quoi sert le journal',
+  ]) {
+    await expect(page.getByRole('button', { name: label })).toBeVisible()
+  }
+
+  // Ouvrir une note ne replie pas le volet qui la porte.
+  const journal = page.locator('section').filter({ hasText: 'Journal d’audit' }).first()
+  await journal.getByRole('button', { name: 'À quoi sert le journal' }).click()
+  await expect(page.getByRole('dialog', { name: 'À quoi sert le journal' })).toBeVisible()
 })

@@ -10,6 +10,7 @@ import {
 } from '@/lib/actions/governance'
 import { Disclosure, Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
+import { ClassificationNote, TriageNote } from '@/components/governance/rubric-notes'
 
 /**
  * Etapes de gouvernance saisies depuis la fiche du cas d'usage.
@@ -43,6 +44,7 @@ export function TriagePanel({
   return (
     <Disclosure
       title="Trier le cas d’usage"
+      aside={<TriageNote />}
       summary={
         done
           ? `Criticité retenue : ${CRITICALITY.find((c) => c.value === criticality)?.label ?? criticality}`
@@ -148,7 +150,8 @@ export function ClassificationPanel({
 
   return (
     <Disclosure
-      title="Qualifier au regard du règlement"
+      title="Pré-classifier au regard du règlement"
+      aside={<ClassificationNote />}
       summary={
         current
           ? `${ROLES.find((r) => r.value === current.organization_role)?.label ?? current.organization_role} · ${current.flags.length} qualification(s)`
