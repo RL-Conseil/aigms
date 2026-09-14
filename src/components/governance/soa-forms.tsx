@@ -18,6 +18,7 @@ export function SoaDecisionForm({
   currentStatus,
   currentJustification,
   expectation,
+  open: openByDefault = false,
 }: {
   organizationId: string
   requirementId: string
@@ -26,17 +27,24 @@ export function SoaDecisionForm({
   currentJustification: string | null
   /** Ce que la criticite attendue exige, rappele au moment d'ecrire. */
   expectation: string
+  /**
+   * Ouvert d'emblee. Le volet s'ouvrait auparavant sur toute exigence sans
+   * decision : juste sur une exigence, ingerable sur trente-trois. Le
+   * signalement passe desormais par le badge d'ecart et par le filtre, et
+   * l'ouverture se demande — par un clic, ou par `?exigence=` pour partager un
+   * lien vers celle qu'on veut faire trancher.
+   */
+  open?: boolean
 }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(
     decideApplicability,
     null,
   )
 
-  // Le volet s'ouvre de lui-meme sur une exigence sans decision, puis suit
-  // l'utilisateur. Il reste ouvert des qu'une reponse est revenue : sans cela,
-  // la revalidation le refermerait en emportant la confirmation — ou le refus —
-  // au moment precis ou elle informe.
-  const [open, setOpen] = useState(currentStatus === null)
+  // Il reste ouvert des qu'une reponse est revenue : sans cela, la
+  // revalidation le refermerait en emportant la confirmation — ou le refus — au
+  // moment precis ou elle informe.
+  const [open, setOpen] = useState(openByDefault)
 
   return (
     <details

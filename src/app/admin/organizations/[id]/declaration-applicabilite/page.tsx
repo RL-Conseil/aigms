@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty, Stat, StatStrip } from '@/components/ui'
 import { SoaDecisionForm } from '@/components/governance/soa-forms'
+import { SegmentedFilter } from '@/components/governance/segmented-filter'
 import {
   ACTIVITY_PROFILE_LABELS,
   CRITICALITY_LABELS,
@@ -85,10 +86,13 @@ const COVERAGE: Record<Coverage, { label: string; tone: 'ok' | 'warn' | 'stop' |
 
 export default async function StatementOfApplicabilityPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ ecart?: string; objectif?: string; exigence?: string }>
 }) {
   const { id } = await params
+  const { ecart, objectif, exigence } = await searchParams
   const supabase = await createClient()
 
   const [{ data: organization }, { data: rows }, { data: readinessData }, { data: requirementRows }] =
@@ -124,10 +128,60 @@ export default async function StatementOfApplicabilityPage({
   const requirementIds = new Map(
     (requirementRows ?? []).map((r) => [r.requirement_reference, r.id]),
   )
-  const soa = ((rows ?? []) as SoaRow[]).map((row) => ({
+  const all = ((rows ?? []) as SoaRow[]).map((row) => ({
     ...row,
     requirement_id: requirementIds.get(row.requirement_reference),
   }))
+
+  // Les filtres se lisent sur l'ENSEMBLE de la Déclaration : leurs compteurs ne
+  // doivent pas dépendre l'un de l'autre, sinon on ne sait plus ce qu'on compte.
+  const countGap = (gap: string) => all.filter((r) => r.gap === gap).length
+  const gapFilters = [
+    { key: '', label: 'Toutes', count: all.length },
+    { key: 'undecided', label: 'À décider', count: countGap('undecided'), tone: 'warn' as const },
+    {
+      key: 'exclusion_contested',
+      label: 'Exclusion à réexaminer',
+      count: countGap('exclusion_contested'),
+      tone: 'stop' as const,
+    },
+    {
+      key: 'technical_evidence_missing',
+      label: 'Preuve technique manquante',
+      count: countGap('technical_evidence_missing'),
+      tone: 'stop' as const,
+    },
+    {
+      key: 'evidence_missing',
+      label: 'Sans contrôle',
+      count: countGap('evidence_missing'),
+      tone: 'warn' as const,
+    },
+    {
+      key: 'conformes',
+      label: 'Sans écart',
+      count: all.filter((r) => r.gap === null).length,
+      tone: 'neutral' as const,
+    },
+  ]
+
+  const objectives = [...new Set(all.map((r) => r.objective_code))].sort()
+  const objectiveFilters = [
+    { key: '', label: 'Tous les objectifs' },
+    ...objectives.map((code) => ({
+      key: code,
+      label: code,
+      count: all.filter((r) => r.objective_code === code && r.gap !== null).length,
+      tone: 'warn' as const,
+    })),
+  ]
+
+  const soa = all.filter((row) => {
+    if (objectif && row.objective_code !== objectif) return false
+    if (!ecart) return true
+    if (ecart === 'conformes') return row.gap === null
+    return row.gap === ecart
+  })
   const byObjective = new Map<string, SoaRow[]>()
   for (const row of soa) {
     const list = byObjective.get(row.objective_code) ?? []
@@ -135,7 +189,7 @@ export default async function StatementOfApplicabilityPage({
     byObjective.set(row.objective_code, list)
   }
 
-  const tally = (coverage: Coverage) => soa.filter((r) => r.coverage === coverage).length
+  const tally = (coverage: Coverage) => all.filter((r) => r.coverage === coverage).length
   const covered = tally('evidenced')
   const partial = tally('declared') + tally('operating_without_evidence')
   const uncovered = tally('uncovered')
@@ -152,13 +206,13 @@ export default async function StatementOfApplicabilityPage({
       actions={<Badge tone="info">{organization.business_ref}</Badge>}
     >
       <StatStrip>
-        <Stat label="Couvertes et prouvées" value={covered} total={soa.length} tone="ok" />
-        <Stat label="Partiellement couvertes" value={partial} total={soa.length} tone="warn" />
-        <Stat label="Non couvertes" value={uncovered} total={soa.length} tone="stop" />
+        <Stat label="Couvertes et prouvées" value={covered} total={all.length} tone="ok" />
+        <Stat label="Partiellement couvertes" value={partial} total={all.length} tone="warn" />
+        <Stat label="Non couvertes" value={uncovered} total={all.length} tone="stop" />
         <Stat
           label="Sans décision portée"
           value={readiness.undecided ?? 0}
-          total={soa.length}
+          total={all.length}
           tone="stop"
         />
       </StatStrip>
@@ -172,7 +226,7 @@ export default async function StatementOfApplicabilityPage({
           Aucune case vide : chaque exigence est sélectionnée ou exclue, et justifiée
         </p>
         <p className="mt-1.5 text-sm leading-relaxed text-ink-600">
-          {readiness.decided ?? 0} exigence(s) décidée(s) sur {soa.length} —{' '}
+          {readiness.decided ?? 0} exigence(s) décidée(s) sur {all.length} —{' '}
           {readiness.selected ?? 0} sélectionnée(s), {readiness.excluded ?? 0} exclue(s).{' '}
           {profile ? (
             <>
@@ -205,6 +259,31 @@ export default async function StatementOfApplicabilityPage({
           organisation doit pouvoir démontrer. Ils ne reproduisent pas le texte de la norme, qui
           s’obtient auprès de l’ISO, et ne valent ni avis de certification ni conclusion d’audit.
         </p>
+      </div>
+
+      {/*
+        Trouver les trois exigences en ecart demandait de parcourir les
+        trente-huit. Les compteurs portent sur l'ensemble de la Declaration, pas
+        sur le filtre en cours : un filtre dont les compteurs dependent d'un
+        autre filtre ne dit plus ce qu'il compte.
+      */}
+      <div className="mb-5 flex flex-wrap gap-3">
+        <SegmentedFilter
+          label="Filtrer par écart"
+          param="ecart"
+          basePath={`/admin/organizations/${id}/declaration-applicabilite`}
+          selected={ecart}
+          current={{ objectif }}
+          options={gapFilters}
+        />
+        <SegmentedFilter
+          label="Filtrer par objectif de contrôle"
+          param="objectif"
+          basePath={`/admin/organizations/${id}/declaration-applicabilite`}
+          selected={objectif}
+          current={{ ecart }}
+          options={objectiveFilters}
+        />
       </div>
 
       {soa.length ? (
@@ -287,6 +366,7 @@ export default async function StatementOfApplicabilityPage({
                             currentStatus={row.soa_status}
                             currentJustification={row.soa_justification}
                             expectation={REGIME_LABELS[row.evidence_regime]?.expectation ?? ''}
+                            open={exigence === row.requirement_reference}
                           />
                         ) : null}
                       </div>
@@ -313,6 +393,20 @@ export default async function StatementOfApplicabilityPage({
             </Card>
           ))}
         </div>
+      ) : all.length ? (
+        <Card title="Aucune exigence dans ce filtre">
+          <Empty>
+            Rien ne correspond à cette combinaison — ce qui est une bonne nouvelle si vous cherchiez
+            un écart.{' '}
+            <Link
+              href={`/admin/organizations/${id}/declaration-applicabilite`}
+              className="text-brand-600 hover:underline"
+            >
+              Revenir à la Déclaration complète
+            </Link>
+            .
+          </Empty>
+        </Card>
       ) : (
         <Card title="Référentiel">
           <Empty>
