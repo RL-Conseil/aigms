@@ -265,7 +265,7 @@ export default async function StatementOfApplicabilityPage({
           {readiness.selected ?? 0} sélectionnée(s), {readiness.excluded ?? 0} exclue(s).{' '}
           {profile ? (
             <>
-              Le profil <strong className="font-medium text-ink-900">
+              Le rôle <strong className="font-medium text-ink-900">
                 « {ACTIVITY_PROFILE_LABELS[profile]} »
               </strong>{' '}
               impose une preuve technique sur {readiness.technical_expected ?? 0} d’entre elles.

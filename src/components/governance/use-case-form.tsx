@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useActionState } from 'react'
 import { createUseCase, type FormState } from '@/lib/actions/governance'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
@@ -54,20 +55,53 @@ export function UseCaseForm({
           <textarea id="uc-purpose" name="purpose" rows={3} required className={FIELD} />
         </Field>
 
-        <Field label="Activité servie" htmlFor="uc-activity" optional>
-          <select
-            id="uc-activity"
-            name="activityId"
-            defaultValue={defaultActivityId ?? ''}
-            className={FIELD}
-          >
-            <option value="">Non rattaché pour l’instant</option>
-            {activities.map((activity) => (
-              <option key={activity.id} value={activity.id}>
-                {activity.process_name} › {activity.name}
-              </option>
-            ))}
-          </select>
+        {/*
+          « Activité servie » se lisait comme « branche d'activité » — un sens
+          courant du mot en francais des affaires, et d'autant plus tentant que
+          la fiche de l'organisation porte deja un « Secteur ». Le libelle nomme
+          donc sa provenance, et l'aide dit ou alimenter la liste : un champ qui
+          laisse chercher d'ou vient son contenu est un champ mal ecrit.
+        */}
+        <Field
+          label="Activité du processus servie"
+          htmlFor="uc-activity"
+          optional
+          hint="Choisie dans la carte des processus de l’organisation, au format Processus › Activité."
+        >
+          {activities.length ? (
+            <select
+              id="uc-activity"
+              name="activityId"
+              defaultValue={defaultActivityId ?? ''}
+              className={FIELD}
+            >
+              <option value="">Non rattaché pour l’instant</option>
+              {activities.map((activity) => (
+                <option key={activity.id} value={activity.id}>
+                  {activity.process_name} › {activity.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            // Un select a une seule option muette proposerait un choix qui
+            // n'existe pas : on renvoie la ou il se cree.
+            <p className="rounded-md border border-ink-200 bg-ink-50 px-3.5 py-3 text-sm text-ink-600">
+              Aucune activité sur cette organisation.{' '}
+              <Link
+                href={`/admin/organizations/${organizationId}/processus/nouveau`}
+                className="text-brand-600 hover:underline"
+              >
+                Décrire un processus
+              </Link>{' '}
+              puis lui ajouter une activité, ou déclarer ce cas d’usage sans rattachement pour
+              l’instant.
+            </p>
+          )}
+          <p className="mt-1.5 text-xs leading-relaxed text-ink-500">
+            Sans rattachement, ce cas d’usage n’apparaîtra ni dans la carte des processus, ni dans
+            la couverture des contrôles, ni dans le graphe, ni dans l’indice de santé de la
+            gouvernance. Le rattachement se fait aussi après coup.
+          </p>
         </Field>
 
         <Field label="Bénéfice attendu" htmlFor="uc-benefit" optional error={errors.expectedBenefit}>

@@ -64,7 +64,7 @@ export function EvidenceMatrixCard({
   return (
     <Card
       title="Preuves attendues"
-      subtitle={`Profil « ${ACTIVITY_PROFILE_LABELS[profile]} » · ${demanding.length} typologie(s) exigeante(s)`}
+      subtitle={`Rôle « ${ACTIVITY_PROFILE_LABELS[profile]} » · ${demanding.length} typologie(s) exigeante(s)`}
     >
       {missing.length ? (
         <p className="mb-3 rounded-md border border-stop-600/30 bg-stop-600/5 px-3.5 py-2.5 text-sm text-stop-600">

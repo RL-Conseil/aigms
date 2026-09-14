@@ -58,3 +58,46 @@ sans affectation ciblée « porte sur toutes les organisations ».
 - Le mot vaut-il aussi bien pour une PME seule que pour un cabinet
   multi-clients ?
 - Le mot est-il déjà employé ailleurs dans le produit avec un autre sens ?
+
+## « Activité » désigne une activité de processus, et rien d'autre
+
+Version 1.1 — 14 septembre 2026
+
+Le mot portait trois sens dans l'interface :
+
+| Sens | Où |
+|---|---|
+| **Activité d'un processus** | la carte des processus : `Servir le client › Traitement des demandes clients` |
+| **Branche d'activité** | sens courant du français des affaires, d'autant plus tentant que la fiche de l'organisation porte un « Secteur » |
+| **Profil d'activité** | le rôle ISO/IEC 42001 de l'organisation — hébergeur, développeur, intégrateur, utilisateur métier |
+
+Le champ d'intake s'appelait « Activité servie » et proposait la première, sans
+dire d'où venait la liste. Il se lisait comme la deuxième.
+
+**Décision** : « activité » ne désigne qu'une activité de processus.
+
+- Le champ d'intake devient **« Activité du processus servie »**, avec son
+  origine en aide et un renvoi vers la carte.
+- Le troisième sens disparaît de l'interface : le rôle ISO/IEC 42001 s'appelle
+  partout **« rôle vis-à-vis de l'IA »**. Le nom technique
+  (`ai_activity_profile`) reste, il n'est pas lu par un utilisateur.
+
+### Pourquoi pas « tâche »
+
+La question s'est posée. Les référentiels répondent dans l'autre sens :
+
+| Référentiel | Ce qu'il pose |
+|---|---|
+| BPMN 2.0 | `Activity` est le sur-type ; `Task` est l'activité **atomique**. Une tâche est une activité, pas l'inverse. |
+| APQC PCF | Category → Process Group → Process → **Activity** → Task |
+| ISO 9001, approche processus | processus → activités ; la tâche relève du mode opératoire |
+| `SPEC_PROCESS` | pose Processus → Activité |
+
+Et le niveau décrit le confirme : « Présélection des candidatures » n'est pas
+une tâche, c'est un ensemble de tâches porté par un responsable et produisant un
+résultat identifiable. C'est la définition d'une activité.
+
+Le renommage aurait par ailleurs touché la table, six fonctions SQL
+(`process_map`, `governance_health`, `control_coverage`, `control_graph`,
+`risk_path`, `attention_by_organization`) et les références métier `ACT-P-`,
+pour un terme moins juste.

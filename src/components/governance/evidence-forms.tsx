@@ -90,7 +90,7 @@ export function EvidenceUploadForm({
         optional
         hint={
           profile
-            ? `Classées par criticité pour un profil « ${ACTIVITY_PROFILE_LABELS[profile]} ».`
+            ? `Classées par criticité pour un rôle « ${ACTIVITY_PROFILE_LABELS[profile]} ».`
             : 'Le rôle de l’organisation vis-à-vis de l’IA n’est pas renseigné : toutes les typologies sont proposées, sans criticité.'
         }
       >
