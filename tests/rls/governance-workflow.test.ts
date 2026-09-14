@@ -273,6 +273,42 @@ describe('Registre de decisions', () => {
 
     expect(failure.message).toMatch(/decision_review_date_required/)
   })
+
+  it("l'auteur ne peut pas se designer lui-meme comme personne appelee a se prononcer", async () => {
+    const failure = await asUser(db, DEMO.officerA, (c) =>
+      expectFailure(
+        c,
+        `insert into public.governance_decision
+           (tenant_id, organization_id, use_case_id, decision_type, subject,
+            decision_statement, rationale, status, submitted_by,
+            expected_approver_user_id)
+         values ($1, $2, $3, 'go_production', 'Adressee a soi-meme',
+                 'Autorise', 'Justification', 'submitted', $4, $4)`,
+        [DEMO.tenantA, DEMO.orgA, DEMO.useCasePilot, DEMO.officerA],
+      ),
+    )
+
+    expect(failure.message).toMatch(/appelée à se prononcer/)
+  })
+
+  it('une decision soumise porte la personne appelee a se prononcer', async () => {
+    const designated = await asUser(db, DEMO.officerA, async (c) => {
+      const { rows } = await c.query<{ expected_approver_user_id: string | null }>(
+        `insert into public.governance_decision
+           (tenant_id, organization_id, use_case_id, decision_type, subject,
+            decision_statement, rationale, status, submitted_by,
+            expected_approver_user_id)
+         values ($1, $2, $3, 'go_production', 'Adressee au relecteur',
+                 'Autorise', 'Justification', 'submitted', $4, $5)
+         returning expected_approver_user_id`,
+        [DEMO.tenantA, DEMO.orgA, DEMO.useCasePilot, DEMO.officerA, DEMO.riskOwnerA],
+      )
+      return rows[0]!.expected_approver_user_id
+    })
+
+    // Une adresse, pas un droit : designer quelqu'un ne lui confere rien.
+    expect(designated).toBe(DEMO.riskOwnerA)
+  })
 })
 
 describe('Moteur de reevaluation', () => {

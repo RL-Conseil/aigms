@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Card } from '@/components/ui'
 import { DecisionForm } from '@/components/governance/decision-forms'
+import { describePerson, organizationPeople } from '@/lib/governance/people'
 
 /**
  * Soumission d'une decision.
@@ -23,13 +24,14 @@ export default async function NewDecisionPage({
   const search = await searchParams
   const supabase = await createClient()
 
-  const [{ data: organization }, { data: useCases }] = await Promise.all([
+  const [{ data: organization }, { data: useCases }, people] = await Promise.all([
     supabase.from('organization').select('id, name').eq('id', id).maybeSingle(),
     supabase
       .from('ai_use_case')
       .select('id, name, business_ref')
       .eq('organization_id', id)
       .order('business_ref'),
+    organizationPeople(id, true),
   ])
 
   if (!organization) notFound()
@@ -61,6 +63,10 @@ export default async function NewDecisionPage({
           <DecisionForm
             organizationId={id}
             useCases={useCases ?? []}
+            people={people.map((person) => ({
+              userId: person.userId,
+              label: describePerson(person),
+            }))}
             defaultUseCaseId={search['cas-d-usage']}
           />
         </Card>

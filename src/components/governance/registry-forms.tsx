@@ -7,6 +7,7 @@ import {
   linkAssetToUseCase,
   linkVendorToUseCase,
   reviewVendor,
+  updateVendorLabels,
   saveImpactAssessment,
   saveOversightPlan,
   type FormState,
@@ -627,6 +628,104 @@ export function ImpactForm({ useCaseId }: { useCaseId: string }) {
 
           <FormFeedback state={state} />
           <Submit pending={pending} idle="Enregistrer l’évaluation" />
+        </form>
+      )}
+    </Modal>
+  )
+}
+
+// -----------------------------------------------------------------------------
+// Corriger la fiche d'un fournisseur
+// -----------------------------------------------------------------------------
+// Ce qui decrit se corrige ; ce qui atteste se prononce. La criticite, le DPA,
+// l'evaluation de securite, la reversibilite et le resultat de la revue ne sont
+// pas ici : ils alimentent le gate PRODUCTION et relevent de la revue tiers.
+export function VendorLabelForm({
+  organizationId,
+  vendor,
+}: {
+  organizationId: string
+  vendor: {
+    id: string
+    name: string
+    country_code: string | null
+    subprocessors: string | null
+    notes: string | null
+  }
+}) {
+  const [state, formAction, pending] = useActionState<FormState | null, FormData>(
+    updateVendorLabels,
+    null,
+  )
+  const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
+
+  return (
+    <Modal
+      trigger="Corriger la fiche"
+      title={`Corriger la fiche — ${vendor.name}`}
+      description="Ce qui décrit le fournisseur. Sa criticité et sa revue se prononcent ailleurs."
+    >
+      {() => (
+        <form action={formAction} className="flex flex-col gap-4">
+          <input type="hidden" name="organizationId" value={organizationId} />
+          <input type="hidden" name="vendorId" value={vendor.id} />
+
+          <div className="grid gap-4 sm:grid-cols-[1fr_120px]">
+            <Field label="Nom" htmlFor={`vlab-name-${vendor.id}`} error={errors.name}>
+              <input
+                id={`vlab-name-${vendor.id}`}
+                name="name"
+                type="text"
+                required
+                defaultValue={vendor.name}
+                className={FIELD}
+              />
+            </Field>
+            <Field
+              label="Pays"
+              htmlFor={`vlab-country-${vendor.id}`}
+              optional
+              error={errors.countryCode}
+            >
+              <input
+                id={`vlab-country-${vendor.id}`}
+                name="countryCode"
+                type="text"
+                maxLength={2}
+                defaultValue={vendor.country_code ?? ''}
+                className={FIELD}
+              />
+            </Field>
+          </div>
+
+          <Field label="Sous-traitants ultérieurs" htmlFor={`vlab-sub-${vendor.id}`} optional>
+            <textarea
+              id={`vlab-sub-${vendor.id}`}
+              name="subprocessors"
+              rows={2}
+              defaultValue={vendor.subprocessors ?? ''}
+              className={FIELD}
+            />
+          </Field>
+
+          <Field label="Notes" htmlFor={`vlab-notes-${vendor.id}`} optional>
+            <textarea
+              id={`vlab-notes-${vendor.id}`}
+              name="notes"
+              rows={2}
+              defaultValue={vendor.notes ?? ''}
+              className={FIELD}
+            />
+          </Field>
+
+          <p className="rounded-md border border-ink-200 bg-ink-50 px-3.5 py-3 text-xs leading-relaxed text-ink-600">
+            La criticité, le DPA, l’évaluation de sécurité, la réversibilité et le résultat de la
+            revue ne se corrigent pas ici : ils alimentent le gate PRODUCTION et se prononcent dans
+            la revue tiers, datés et journalisés.
+          </p>
+
+          <FormFeedback state={state} />
+          <Submit pending={pending} idle="Enregistrer les corrections" />
         </form>
       )}
     </Modal>

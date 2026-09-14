@@ -67,14 +67,17 @@ export function AttentionBar({
     )
   }
 
+  // Chaque compteur mene a ce qu'il compte, filtre. Renvoyer vers l'ecran sans
+  // son filtre oblige a refaire soi-meme le tri qu'on vient de lire — et fait
+  // douter du chiffre.
   const destination: Record<AttentionKind, string> = {
-    overdue_actions: '/admin/pilotage',
-    open_incidents: '/admin/pilotage',
+    overdue_actions: `/admin/pilotage?organisation=${organizationId}`,
+    open_incidents: `/admin/pilotage?organisation=${organizationId}`,
+    reviews_due: `/admin/pilotage?organisation=${organizationId}`,
     high_risks_open: `/admin/organizations/${organizationId}/processus?vue=risques`,
-    reviews_due: '/admin/pilotage',
-    stale_evidence: `/admin/organizations/${organizationId}/preuves`,
-    evidence_to_review: `/admin/organizations/${organizationId}/preuves`,
-    soa_undecided: `/admin/organizations/${organizationId}/declaration-applicabilite`,
+    stale_evidence: `/admin/organizations/${organizationId}/preuves?etat=a-renouveler`,
+    evidence_to_review: `/admin/organizations/${organizationId}/preuves?etat=a-valider`,
+    soa_undecided: `/admin/organizations/${organizationId}/declaration-applicabilite?ecart=undecided`,
   }
 
   return (

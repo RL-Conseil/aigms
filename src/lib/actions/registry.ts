@@ -488,3 +488,64 @@ export async function saveImpactAssessment(
       : 'Évaluation d’impact enregistrée.',
   }
 }
+
+// -----------------------------------------------------------------------------
+// Corriger la fiche d'un fournisseur
+// -----------------------------------------------------------------------------
+// Une faute de frappe sur une raison sociale n'a pas a passer par une revue
+// tiers, et un fournisseur mal orthographie reste mal orthographie longtemps si
+// le seul chemin pour le corriger est de le recreer.
+//
+// LA LIGNE DE PARTAGE : ce qui DECRIT se corrige, ce qui ATTESTE se prononce.
+// Restent donc hors de cette action — et dans la revue tiers, ou ils sont dates
+// et journalises : la criticite, le DPA signe, l'evaluation de securite, la
+// reversibilite documentee, le resultat de la revue. Ils alimentent le gate
+// PRODUCTION ; les corriger par un formulaire d'etiquette reviendrait a lever
+// un gate sans acte.
+const vendorLabelSchema = z.object({
+  organizationId: z.string().uuid(),
+  vendorId: z.string().uuid(),
+  name: z.string().trim().min(2, 'Nom trop court.').max(200),
+  countryCode: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z]{2}$/, 'Code ISO à deux lettres.')
+    .optional()
+    .or(z.literal('')),
+  subprocessors: z.string().trim().max(2000).optional().or(z.literal('')),
+  notes: z.string().trim().max(2000).optional().or(z.literal('')),
+})
+
+export async function updateVendorLabels(
+  _previous: FormState | null,
+  formData: FormData,
+): Promise<FormState> {
+  const parsed = vendorLabelSchema.safeParse({
+    organizationId: formData.get('organizationId'),
+    vendorId: formData.get('vendorId'),
+    name: formData.get('name'),
+    countryCode: formData.get('countryCode') ?? '',
+    subprocessors: formData.get('subprocessors') ?? '',
+    notes: formData.get('notes') ?? '',
+  })
+  if (!parsed.success) return firstIssues(parsed.error)
+
+  const input = parsed.data
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('vendor')
+    .update({
+      name: input.name,
+      country_code: input.countryCode ? input.countryCode.toUpperCase() : null,
+      subprocessors: input.subprocessors || null,
+      notes: input.notes || null,
+    })
+    .eq('id', input.vendorId)
+    .select('id')
+
+  if (error) return { ok: false, message: explain(error) }
+  if (!data?.length) return { ok: false, message: 'Votre rôle ne permet pas cette écriture.' }
+
+  revalidatePath(`/admin/organizations/${input.organizationId}`)
+  return { ok: true, message: 'Fiche corrigée. La revue tiers, elle, reste ce qu’elle était.' }
+}

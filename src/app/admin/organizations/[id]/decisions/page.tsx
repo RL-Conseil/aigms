@@ -9,6 +9,7 @@ import {
   DecisionLinkForm,
   DecisionRulingForm,
 } from '@/components/governance/decision-forms'
+import { describePerson, organizationPeople } from '@/lib/governance/people'
 import {
   DECISION_STATUS_LABELS,
   DECISION_TYPE_LABELS,
@@ -39,6 +40,7 @@ type Decision = {
   approved_at: string | null
   submitted_at: string | null
   use_case_id: string | null
+  expected_approver_user_id: string | null
 }
 
 const STATUS_FILTERS = [
@@ -70,12 +72,13 @@ export default async function DecisionsPage({
     { data: evidences },
     { data: impacts },
     { data: links },
+    people,
   ] = await Promise.all([
     supabase.from('organization').select('id, name, business_ref').eq('id', id).maybeSingle(),
     supabase
       .from('governance_decision')
       .select(
-        'id, business_ref, decision_type, subject, decision_statement, conditions, rationale, status, effective_from, review_due_at, approved_at, submitted_at, use_case_id',
+        'id, business_ref, decision_type, subject, decision_statement, conditions, rationale, status, effective_from, review_due_at, approved_at, submitted_at, use_case_id, expected_approver_user_id',
       )
       .eq('organization_id', id)
       .order('submitted_at', { ascending: false, nullsFirst: false }),
@@ -92,12 +95,14 @@ export default async function DecisionsPage({
       .select('id, scope_description, business_ref')
       .eq('organization_id', id),
     supabase.from('decision_link').select('decision_id, target_type'),
+    organizationPeople(id, true),
   ])
 
   if (!organization) notFound()
 
   const decisions = (decisionRows ?? []) as Decision[]
   const useCaseName = new Map((useCases ?? []).map((u) => [u.id, u.name]))
+  const personName = new Map(people.map((person) => [person.userId, describePerson(person)]))
 
   const linkCount = new Map<string, number>()
   for (const link of links ?? []) {
@@ -110,6 +115,8 @@ export default async function DecisionsPage({
   )
   const reviewDue = inForce.filter((d) => d.review_due_at !== null && d.review_due_at <= today)
   const unfounded = decisions.filter((d) => !linkCount.has(d.id))
+  // Une decision soumise que personne n'attend ne progresse pas.
+  const unaddressed = pending.filter((d) => !d.expected_approver_user_id)
 
   const shown = decisions.filter((decision) => {
     if (etat === 'a-instruire') return ['draft', 'submitted'].includes(decision.status)
@@ -189,6 +196,7 @@ export default async function DecisionsPage({
         <Stat label="À instruire" value={pending.length} tone="warn" />
         <Stat label="Revues échues" value={reviewDue.length} tone="stop" />
         <Stat label="Sans élément probant" value={unfounded.length} tone="warn" />
+        <Stat label="Adressées à personne" value={unaddressed.length} tone="warn" />
       </StatStrip>
 
       <div className="mb-5">
@@ -254,6 +262,24 @@ export default async function DecisionsPage({
                       <blockquote className="mt-1.5 border-l-2 border-ink-200 pl-3 text-xs leading-relaxed text-ink-600">
                         {decision.rationale}
                       </blockquote>
+                    ) : null}
+
+                    {['draft', 'submitted'].includes(decision.status) ? (
+                      <p className="mt-2 text-xs text-ink-500">
+                        {decision.expected_approver_user_id ? (
+                          <>
+                            Appelée à se prononcer :{' '}
+                            <span className="font-medium text-ink-700">
+                              {personName.get(decision.expected_approver_user_id) ??
+                                'personne déclarée'}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-warn-600">
+                            Adressée à personne — désigner qui doit se prononcer.
+                          </span>
+                        )}
+                      </p>
                     ) : null}
 
                     <p className="mt-2 text-xs text-ink-400">
