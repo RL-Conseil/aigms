@@ -26,6 +26,13 @@ export type FilterOption = {
   label: string
   count?: number
   tone?: 'neutral' | 'warn' | 'stop'
+  /**
+   * Ce que le libelle ne dit pas. « A.2 » ne se retient pas ; « Politiques
+   * relatives a l'IA » si. La note est donnee DEUX FOIS — en `title` pour la
+   * souris, et en texte masque pour le clavier et la synthese vocale — parce
+   * qu'un `title` seul n'est atteignable ni par l'un ni par l'autre.
+   */
+  hint?: string
 }
 
 export function SegmentedFilter({
@@ -69,11 +76,13 @@ export function SegmentedFilter({
             key={option.key || 'tout'}
             href={hrefFor(option.key)}
             aria-current={active ? 'page' : undefined}
+            title={option.hint}
             className={`inline-flex items-baseline rounded px-3 py-1.5 text-sm ${
               active ? 'bg-night-900 font-medium text-white' : 'text-ink-600 hover:bg-ink-100'
             }`}
           >
             {option.label}
+            {option.hint ? <span className="sr-only"> — {option.hint}</span> : null}
             {option.count !== undefined ? (
               <span
                 className={`ml-1.5 text-xs tabular-nums ${

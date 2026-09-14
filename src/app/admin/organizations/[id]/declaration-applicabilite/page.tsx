@@ -5,6 +5,7 @@ import { Shell } from '@/components/shell'
 import { Badge, Card, Empty, Stat, StatStrip } from '@/components/ui'
 import { SoaDecisionForm } from '@/components/governance/soa-forms'
 import { SegmentedFilter } from '@/components/governance/segmented-filter'
+import { InfoTip } from '@/components/info-tip'
 import {
   ACTIVITY_PROFILE_LABELS,
   CRITICALITY_LABELS,
@@ -165,12 +166,20 @@ export default async function StatementOfApplicabilityPage({
     },
   ]
 
-  const objectives = [...new Set(all.map((r) => r.objective_code))].sort()
+  // Tri naturel : « A.10 » suit « A.9 ». Un tri alphabetique le placerait en
+  // tete, entre « Tous » et « A.2 », ce qui se lit comme une erreur.
+  const objectiveRank = (code: string) => Number(code.replace(/^A\./, '')) || 0
+  const objectiveTitles = new Map(all.map((r) => [r.objective_code, r.objective_title]))
+  const objectives = [...new Set(all.map((r) => r.objective_code))].sort(
+    (a, b) => objectiveRank(a) - objectiveRank(b),
+  )
   const objectiveFilters = [
     { key: '', label: 'Tous les objectifs' },
     ...objectives.map((code) => ({
       key: code,
       label: code,
+      // « A.2 » ne se retient pas ; son intitule si.
+      hint: objectiveTitles.get(code),
       count: all.filter((r) => r.objective_code === code && r.gap !== null).length,
       tone: 'warn' as const,
     })),
@@ -203,7 +212,33 @@ export default async function StatementOfApplicabilityPage({
       organization={{ id, section: 'soa' }}
       title="Déclaration d’Applicabilité"
       subtitle="ISO/IEC 42001:2023, Annexe A — 38 contrôles de référence en 9 objectifs."
-      actions={<Badge tone="info">{organization.business_ref}</Badge>}
+      actions={
+        <div className="flex items-center gap-3">
+          <Badge tone="info">{organization.business_ref}</Badge>
+          {/*
+            La mise en garde doit rester DISPONIBLE sans rester PRESENTE : on la
+            lit une fois, on veut pouvoir la relire, et elle n'a pas a occuper
+            le haut de l'ecran a chaque visite.
+          */}
+          <InfoTip
+            label="Ce que cette Déclaration est, et n’est pas"
+            title="L’Annexe A n’est pas une liste à cocher"
+          >
+            <p className="text-sm leading-relaxed text-ink-600">
+              C’est un catalogue dans lequel on puise : le choix des contrôles retenus, comme celui
+              des contrôles écartés, se justifie par l’appréciation des risques et l’évaluation
+              d’impact. Une exclusion motivée est une réponse recevable ; une exigence laissée sans
+              réponse ne l’est pas.
+            </p>
+            <p className="mt-3 text-[13px] leading-relaxed text-ink-500">
+              Les intitulés et résumés présentés ici sont rédigés par AIGMS et expriment ce qu’une
+              organisation doit pouvoir démontrer. Ils ne reproduisent pas le texte de la norme, qui
+              s’obtient auprès de l’ISO, et ne valent ni avis de certification ni conclusion
+              d’audit.
+            </p>
+          </InfoTip>
+        </div>
+      }
     >
       <StatStrip>
         <Stat label="Couvertes et prouvées" value={covered} total={all.length} tone="ok" />
@@ -241,23 +276,6 @@ export default async function StatementOfApplicabilityPage({
               peut être attribuée, et le régime de preuve reste indéterminé.
             </span>
           )}
-        </p>
-      </div>
-
-      <div className="mb-5 rounded-lg border border-ink-200 bg-white px-5 py-4">
-        <p className="text-sm leading-relaxed text-ink-600">
-          <strong className="font-semibold text-ink-900">
-            L’Annexe A n’est pas une liste à cocher.
-          </strong>{' '}
-          C’est un catalogue dans lequel on puise : le choix des contrôles retenus, comme celui des
-          contrôles écartés, se justifie par l’appréciation des risques et l’évaluation d’impact.
-          Une exclusion motivée est une réponse recevable ; une exigence laissée sans réponse ne
-          l’est pas.
-        </p>
-        <p className="mt-3 text-[13px] leading-relaxed text-ink-500">
-          Les intitulés et résumés présentés ici sont rédigés par AIGMS et expriment ce qu’une
-          organisation doit pouvoir démontrer. Ils ne reproduisent pas le texte de la norme, qui
-          s’obtient auprès de l’ISO, et ne valent ni avis de certification ni conclusion d’audit.
         </p>
       </div>
 

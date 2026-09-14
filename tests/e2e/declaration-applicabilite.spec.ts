@@ -103,3 +103,40 @@ test('une exigence s’ouvre par son adresse', async ({ page }) => {
   const exigence = page.locator('li').filter({ hasText: 'A.3.2' }).first()
   await expect(exigence.getByRole('textbox')).toBeVisible()
 })
+
+test('les objectifs se lisent, dans l’ordre et avec leur intitulé', async ({ page }) => {
+  await page.goto(`/admin/organizations/${ORG}/declaration-applicabilite`)
+
+  const parObjectif = page.getByRole('navigation', { name: 'Filtrer par objectif de contrôle' })
+  const codes = await parObjectif.getByRole('link').allTextContents()
+
+  // A.10 vient APRES A.9. Un tri alphabetique le placerait en tete, ce qui se
+  // lit comme une erreur.
+  const ordre = codes.slice(1).map((texte) => Number(texte.match(/A\.(\d+)/)![1]))
+  expect(ordre).toEqual([...ordre].sort((a, b) => a - b))
+  expect(ordre.at(-1)).toBe(10)
+
+  // « A.2 » ne se retient pas : son intitulé accompagne le code, pour la souris
+  // comme pour la synthèse vocale.
+  const a2 = parObjectif.getByRole('link', { name: /^A\.2\b/ })
+  // L'intitule vient du referentiel charge, apostrophe droite comprise : le
+  // parcours verifie ce que la base contient, pas ce qu'on aimerait y lire.
+  await expect(a2).toHaveAttribute('title', "Politiques relatives à l'IA")
+  await expect(a2).toContainText('A.2')
+})
+
+test('la mise en garde reste disponible sans occuper la page', async ({ page }) => {
+  await page.goto(`/admin/organizations/${ORG}/declaration-applicabilite`)
+
+  // Elle n'est plus imposée à chaque visite…
+  await expect(page.getByText(/C’est un catalogue dans lequel on puise/)).toHaveCount(0)
+
+  // …mais reste à un clic, et se ferme au clavier.
+  await page.getByRole('button', { name: 'Ce que cette Déclaration est, et n’est pas' }).click()
+  const note = page.getByRole('dialog', { name: 'Ce que cette Déclaration est, et n’est pas' })
+  await expect(note.getByText(/C’est un catalogue dans lequel on puise/)).toBeVisible()
+  await expect(note.getByText(/ne valent ni avis de certification/)).toBeVisible()
+
+  await page.keyboard.press('Escape')
+  await expect(note).toHaveCount(0)
+})
