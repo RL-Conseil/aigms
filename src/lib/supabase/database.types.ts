@@ -4563,24 +4563,36 @@ export type Database = {
       }
       tenant: {
         Row: {
+          brand_label: string
+          brand_tagline: string | null
           created_at: string
           id: string
+          logo_path: string | null
+          logo_updated_at: string | null
           name: string
           slug: string
           status: "active" | "suspended" | "archived"
           updated_at: string
         }
         Insert: {
+          brand_label?: string
+          brand_tagline?: string | null
           created_at?: string
           id?: string
+          logo_path?: string | null
+          logo_updated_at?: string | null
           name: string
           slug: string
           status?: "active" | "suspended" | "archived"
           updated_at?: string
         }
         Update: {
+          brand_label?: string
+          brand_tagline?: string | null
           created_at?: string
           id?: string
+          logo_path?: string | null
+          logo_updated_at?: string | null
           name?: string
           slug?: string
           status?: "active" | "suspended" | "archived"
@@ -5215,6 +5227,7 @@ export type Database = {
           typologies: Json
         }[]
       }
+      tenant_branding: { Args: never; Returns: Json }
       transition_use_case: {
         Args: { p_rationale?: string; p_target: string; p_use_case_id: string }
         Returns: Json

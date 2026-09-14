@@ -3,18 +3,26 @@
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { Turnstile } from '@/components/turnstile'
 
 /**
  * Mire d'authentification : identifiant et mot de passe, rien d'autre.
  *
  * Le message d'echec ne distingue pas un compte inconnu d'un mot de passe
  * errone : le formulaire ne doit pas servir a enumerer les comptes ouverts.
+ *
+ * LE CAPTCHA n'apparait que si `NEXT_PUBLIC_TURNSTILE_SITE_KEY` est renseignee,
+ * et il ne protege que si Supabase est configure pour exiger le jeton
+ * (Authentication > Attack protection). Le jeton part dans tous les cas ou il
+ * existe : c'est Supabase qui refuse, pas cet ecran — meme principe que pour
+ * les regles de gouvernance.
  */
-export function LoginForm() {
+export function LoginForm({ captchaSiteKey }: { captchaSiteKey?: string }) {
   const router = useRouter()
   const params = useSearchParams()
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -25,8 +33,18 @@ export function LoginForm() {
     const email = String(form.get('email') ?? '')
     const password = String(form.get('password') ?? '')
 
+    if (captchaSiteKey && !captchaToken) {
+      setError('Merci de valider le contrôle anti-robot.')
+      setPending(false)
+      return
+    }
+
     const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      ...(captchaToken ? { options: { captchaToken } } : {}),
+    })
 
     if (error) {
       setError('Identifiants invalides.')
@@ -69,6 +87,10 @@ export function LoginForm() {
           className="w-full rounded-md border border-ink-200 bg-white px-3.5 py-2.5 text-[15px] outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
         />
       </div>
+
+      {captchaSiteKey ? (
+        <Turnstile siteKey={captchaSiteKey} onToken={setCaptchaToken} />
+      ) : null}
 
       {error ? (
         <p role="alert" className="rounded-md bg-rose-50 px-4 py-3 text-sm text-rose-800">

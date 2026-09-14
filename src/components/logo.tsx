@@ -40,24 +40,69 @@ export function LogoMark({
   )
 }
 
+/**
+ * Bloc-marque : glyphe, nom, et mention de l'editeur.
+ *
+ * Trois choses varient, et c'est ce qui rend la revente en marque blanche
+ * possible sans fork :
+ *
+ *   * `logoUrl` remplace le glyphe ET le nom par l'image deposee par le tenant —
+ *     un logo revendu porte deja son propre nom, le doubler serait redondant ;
+ *   * `label` remplace « AIGMS » ;
+ *   * `tagline` porte « Designed by Caritis », et disparait quand elle est
+ *     nulle — c'est le principe meme de la marque blanche.
+ */
 export function Wordmark({
   size = 32,
   className,
   tone = 'dark',
+  label = 'AIGMS',
+  tagline = 'Designed by Caritis',
+  logoUrl = null,
 }: {
   size?: number
   className?: string
   tone?: 'dark' | 'light'
+  label?: string
+  tagline?: string | null
+  logoUrl?: string | null
 }) {
+  if (logoUrl) {
+    return (
+      /* eslint-disable-next-line @next/next/no-img-element -- URL signée d'un
+         bucket privé : l'optimiseur d'images ne peut pas la revalider. */
+      <img
+        src={logoUrl}
+        alt={label}
+        style={{ height: size }}
+        className={`w-auto max-w-[240px] object-contain ${className ?? ''}`}
+      />
+    )
+  }
+
   return (
     <span className={`inline-flex items-center gap-3 ${className ?? ''}`}>
       <LogoMark size={size} tone={tone} />
-      <span
-        className={`font-serif text-xl font-semibold tracking-tight ${
-          tone === 'light' ? 'text-white' : 'text-ink-900'
-        }`}
-      >
-        AIGMS
+      <span className="inline-flex items-baseline gap-2">
+        <span
+          className={`font-serif text-xl font-semibold tracking-tight ${
+            tone === 'light' ? 'text-white' : 'text-ink-900'
+          }`}
+        >
+          {label}
+        </span>
+        {tagline ? (
+          <span
+            className={`font-serif text-[15px] font-normal tracking-tight ${
+              tone === 'light' ? 'text-white/70' : 'text-ink-600'
+            }`}
+          >
+            <span aria-hidden="true" className="mr-1.5">
+              –
+            </span>
+            {tagline}
+          </span>
+        ) : null}
       </span>
     </span>
   )

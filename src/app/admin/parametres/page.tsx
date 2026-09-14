@@ -2,7 +2,8 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty, Field } from '@/components/ui'
-import { ProfileForm, TenantForm } from '@/components/admin/settings-forms'
+import { BrandingForm, ProfileForm, TenantForm } from '@/components/admin/settings-forms'
+import { tenantBranding } from '@/lib/branding'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import { ROLE_DESCRIPTIONS, ROLE_LABELS, type AppRole } from '@/lib/domain/roles'
 import { CurrentOrganizationForm } from '@/components/governance/current-organization'
@@ -22,6 +23,7 @@ export default async function SettingsPage() {
   const administrating = isAdministrating(viewer)
   const supabase = await createClient()
 
+  const branding = await tenantBranding()
   const organizations = await managedOrganizations()
   const current = organizations.find((o) => o.id === viewer.currentOrganizationId) ?? null
 
@@ -211,6 +213,25 @@ export default async function SettingsPage() {
                 <Empty>Aucun espace rattaché à ce compte.</Empty>
               )}
             </Card>
+
+            {/*
+              La marque se regle ici et nulle part ailleurs : c'est le cabinet
+              qui revend, pas son client. La mire de connexion n'en depend pas —
+              avant authentification, on ne sait pas quel tenant se presente.
+            */}
+            {administrating && viewer.tenantId ? (
+              <Card
+                title="Marque de la plateforme"
+                subtitle="Ce que vos clients voient en haut de chaque écran."
+              >
+                <BrandingForm
+                  tenantId={viewer.tenantId}
+                  label={branding.label}
+                  tagline={branding.tagline}
+                  logoUrl={branding.logoUrl}
+                />
+              </Card>
+            ) : null}
           </div>
         </div>
       </div>

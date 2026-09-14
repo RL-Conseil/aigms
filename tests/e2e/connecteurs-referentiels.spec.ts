@@ -20,7 +20,7 @@ test('la mire de connexion renvoie vers l’administration, pas vers l’officer
   await page.goto('/')
 
   await expect(
-    page.getByRole('heading', { name: 'Accès à l’espace de gouvernance' }),
+    page.getByRole('heading', { name: 'Accès à votre espace de gouvernance' }),
   ).toBeVisible()
   await expect(
     page.getByText('L’accès est réservé aux comptes ouverts par l’administration de la plateforme.'),

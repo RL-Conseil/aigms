@@ -539,3 +539,132 @@ export async function removeOrganizationLogo(
   revalidatePath(`/admin/organizations/${organization.id}`)
   return { ok: true, message: 'Logo retiré. Les documents reprendront l’en-tête par défaut.' }
 }
+
+// -----------------------------------------------------------------------------
+// Marque du tenant (revente en marque blanche)
+// -----------------------------------------------------------------------------
+// AIGMS se revend. Un cabinet qui pilote un portefeuille veut que ses clients
+// voient SA marque : c'est un reglage, pas un fork.
+//
+// A ne pas confondre avec le logo d'une ORGANISATION (0035), qui sert ses
+// documents remis. L'un dit quel outil on utilise, l'autre de qui est la piece.
+const brandingSchema = z.object({
+  tenantId: z.string().uuid(),
+  brandLabel: z.string().trim().min(1, 'La marque a besoin d’un nom.').max(60),
+  brandTagline: z.string().trim().max(80).optional().or(z.literal('')),
+})
+
+export async function updateTenantBranding(
+  _previous: Result | null,
+  formData: FormData,
+): Promise<Result> {
+  const admin = await requireAdministratedTenant()
+  if (!admin) {
+    return { ok: false, message: "Cette action relève de l'administration de la plateforme." }
+  }
+
+  const parsed = brandingSchema.safeParse({
+    tenantId: formData.get('tenantId'),
+    brandLabel: formData.get('brandLabel'),
+    brandTagline: formData.get('brandTagline') ?? '',
+  })
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0]?.message ?? 'Formulaire incomplet.' }
+  }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('tenant')
+    .update({
+      brand_label: parsed.data.brandLabel,
+      // Vide vaut NULL : c'est ainsi que la mention de l'editeur disparait.
+      brand_tagline: parsed.data.brandTagline || null,
+    })
+    .eq('id', parsed.data.tenantId)
+    .select('id')
+
+  if (error) return { ok: false, message: `Enregistrement refusé : ${error.message}` }
+  if (!data?.length) return { ok: false, message: 'Votre rôle ne permet pas cette écriture.' }
+
+  revalidatePath('/admin', 'layout')
+  return { ok: true, message: 'Marque enregistrée. Elle s’applique à tous les écrans.' }
+}
+
+export async function uploadTenantLogo(
+  _previous: Result | null,
+  formData: FormData,
+): Promise<Result> {
+  const admin = await requireAdministratedTenant()
+  if (!admin) {
+    return { ok: false, message: "Cette action relève de l'administration de la plateforme." }
+  }
+
+  const file = formData.get('logo')
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, message: 'Choisir un fichier image.' }
+  }
+  if (!LOGO_TYPES.includes(file.type)) {
+    return { ok: false, message: 'Formats acceptés : PNG, JPEG, SVG ou WebP.' }
+  }
+  if (file.size > LOGO_MAX_BYTES) {
+    return { ok: false, message: 'Le logo doit peser moins de 2 Mo.' }
+  }
+
+  const supabase = await createClient()
+  const { data: tenant } = await supabase
+    .from('tenant')
+    .select('id, logo_path')
+    .eq('id', admin.tenantId)
+    .maybeSingle()
+  if (!tenant) return { ok: false, message: 'Tenant introuvable.' }
+
+  const extension =
+    file.type === 'image/svg+xml'
+      ? 'svg'
+      : file.type === 'image/png'
+        ? 'png'
+        : file.type === 'image/webp'
+          ? 'webp'
+          : 'jpg'
+  const path = `${tenant.id}/plateforme/logo.${extension}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('branding')
+    .upload(path, file, { contentType: file.type, upsert: true })
+  if (uploadError) return { ok: false, message: `Dépôt refusé : ${uploadError.message}` }
+
+  if (tenant.logo_path && tenant.logo_path !== path) {
+    await supabase.storage.from('branding').remove([tenant.logo_path])
+  }
+
+  const { error } = await supabase.from('tenant').update({ logo_path: path }).eq('id', tenant.id)
+  if (error) return { ok: false, message: `Enregistrement refusé : ${error.message}` }
+
+  revalidatePath('/admin', 'layout')
+  return { ok: true, message: 'Logo enregistré. Il remplace la marque dans l’en-tête.' }
+}
+
+export async function removeTenantLogo(
+  _previous: Result | null,
+  _formData: FormData,
+): Promise<Result> {
+  const admin = await requireAdministratedTenant()
+  if (!admin) {
+    return { ok: false, message: "Cette action relève de l'administration de la plateforme." }
+  }
+
+  const supabase = await createClient()
+  const { data: tenant } = await supabase
+    .from('tenant')
+    .select('id, logo_path')
+    .eq('id', admin.tenantId)
+    .maybeSingle()
+  if (!tenant?.logo_path) return { ok: false, message: 'Aucun logo à retirer.' }
+
+  await supabase.storage.from('branding').remove([tenant.logo_path])
+  const { error } = await supabase.from('tenant').update({ logo_path: null }).eq('id', tenant.id)
+  if (error) return { ok: false, message: `Retrait refusé : ${error.message}` }
+
+  revalidatePath('/admin', 'layout')
+  return { ok: true, message: 'Logo retiré. L’en-tête reprend la marque par défaut.' }
+}

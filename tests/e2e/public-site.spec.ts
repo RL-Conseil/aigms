@@ -13,7 +13,7 @@ test('l’accueil est la mire de connexion', async ({ page, context }) => {
   await context.clearCookies()
   await page.goto('/')
 
-  await expect(page.getByRole('heading', { name: 'Accès à l’espace de gouvernance' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Accès à votre espace de gouvernance' })).toBeVisible()
   await expect(page.getByLabel('Adresse électronique')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Se connecter' })).toBeVisible()
 
@@ -40,7 +40,7 @@ test('/login redirige vers l’accueil en conservant la destination', async ({ p
   await page.goto('/login?next=%2Fadmin%2Fpilotage')
 
   await expect(page).toHaveURL(/\/\?next=%2Fadmin%2Fpilotage/)
-  await expect(page.getByRole('heading', { name: 'Accès à l’espace de gouvernance' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Accès à votre espace de gouvernance' })).toBeVisible()
 })
 
 test('l’espace de gouvernance est fermé sans session', async ({ page, context }) => {
@@ -48,7 +48,7 @@ test('l’espace de gouvernance est fermé sans session', async ({ page, context
   await page.goto('/admin/pilotage')
 
   await expect(page).toHaveURL(/\/\?next=/)
-  await expect(page.getByRole('heading', { name: 'Accès à l’espace de gouvernance' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Accès à votre espace de gouvernance' })).toBeVisible()
 })
 
 test('la vitrine et le formulaire de contact ne sont plus servis', async ({ page, context }) => {
