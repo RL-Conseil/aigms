@@ -128,3 +128,23 @@ test('le rôle vis-à-vis de l’IA se change depuis la fiche de l’organisatio
   await expect(carte.getByText(/Isolation et souveraineté physique/)).toBeVisible()
   await expect(carte.getByText(/Éthique, biais et équité/)).toHaveCount(0)
 })
+
+test('le pilotage nomme le client et se restreint à l’un d’eux', async ({ page }) => {
+  await signIn(page, OFFICER)
+  await page.getByRole('link', { name: 'Pilotage' }).click()
+
+  await expect(page.getByRole('heading', { name: 'Pilotage' })).toBeVisible()
+
+  // Les statuts se lisent en francais, pas dans le vocabulaire de la base.
+  await expect(page.getByText(/Traitement en cours|Identifié|Analysé/).first()).toBeVisible()
+  await expect(page.getByText('treatment_in_progress')).toHaveCount(0)
+
+  // Le filtre n'apparait qu'a partir de deux organisations suivies ; quand il
+  // est la, il restreint aussi les chiffres.
+  const filtre = page.getByRole('navigation', { name: 'Filtrer par organisation' })
+  if (await filtre.isVisible()) {
+    await filtre.getByRole('link', { name: /IzarLink Demo/ }).click()
+    await expect(page).toHaveURL(/organisation=/)
+    await expect(page.getByText(/Ce qui appelle une action chez IzarLink Demo/)).toBeVisible()
+  }
+})
