@@ -11,6 +11,7 @@ import {
   type ControlChoice,
   type TypologyChoice,
 } from '@/components/governance/evidence-forms'
+import { SegmentedFilter } from '@/components/governance/segmented-filter'
 import {
   EvidenceMatrixCard,
   type MatrixGap,
@@ -113,10 +114,10 @@ export default async function EvidencePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ controle?: string }>
+  searchParams: Promise<{ controle?: string; etat?: string; typologie?: string }>
 }) {
   const { id } = await params
-  const { controle } = await searchParams
+  const { controle, etat, typologie } = await searchParams
   const supabase = await createClient()
 
   const [
@@ -155,6 +156,73 @@ export default async function EvidencePage({
     status: c.status,
   }))
 
+  // Un registre affiche en entier devient illisible des qu'une organisation
+  // depose une preuve par controle et par trimestre. Les filtres comptent sur
+  // l'ENSEMBLE du registre : leurs compteurs ne dependent pas l'un de l'autre.
+  const isStale = (row: Row) =>
+    row.validation_status === 'validated' && row.freshness !== 'fresh'
+
+  const stateFilters = [
+    { key: '', label: 'Toutes', count: rows.length },
+    {
+      key: 'a-valider',
+      label: 'À valider',
+      count: rows.filter((r) => r.validation_status === 'pending').length,
+      tone: 'warn' as const,
+    },
+    {
+      key: 'a-renouveler',
+      label: 'À renouveler',
+      count: rows.filter(isStale).length,
+      tone: 'stop' as const,
+    },
+    {
+      key: 'validees',
+      label: 'Validées',
+      count: rows.filter((r) => r.validation_status === 'validated').length,
+    },
+    {
+      key: 'rejetees',
+      label: 'Rejetées',
+      count: rows.filter((r) => r.validation_status === 'rejected').length,
+    },
+  ]
+
+  const typologyFilters = [
+    { key: '', label: 'Toutes typologies' },
+    // Ordonnees par criticite pour le profil : la fonction les rend deja triees.
+    ...typologies.map((t) => ({
+      key: t.code,
+      label: t.name,
+      count: rows.filter((r) => r.typology_code === t.code).length,
+      tone:
+        t.criticality === 'critical' || t.criticality === 'high'
+          ? ('stop' as const)
+          : ('neutral' as const),
+    })),
+    {
+      key: 'aucune',
+      label: 'Sans typologie',
+      count: rows.filter((r) => r.typology_code === null).length,
+    },
+  ]
+
+  const filtered = rows.filter((row) => {
+    if (typologie === 'aucune' && row.typology_code !== null) return false
+    if (typologie && typologie !== 'aucune' && row.typology_code !== typologie) return false
+    if (etat === 'a-valider') return row.validation_status === 'pending'
+    if (etat === 'a-renouveler') return isStale(row)
+    if (etat === 'validees') return row.validation_status === 'validated'
+    if (etat === 'rejetees') return row.validation_status === 'rejected'
+    return true
+  })
+
+  // Plafond explicite plutot que troncature silencieuse : une preuve qu'on ne
+  // voit pas sans savoir qu'elle existe est pire qu'une page longue.
+  const LIMIT = 50
+  const shown = filtered.slice(0, LIMIT)
+  const hidden = filtered.length - shown.length
+
   const toValidate = rows.filter((r) => r.validation_status === 'pending').length
   const toRenew = rows.filter(
     (r) => r.validation_status === 'validated' && r.freshness !== 'fresh',
@@ -179,13 +247,33 @@ export default async function EvidencePage({
       <div className="grid gap-5 lg:grid-cols-5">
         {/* ---------- Registre ---------- */}
         <div className="flex flex-col gap-5 lg:col-span-3">
+          <div className="flex flex-wrap gap-3">
+            <SegmentedFilter
+              label="Filtrer par état"
+              param="etat"
+              basePath={`/admin/organizations/${id}/preuves`}
+              selected={etat}
+              current={{ typologie, controle }}
+              options={stateFilters}
+            />
+            <SegmentedFilter
+              label="Filtrer par typologie de preuve"
+              param="typologie"
+              basePath={`/admin/organizations/${id}/preuves`}
+              selected={typologie}
+              current={{ etat, controle }}
+              options={typologyFilters}
+            />
+          </div>
+
           <Card
             title="Registre des preuves"
             subtitle={`${rows.length} pièce(s) · ${toValidate} à valider · ${toRenew} à renouveler`}
+            tone={toRenew ? 'stop' : toValidate ? 'warn' : 'neutral'}
           >
-            {rows.length ? (
+            {shown.length ? (
               <ul className="flex flex-col divide-y divide-ink-100">
-                {rows.map((row) => (
+                {shown.map((row) => (
                   <li key={row.id} className="py-4 first:pt-0 last:pb-0">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <div className="min-w-0">
@@ -303,12 +391,31 @@ export default async function EvidencePage({
                   </li>
                 ))}
               </ul>
+            ) : rows.length ? (
+              <Empty>
+                Aucune pièce dans ce filtre.{' '}
+                <Link
+                  href={`/admin/organizations/${id}/preuves`}
+                  className="text-brand-600 hover:underline"
+                >
+                  Revenir au registre complet
+                </Link>
+                .
+              </Empty>
             ) : (
               <Empty>
                 Aucune preuve déposée. Un contrôle sans preuve ne compte pas comme couvrant —
                 c’est exactement ce qu’un auditeur vient vérifier.
               </Empty>
             )}
+
+            {hidden > 0 ? (
+              <p className="mt-4 border-t border-ink-100 pt-3 text-xs text-ink-500">
+                {hidden} pièce{hidden > 1 ? 's' : ''} non affichée{hidden > 1 ? 's' : ''} :
+                l’écran en présente {LIMIT} au plus. Restreignez par état ou par typologie pour
+                atteindre les autres.
+              </p>
+            ) : null}
           </Card>
         </div>
 

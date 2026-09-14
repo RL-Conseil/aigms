@@ -63,3 +63,43 @@ test('une décision se porte, justifiée et nominative', async ({ page }) => {
   const portee = page.locator('li').filter({ hasText: 'A.3.2' }).first()
   await expect(portee.getByText(/Sélectionnée par/)).toBeVisible()
 })
+
+test('les filtres mènent droit aux écarts, et leurs compteurs ne mentent pas', async ({ page }) => {
+  const base = `/admin/organizations/${ORG}/declaration-applicabilite`
+  await page.goto(base)
+
+  const parEcart = page.getByRole('navigation', { name: 'Filtrer par écart' })
+  const parObjectif = page.getByRole('navigation', { name: 'Filtrer par objectif de contrôle' })
+  await expect(parEcart).toBeVisible()
+  await expect(parObjectif).toBeVisible()
+
+  // Le volet de decision ne s'ouvre plus de lui-meme : trente-trois zones de
+  // saisie depliees d'un coup rendaient la page inutilisable.
+  await expect(page.getByRole('textbox')).toHaveCount(0)
+
+  // Un ecart se retrouve d'un clic, et la liste s'y restreint vraiment.
+  await parEcart.getByRole('link', { name: /Exclusion à réexaminer/ }).click()
+  await expect(page).toHaveURL(/ecart=exclusion_contested/)
+  const lignes = page.locator('li').filter({ hasText: /^A\./ })
+  await expect(page.getByText('Exclusion à réexaminer').first()).toBeVisible()
+
+  // Les deux filtres se combinent sans se reinitialiser l'un l'autre.
+  // Le nom accessible porte le code ET son compteur : viser l'exact echouerait.
+  await parObjectif.getByRole('link', { name: /^A\.7\b/ }).click()
+  await expect(page).toHaveURL(/ecart=exclusion_contested/)
+  await expect(page).toHaveURL(/objectif=A\.7/)
+  expect(await lignes.count()).toBeGreaterThan(0)
+
+  // Une combinaison vide le dit, et propose d'en sortir.
+  await page.goto(`${base}?ecart=exclusion_contested&objectif=A.2`)
+  await expect(page.getByRole('heading', { name: 'Aucune exigence dans ce filtre' })).toBeVisible()
+  await page.getByRole('link', { name: 'Revenir à la Déclaration complète' }).click()
+  await expect(page).toHaveURL(new RegExp(`${ORG}/declaration-applicabilite$`))
+})
+
+test('une exigence s’ouvre par son adresse', async ({ page }) => {
+  await page.goto(`/admin/organizations/${ORG}/declaration-applicabilite?exigence=A.3.2`)
+
+  const exigence = page.locator('li').filter({ hasText: 'A.3.2' }).first()
+  await expect(exigence.getByRole('textbox')).toBeVisible()
+})

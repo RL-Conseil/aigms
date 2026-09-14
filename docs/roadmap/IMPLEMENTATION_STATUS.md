@@ -195,6 +195,42 @@ s'agit.
   rouge pour l'échu, ambre pour ce qui approche, et seulement lorsque la carte
   porte effectivement quelque chose. Un accent partout ne distingue plus rien.
 
+### Des écrans longs deviennent parcourables
+
+Cinquième volet. Deux écrans grossissaient sans moyen d'y chercher.
+
+**Déclaration d'Applicabilité.** 38 exigences, dont 33 sans décision — et le
+volet de saisie s'ouvrait de lui-même sur chacune : **trente-trois zones de
+texte dépliées d'un coup**. Juste sur une exigence, ingérable sur trente-trois.
+Le volet se replie ; le signalement passe par le badge d'écart et par deux
+filtres — par écart (à décider, exclusion à réexaminer, preuve technique
+manquante, sans contrôle, sans écart) et par objectif de contrôle. Une exigence
+s'ouvre à la demande, ou par `?exigence=A.3.2` pour partager un lien vers celle
+qu'on veut faire trancher.
+
+**Registre des preuves.** Il affichait tout, sans filtre ni limite : six pièces
+en démonstration, illisible en un an sur une organisation qui dépose une preuve
+par contrôle et par trimestre. Filtres par état et par typologie — cette
+dernière ordonnée par criticité pour le profil, ce qui relie enfin le registre à
+la matrice affichée à côté — et **plafond explicite à 50 pièces** plutôt qu'une
+troncature silencieuse : une preuve qu'on ne voit pas sans savoir qu'elle existe
+est pire qu'une page longue.
+
+Trois règles communes, portées par un composant unique (`SegmentedFilter`, dont
+le filtre par organisation du pilotage est devenu un cas particulier) :
+
+- **Les compteurs portent sur l'ensemble, jamais sur le filtre en cours.** Un
+  filtre dont les compteurs dépendent d'un autre filtre ne dit plus ce qu'il
+  compte.
+- **Un filtre conserve ses voisins.** Un filtre qui réinitialise les autres est
+  un filtre qu'on n'ose plus combiner.
+- **Une combinaison vide le dit, et propose d'en sortir** — plutôt qu'une carte
+  muette dont on ne sait pas si elle est vide ou cassée.
+
+Un compteur à zéro reste affiché dans un filtre, contrairement aux pastilles du
+menu : savoir qu'une catégorie est vide **est** l'information, c'est ce qui évite
+de cliquer pour le découvrir.
+
 ## Courrier système
 
 La plateforme dispose d'un unique point d'envoi, `src/lib/email/mailer.ts`,

@@ -118,3 +118,33 @@ test('la matrice des preuves oriente le dépôt selon le profil d’activité', 
   await matrice.getByText(/Références que le référentiel chargé ne porte pas/).click()
   await expect(matrice.getByText(/A\.10\.5/)).toBeVisible()
 })
+
+test('le registre se restreint par état et par typologie', async ({ page }) => {
+  const base = `/admin/organizations/${ORG}/preuves`
+  await page.goto(base)
+
+  const parEtat = page.getByRole('navigation', { name: 'Filtrer par état' })
+  const parTypologie = page.getByRole('navigation', { name: 'Filtrer par typologie de preuve' })
+  await expect(parEtat).toBeVisible()
+  await expect(parTypologie).toBeVisible()
+
+  // Le filtre par etat restreint reellement la liste.
+  await parEtat.getByRole('link', { name: /À renouveler/ }).click()
+  await expect(page).toHaveURL(/etat=a-renouveler/)
+  const registre = page.locator('section').filter({ hasText: 'Registre des preuves' })
+  const echues = registre.getByText(/Échue|Bientôt échue/)
+  expect(await echues.count()).toBeGreaterThan(0)
+  await expect(registre.getByText('À valider', { exact: true })).toHaveCount(0)
+
+  // Les deux filtres se combinent.
+  await parTypologie.getByRole('link', { name: 'Sans typologie' }).click()
+  await expect(page).toHaveURL(/etat=a-renouveler/)
+  await expect(page).toHaveURL(/typologie=aucune/)
+
+  // Une combinaison vide le dit plutôt que d'afficher une carte muette.
+  await page.goto(`${base}?etat=rejetees`)
+  const vide = page.locator('section').filter({ hasText: 'Registre des preuves' })
+  await expect(vide.getByText('Aucune pièce dans ce filtre.')).toBeVisible()
+  await vide.getByRole('link', { name: 'Revenir au registre complet' }).click()
+  await expect(page).toHaveURL(new RegExp(`${ORG}/preuves$`))
+})
