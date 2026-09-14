@@ -127,8 +127,7 @@ test('un cas d’usage se déclare, se trie, se classifie et reçoit un risque',
   // qu'elle alimente : un risque n'existe que par son cas d'usage.
   await page
     .locator('section')
-    .filter({ hasText: 'Risques' })
-    .first()
+    .filter({ has: page.getByRole('heading', { name: 'Risques', exact: true }) })
     .getByRole('button', { name: /Identifier/ })
     .click()
   const risk = page.getByRole('dialog', { name: 'Identifier un risque' })
@@ -350,7 +349,9 @@ test('un risque se saisit sans quitter la fiche', async ({ page }) => {
   await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001')
   await page.getByRole('link', { name: 'Assistant support client' }).click()
 
-  const risques = page.locator('section').filter({ hasText: 'Risques' }).first()
+  const risques = page
+    .locator('section')
+    .filter({ has: page.getByRole('heading', { name: 'Risques', exact: true }) })
   await risques.getByRole('button', { name: /Identifier/ }).click()
 
   const fenetre = page.getByRole('dialog', { name: 'Identifier un risque' })

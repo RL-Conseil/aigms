@@ -48,6 +48,7 @@ const ADMIN_NAV: NavLink[] = [
 export const ORGANIZATION_SECTIONS = [
   { key: 'apercu', label: 'Vue d’ensemble', href: '' },
   { key: 'processus', label: 'Processus et risques', href: '/processus' },
+  { key: 'controles', label: 'Contrôles', href: '/controles' },
   { key: 'preuves', label: 'Preuves', href: '/preuves' },
   { key: 'soa', label: 'Déclaration d’Applicabilité', href: '/declaration-applicabilite' },
 ] as const

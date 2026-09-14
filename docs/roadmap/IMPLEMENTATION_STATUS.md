@@ -370,6 +370,45 @@ contexte où il a été créé : il garde sa page.
 zone qui était vide. Replier ce qui dit de quoi l'on parle obligeait à ouvrir un
 volet pour le savoir.
 
+## Le dispositif de maîtrise devient saisissable
+
+Groupe 1 des écrans d'édition. Quatre écritures manquaient, et elles se
+tiennent : un contrôle existe dans le référentiel de l'organisation, il est
+déclaré applicable ou non à un cas d'usage, il répond à des exigences
+normatives, et il peut être désigné comme la mesure qui traite un risque.
+
+**Aucune des quatre n'existait.** Tout ce qui se lisait — taux de couverture,
+AI Control Graph, chemin du risque, Déclaration d'Applicabilité, registre des
+preuves — reposait sur des contrôles qu'on ne pouvait pas créer. Sur un client
+réel, la moitié des écrans restait vide sans remède. Les règles, elles, étaient
+déjà en base : ces écrans valident la forme et laissent la base répondre.
+
+| Écriture | Où | Forme |
+|---|---|---|
+| Créer un contrôle | `/controles/nouveau` | page — il vit dans le référentiel et se relit hors contexte |
+| Changer son état | référentiel | fenêtre |
+| Rattacher une exigence | référentiel | fenêtre |
+| Statuer l'applicabilité | fiche du cas d'usage | fenêtre |
+| Traiter un risque | fiche du cas d'usage | fenêtre |
+
+**Une section « Contrôles »** rejoint la navigation d'une organisation, entre
+« Processus et risques » et « Preuves » — l'ordre dans lequel on les remplit.
+
+Trois choses que ces écrans disent, et qu'il fallait dire :
+
+- **Créer, déclarer opérant et prouver sont trois gestes distincts.** Le
+  référentiel l'énonce en tête : aucun ne remplace les autres, et c'est la
+  preuve validée non échue qui fait compter un contrôle comme couvrant.
+- **« Obligatoire » n'est pas une étiquette.** Le gate PRODUCTION exige qu'un
+  contrôle obligatoire applicable soit affecté et opérant : cocher engage le
+  passage en service, et le formulaire le dit avant la case.
+- **Un traitement sans contrôle désigné s'arrête à l'intention.** Le champ le
+  rappelle, et le message de retour distingue les deux cas — c'est la règle
+  d'ADR-0010, jusqu'ici verrouillée en base mais inatteignable.
+
+Un contrôle sans exigence rattachée est signalé sur sa ligne : il ne compte dans
+aucune Déclaration, et rien ne le disait.
+
 ## Courrier système
 
 La plateforme dispose d'un unique point d'envoi, `src/lib/email/mailer.ts`,

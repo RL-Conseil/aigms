@@ -5,6 +5,7 @@ import { Badge, Card, Empty, Field, Stat, StatStrip } from '@/components/ui'
 import { Disclosure } from '@/components/forms'
 import { GateChecklist } from '@/components/gate-checklist'
 import { Lifecycle } from '@/components/lifecycle'
+import { ApplicabilityForm, RiskTreatmentForm } from '@/components/governance/control-forms'
 import { TransitionPanel } from '@/components/transition-panel'
 import { UI_TRANSITIONS } from '@/lib/domain/transitions'
 import {
@@ -20,6 +21,7 @@ import {
   formatDate,
   formatDateTime,
   RISK_LEVEL_LABELS,
+  RISK_STATUS_LABELS,
   USE_CASE_STATUS_LABELS,
   VERDICT_LABELS,
   type GateResult,
@@ -69,6 +71,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
     { data: timeline },
     { data: gateData },
     { data: memberships },
+    { data: orgControls },
   ] = await Promise.all([
     supabase
       .from('regulatory_classification')
@@ -129,6 +132,10 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
       .from('membership')
       .select('user:user_id (id, full_name, email, job_title)')
       .eq('status', 'active'),
+    supabase
+      .from('control')
+      .select('id, code, name, status, organization_id')
+      .order('code'),
   ])
 
   const gate = gateData as GateResult | null
@@ -166,6 +173,10 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
   )
   const unsettledRisks = unsettled.length
   const unassessedRisks = unsettled.filter((r) => r.residual_level === null).length
+
+  const controlChoices = (orgControls ?? [])
+    .filter((c) => c.organization_id === useCase.organization_id)
+    .map((c) => ({ id: c.id, code: c.code, name: c.name, status: c.status }))
 
   const people = (memberships ?? [])
     .map((m) => m.user as unknown as { id: string; full_name: string | null; email: string; job_title: string | null } | null)
@@ -334,7 +345,8 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
                         <p className="text-sm font-medium text-ink-900">{risk.title}</p>
                         <p className="text-xs text-ink-600">{risk.scenario}</p>
                         <p className="mt-1 text-xs text-ink-400">
-                          {risk.business_ref} · {risk.category} · statut {risk.status}
+                          {risk.business_ref} · {risk.category} ·{' '}
+                          {RISK_STATUS_LABELS[risk.status] ?? risk.status}
                           {risk.accepted_at
                             ? ` · accepté, revue le ${formatDate(risk.acceptance_review_at)}`
                             : ''}
@@ -353,7 +365,22 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
                     </div>
 
                     {risk.status !== 'accepted' && risk.status !== 'closed' ? (
-                      <AcceptRiskForm riskId={risk.id} useCaseId={id} />
+                      <div className="mt-3 flex flex-col gap-3">
+                        {/*
+                          Traiter et accepter sont deux reponses distinctes au
+                          meme risque : on agit, ou on assume. Les presenter
+                          cote a cote evite de croire que l'acceptation est la
+                          seule issue offerte.
+                        */}
+                        <RiskTreatmentForm
+                          riskId={risk.id}
+                          useCaseId={id}
+                          riskTitle={risk.title}
+                          people={people}
+                          controls={controlChoices}
+                        />
+                        <AcceptRiskForm riskId={risk.id} useCaseId={id} />
+                      </div>
                     ) : null}
                   </li>
                 ))}
@@ -533,8 +560,13 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
 
           <Disclosure
             title="Contrôles affectés"
-            summary={`${controls?.length ?? 0} contrôle(s) statué(s) sur ce cas d’usage`}
+            summary={`${controls?.length ?? 0} contrôle(s) statué(s) sur ${controlChoices.length} au référentiel`}
+            tone={controls?.length ? 'neutral' : 'todo'}
           >
+            <div className="mb-4">
+              <ApplicabilityForm useCaseId={id} controls={controlChoices} />
+            </div>
+
             {controls?.length ? (
               <ul className="space-y-2">
                 {controls.map((ca) => {
