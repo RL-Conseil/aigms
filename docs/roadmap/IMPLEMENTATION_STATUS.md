@@ -272,6 +272,46 @@ avant la connexion, et l'espace de travail le rappelle **uniquement sur un écra
 endroit. L'application n'est pas bloquée pour autant : consulter depuis un
 téléphone reste légitime, c'est la saisie qui y est inconfortable.
 
+### Organisation courante et organisations gérées
+
+Septième volet. Deux notions se confondaient sous le même mot : ce qu'une
+personne a le **droit de lire** — tout son tenant — et ce qu'elle **gouverne**,
+c'est-à-dire les organisations sur lesquelles l'administration lui a attribué un
+rôle. La liste montrait les premières, proposant un travail qu'on ne peut pas
+faire.
+
+- **`app.managed_organizations()`** ne retient que les organisations portant une
+  attribution de rôle. L'administration de plateforme voit celles de son tenant :
+  elle les crée, et ne peut pas attribuer un rôle sur ce qu'elle ne verrait pas.
+- **`user_profile.current_organization_id`** porte l'organisation sur laquelle on
+  travaille. Un choix de la personne, qui la suit d'un poste à l'autre — un
+  témoin de navigation l'aurait fait varier selon l'endroit d'où l'on se
+  connecte, et « Mon organisation » n'aurait plus eu de contenu stable. Sans
+  choix explicite et avec une seule organisation gérée, il n'y a rien à
+  choisir : elle est rendue d'office.
+- **Le choix est contraint mais n'ouvre aucun droit.** `app.guard_current_organization`
+  refuse une organisation hors du périmètre géré — non par sécurité, la RLS
+  reste souveraine, mais parce qu'un point de vue hors périmètre produirait des
+  écrans vides et inexplicables. Un test vérifie qu'il n'accorde rien.
+
+**La navigation s'ensuit.** Le premier niveau ne porte plus que deux
+destinations — *Vue d'ensemble* et *Pilotage*. La racine ne montre rien
+d'elle-même : elle conduit à la fiche de l'organisation courante. La liste des
+organisations gérées a rejoint le menu de l'utilisateur, sous « Mon
+organisation » : on en change rarement, et la laisser au menu principal donnait
+deux entrées concurrentes pour « organisation ».
+
+**« Mon organisation »** (`/admin/parametres#organisation`) récapitule ce qui
+vaut ici : nom de l'organisation, rôle qu'on y détient, nom, fonction et adresse
+enregistrés, rôle vis-à-vis de l'IA — **en lecture seule, il relève de
+l'administration** — et ce que ce rôle rend exigeant. Le sélecteur d'organisation
+courante n'y apparaît qu'à partir de deux organisations gérées.
+
+**La fiche d'une organisation** porte son contexte sous le titre — secteur, pays,
+effectif, entités identifient l'organisation, ils ne sont pas une rubrique à
+consulter — et ses deux inventaires en onglets : cas d'usage d'IA et
+fournisseurs, l'un qu'on gouverne, l'autre dont on dépend.
+
 ## Courrier système
 
 La plateforme dispose d'un unique point d'envoi, `src/lib/email/mailer.ts`,

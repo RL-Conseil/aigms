@@ -12,7 +12,7 @@ async function signIn(page: import('@playwright/test').Page, who: typeof ADMIN) 
   await page.getByLabel('Adresse électronique').fill(who.email)
   await page.getByLabel('Mot de passe').fill(who.password)
   await page.getByRole('button', { name: 'Se connecter' }).click()
-  await expect(page.getByRole('heading', { name: 'Organisations' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /IzarLink Demo|Organisations gérées/ })).toBeVisible()
 }
 
 test("le bandeau annonce le mode administration des la connexion", async ({ page }) => {
@@ -34,9 +34,12 @@ test("le sous-titre distingue administrer et gouverner", async ({ page }) => {
   // dependant du moment ou on l'observe. On vise l'etat atteint.
   await expect(page.getByRole('heading', { name: 'Accès à l’espace de gouvernance' })).toBeVisible()
 
+  // Un role de gouvernance n'atterrit plus sur la liste mais sur son
+  // organisation courante : le sous-titre se lit la ou la liste vit desormais.
   await signIn(page, OFFICER)
+  await page.goto('/admin/organizations')
   await expect(
-    page.getByText('Les organisations dont vous pilotez la gouvernance de l’IA.'),
+    page.getByText('Celles sur lesquelles l’administration vous a attribué un rôle.'),
   ).toBeVisible()
 })
 
@@ -147,4 +150,30 @@ test('le pilotage nomme le client et se restreint à l’un d’eux', async ({ p
     await expect(page).toHaveURL(/organisation=/)
     await expect(page.getByText(/Ce qui appelle une action chez IzarLink Demo/)).toBeVisible()
   }
+})
+
+test('la racine conduit à l’organisation courante, la liste vit dans le menu', async ({ page }) => {
+  await signIn(page, OFFICER)
+
+  // Une seule organisation gérée : il n'y a rien à choisir, on y atterrit.
+  await expect(page).toHaveURL(/\/admin\/organizations\/cccccccc/)
+  await expect(page.getByRole('heading', { name: 'IzarLink Demo' })).toBeVisible()
+
+  // Le contexte identifie l'organisation sous son nom, il n'est plus une rubrique.
+  await expect(page.getByText(/ORG-2026-0001 — IzarLink SAS · Logistique/)).toBeVisible()
+
+  // Les deux inventaires se lisent par onglets.
+  const inventaire = page.getByRole('navigation', { name: 'Inventaire' })
+  await inventaire.getByRole('link', { name: /Fournisseurs/ }).click()
+  await expect(page).toHaveURL(/inventaire=fournisseurs/)
+  await expect(page.getByRole('heading', { name: 'Fournisseurs' })).toBeVisible()
+
+  // La liste des organisations gérées a quitté le menu principal.
+  const principal = page.getByRole('navigation', { name: 'Navigation principale' })
+  await expect(principal.getByRole('link', { name: 'Vue d’ensemble' })).toBeVisible()
+  await expect(principal.getByRole('link', { name: /Organisations/ })).toHaveCount(0)
+
+  await page.getByRole('button', { name: /Camille|Rôle|@/ }).first().click()
+  await page.getByRole('menuitem', { name: 'Organisations gérées' }).click()
+  await expect(page.getByRole('heading', { name: 'Organisations gérées' })).toBeVisible()
 })

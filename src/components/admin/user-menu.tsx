@@ -114,6 +114,21 @@ export function UserMenu({
             </Link>
           ) : null}
 
+          {/*
+            Sous « Mon organisation » : on change de client rarement, et cette
+            place le dit. La laisser au menu principal donnait deux entrees
+            concurrentes pour « organisation ».
+          */}
+          <Link
+            href="/admin/organizations"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-ink-700 hover:bg-ink-100"
+          >
+            <BuildingIcon />
+            Organisations gérées
+          </Link>
+
           <div className="mt-1 border-t border-ink-100 pt-1">
             <button
               type="button"

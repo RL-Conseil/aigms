@@ -4644,6 +4644,7 @@ export type Database = {
       user_profile: {
         Row: {
           created_at: string
+          current_organization_id: string | null
           email: string
           full_name: string | null
           id: string
@@ -4653,6 +4654,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          current_organization_id?: string | null
           email: string
           full_name?: string | null
           id: string
@@ -4662,6 +4664,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          current_organization_id?: string | null
           email?: string
           full_name?: string | null
           id?: string
@@ -4669,7 +4672,15 @@ export type Database = {
           job_title?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_profile_current_organization_id_fkey"
+            columns: ["current_organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       vendor: {
         Row: {
@@ -4965,6 +4976,7 @@ export type Database = {
             | "retired"
         }[]
       }
+      current_organization: { Args: never; Returns: string }
       evaluate_gate: {
         Args: { p_target: string; p_use_case_id: string }
         Returns: Json
@@ -5047,6 +5059,34 @@ export type Database = {
       governance_health: {
         Args: { p_activity_id?: string; p_organization_id: string }
         Returns: Json
+      }
+      managed_organizations: {
+        Args: never
+        Returns: {
+          ai_activity_profile:
+            | "infrastructure_host"
+            | "model_developer"
+            | "integrator_consultant"
+            | "business_user"
+          business_ref: string
+          country_code: string
+          created_at: string
+          headcount: number
+          id: string
+          legal_name: string
+          name: string
+          role:
+            | "platform_admin"
+            | "governance_officer"
+            | "client_admin"
+            | "system_owner"
+            | "risk_owner"
+            | "reviewer"
+            | "auditor"
+            | "executive_viewer"
+          sector: string
+          status: "prospect" | "pilot" | "active" | "archived"
+        }[]
       }
       process_map: {
         Args: { p_organization_id: string }

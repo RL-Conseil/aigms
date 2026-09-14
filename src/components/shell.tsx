@@ -27,13 +27,17 @@ import { attentionFor, attentionTotal } from '@/lib/governance/attention'
 
 type NavLink = { href: string; label: string }
 
+// Le premier niveau ne porte que deux destinations : ou l'on travaille, et ce
+// qui appelle une action. La liste des organisations gerees a quitte le menu
+// principal pour celui de l'utilisateur — on en change rarement, et l'y laisser
+// donnait deux entrees concurrentes pour « organisation ».
 const GOVERNANCE_NAV: NavLink[] = [
-  { href: '/admin', label: 'Organisations' },
+  { href: '/admin', label: 'Vue d’ensemble' },
   { href: '/admin/pilotage', label: 'Pilotage' },
 ]
 
 const ADMIN_NAV: NavLink[] = [
-  { href: '/admin', label: 'Organisations' },
+  { href: '/admin/organizations', label: 'Organisations' },
   { href: '/admin/comptes', label: 'Comptes et rôles' },
   { href: '/admin/connecteurs', label: 'Connecteurs' },
   { href: '/admin/referentiels', label: 'Référentiels' },
