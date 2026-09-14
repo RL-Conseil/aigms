@@ -14,10 +14,11 @@ test.beforeEach(async ({ page }) => {
   await page.getByLabel('Adresse électronique').fill(OFFICER.email)
   await page.getByLabel('Mot de passe').fill(OFFICER.password)
   await page.getByRole('button', { name: 'Se connecter' }).click()
-  await expect(page.getByRole('heading', { name: 'Organisations' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /IzarLink Demo|Organisations gérées/ })).toBeVisible()
 })
 
 test('la cartographie montre les processus, activités et usages rattachés', async ({ page }) => {
+  await page.goto('/admin/organizations')
   await page.getByRole('link', { name: 'IzarLink Demo' }).click()
   await page.getByRole('link', { name: 'Processus' }).click()
 
@@ -263,12 +264,13 @@ test('le graphe relie les couches et le chemin d’un risque nomme sa rupture', 
 })
 
 test('la navigation porte l’avancement et les retards', async ({ page }) => {
-  await page.goto('/admin')
+  await page.goto('/admin/organizations')
 
-  // La liste des organisations dit d'emblee laquelle demande du travail.
+  // La liste des organisations gérées dit d'emblee laquelle demande du travail.
   const ligne = page.locator('li').filter({ hasText: 'IzarLink Demo' }).first()
   await expect(ligne.getByText(/exigences sans décision|preuve|risque|action/)).toBeVisible()
 
+  await page.goto('/admin/organizations')
   await page.getByRole('link', { name: 'IzarLink Demo' }).click()
 
   // Second niveau de navigation : les sections de l'organisation.

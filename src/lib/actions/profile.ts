@@ -92,3 +92,51 @@ export async function updateTenant(
   revalidatePath('/admin/parametres')
   return { ok: true, message: 'Organisation enregistrée.' }
 }
+
+// -----------------------------------------------------------------------------
+// Organisation courante
+// -----------------------------------------------------------------------------
+// Une personne peut se voir attribuer un role sur plusieurs organisations. Se
+// placer sur l'une d'elles est un choix d'affichage — il n'ouvre aucun droit,
+// la RLS reste souveraine — mais il suit la personne d'un poste a l'autre,
+// d'ou son stockage sur le profil plutot que dans un temoin de navigation.
+const currentOrganizationSchema = z.object({
+  organizationId: z.string().uuid('Choisir une organisation.'),
+})
+
+export async function setCurrentOrganization(
+  _previous: ProfileState | null,
+  formData: FormData,
+): Promise<ProfileState> {
+  const parsed = currentOrganizationSchema.safeParse({
+    organizationId: formData.get('organizationId'),
+  })
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0]?.message ?? 'Formulaire incomplet.' }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, message: 'Session expirée.' }
+
+  // La base refuse une organisation hors du perimetre gere
+  // (app.guard_current_organization) : on presente son refus tel quel.
+  const { data, error } = await supabase
+    .from('user_profile')
+    .update({ current_organization_id: parsed.data.organizationId })
+    .eq('id', user.id)
+    .select('id')
+
+  if (error) {
+    const raise = error.message.match(/^(?:.*?:\s)?([A-ZÀ-Ü][^\n]*)$/m)
+    return { ok: false, message: raise?.[1] ?? error.message }
+  }
+  if (!data?.length) {
+    return { ok: false, message: 'Modification refusée.' }
+  }
+
+  revalidatePath('/admin', 'layout')
+  return { ok: true, message: 'Organisation courante enregistrée.' }
+}

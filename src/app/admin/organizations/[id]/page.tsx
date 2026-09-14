@@ -2,9 +2,10 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
-import { Badge, Card, Empty, Field } from '@/components/ui'
+import { Badge, Card, Empty } from '@/components/ui'
 import { ActivityProfileForm } from '@/components/governance/activity-profile-form'
 import { AttentionBar } from '@/components/governance/attention'
+import { SegmentedFilter } from '@/components/governance/segmented-filter'
 import { attentionFor } from '@/lib/governance/attention'
 import {
   ACTIVITY_PROFILE_LABELS,
@@ -29,10 +30,14 @@ function statusTone(status: UseCaseStatus) {
 
 export default async function OrganizationPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ inventaire?: string }>
 }) {
   const { id } = await params
+  const { inventaire } = await searchParams
+  const tab = inventaire === 'fournisseurs' ? 'fournisseurs' : 'cas-d-usage'
   const supabase = await createClient()
 
   const { data: organization } = await supabase
@@ -81,7 +86,15 @@ export default async function OrganizationPage({
     <Shell
       breadcrumb={[{ href: '/admin', label: 'Organisations' }]}
       title={organization.name}
-      subtitle={`${organization.business_ref} — ${organization.legal_name ?? organization.name}`}
+      subtitle={[
+        `${organization.business_ref} — ${organization.legal_name ?? organization.name}`,
+        organization.sector,
+        organization.country_code,
+        organization.headcount ? `${organization.headcount} personnes` : null,
+        units?.length ? units.map((u) => u.name).join(', ') : null,
+      ]
+        .filter(Boolean)
+        .join(' · ')}
       organization={{ id, section: 'apercu' }}
       actions={<Badge>{organization.status}</Badge>}
     >
@@ -99,10 +112,56 @@ export default async function OrganizationPage({
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Card
-            title="Cas d'usage IA"
-            subtitle="Chaque gouvernance part d'un usage réel."
+            title={tab === 'fournisseurs' ? 'Fournisseurs' : "Cas d'usage IA"}
+            subtitle={
+              tab === 'fournisseurs'
+                ? 'Revue tiers requise avant mise en service.'
+                : "Chaque gouvernance part d'un usage réel."
+            }
+            action={
+              <SegmentedFilter
+                label="Inventaire"
+                param="inventaire"
+                basePath={`/admin/organizations/${id}`}
+                selected={tab === 'fournisseurs' ? 'fournisseurs' : ''}
+                options={[
+                  { key: '', label: 'Cas d’usage IA', count: useCases?.length ?? 0 },
+                  { key: 'fournisseurs', label: 'Fournisseurs', count: vendors?.length ?? 0 },
+                ]}
+              />
+            }
           >
-            {useCases?.length ? (
+            {tab === 'fournisseurs' ? (
+              vendors?.length ? (
+                <ul className="divide-y divide-ink-100">
+                  {vendors.map((v) => (
+                    <li key={v.id} className="flex items-center justify-between gap-4 py-3">
+                      <div className="min-w-0">
+                        <span className="text-sm font-medium text-ink-900">{v.name}</span>
+                        <p className="text-xs text-ink-400">
+                          {v.business_ref} · criticité {v.criticality}
+                          {v.next_review_at ? ` · revue le ${formatDate(v.next_review_at)}` : ''}
+                        </p>
+                      </div>
+                      <Badge
+                        tone={
+                          v.review_status === 'approved' ||
+                          v.review_status === 'approved_with_conditions'
+                            ? 'ok'
+                            : 'warn'
+                        }
+                      >
+                        {v.review_status}
+                      </Badge>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <Empty>
+                  Aucun fournisseur enregistré. L’édition depuis l’application reste à construire.
+                </Empty>
+              )
+            ) : useCases?.length ? (
               <ul className="divide-y divide-ink-100">
                 {useCases.map((uc) => (
                   <li key={uc.id} className="flex items-center justify-between gap-4 py-3">
@@ -196,46 +255,6 @@ export default async function OrganizationPage({
             ) : null}
           </Card>
 
-          <Card title="Contexte">
-            <dl className="space-y-3">
-              <Field label="Secteur">{organization.sector ?? '—'}</Field>
-              <Field label="Pays">{organization.country_code ?? '—'}</Field>
-              <Field label="Effectif">{organization.headcount ?? '—'}</Field>
-              <Field label="Entités">
-                {units?.length ? units.map((u) => u.name).join(', ') : '—'}
-              </Field>
-            </dl>
-          </Card>
-
-          <Card title="Fournisseurs" subtitle="Revue tiers requise avant mise en service.">
-            {vendors?.length ? (
-              <ul className="space-y-3">
-                {vendors.map((v) => (
-                  <li key={v.id} className="text-sm">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-medium text-ink-900">{v.name}</span>
-                      <Badge
-                        tone={
-                          v.review_status === 'approved' ||
-                          v.review_status === 'approved_with_conditions'
-                            ? 'ok'
-                            : 'warn'
-                        }
-                      >
-                        {v.review_status}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-ink-400">
-                      Criticité {v.criticality}
-                      {v.next_review_at ? ` · revue le ${formatDate(v.next_review_at)}` : ''}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <Empty>Aucun fournisseur enregistré.</Empty>
-            )}
-          </Card>
         </div>
       </div>
     </Shell>

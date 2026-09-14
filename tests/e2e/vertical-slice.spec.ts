@@ -13,7 +13,7 @@ test.beforeEach(async ({ page }) => {
   await page.getByLabel('Adresse électronique').fill(OFFICER.email)
   await page.getByLabel('Mot de passe').fill(OFFICER.password)
   await page.getByRole('button', { name: 'Se connecter' }).click()
-  await expect(page.getByRole('heading', { name: 'Organisations' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /IzarLink Demo|Organisations gérées/ })).toBeVisible()
 })
 
 test("l'espace d'administration exige une session", async ({ page, context }) => {
@@ -25,6 +25,7 @@ test("l'espace d'administration exige une session", async ({ page, context }) =>
 })
 
 test('le parcours de gouvernance est consultable de bout en bout', async ({ page }) => {
+  await page.goto('/admin/organizations')
   await page.getByRole('link', { name: 'IzarLink Demo' }).click()
   await expect(page.getByRole('heading', { name: 'IzarLink Demo' })).toBeVisible()
 
@@ -54,6 +55,7 @@ test('le parcours de gouvernance est consultable de bout en bout', async ({ page
 })
 
 test('le gate refuse la mise en production et explique ce qui manque', async ({ page }) => {
+  await page.goto('/admin/organizations')
   await page.getByRole('link', { name: 'IzarLink Demo' }).click()
   await page.getByRole('link', { name: 'Scoring de candidatures' }).click()
 
@@ -82,6 +84,7 @@ test('le tableau de bord remonte ce qui appelle une action', async ({ page }) =>
 })
 
 test('la Déclaration d’Applicabilité rend compte de la couverture ISO 42001', async ({ page }) => {
+  await page.goto('/admin/organizations')
   await page.getByRole('link', { name: 'IzarLink Demo' }).click()
   await page.getByRole('link', { name: 'Déclaration d’Applicabilité' }).click()
 
@@ -106,6 +109,7 @@ test('la Déclaration d’Applicabilité rend compte de la couverture ISO 42001'
 })
 
 test('la fiche d’un cas d’usage ouvre sur ce qu’il y a à faire', async ({ page }) => {
+  await page.goto('/admin/organizations')
   await page.getByRole('link', { name: 'IzarLink Demo' }).click()
   await page.getByRole('link', { name: 'Assistant support client' }).click()
 

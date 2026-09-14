@@ -23,6 +23,12 @@ export type ViewerContext = {
   tenantName: string | null
   tenantSlug: string | null
   role: AppRole | null
+  /**
+   * Organisation sur laquelle la personne travaille. Nulle lorsqu'il y a un
+   * choix a faire — plusieurs organisations gerees sans selection — ou rien a
+   * montrer. C'est un choix d'affichage : il n'ouvre aucun droit.
+   */
+  currentOrganizationId: string | null
 }
 
 /**
@@ -38,7 +44,8 @@ export const getViewerContext = cache(async (): Promise<ViewerContext | null> =>
 
   if (!user) return null
 
-  const [{ data: profile }, { data: membership }] = await Promise.all([
+  const [{ data: profile }, { data: membership }, { data: currentOrganization }] =
+    await Promise.all([
     supabase
       .from('user_profile')
       .select('id, email, full_name, job_title, is_platform_admin')
@@ -50,6 +57,7 @@ export const getViewerContext = cache(async (): Promise<ViewerContext | null> =>
       .eq('user_id', user.id)
       .eq('status', 'active')
       .maybeSingle(),
+    supabase.rpc('current_organization'),
   ])
 
   const tenant = membership?.tenant as unknown as
@@ -67,6 +75,7 @@ export const getViewerContext = cache(async (): Promise<ViewerContext | null> =>
     tenantName: tenant?.name ?? null,
     tenantSlug: tenant?.slug ?? null,
     role: (membership?.role as AppRole | undefined) ?? null,
+    currentOrganizationId: (currentOrganization as string | null) ?? null,
   }
 })
 
