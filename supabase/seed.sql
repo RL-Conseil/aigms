@@ -111,13 +111,23 @@ on conflict do nothing;
 -- qu'il n'entraine pas, un utilisateur metier repond de la derive de celui
 -- qu'il exploite.
 insert into public.organization (id, tenant_id, name, legal_name, sector, country_code, headcount,
-                                 status, ai_activity_profile) values
+                                 status, ai_activity_profile,
+                                 address_line1, postal_code, city,
+                                 registration_number, vat_number, website,
+                                 contact_name, contact_email, contact_phone,
+                                 confidentiality_label, document_footer_note) values
   ('cccccccc-0000-4000-8000-000000000001', 'aaaaaaaa-0000-4000-8000-000000000001',
    'IzarLink Demo', 'IzarLink SAS', 'Logistique et services numériques', 'FR', 240, 'active',
-   'infrastructure_host'),
+   'infrastructure_host',
+   '14 avenue de la Nive', '64100', 'Bayonne',
+   'SIREN 812 345 678', 'FR00812345678', 'https://izarlink.example',
+   'Claire Ferrand', 'claire.ferrand@izarlink.example', '+33 5 59 00 00 00',
+   'Confidentiel', 'Diffusion restreinte — comité de gouvernance'),
   ('dddddddd-0000-4000-8000-000000000002', 'bbbbbbbb-0000-4000-8000-000000000002',
    'Client Concurrent', 'Concurrent SA', 'Industrie', 'FR', 90, 'active',
-   'business_user')
+   'business_user',
+   null, null, null, null, null, null, null, null, null,
+   'Confidentiel', null)
 on conflict (id) do nothing;
 
 insert into public.business_unit (id, tenant_id, organization_id, name) values

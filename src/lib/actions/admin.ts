@@ -67,6 +67,83 @@ async function requireAdministratedTenant(): Promise<
 }
 
 // -----------------------------------------------------------------------------
+// Identite de l'organisation
+// -----------------------------------------------------------------------------
+// Ces champs ne gouvernent rien : aucun gate ne les lit. Ils existent pour
+// qu'un document sorti de l'outil — registre des usages, declaration
+// d'applicabilite — puisse etre remis tel quel, avec l'identite de
+// l'organisation en en-tete et sa mention de confidentialite en pied.
+const identityShape = {
+  addressLine1: z.string().trim().max(160).optional().or(z.literal('')),
+  addressLine2: z.string().trim().max(160).optional().or(z.literal('')),
+  postalCode: z.string().trim().max(20).optional().or(z.literal('')),
+  city: z.string().trim().max(120).optional().or(z.literal('')),
+  registrationNumber: z.string().trim().max(60).optional().or(z.literal('')),
+  vatNumber: z.string().trim().max(40).optional().or(z.literal('')),
+  website: z.string().trim().max(200).optional().or(z.literal('')),
+  contactName: z.string().trim().max(120).optional().or(z.literal('')),
+  contactEmail: z
+    .string()
+    .trim()
+    .email('Adresse électronique invalide.')
+    .max(254)
+    .optional()
+    .or(z.literal('')),
+  contactPhone: z.string().trim().max(40).optional().or(z.literal('')),
+  confidentialityLabel: z.string().trim().min(1).max(60),
+  documentFooterNote: z.string().trim().max(240).optional().or(z.literal('')),
+}
+
+/** Les memes champs, lus depuis un FormData. */
+function readIdentity(formData: FormData) {
+  return {
+    addressLine1: formData.get('addressLine1') ?? '',
+    addressLine2: formData.get('addressLine2') ?? '',
+    postalCode: formData.get('postalCode') ?? '',
+    city: formData.get('city') ?? '',
+    registrationNumber: formData.get('registrationNumber') ?? '',
+    vatNumber: formData.get('vatNumber') ?? '',
+    website: formData.get('website') ?? '',
+    contactName: formData.get('contactName') ?? '',
+    contactEmail: formData.get('contactEmail') ?? '',
+    contactPhone: formData.get('contactPhone') ?? '',
+    confidentialityLabel: (formData.get('confidentialityLabel') as string) || 'Confidentiel',
+    documentFooterNote: formData.get('documentFooterNote') ?? '',
+  }
+}
+
+/** Traduction vers les colonnes, vide valant NULL. */
+function identityColumns(d: {
+  addressLine1?: string
+  addressLine2?: string
+  postalCode?: string
+  city?: string
+  registrationNumber?: string
+  vatNumber?: string
+  website?: string
+  contactName?: string
+  contactEmail?: string
+  contactPhone?: string
+  confidentialityLabel: string
+  documentFooterNote?: string
+}) {
+  return {
+    address_line1: d.addressLine1 || null,
+    address_line2: d.addressLine2 || null,
+    postal_code: d.postalCode || null,
+    city: d.city || null,
+    registration_number: d.registrationNumber || null,
+    vat_number: d.vatNumber || null,
+    website: d.website || null,
+    contact_name: d.contactName || null,
+    contact_email: d.contactEmail || null,
+    contact_phone: d.contactPhone || null,
+    confidentiality_label: d.confidentialityLabel,
+    document_footer_note: d.documentFooterNote || null,
+  }
+}
+
+// -----------------------------------------------------------------------------
 // Creation d'organisation
 // -----------------------------------------------------------------------------
 const organizationSchema = z.object({
@@ -81,6 +158,7 @@ const organizationSchema = z.object({
     .or(z.literal('')),
   headcount: z.coerce.number().int().min(0).max(10_000_000).optional(),
   status: z.enum(['prospect', 'pilot', 'active', 'archived']),
+  ...identityShape,
   // Le profil commande les typologies de preuves attendues : il se renseigne a
   // la creation, quand la question se pose naturellement.
   activityProfile: z.enum([
@@ -105,6 +183,7 @@ export async function createOrganization(_previous: Result | null, formData: For
     headcount: formData.get('headcount') || undefined,
     status: formData.get('status') ?? 'prospect',
     activityProfile: formData.get('activityProfile'),
+    ...readIdentity(formData),
   })
 
   if (!parsed.success) {
@@ -123,6 +202,7 @@ export async function createOrganization(_previous: Result | null, formData: For
       headcount: parsed.data.headcount ?? null,
       status: parsed.data.status,
       ai_activity_profile: parsed.data.activityProfile,
+      ...identityColumns(parsed.data),
     })
     .select('id, business_ref, name')
     .single()
@@ -298,4 +378,164 @@ export async function changeAccountRole(_previous: Result | null, formData: Form
 
   revalidatePath('/admin/comptes')
   return { ok: true, message: 'Rôle mis à jour.' }
+}
+
+// -----------------------------------------------------------------------------
+// Completer l'identite d'une organisation deja creee
+// -----------------------------------------------------------------------------
+// Les organisations anterieures a la migration 0035 n'ont pas d'adresse, et une
+// adresse demenage. Le meme ecran sert donc a completer comme a corriger.
+const identityUpdateSchema = z.object({
+  organizationId: z.string().uuid(),
+  legalName: z.string().trim().max(160).optional().or(z.literal('')),
+  ...identityShape,
+})
+
+export async function updateOrganizationIdentity(
+  _previous: Result | null,
+  formData: FormData,
+): Promise<Result> {
+  const admin = await requireAdministratedTenant()
+  if (!admin) {
+    return { ok: false, message: "Cette action relève de l'administration de la plateforme." }
+  }
+
+  const parsed = identityUpdateSchema.safeParse({
+    organizationId: formData.get('organizationId'),
+    legalName: formData.get('legalName') ?? '',
+    ...readIdentity(formData),
+  })
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0]?.message ?? 'Formulaire incomplet.' }
+  }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('organization')
+    .update({
+      legal_name: parsed.data.legalName || null,
+      ...identityColumns(parsed.data),
+    })
+    .eq('id', parsed.data.organizationId)
+    .select('id, name')
+
+  if (error) return { ok: false, message: `Enregistrement refusé : ${error.message}` }
+  if (!data?.length) return { ok: false, message: 'Votre rôle ne permet pas cette écriture.' }
+
+  revalidatePath(`/admin/organizations/${parsed.data.organizationId}`)
+  revalidatePath('/admin/organizations')
+  return {
+    ok: true,
+    message: 'Identité enregistrée. Elle figurera en en-tête des documents imprimés.',
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Le logo
+// -----------------------------------------------------------------------------
+// Le fichier va dans le bucket prive `branding`, sous <tenant>/<organisation>/.
+// Le chemin n'est pas choisi par l'appelant : il est derive ici, et la base le
+// verifie a nouveau (app.guard_organization_logo). Deux verrous plutot qu'un,
+// parce qu'un chemin accepte tel quel laisserait pointer le logo d'un autre
+// client.
+const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp']
+const LOGO_MAX_BYTES = 2 * 1024 * 1024
+
+export async function uploadOrganizationLogo(
+  _previous: Result | null,
+  formData: FormData,
+): Promise<Result> {
+  const admin = await requireAdministratedTenant()
+  if (!admin) {
+    return { ok: false, message: "Cette action relève de l'administration de la plateforme." }
+  }
+
+  const organizationId = formData.get('organizationId')
+  const file = formData.get('logo')
+  if (typeof organizationId !== 'string' || !organizationId) {
+    return { ok: false, message: 'Organisation introuvable.' }
+  }
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, message: 'Choisir un fichier image.' }
+  }
+  if (!LOGO_TYPES.includes(file.type)) {
+    return { ok: false, message: 'Formats acceptés : PNG, JPEG, SVG ou WebP.' }
+  }
+  if (file.size > LOGO_MAX_BYTES) {
+    return { ok: false, message: 'Le logo doit peser moins de 2 Mo.' }
+  }
+
+  const supabase = await createClient()
+  const { data: organization } = await supabase
+    .from('organization')
+    .select('id, tenant_id, logo_path')
+    .eq('id', organizationId)
+    .maybeSingle()
+  if (!organization) return { ok: false, message: 'Organisation introuvable.' }
+
+  const extension =
+    file.type === 'image/svg+xml'
+      ? 'svg'
+      : file.type === 'image/png'
+        ? 'png'
+        : file.type === 'image/webp'
+          ? 'webp'
+          : 'jpg'
+  // Nom stable : deposer un nouveau logo remplace l'ancien plutot que
+  // d'accumuler des fichiers orphelins dans le bucket.
+  const path = `${organization.tenant_id}/${organization.id}/logo.${extension}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('branding')
+    .upload(path, file, { contentType: file.type, upsert: true })
+  if (uploadError) {
+    return { ok: false, message: `Dépôt refusé : ${uploadError.message}` }
+  }
+
+  // Un changement d'extension laisserait l'ancien fichier derriere lui.
+  if (organization.logo_path && organization.logo_path !== path) {
+    await supabase.storage.from('branding').remove([organization.logo_path])
+  }
+
+  const { error } = await supabase
+    .from('organization')
+    .update({ logo_path: path })
+    .eq('id', organization.id)
+  if (error) return { ok: false, message: `Enregistrement refusé : ${error.message}` }
+
+  revalidatePath(`/admin/organizations/${organization.id}`)
+  return { ok: true, message: 'Logo enregistré. Il figurera en en-tête des documents imprimés.' }
+}
+
+export async function removeOrganizationLogo(
+  _previous: Result | null,
+  formData: FormData,
+): Promise<Result> {
+  const admin = await requireAdministratedTenant()
+  if (!admin) {
+    return { ok: false, message: "Cette action relève de l'administration de la plateforme." }
+  }
+
+  const organizationId = formData.get('organizationId')
+  if (typeof organizationId !== 'string' || !organizationId) {
+    return { ok: false, message: 'Organisation introuvable.' }
+  }
+
+  const supabase = await createClient()
+  const { data: organization } = await supabase
+    .from('organization')
+    .select('id, logo_path')
+    .eq('id', organizationId)
+    .maybeSingle()
+  if (!organization?.logo_path) return { ok: false, message: 'Aucun logo à retirer.' }
+
+  await supabase.storage.from('branding').remove([organization.logo_path])
+  const { error } = await supabase
+    .from('organization')
+    .update({ logo_path: null })
+    .eq('id', organization.id)
+  if (error) return { ok: false, message: `Retrait refusé : ${error.message}` }
+
+  revalidatePath(`/admin/organizations/${organization.id}`)
+  return { ok: true, message: 'Logo retiré. Les documents reprendront l’en-tête par défaut.' }
 }

@@ -215,6 +215,12 @@ export default async function StatementOfApplicabilityPage({
       actions={
         <div className="flex items-center gap-3">
           <Badge tone="info">{organization.business_ref}</Badge>
+          <Link
+            href={`/admin/organizations/${id}/impression/declaration-applicabilite`}
+            className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
+          >
+            Imprimer la Déclaration
+          </Link>
           {/*
             La mise en garde doit rester DISPONIBLE sans rester PRESENTE : on la
             lit une fois, on veut pouvoir la relire, et elle n'a pas a occuper

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty } from '@/components/ui'
 import { ActivityProfileForm } from '@/components/governance/activity-profile-form'
+import { documentIdentity, formatPostalAddress } from '@/lib/governance/document-identity'
 import { AttentionBar } from '@/components/governance/attention'
 import { SegmentedFilter } from '@/components/governance/segmented-filter'
 import { VendorReviewForm } from '@/components/governance/registry-forms'
@@ -69,6 +70,8 @@ export default async function OrganizationPage({
     ])
 
   const attention = await attentionFor(id)
+  const identity = await documentIdentity(id)
+  const postalAddress = identity ? formatPostalAddress(identity) : ''
 
   const profile = (organization.ai_activity_profile ?? null) as ActivityProfile | null
   const typologies = (typologyRows ?? []) as {
@@ -101,6 +104,17 @@ export default async function OrganizationPage({
       actions={
         <div className="flex items-center gap-3">
           <Badge>{organization.status}</Badge>
+          {/*
+            Le registre est la piece qu'on demande en premier. Elle s'imprime
+            avec l'identite de l'organisation en en-tete et sa mention de
+            confidentialite en pied — voir /identite.
+          */}
+          <Link
+            href={`/admin/organizations/${id}/impression/registre`}
+            className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
+          >
+            Imprimer le registre
+          </Link>
           <Link
             href={`/admin/organizations/${id}/cas-d-usage/nouveau`}
             className="rounded-md bg-night-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-night-800"
@@ -225,6 +239,39 @@ export default async function OrganizationPage({
         </div>
 
         <div className="space-y-5">
+          {/*
+            L'identite documentaire ne se lit pas ici : elle se remplit une fois
+            et se relit dans les documents qu'elle sert. Un lien suffit.
+          */}
+          <Card
+            title="Identité documentaire"
+            subtitle={
+              identity?.logoUrl
+                ? `${identity.legalName} · logo déposé`
+                : 'En-tête, logo et mention de confidentialité des documents remis'
+            }
+          >
+            <div className="flex flex-col gap-3">
+              <p className="text-sm leading-relaxed text-ink-600">
+                {postalAddress || 'Aucune adresse renseignée.'}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={`/admin/organizations/${id}/identite`}
+                  className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
+                >
+                  Compléter l’identité
+                </Link>
+                <Link
+                  href={`/admin/organizations/${id}/impression/declaration-applicabilite`}
+                  className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
+                >
+                  Imprimer la Déclaration
+                </Link>
+              </div>
+            </div>
+          </Card>
+
           <Card
             title="Rôle vis-à-vis de l’IA"
             subtitle={
