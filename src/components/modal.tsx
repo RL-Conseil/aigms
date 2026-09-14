@@ -21,12 +21,20 @@ export function Modal({
   trigger,
   title,
   description,
+  hideTrigger = false,
   children,
 }: {
   /** Libelle du bouton qui l'ouvre. */
   trigger: string
   title: string
   description?: string
+  /**
+   * Masque le bouton sans demonter la fenetre. Sert au cas ou l'acte qu'elle
+   * porte vient d'etre accompli : la revalidation retire le declencheur, et
+   * sans cela la confirmation partirait avec lui — au moment precis ou elle
+   * informe.
+   */
+  hideTrigger?: boolean
   /** Recoit une fonction de fermeture, a appeler apres un enregistrement. */
   children: (close: () => void) => ReactNode
 }) {
@@ -54,13 +62,15 @@ export function Modal({
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="rounded-md border border-ink-200 px-3.5 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-100"
-      >
-        {trigger}
-      </button>
+      {hideTrigger ? null : (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="rounded-md border border-ink-200 px-3.5 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-100"
+        >
+          {trigger}
+        </button>
+      )}
 
       {open ? (
         <div

@@ -12,7 +12,15 @@ L'avancement de ce qui est fait vit dans
 
 ## Registre de décisions
 
-**Consigné le 10 septembre 2026 · Statut : différé, socle existant**
+**Consigné le 10 septembre 2026 · Livré le 14 septembre 2026**
+
+> Cette entrée est conservée telle qu'elle a été écrite : elle dit ce qui
+> manquait et pourquoi. Ce qui a été livré est décrit dans
+> [`IMPLEMENTATION_STATUS.md`](./IMPLEMENTATION_STATUS.md). Les trois questions
+> de conception ouvertes ont été tranchées — le registre est une section de
+> l'organisation, à côté de Preuves ; il ne redouble pas le pilotage, qui reste
+> la vue « ce qui appelle une action » ; et l'approbation se fait depuis le
+> registre, où le refus de la base se lit.
 
 Différé volontairement : d'autres incréments et une reprise de la disposition
 des écrans passent avant. Le socle serveur, lui, est en place — c'est
