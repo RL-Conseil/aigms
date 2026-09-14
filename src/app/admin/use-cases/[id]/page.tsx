@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
+import { UseCaseLabelForm } from '@/components/governance/use-case-label-form'
 import { Badge, Card, Empty, Field, Stat, StatStrip } from '@/components/ui'
 import { Disclosure } from '@/components/forms'
 import { GateChecklist } from '@/components/gate-checklist'
@@ -63,6 +64,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
     .select(
       `id, business_ref, name, purpose, business_process, expected_benefit, status,
        autonomy_level, criticality, decision_impact, users_description, affected_persons,
+       owner_user_id, accountable_user_id,
        data_description, involves_personal_data, involves_vulnerable_persons,
        next_review_at, status_changed_at, organization_id, activity_id,
        organization:organization_id (id, name),
@@ -230,7 +232,12 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
           ? `${useCase.business_ref} · ${activity.process?.name ?? '—'} › ${activity.name}`
           : `${useCase.business_ref} — non rattaché à une activité`
       }
-      actions={<Badge tone="info">{USE_CASE_STATUS_LABELS[status]}</Badge>}
+      actions={
+        <div className="flex items-center gap-3">
+          <UseCaseLabelForm useCase={useCase} people={people} />
+          <Badge tone="info">{USE_CASE_STATUS_LABELS[status]}</Badge>
+        </div>
+      }
     >
       {/*
         La fiche empilait treize cartes de meme poids : le dossier de reference

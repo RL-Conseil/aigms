@@ -6,7 +6,7 @@ import { Badge, Card, Empty } from '@/components/ui'
 import { ActivityProfileForm } from '@/components/governance/activity-profile-form'
 import { AttentionBar } from '@/components/governance/attention'
 import { SegmentedFilter } from '@/components/governance/segmented-filter'
-import { VendorReviewForm } from '@/components/governance/registry-forms'
+import { VendorLabelForm, VendorReviewForm } from '@/components/governance/registry-forms'
 import { attentionFor } from '@/lib/governance/attention'
 import {
   ACTIVITY_PROFILE_LABELS,
@@ -61,7 +61,9 @@ export default async function OrganizationPage({
         .order('business_ref'),
       supabase
         .from('vendor')
-        .select('id, business_ref, name, criticality, review_status, next_review_at')
+        .select(
+          'id, business_ref, name, criticality, review_status, next_review_at, country_code, subprocessors, notes',
+        )
         .eq('organization_id', id)
         .order('name'),
       supabase.from('business_unit').select('id, name').eq('organization_id', id).order('name'),
@@ -176,6 +178,7 @@ export default async function OrganizationPage({
                         >
                           {VENDOR_REVIEW_LABELS[v.review_status] ?? v.review_status}
                         </Badge>
+                        <VendorLabelForm organizationId={id} vendor={v} />
                         <VendorReviewForm
                           organizationId={id}
                           vendorId={v.id}

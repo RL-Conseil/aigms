@@ -77,6 +77,7 @@ const DECISION_TYPES = [
 const submitSchema = z.object({
   organizationId: z.string().uuid(),
   useCaseId: z.string().uuid().optional().or(z.literal('')),
+  expectedApproverUserId: z.string().uuid().optional().or(z.literal('')),
   decisionType: z.enum(DECISION_TYPES),
   subject: z.string().trim().min(5, 'Objet trop court.').max(200),
   context: z.string().trim().max(2000).optional().or(z.literal('')),
@@ -103,6 +104,7 @@ export async function submitDecision(
   const parsed = submitSchema.safeParse({
     organizationId: formData.get('organizationId'),
     useCaseId: formData.get('useCaseId') ?? '',
+    expectedApproverUserId: formData.get('expectedApproverUserId') ?? '',
     decisionType: formData.get('decisionType'),
     subject: formData.get('subject'),
     context: formData.get('context') ?? '',
@@ -135,6 +137,7 @@ export async function submitDecision(
     tenant_id: organization.tenant_id,
     organization_id: input.organizationId,
     use_case_id: input.useCaseId || null,
+    expected_approver_user_id: input.expectedApproverUserId || null,
     decision_type: input.decisionType,
     subject: input.subject,
     context: input.context || null,
@@ -149,7 +152,17 @@ export async function submitDecision(
     submitted_at: new Date().toISOString(),
   })
 
-  if (error) return { ok: false, message: explain(error) }
+  if (error) {
+    if (error.message.includes('appelée à se prononcer')) {
+      return {
+        ok: false,
+        message:
+          'Sur ce type de décision, vous ne pouvez pas vous désigner vous-même : une autre personne doit se prononcer.',
+        fieldErrors: { expectedApproverUserId: 'Choisir quelqu’un d’autre.' },
+      }
+    }
+    return { ok: false, message: explain(error) }
+  }
 
   revalidatePath(`/admin/organizations/${input.organizationId}/decisions`)
   if (input.useCaseId) revalidatePath(`/admin/use-cases/${input.useCaseId}`)

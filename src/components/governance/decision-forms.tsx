@@ -39,10 +39,13 @@ const SEPARATED = ['go_production', 'risk_acceptance', 'policy_exception']
 export function DecisionForm({
   organizationId,
   useCases,
+  people,
   defaultUseCaseId,
 }: {
   organizationId: string
   useCases: { id: string; name: string; business_ref: string }[]
+  /** Personnes declarees sur l'organisation qui peuvent se prononcer. */
+  people: { userId: string; label: string }[]
   defaultUseCaseId?: string
 }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(
@@ -151,6 +154,33 @@ export function DecisionForm({
           <input id="dec-review" name="reviewDueAt" type="date" className={FIELD} />
         </Field>
       </div>
+
+      <Field
+        label="Personne appelée à se prononcer"
+        htmlFor="dec-approver"
+        optional
+        error={errors.expectedApproverUserId}
+        hint={
+          people.length
+            ? 'Elle est désignée, pas habilitée : l’approbation restera enregistrée au nom de celui qui la prononce.'
+            : 'Aucune personne habilitée n’est déclarée sur cette organisation : la décision restera adressée à personne.'
+        }
+      >
+        <select
+          id="dec-approver"
+          name="expectedApproverUserId"
+          defaultValue=""
+          disabled={people.length === 0}
+          className={FIELD}
+        >
+          <option value="">— Personne désignée plus tard</option>
+          {people.map((person) => (
+            <option key={person.userId} value={person.userId}>
+              {person.label}
+            </option>
+          ))}
+        </select>
+      </Field>
 
       {SEPARATED.includes(type) ? (
         <p className="rounded-md border border-ink-200 bg-ink-50 px-3.5 py-3 text-xs leading-relaxed text-ink-600">

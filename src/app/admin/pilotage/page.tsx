@@ -2,8 +2,11 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty, Stat, StatStrip } from '@/components/ui'
+import { Disclosure } from '@/components/forms'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import { attentionByOrganization } from '@/lib/governance/attention'
+import { AttentionChart } from '@/components/governance/attention-chart'
+import { GovernanceHealth, type Health } from '@/components/governance/governance-health'
 import {
   ACTION_STATUS_LABELS,
   DECISION_STATUS_LABELS,
@@ -124,6 +127,13 @@ export default async function DashboardPage({
   const reviews = keep(dueReviews)
   const openIncidents = keep(incidents)
 
+  // L'indice de sante porte sur UNE organisation : agrege sur plusieurs clients
+  // il n'aurait pas de sens, leurs perimetres n'etant pas comparables.
+  const { data: healthData } = scoped
+    ? await supabase.rpc('governance_health', { p_organization_id: scoped, p_activity_id: null })
+    : { data: null }
+  const health = healthData as Health | null
+
   /** Nom du client, affiche seulement lorsque plusieurs sont en vue. */
   const client = (organizationId: string) =>
     scoped || organizations.length < 2 ? null : (nameOf.get(organizationId) ?? null)
@@ -148,6 +158,35 @@ export default async function DashboardPage({
         Les chiffres suivent le filtre : un compteur qui resterait global sous
         une vue restreinte ferait douter de tout l'ecran.
       */}
+      {/*
+        Un tableau de bord synthetique repond a « ou porter l'effort ». Le
+        graphique le dit d'un coup d'oeil, l'indice de sante donne le niveau, et
+        les listes ne viennent qu'apres — repliees.
+      */}
+      <div className="mb-5 grid gap-5 lg:grid-cols-2">
+        <Card title="Ce qui appelle une action" subtitle="Par nature, sur le périmètre affiché">
+          <AttentionChart rows={scoped ? attention.filter((a) => a.organization_id === scoped) : attention} />
+        </Card>
+
+        <Card
+          title="Santé de la gouvernance"
+          subtitle={
+            scoped
+              ? nameOf.get(scoped)
+              : 'Choisissez une organisation pour obtenir son indice'
+          }
+        >
+          {scoped && health ? (
+            <GovernanceHealth health={health} />
+          ) : (
+            <Empty>
+              L’indice porte sur une organisation : il n’a pas de sens agrégé sur plusieurs
+              clients, dont les périmètres n’ont rien de comparable.
+            </Empty>
+          )}
+        </Card>
+      </div>
+
       <StatStrip>
         <Stat label="Actions échues" value={actions.length} tone="stop" />
         <Stat label="Incidents ouverts" value={openIncidents.length} tone="stop" />
@@ -158,7 +197,12 @@ export default async function DashboardPage({
       </StatStrip>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <Card title="Risques élevés sans traitement abouti" tone={criticalRisks.length ? 'stop' : 'neutral'}>
+        <Disclosure
+          title="Risques élevés sans traitement abouti"
+          summary={`${criticalRisks.length} élément(s)`}
+          tone={criticalRisks.length ? 'todo' : 'done'}
+          defaultOpen={criticalRisks.length > 0 && criticalRisks.length <= 5}
+        >
           {criticalRisks.length ? (
             <ul className="divide-y divide-ink-100">
               {criticalRisks.map((risk) => (
@@ -184,9 +228,14 @@ export default async function DashboardPage({
           ) : (
             <Empty>Aucun risque élevé en attente de traitement.</Empty>
           )}
-        </Card>
+        </Disclosure>
 
-        <Card title="Décisions à instruire ou à revoir" tone={decisions.length ? 'warn' : 'neutral'}>
+        <Disclosure
+          title="Décisions à instruire ou à revoir"
+          summary={`${decisions.length} élément(s)`}
+          tone={decisions.length ? 'todo' : 'done'}
+          defaultOpen={decisions.length > 0 && decisions.length <= 5}
+        >
           {decisions.length ? (
             <ul className="divide-y divide-ink-100">
               {decisions.map((d) => (
@@ -211,9 +260,14 @@ export default async function DashboardPage({
           ) : (
             <Empty>Aucune décision en attente.</Empty>
           )}
-        </Card>
+        </Disclosure>
 
-        <Card title="Preuves échues ou proches de l'échéance" tone={staleEvidence.length ? 'warn' : 'neutral'}>
+        <Disclosure
+          title="Preuves échues ou proches de l'échéance"
+          summary={`${staleEvidence.length} élément(s)`}
+          tone={staleEvidence.length ? 'todo' : 'done'}
+          defaultOpen={staleEvidence.length > 0 && staleEvidence.length <= 5}
+        >
           {staleEvidence.length ? (
             <ul className="divide-y divide-ink-100">
               {staleEvidence.map((e) => (
@@ -234,9 +288,14 @@ export default async function DashboardPage({
           ) : (
             <Empty>Toutes les preuves sont à jour.</Empty>
           )}
-        </Card>
+        </Disclosure>
 
-        <Card title="Actions échues" tone={actions.length ? 'stop' : 'neutral'}>
+        <Disclosure
+          title="Actions échues"
+          summary={`${actions.length} élément(s)`}
+          tone={actions.length ? 'todo' : 'done'}
+          defaultOpen={actions.length > 0 && actions.length <= 5}
+        >
           {actions.length ? (
             <ul className="divide-y divide-ink-100">
               {actions.map((a) => (
@@ -263,9 +322,14 @@ export default async function DashboardPage({
           ) : (
             <Empty>Aucune action échue.</Empty>
           )}
-        </Card>
+        </Disclosure>
 
-        <Card title="Revues de cas d'usage dues" tone={reviews.length ? 'warn' : 'neutral'}>
+        <Disclosure
+          title="Revues de cas d'usage dues"
+          summary={`${reviews.length} élément(s)`}
+          tone={reviews.length ? 'todo' : 'done'}
+          defaultOpen={reviews.length > 0 && reviews.length <= 5}
+        >
           {reviews.length ? (
             <ul className="divide-y divide-ink-100">
               {reviews.map((uc) => (
@@ -289,9 +353,14 @@ export default async function DashboardPage({
           ) : (
             <Empty>Aucune revue échue.</Empty>
           )}
-        </Card>
+        </Disclosure>
 
-        <Card title="Incidents ouverts" tone={openIncidents.length ? 'stop' : 'neutral'}>
+        <Disclosure
+          title="Incidents ouverts"
+          summary={`${openIncidents.length} élément(s)`}
+          tone={openIncidents.length ? 'todo' : 'done'}
+          defaultOpen={openIncidents.length > 0 && openIncidents.length <= 5}
+        >
           {openIncidents.length ? (
             <ul className="divide-y divide-ink-100">
               {openIncidents.map((i) => (
@@ -313,7 +382,7 @@ export default async function DashboardPage({
           ) : (
             <Empty>Aucun incident ouvert.</Empty>
           )}
-        </Card>
+        </Disclosure>
 
         <Card
           title="Gates refusés récemment"

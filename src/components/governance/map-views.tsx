@@ -28,6 +28,14 @@ export type CoverageRow = {
   days_since_test: number | null
 }
 
+/** Activites porteuses de risques eleves ouverts, pour descendre sous le niveau. */
+export type RiskyActivity = {
+  process_id: string
+  activity_id: string
+  activity_name: string
+  open_high_risks: number
+}
+
 export type HeatmapRow = {
   process_id: string
   process_name: string
@@ -178,9 +186,11 @@ export function CoverageView({
 // -----------------------------------------------------------------------------
 export function HeatmapView({
   rows,
+  activities = [],
   organizationId,
 }: {
   rows: HeatmapRow[]
+  activities?: RiskyActivity[]
   organizationId: string
 }) {
   const processes = [...new Map(rows.map((r) => [r.process_id, r])).values()].sort(
@@ -191,6 +201,15 @@ export function HeatmapView({
     rows.find((r) => r.process_id === processId && r.risk_level === level)
 
   const total = rows.reduce((sum, r) => sum + r.risk_count, 0)
+
+  // Regroupe par niveau, le critique d'abord : c'est l'ordre dans lequel on
+  // traite, pas l'ordre alphabetique.
+  const severe = (['critical', 'high'] as RiskLevel[])
+    .map(
+      (level) =>
+        [level, rows.filter((r) => r.risk_level === level && r.open_count > 0)] as const,
+    )
+    .filter(([, processRows]) => processRows.length)
 
   if (!total) {
     return (
@@ -275,38 +294,65 @@ export function HeatmapView({
         </p>
       </Card>
 
-      <Card title="Risques ouverts les plus élevés">
-        <ul className="flex flex-col gap-2">
-          {rows
-            .filter((r) => r.open_count > 0 && (r.risk_level === 'high' || r.risk_level === 'critical'))
-            // Le critique passe avant l'élevé, puis le nombre décroissant.
-            .sort(
-              (a, b) =>
-                LEVELS.indexOf(b.risk_level) - LEVELS.indexOf(a.risk_level) ||
-                b.open_count - a.open_count,
-            )
-            .map((row) => (
-              <li
-                key={`${row.process_id}-${row.risk_level}`}
-                className="flex items-center justify-between gap-3"
-              >
-                <Link
-                  href={`/admin/organizations/${organizationId}/processus`}
-                  className="text-sm text-brand-600 hover:underline"
-                >
-                  {row.process_name}
-                </Link>
-                <Badge tone="stop">
-                  {row.open_count} {RISK_LEVEL_LABELS[row.risk_level].toLowerCase()}
-                </Badge>
-              </li>
+      {/*
+        La matrice dit COMBIEN et OU, par niveau. Elle ne dit pas ou aller : un
+        processus n'est pas une destination, une activite l'est. On descend donc
+        d'un cran — niveau, puis processus, puis activites cliquables.
+      */}
+      <Card title="Risques ouverts les plus élevés" tone={severe.length ? 'stop' : 'neutral'}>
+        {severe.length ? (
+          <div className="flex flex-col gap-5">
+            {severe.map(([level, processRows]) => (
+              <div key={level}>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stop-600">
+                  {RISK_LEVEL_LABELS[level as RiskLevel]}
+                </p>
+                <ul className="flex flex-col gap-3">
+                  {processRows.map((row) => {
+                    const carriers = activities.filter(
+                      (a) => a.process_id === row.process_id && a.open_high_risks > 0,
+                    )
+                    return (
+                      <li key={`${row.process_id}-${level}`}>
+                        <div className="flex items-baseline justify-between gap-3">
+                          <span className="text-sm font-medium text-ink-900">
+                            {row.process_name}
+                          </span>
+                          <Badge tone="stop">
+                            {row.open_count} ouvert{row.open_count > 1 ? 's' : ''}
+                          </Badge>
+                        </div>
+                        {carriers.length ? (
+                          <ul className="mt-1 flex flex-wrap gap-2">
+                            {carriers.map((activity) => (
+                              <li key={activity.activity_id}>
+                                <Link
+                                  href={`/admin/organizations/${organizationId}/processus?activite=${activity.activity_id}`}
+                                  className="inline-flex items-baseline gap-1.5 rounded-md border border-ink-200 px-2.5 py-1 text-xs text-brand-600 hover:bg-ink-50"
+                                >
+                                  {activity.activity_name}
+                                  <span className="tabular-nums text-ink-400">
+                                    {activity.open_high_risks}
+                                  </span>
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="mt-1 text-xs text-ink-400">
+                            Aucune activité porteuse identifiée : le cas d’usage n’est pas rattaché.
+                          </p>
+                        )}
+                      </li>
+                    )
+                  })}
+                </ul>
+              </div>
             ))}
-          {!rows.some((r) => r.open_count > 0 && (r.risk_level === 'high' || r.risk_level === 'critical')) ? (
-            <li className="text-sm text-emerald-800">
-              Aucun risque élevé ou critique ouvert.
-            </li>
-          ) : null}
-        </ul>
+          </div>
+        ) : (
+          <p className="text-sm text-ok-600">Aucun risque élevé ou critique ouvert.</p>
+        )}
       </Card>
     </div>
   )

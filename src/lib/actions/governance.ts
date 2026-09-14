@@ -511,3 +511,77 @@ export async function setActivityProfile(
       'Rôle enregistré. Les typologies de preuves attendues et le régime exigé par la Déclaration d’Applicabilité sont recalculés.',
   }
 }
+
+// =============================================================================
+// Corriger la fiche d'un cas d'usage
+// =============================================================================
+// Un cas d'usage se declare une fois et se relit pendant des annees. Entre les
+// deux, une finalite se reformule, un proprietaire change de poste, la
+// description des donnees s'affine. Rien de cela n'est une decision de
+// gouvernance ; tout cela restait pourtant fige depuis l'intake.
+//
+// LA LIGNE DE PARTAGE : ce qui DECRIT se corrige ici, ce qui QUALIFIE passe par
+// l'acte qui lui est propre. Restent donc dehors — et dans leur ecran, date et
+// justifie : la criticite (pre-classification), le niveau d'autonomie et la
+// classification reglementaire, les donnees personnelles et les personnes
+// vulnerables (ils declenchent l'evaluation d'impact et pesent sur le gate
+// REVUE), le statut (transition motivee). Les corriger par un formulaire
+// d'etiquette reviendrait a reclasser un systeme sans le dire.
+const useCaseLabelSchema = z.object({
+  useCaseId: z.string().uuid(),
+  name: z.string().trim().min(3, 'Nom trop court.').max(200),
+  purpose: z.string().trim().min(20, 'Décrivez la finalité en une ou deux phrases.').max(2000),
+  expectedBenefit: z.string().trim().max(1000).optional().or(z.literal('')),
+  ownerUserId: z.string().uuid({ message: 'Désignez un propriétaire.' }),
+  accountableUserId: z.string().uuid({ message: 'Désignez un responsable redevable.' }),
+  usersDescription: z.string().trim().max(1000).optional().or(z.literal('')),
+  affectedPersons: z.string().trim().max(1000).optional().or(z.literal('')),
+  dataDescription: z.string().trim().max(2000).optional().or(z.literal('')),
+  decisionImpact: z.string().trim().max(1000).optional().or(z.literal('')),
+})
+
+export async function updateUseCaseLabels(
+  _previous: FormState | null,
+  formData: FormData,
+): Promise<FormState> {
+  const parsed = useCaseLabelSchema.safeParse({
+    useCaseId: formData.get('useCaseId'),
+    name: formData.get('name'),
+    purpose: formData.get('purpose'),
+    expectedBenefit: formData.get('expectedBenefit') ?? '',
+    ownerUserId: formData.get('ownerUserId'),
+    accountableUserId: formData.get('accountableUserId'),
+    usersDescription: formData.get('usersDescription') ?? '',
+    affectedPersons: formData.get('affectedPersons') ?? '',
+    dataDescription: formData.get('dataDescription') ?? '',
+    decisionImpact: formData.get('decisionImpact') ?? '',
+  })
+  if (!parsed.success) return firstIssues(parsed.error)
+
+  const d = parsed.data
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('ai_use_case')
+    .update({
+      name: d.name,
+      purpose: d.purpose,
+      expected_benefit: d.expectedBenefit || null,
+      owner_user_id: d.ownerUserId,
+      accountable_user_id: d.accountableUserId,
+      users_description: d.usersDescription || null,
+      affected_persons: d.affectedPersons || null,
+      data_description: d.dataDescription || null,
+      decision_impact: d.decisionImpact || null,
+    })
+    .eq('id', d.useCaseId)
+    .select('id')
+
+  if (error) return { ok: false, message: explain(error) }
+  if (!data?.length) return { ok: false, message: 'Votre rôle ne permet pas cette écriture.' }
+
+  revalidatePath(`/admin/use-cases/${d.useCaseId}`)
+  return {
+    ok: true,
+    message: 'Fiche corrigée. La qualification et le statut restent ce qu’ils étaient.',
+  }
+}

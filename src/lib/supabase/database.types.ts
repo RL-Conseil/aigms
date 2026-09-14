@@ -2655,6 +2655,7 @@ export type Database = {
             | "suspension"
             | "retirement"
           effective_from: string | null
+          expected_approver_user_id: string | null
           id: string
           options_considered: string | null
           organization_id: string
@@ -2695,6 +2696,7 @@ export type Database = {
             | "suspension"
             | "retirement"
           effective_from?: string | null
+          expected_approver_user_id?: string | null
           id?: string
           options_considered?: string | null
           organization_id: string
@@ -2735,6 +2737,7 @@ export type Database = {
             | "suspension"
             | "retirement"
           effective_from?: string | null
+          expected_approver_user_id?: string | null
           id?: string
           options_considered?: string | null
           organization_id?: string
@@ -2761,6 +2764,13 @@ export type Database = {
           {
             foreignKeyName: "governance_decision_approver_user_id_fkey"
             columns: ["approver_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "governance_decision_expected_approver_user_id_fkey"
+            columns: ["expected_approver_user_id"]
             isOneToOne: false
             referencedRelation: "user_profile"
             referencedColumns: ["id"]

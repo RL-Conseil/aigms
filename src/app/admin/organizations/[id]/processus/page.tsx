@@ -96,17 +96,15 @@ export default async function ProcessMapPage({
   const view: ViewKey = VIEWS.some((v) => v.key === vue) ? (vue as ViewKey) : 'arbre'
   const supabase = await createClient()
 
-  const [{ data: organization }, { data: mapRows }, { data: healthData }] =
+  const [{ data: organization }, { data: mapRows }] =
     await Promise.all([
       supabase.from('organization').select('id, name, business_ref').eq('id', id).maybeSingle(),
       supabase.rpc('process_map', { p_organization_id: id }),
-      supabase.rpc('governance_health', { p_organization_id: id, p_activity_id: null }),
     ])
 
   if (!organization) notFound()
 
   const rows = (mapRows ?? []) as MapRow[]
-  const health = (healthData ?? { available: false }) as Health
 
   const [{ data: coverageData }, { data: heatmapData }, { data: graphData }, { data: riskList }, { data: pathData }] =
     await Promise.all([
@@ -179,7 +177,23 @@ export default async function ProcessMapPage({
       title="Processus et risques"
       subtitle="Ce que fait l’organisation, et ce que la gouvernance de l’IA y produit."
       actions={
-        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+          {view === 'arbre' ? (
+            <>
+              <Link
+                href={`/admin/organizations/${id}/processus/nouveau`}
+                className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
+              >
+                Ajouter un processus
+              </Link>
+              <Link
+                href={`/admin/organizations/${id}/processus/activite`}
+                className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
+              >
+                Ajouter une activité
+              </Link>
+            </>
+          ) : null}
           <nav aria-label="Lecture de la carte" className="flex rounded-md border border-ink-200 bg-white p-0.5">
             {VIEWS.map((option) => (
               <Link
@@ -253,7 +267,18 @@ export default async function ProcessMapPage({
       {view === 'couverture' ? (
         <CoverageView rows={(coverageData ?? []) as CoverageRow[]} organizationId={id} />
       ) : view === 'risques' ? (
-        <HeatmapView rows={(heatmapData ?? []) as HeatmapRow[]} organizationId={id} />
+        <HeatmapView
+          rows={(heatmapData ?? []) as HeatmapRow[]}
+          activities={rows
+            .filter((r) => r.activity_id && r.open_high_risks > 0)
+            .map((r) => ({
+              process_id: r.process_id,
+              activity_id: r.activity_id!,
+              activity_name: r.activity_name ?? '—',
+              open_high_risks: r.open_high_risks,
+            }))}
+          organizationId={id}
+        />
       ) : view === 'graphe' ? (
         <div className="grid gap-5 lg:grid-cols-5">
           <div className="lg:col-span-3">
@@ -509,31 +534,15 @@ export default async function ProcessMapPage({
               </Card>
             </>
           ) : (
-            <>
-              <Card title="Santé de la gouvernance" subtitle="Sur l’ensemble de l’organisation">
-                <GovernanceHealth health={health} />
-              </Card>
-
-              <Card
-                title="Compléter la carte"
-                subtitle="Le référentiel de processus se décrit une fois, puis s’amende rarement."
-              >
-                <div className="flex flex-wrap gap-3">
-                  <Link
-                    href={`/admin/organizations/${id}/processus/nouveau`}
-                    className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
-                  >
-                    Ajouter un processus
-                  </Link>
-                  <Link
-                    href={`/admin/organizations/${id}/processus/activite`}
-                    className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
-                  >
-                    Ajouter une activité
-                  </Link>
-                </div>
-              </Card>
-            </>
+            <Card
+              title="Sélectionner une activité"
+              subtitle="Le panneau détaillera ce qui s’y joue : usages déclarés, risques, contrôles, preuves."
+            >
+              <Empty>
+                Cliquez une activité dans l’arbre. Les compteurs qu’elle affiche disent déjà ce qui
+                y appelle une action.
+              </Empty>
+            </Card>
           )}
         </div>
       </div>
