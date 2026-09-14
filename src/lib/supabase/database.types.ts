@@ -3577,6 +3577,8 @@ export type Database = {
       }
       organization: {
         Row: {
+          address_line1: string | null
+          address_line2: string | null
           ai_activity_profile:
             | "infrastructure_host"
             | "model_developer"
@@ -3584,18 +3586,32 @@ export type Database = {
             | "business_user"
             | null
           business_ref: string
+          city: string | null
+          confidentiality_label: string
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
           country_code: string | null
           created_at: string
+          document_footer_note: string | null
           headcount: number | null
           id: string
           legal_name: string | null
+          logo_path: string | null
+          logo_updated_at: string | null
           name: string
+          postal_code: string | null
+          registration_number: string | null
           sector: string | null
           status: "prospect" | "pilot" | "active" | "archived"
           tenant_id: string
           updated_at: string
+          vat_number: string | null
+          website: string | null
         }
         Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
           ai_activity_profile?:
             | "infrastructure_host"
             | "model_developer"
@@ -3603,18 +3619,32 @@ export type Database = {
             | "business_user"
             | null
           business_ref: string
+          city?: string | null
+          confidentiality_label?: string
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           country_code?: string | null
           created_at?: string
+          document_footer_note?: string | null
           headcount?: number | null
           id?: string
           legal_name?: string | null
+          logo_path?: string | null
+          logo_updated_at?: string | null
           name: string
+          postal_code?: string | null
+          registration_number?: string | null
           sector?: string | null
           status?: "prospect" | "pilot" | "active" | "archived"
           tenant_id: string
           updated_at?: string
+          vat_number?: string | null
+          website?: string | null
         }
         Update: {
+          address_line1?: string | null
+          address_line2?: string | null
           ai_activity_profile?:
             | "infrastructure_host"
             | "model_developer"
@@ -3622,16 +3652,28 @@ export type Database = {
             | "business_user"
             | null
           business_ref?: string
+          city?: string | null
+          confidentiality_label?: string
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
           country_code?: string | null
           created_at?: string
+          document_footer_note?: string | null
           headcount?: number | null
           id?: string
           legal_name?: string | null
+          logo_path?: string | null
+          logo_updated_at?: string | null
           name?: string
+          postal_code?: string | null
+          registration_number?: string | null
           sector?: string | null
           status?: "prospect" | "pilot" | "active" | "archived"
           tenant_id?: string
           updated_at?: string
+          vat_number?: string | null
+          website?: string | null
         }
         Relationships: [
           {
@@ -4987,6 +5029,7 @@ export type Database = {
         }[]
       }
       current_organization: { Args: never; Returns: string }
+      document_identity: { Args: { p_organization_id: string }; Returns: Json }
       evaluate_gate: {
         Args: { p_target: string; p_use_case_id: string }
         Returns: Json
