@@ -30,6 +30,10 @@ const PILLARS = [
 ] as const
 
 export default function HomePage() {
+  // Renseignee, elle affiche le defi ; c'est Supabase qui refuse une
+  // authentification sans jeton valide (Authentication > Attack protection).
+  const captchaSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || undefined
+
   return (
     <main className="flex min-h-screen flex-col lg:flex-row">
       {/* ---------- Connexion ---------- */}
@@ -39,14 +43,14 @@ export default function HomePage() {
         <div className="flex grow items-center justify-center py-16">
           <div className="w-full max-w-sm">
             <h1 className="mb-2 font-serif text-3xl font-medium tracking-tight">
-              Accès à l’espace de gouvernance
+              Accès à votre espace de gouvernance
             </h1>
             <p className="mb-8 text-[15px] text-ink-600">
               L’accès est réservé aux comptes ouverts par l’administration de la plateforme.
             </p>
 
             <Suspense fallback={null}>
-              <LoginForm />
+              <LoginForm captchaSiteKey={captchaSiteKey} />
             </Suspense>
 
             <div className="mt-8 flex flex-col gap-3 border-t border-ink-200 pt-6 text-[13px] leading-relaxed text-ink-500">

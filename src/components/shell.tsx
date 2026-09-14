@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { Wordmark } from '@/components/logo'
+import { tenantBranding } from '@/lib/branding'
 import { UserMenu } from '@/components/admin/user-menu'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import { ROLE_LABELS } from '@/lib/domain/roles'
@@ -84,6 +85,7 @@ export async function Shell({
 
   // L'administration n'a pas de gouvernance a suivre : lui compter des retards
   // qu'elle ne peut pas solder serait une invitation a outrepasser son role.
+  const branding = await tenantBranding()
   const pending = administrating ? 0 : await attentionTotal()
   const orgAttention =
     organization && !administrating ? await attentionFor(organization.id) : null
@@ -92,8 +94,13 @@ export async function Shell({
     <div className="min-h-screen">
       <header className="border-b border-ink-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-3">
-          <Link href="/admin" aria-label="AIGMS, organisations">
-            <Wordmark size={26} />
+          <Link href="/admin" aria-label={`${branding.label}, organisations`}>
+            <Wordmark
+              size={26}
+              label={branding.label}
+              tagline={branding.tagline}
+              logoUrl={branding.logoUrl}
+            />
           </Link>
 
           <nav aria-label="Navigation principale" className="flex gap-4 text-sm text-ink-600">

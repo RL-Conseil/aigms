@@ -12,6 +12,17 @@ const publicSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
   NEXT_PUBLIC_SITE_URL: z.string().url().default('http://localhost:3000'),
+  /**
+   * Cle publique du captcha Cloudflare Turnstile.
+   *
+   * Facultative, et c'est deliberé : absente, la mire fonctionne sans captcha —
+   * en developpement, en Preview et dans les tests de bout en bout. Presente,
+   * elle affiche le defi ET Supabase doit etre configure pour exiger le jeton
+   * (Authentication > Attack protection). Sans ce second reglage, le jeton
+   * serait envoye mais jamais verifie : un captcha decoratif vaut moins que pas
+   * de captcha, parce qu'il fait croire a une protection.
+   */
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),
 })
 
 const serverSchema = z.object({
@@ -25,6 +36,7 @@ export function publicEnv(): PublicEnv {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || undefined,
   })
 
   if (!parsed.success) {

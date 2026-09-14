@@ -21,7 +21,7 @@ test("l'espace d'administration exige une session", async ({ page, context }) =>
   await page.goto('/admin')
   // La mire est desormais l'accueil ; la destination demandee est conservee.
   await expect(page).toHaveURL(/\/\?next=%2Fadmin/)
-  await expect(page.getByRole('heading', { name: 'Accès à l’espace de gouvernance' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Accès à votre espace de gouvernance' })).toBeVisible()
 })
 
 test('le parcours de gouvernance est consultable de bout en bout', async ({ page }) => {

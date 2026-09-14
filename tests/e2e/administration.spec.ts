@@ -32,7 +32,7 @@ test("le sous-titre distingue administrer et gouverner", async ({ page }) => {
   await page.getByRole('menuitem', { name: 'Se déconnecter' }).click()
   // `/login` redirige vers l'accueil : viser l'URL de passage rend le parcours
   // dependant du moment ou on l'observe. On vise l'etat atteint.
-  await expect(page.getByRole('heading', { name: 'Accès à l’espace de gouvernance' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Accès à votre espace de gouvernance' })).toBeVisible()
 
   // Un role de gouvernance n'atterrit plus sur la liste mais sur son
   // organisation courante : le sous-titre se lit la ou la liste vit desormais.
