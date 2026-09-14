@@ -17,10 +17,17 @@ import {
  * est renvoye tel quel a l'interface.
  */
 
+// Le motif devient obligatoire. Il est journalise avec la transition, et c'est
+// la seule phrase qui dira, dans six mois, POURQUOI ce cas d'usage a change
+// d'etat — un refus comme une autorisation. Un champ facultatif reste vide.
 const transitionSchema = z.object({
   useCaseId: z.string().uuid(),
   target: z.enum(USE_CASE_STATUSES),
-  rationale: z.string().trim().max(2000).optional(),
+  rationale: z
+    .string()
+    .trim()
+    .min(10, 'Le motif est consigné au journal : il doit pouvoir se relire dans six mois.')
+    .max(2000),
 })
 
 export type ActionState =
@@ -34,18 +41,22 @@ export async function transitionUseCase(
   const parsed = transitionSchema.safeParse({
     useCaseId: formData.get('useCaseId'),
     target: formData.get('target'),
-    rationale: formData.get('rationale') ?? undefined,
+    rationale: formData.get('rationale') ?? '',
   })
 
   if (!parsed.success) {
-    return { ok: false, message: 'Demande de transition invalide.' }
+    return {
+      ok: false,
+      message:
+        parsed.error.issues[0]?.message ?? 'Demande de transition invalide.',
+    }
   }
 
   const supabase = await createClient()
   const { data, error } = await supabase.rpc('transition_use_case', {
     p_use_case_id: parsed.data.useCaseId,
     p_target: parsed.data.target satisfies UseCaseStatus,
-    p_rationale: parsed.data.rationale ?? null,
+    p_rationale: parsed.data.rationale,
   })
 
   if (error) {

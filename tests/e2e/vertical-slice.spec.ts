@@ -213,3 +213,21 @@ test('chaque rubrique du dossier s’explique sur place', async ({ page }) => {
   await journal.getByRole('button', { name: 'À quoi sert le journal' }).click()
   await expect(page.getByRole('dialog', { name: 'À quoi sert le journal' })).toBeVisible()
 })
+
+test('une transition sans motif est refusée', async ({ page }) => {
+  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000003')
+
+  const evolution = page.locator('section').filter({ hasText: 'Faire évoluer le cas d’usage' })
+  await expect(evolution.getByText(/C’est la seule phrase qui dira/)).toBeVisible()
+
+  // Le navigateur bloque d'abord, sur `required`.
+  const motif = evolution.getByLabel('Motif de la transition')
+  await expect(motif).toHaveAttribute('required', '')
+
+  // Le serveur tranche ensuite. Douze espaces satisfont `minLength` — le
+  // navigateur laisse donc passer — et ne survivent pas au `trim` : c'est
+  // exactement la que la contrainte d'ecran doit ceder a celle du serveur.
+  await motif.fill('            ')
+  await evolution.getByRole('button', { name: /Demander la transition/ }).click()
+  await expect(page.getByText(/doit pouvoir se relire dans six mois/)).toBeVisible()
+})
