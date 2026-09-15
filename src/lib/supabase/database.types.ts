@@ -4983,6 +4983,7 @@ export type Database = {
       }
     }
     Functions: {
+      activity_stakes: { Args: { p_activity_id: string }; Returns: Json }
       attention_by_organization: {
         Args: never
         Returns: {

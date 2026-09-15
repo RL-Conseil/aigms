@@ -20,7 +20,11 @@ export default defineConfig({
   webServer: {
     // Le parcours est verifie sur un build de production : c'est ce qui sera
     // deploye.
+    // Sans captcha : les tests ne resolvent pas un defi Turnstile, et la mire
+    // refuserait de se connecter tant que la cle publique est presente. Le
+    // captcha se verifie a la main sur la Preview, pas ici.
     command: 'npm run build && npm run start -- --port 3000 --hostname 127.0.0.1',
+    env: { NEXT_PUBLIC_TURNSTILE_SITE_KEY: '' },
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
