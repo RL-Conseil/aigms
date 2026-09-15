@@ -21,7 +21,10 @@
     "url": "https://xsagbzrgoljzgorwvsir.supabase.co",
     "contentPolicy": "migrations-only",
     "destructiveOperationsRequireConfirmation": true,
-    "allowedSchemas": ["public", "app"],
+    "allowedSchemas": [
+      "public",
+      "app"
+    ],
     "preferredMode": "migrations-first",
     "projectName": "aigms-supabase",
     "role": "production",
@@ -32,9 +35,11 @@
       "url": "https://xahqdxwmlewyjpsiuzux.supabase.co",
       "role": "preview et development",
       "region": "eu-west-1",
-      "notes": "Jeton d'acces distinct de celui de la production : aucun des deux ne couvre les deux projets."
+      "notes": "Meme organisation Supabase que la production (caritis) depuis le 15 septembre 2026 : un seul jeton Owner de cette organisation couvre les deux projets."
     },
-    "notes": "Le serveur MCP Supabase de cette session est rattache a l'organisation kccjtvwusyuedbjlcwte et n'a pas acces a ce projet (organisation kxrprvzkleccysyzoylt). Les migrations s'appliquent via le CLI Supabase : supabase link --project-ref xsagbzrgoljzgorwvsir puis supabase db push."
+    "notes": "Les deux projets vivent dans l'organisation caritis (yrjuqpiubhcwbpwvaxqq) depuis le 15 septembre 2026. Les migrations s'appliquent via le CLI Supabase avec un SUPABASE_ACCESS_TOKEN cree depuis le compte Owner de cette organisation : supabase db push --project-ref <ref>. Un jeton d'un compte simplement invite sur un projet ne voit ni l'organisation ni l'autre projet.",
+    "organizationId": "yrjuqpiubhcwbpwvaxqq",
+    "organizationName": "caritis"
   },
   "github": {
     "enabled": true,
@@ -54,7 +59,12 @@
     "notes": "Le lien Git du projet pointe sur rlabrador/aigms (depot vide) : l'App GitHub Vercel n'a pas acces a l'organisation RL-Conseil. Les deploiements se font par API tant que ce lien n'est pas corrige. Aucune cle service_role n'est configuree : le code applicatif ne l'utilise pas."
   },
   "agents": {
-    "project-context": ["read.project.files"],
-    "supabase-migrations": ["sql.generate_migration", "supabase.read"]
+    "project-context": [
+      "read.project.files"
+    ],
+    "supabase-migrations": [
+      "sql.generate_migration",
+      "supabase.read"
+    ]
   }
 }
