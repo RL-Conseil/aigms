@@ -2,6 +2,9 @@ import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty } from '@/components/ui'
 import { AccountForm, RoleForm } from '@/components/admin/forms'
+import { RoleMatrix } from '@/components/admin/role-matrix'
+import { roleCapabilities } from '@/lib/admin/role-capabilities'
+import { InfoTip } from '@/components/info-tip'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import { ROLE_LABELS, type AppRole } from '@/lib/domain/roles'
 import { formatDate } from '@/lib/domain/governance'
@@ -31,7 +34,8 @@ export default async function AccountsPage() {
 
   const supabase = await createClient()
 
-  const [{ data: memberships }, { data: organizations }, { data: assignments }] = await Promise.all([
+  const [{ data: memberships }, { data: organizations }, { data: assignments }, capabilities] =
+    await Promise.all([
     supabase
       .from('membership')
       .select('id, role, status, created_at, user:user_id (id, email, full_name, job_title)')
@@ -40,6 +44,7 @@ export default async function AccountsPage() {
     supabase
       .from('role_assignment')
       .select('user_id, role, organization:organization_id (name)'),
+    roleCapabilities(),
   ])
 
   const assignmentsByUser = new Map<string, string[]>()
@@ -122,6 +127,43 @@ export default async function AccountsPage() {
             <AccountForm organizations={organizations ?? []} />
           </Card>
         </div>
+      </div>
+
+      {/*
+        La matrice repond a la question qu'on se pose au moment d'attribuer :
+        « avec ce role, que pourra-t-elle faire ? » Les cellules se lisent
+        actif / inactif ; elles ne se basculent pas — voir role-matrix.tsx.
+      */}
+      <div className="mt-5">
+        <Card
+          title="Ce que chaque rôle peut faire"
+          subtitle="Une ligne par capacité, une colonne par rôle. Calculée depuis les règles que la base applique."
+          action={
+            <InfoTip label="Pourquoi la matrice ne se règle pas" title="Des états, pas des interrupteurs">
+              <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
+                <p>
+                  Les cellules ressemblent à des interrupteurs parce qu’elles se lisent ainsi :
+                  actif, inactif. Elles ne se basculent pas. La matrice est{' '}
+                  <strong className="font-medium text-ink-800">calculée en base</strong>, depuis
+                  les ensembles de rôles que les policies de sécurité utilisent réellement — elle
+                  ne peut donc pas diverger de ce que la plateforme fait.
+                </p>
+                <p>
+                  La rendre réglable reviendrait à laisser un administrateur donner au porteur du
+                  système le droit de se prononcer sur sa propre mise en production. Changer une
+                  règle est une migration, relue et versionnée — jamais un réglage d’écran.
+                </p>
+                <p>
+                  <strong className="font-medium text-ink-800">Deux règles ne se lisent pas ici</strong>{' '}
+                  parce qu’elles portent sur les personnes, pas sur les rôles : la séparation des
+                  rôles sur les décisions engageantes, et la validation nominative des preuves.
+                </p>
+              </div>
+            </InfoTip>
+          }
+        >
+          <RoleMatrix capabilities={capabilities} />
+        </Card>
       </div>
     </Shell>
   )
