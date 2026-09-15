@@ -31,7 +31,13 @@ const LOGO_URL_TTL_SECONDS = 3600
 
 export const tenantBranding = cache(async (): Promise<Branding> => {
   const supabase = await createClient()
-  const { data } = await supabase.rpc('tenant_branding')
+  const { data, error } = await supabase.rpc('tenant_branding')
+  // L'en-tete ne doit jamais casser une page : schema en retard, on garde la
+  // marque de l'editeur et on le journalise cote serveur.
+  if (error) {
+    console.warn(`[branding] ${error.message} — marque par défaut servie.`)
+    return DEFAULT_BRANDING
+  }
   if (!data) return DEFAULT_BRANDING
 
   const raw = data as Record<string, string | null | undefined>

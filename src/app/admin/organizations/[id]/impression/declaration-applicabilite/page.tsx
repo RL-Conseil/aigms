@@ -59,7 +59,7 @@ export default async function PrintableSoaPage({ params }: { params: Promise<{ i
   const { id } = await params
   const supabase = await createClient()
 
-  const [{ data: organization }, { data: rows }, identity] = await Promise.all([
+  const [{ data: organization, error }, { data: rows }, identity] = await Promise.all([
     supabase
       .from('organization')
       .select('id, name, ai_activity_profile')
@@ -73,6 +73,7 @@ export default async function PrintableSoaPage({ params }: { params: Promise<{ i
     documentIdentity(id),
   ])
 
+  if (error) throw new Error(`Lecture de l’organisation refusée : ${error.message}`)
   if (!organization || !identity) notFound()
 
   const requirements = ((rows ?? []) as SoaRow[]).slice().sort((a, b) => a.display_order - b.display_order)

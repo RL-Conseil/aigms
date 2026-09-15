@@ -32,7 +32,7 @@ export default async function OrganizationAdministrationPage({
   const viewer = await getViewerContext()
   const supabase = await createClient()
 
-  const { data: organization } = await supabase
+  const { data: organization, error } = await supabase
     .from('organization')
     .select(
       `id, name, business_ref, status, ai_activity_profile, legal_name,
@@ -43,6 +43,10 @@ export default async function OrganizationAdministrationPage({
     .eq('id', id)
     .maybeSingle()
 
+  // Une colonne absente — schema en retard sur le code — n'est pas une
+  // organisation introuvable : l'erreur se lit en clair, elle ne se deguise
+  // pas en 404.
+  if (error) throw new Error(`Lecture de l’organisation refusée : ${error.message}`)
   if (!organization) notFound()
 
   const breadcrumb = [
