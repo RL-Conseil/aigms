@@ -378,3 +378,54 @@ test('un risque se saisit sans quitter la fiche', async ({ page }) => {
   await expect(fenetre).toHaveCount(0)
   await expect(page.getByRole('heading', { name: 'Assistant support client' })).toBeVisible()
 })
+
+test('le suivi liste actions, incidents et revues, et l’incident significatif exige sa CAPA', async ({ page }) => {
+  await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001/suivi')
+  await expect(page.getByRole('heading', { name: 'Suivi', exact: true })).toBeVisible()
+
+  // Le jeu de demonstration porte une action echue et un incident S2 ouvert.
+  // Le filtre porte son décompte dans son nom : « Échues 1 ».
+  await page.getByRole('navigation', { name: 'Filtrer les actions' }).getByRole('link', { name: /^Échues/ }).click()
+  await expect(page.getByText(/Renouveler l.attestation de formation/)).toBeVisible()
+
+  await page.getByRole('navigation', { name: 'Lecture du suivi' }).getByRole('link', { name: 'Incidents' }).click()
+  await expect(page).toHaveURL(/vue=incidents/)
+  await expect(page.getByText(/tarif obsolète/)).toBeVisible()
+  await expect(page.getByText(/CAPA close exigée/).first()).toBeVisible()
+
+  // Declarer un incident transverse, mineur : il apparait aussitot, ouvert.
+  await page.getByRole('button', { name: 'Déclarer un incident' }).click()
+  const title = `Observation ${Date.now()}`
+  await page.getByLabel('Titre').fill(title)
+  await page.getByLabel('Ce qui s’est passé').fill('Un utilisateur a signalé une réponse hors périmètre, sans effet.')
+  await page.getByLabel('Nature').selectOption('observation')
+  await page.getByLabel('Gravité').selectOption('S4')
+  await page.getByRole('button', { name: 'Déclarer l’incident' }).click()
+  await expect(page.getByText('Incident déclaré.', { exact: true })).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByText(title)).toBeVisible()
+})
+
+test('sur la fiche, une action s’ouvre et se clôt avec son motif', async ({ page }) => {
+  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000002')
+  const volet = page.locator('section').filter({ has: page.getByRole('button', { name: /^Actions/ }) })
+  await volet.getByRole('button', { name: /^Actions/ }).click()
+  await volet.getByRole('button', { name: 'Ouvrir une action' }).click()
+
+  const title = `Vérifier la procédure ${Date.now()}`
+  await page.getByLabel('Titre').fill(title)
+  await page.getByRole('button', { name: 'Ouvrir l’action' }).click()
+  await expect(page.getByText('Action ouverte.', { exact: true })).toBeVisible()
+  await page.keyboard.press('Escape')
+
+  // La cloture se motive : sans motif, le formulaire refuse avant la base.
+  const row = volet.locator('li').filter({ hasText: title })
+  await row.getByRole('button', { name: 'Avancer' }).click()
+  await page.getByLabel('Statut').selectOption('done')
+  await page.getByLabel('Ce qui a été fait').fill('Trop court')
+  await page.getByRole('button', { name: 'Enregistrer' }).click()
+  await expect(page.getByText(/ce qu’un auditeur lira/)).toBeVisible()
+  await page.getByLabel('Ce qui a été fait').fill('Procédure relue et mise à jour avec le responsable métier.')
+  await page.getByRole('button', { name: 'Enregistrer' }).click()
+  await expect(page.getByText('Action close, datée et journalisée.')).toBeVisible()
+})
