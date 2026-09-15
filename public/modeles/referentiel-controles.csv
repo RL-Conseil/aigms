@@ -1,0 +1,5 @@
+control_id;domain;domain_name;title;objective;control_type;default_applicability;owner_role;review_frequency;status;version
+CAB-GOV-001;GOV;Gouvernance;Politique d'usage de l'IA;Une politique approuvée fixe ce qui est permis, interdit et soumis à autorisation.;baseline;mandatory;AI Governance Officer;annual;draft;1.0
+CAB-GOV-002;GOV;Gouvernance;Rôles et responsabilités;Chaque usage d'IA a un propriétaire et un responsable redevable nommés.;baseline;mandatory;Direction;annual;draft;1.0
+CAB-DAT-001;DAT;Données;Inventaire des données mobilisées;Les jeux de données d'entraînement et d'exploitation sont recensés, avec leur base légale.;baseline;conditional;DPO;semiannual;draft;1.0
+CAB-HUM-001;HUM;Supervision humaine;Procédure d'interruption;Une personne nommée peut arrêter le système, et la procédure est testée.;enhanced;conditional;Responsable métier;quarterly;draft;1.0
