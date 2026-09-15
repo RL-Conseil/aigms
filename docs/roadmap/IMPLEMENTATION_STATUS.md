@@ -50,7 +50,7 @@ Tous verts au 7 septembre 2026.
 | Dépôt GitHub `RL-Conseil/aigms` | privé, existant |
 | Supabase local (Docker) | opérationnel, 15 migrations appliquées |
 | Supabase `aigms-supabase` (`xsagbzrgoljzgorwvsir`, eu-west-1, org **caritis**) | **production** : schéma à la migration 0015, 24 migrations de retard sur `dev` (0016 → 0039). Porte encore le jeu de démonstration, à purger une fois un compte réel créé. Réactivée le 15 septembre 2026 après mise en pause ; `site_url`, `password_min_length` (12) et `uri_allow_list` réglés |
-| Supabase `aigms-supabase-preprod` (`xahqdxwmlewyjpsiuzux`, eu-west-1, org **caritis**) | **preprod** : sert les déploiements Preview. Les deux projets partagent l'organisation caritis depuis le 15 septembre 2026 : un seul jeton Owner les couvre |
+| Supabase `aigms-supabase-preprod` (`xahqdxwmlewyjpsiuzux`, eu-west-1, org **caritis**) | **preprod** : 39 migrations appliquées (0034 → 0039 poussées le 15 septembre 2026), sert les déploiements Preview. Les deux projets partagent l'organisation caritis : un seul jeton Owner les couvre |
 | Vercel | **provisionné** : projet `aigms` (équipe `rlabradors-projects`), variables d'environnement posées. Production sur `www.aigms.eu` — l'apex `aigms.eu` y redirige en 308, et `aigms.vercel.app` reste servi |
 | Notification des demandes de contact | **fonctionnelle** : clé Resend chiffrée dans les variables Vercel, envoi depuis `contact@iparenea.fr` sur domaine vérifié, notification vers la même adresse |
 | CI GitHub Actions | écrite ; le push nécessite le scope `workflow` sur le jeton `gh` |
