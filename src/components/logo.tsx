@@ -49,7 +49,7 @@ export function LogoMark({
  *   * `logoUrl` remplace le glyphe ET le nom par l'image deposee par le tenant —
  *     un logo revendu porte deja son propre nom, le doubler serait redondant ;
  *   * `label` remplace « AIGMS » ;
- *   * `tagline` porte « Designed by Caritis », et disparait quand elle est
+ *   * `tagline` porte « by Caritis », et disparait quand elle est
  *     nulle — c'est le principe meme de la marque blanche.
  */
 export function Wordmark({
@@ -57,7 +57,7 @@ export function Wordmark({
   className,
   tone = 'dark',
   label = 'AIGMS',
-  tagline = 'Designed by Caritis',
+  tagline = 'by Caritis',
   logoUrl = null,
 }: {
   size?: number

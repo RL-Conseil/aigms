@@ -23,7 +23,7 @@ export type Branding = {
 /** La marque de l'editeur, servie tant qu'aucun tenant n'a pose la sienne. */
 export const DEFAULT_BRANDING: Branding = {
   label: 'AIGMS',
-  tagline: 'Designed by Caritis',
+  tagline: 'by Caritis',
   logoUrl: null,
 }
 
