@@ -5192,6 +5192,7 @@ export type Database = {
         }[]
       }
       risk_path: { Args: { p_risk_id: string }; Returns: Json }
+      role_capabilities: { Args: never; Returns: Json }
       screen_change_request: {
         Args: { p_change_request_id: string }
         Returns: Json
