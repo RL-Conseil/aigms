@@ -387,6 +387,7 @@ export async function changeAccountRole(_previous: Result | null, formData: Form
 // adresse demenage. Le meme ecran sert donc a completer comme a corriger.
 const identityUpdateSchema = z.object({
   organizationId: z.string().uuid(),
+  name: z.string().trim().min(2, 'Nom trop court.').max(160),
   legalName: z.string().trim().max(160).optional().or(z.literal('')),
   ...identityShape,
 })
@@ -402,6 +403,7 @@ export async function updateOrganizationIdentity(
 
   const parsed = identityUpdateSchema.safeParse({
     organizationId: formData.get('organizationId'),
+    name: formData.get('name'),
     legalName: formData.get('legalName') ?? '',
     ...readIdentity(formData),
   })
@@ -413,6 +415,7 @@ export async function updateOrganizationIdentity(
   const { data, error } = await supabase
     .from('organization')
     .update({
+      name: parsed.data.name,
       legal_name: parsed.data.legalName || null,
       ...identityColumns(parsed.data),
     })
@@ -422,11 +425,10 @@ export async function updateOrganizationIdentity(
   if (error) return { ok: false, message: `Enregistrement refusé : ${error.message}` }
   if (!data?.length) return { ok: false, message: 'Votre rôle ne permet pas cette écriture.' }
 
-  revalidatePath(`/admin/organizations/${parsed.data.organizationId}`)
-  revalidatePath('/admin/organizations')
+  revalidatePath('/admin', 'layout')
   return {
     ok: true,
-    message: 'Identité enregistrée. Elle figurera en en-tête des documents imprimés.',
+    message: 'Identité enregistrée. Le nom s’applique partout, l’en-tête aux documents imprimés.',
   }
 }
 

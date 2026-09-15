@@ -101,6 +101,14 @@ export default async function ManagedOrganizationsPage() {
                       {counts.production} en service
                     </Badge>
                     <Badge>{org.status}</Badge>
+                    {administrating ? (
+                      <Link
+                        href={`/admin/organizations/${org.id}/administration`}
+                        className="rounded-md border border-ink-200 px-3 py-1.5 text-xs text-ink-700 hover:bg-ink-100"
+                      >
+                        Administrer
+                      </Link>
+                    ) : null}
                   </div>
                 </li>
               )

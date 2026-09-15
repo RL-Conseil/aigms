@@ -73,6 +73,18 @@ export async function asUser<T>(
   }
 }
 
+/**
+ * Change d'identite au sein de la transaction ouverte par `asUser`.
+ *
+ * Utile quand un test doit ecrire sous un role et lire sous un autre sans
+ * perdre l'ecriture : chaque `asUser` annule sa transaction.
+ */
+export async function becomeUser(client: Client, userId: string): Promise<void> {
+  await client.query("select set_config('request.jwt.claims', $1, true)", [
+    JSON.stringify({ sub: userId, role: 'authenticated' }),
+  ])
+}
+
 /** Compte les lignes visibles pour l'utilisateur courant. */
 export async function countVisible(client: Client, table: string): Promise<number> {
   const { rows } = await client.query<{ n: string }>(`select count(*)::text as n from public.${table}`)

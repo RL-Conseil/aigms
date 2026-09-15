@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
-import { updateProfile, updateTenant, type ProfileState } from '@/lib/actions/profile'
+import { updateProfile, type ProfileState } from '@/lib/actions/profile'
 import {
   removeTenantLogo,
   updateTenantBranding,
@@ -96,58 +96,6 @@ export function ProfileForm({
       >
         {pending ? 'Enregistrement…' : 'Enregistrer'}
       </button>
-    </form>
-  )
-}
-
-export function TenantForm({
-  tenantId,
-  name,
-  editable,
-}: {
-  tenantId: string
-  name: string
-  editable: boolean
-}) {
-  const [state, formAction, pending] = useActionState<ProfileState | null, FormData>(
-    updateTenant,
-    null,
-  )
-
-  return (
-    <form action={formAction} className="flex flex-col gap-4">
-      <input type="hidden" name="tenantId" value={tenantId} />
-      <div>
-        <label htmlFor="tenant-name" className="mb-1.5 block text-sm font-medium">
-          Nom de l’organisation
-        </label>
-        <input
-          id="tenant-name"
-          name="name"
-          type="text"
-          required
-          defaultValue={name}
-          disabled={!editable}
-          className={editable ? FIELD : `${FIELD} bg-ink-100 text-ink-500`}
-        />
-        {!editable ? (
-          <p className="mt-1.5 text-xs text-ink-500">
-            La modification relève de l’administration de la plateforme.
-          </p>
-        ) : null}
-      </div>
-
-      <Feedback state={state} />
-
-      {editable ? (
-        <button
-          type="submit"
-          disabled={pending}
-          className="self-start rounded-md bg-night-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-night-800 disabled:opacity-60"
-        >
-          {pending ? 'Enregistrement…' : 'Enregistrer'}
-        </button>
-      ) : null}
     </form>
   )
 }

@@ -106,7 +106,9 @@ describe('Isolation cross-tenant', () => {
   })
 
   it('une ligne ne peut pas etre deplacee vers un autre tenant', async () => {
-    const failure = await asUser(db, DEMO.officerA, (c) =>
+    // Meme l'administration, seule a pouvoir modifier une organisation (0038),
+    // ne peut pas la faire changer de tenant.
+    const failure = await asUser(db, DEMO.platformAdmin, (c) =>
       expectFailure(c, 'update public.organization set tenant_id = $1 where id = $2', [
         DEMO.tenantB,
         DEMO.orgA,
