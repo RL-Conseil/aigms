@@ -47,7 +47,7 @@ export default async function PrintableRegistryPage({
   const supabase = await createClient()
 
   const [
-    { data: organization },
+    { data: organization, error },
     { data: useCases },
     { data: vendors },
     { data: risks },
@@ -81,6 +81,7 @@ export default async function PrintableRegistryPage({
     documentIdentity(id),
   ])
 
+  if (error) throw new Error(`Lecture de l’organisation refusée : ${error.message}`)
   if (!organization || !identity) notFound()
 
   const profile = (organization.ai_activity_profile ?? null) as ActivityProfile | null

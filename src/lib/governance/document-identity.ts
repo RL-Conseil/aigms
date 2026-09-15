@@ -44,9 +44,12 @@ const LOGO_URL_TTL_SECONDS = 3600
 export const documentIdentity = cache(
   async (organizationId: string): Promise<DocumentIdentity | null> => {
     const supabase = await createClient()
-    const { data } = await supabase.rpc('document_identity', {
+    const { data, error } = await supabase.rpc('document_identity', {
       p_organization_id: organizationId,
     })
+    // Fonction absente = schema en retard sur le code. Cela se dit, cela ne se
+    // confond pas avec une organisation sans identite.
+    if (error) throw new Error(`Identité documentaire illisible : ${error.message}`)
     if (!data) return null
 
     // `noUncheckedIndexedAccess` : une lecture indexee peut etre absente.
