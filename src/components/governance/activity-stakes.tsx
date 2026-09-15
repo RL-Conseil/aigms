@@ -295,7 +295,7 @@ export function ActivityStakes({
         label="Incidents ouverts"
         value={counts.open_incidents}
         tone={counts.open_incidents ? 'stop' : 'ok'}
-        href={`/admin/pilotage?organisation=${organizationId}`}
+        href={`${base}/suivi?vue=incidents`}
         detailTitle="Non clos"
         detail={
           stakes.open_incidents.length ? (
@@ -318,7 +318,7 @@ export function ActivityStakes({
         label="Actions échues"
         value={counts.overdue_actions}
         tone={counts.overdue_actions ? 'stop' : 'ok'}
-        href={`/admin/pilotage?organisation=${organizationId}`}
+        href={`${base}/suivi?vue=actions&etat=echues`}
         detailTitle="Échéance dépassée"
         detail={
           stakes.overdue_actions.length ? (
@@ -343,7 +343,7 @@ export function ActivityStakes({
         label="Revues en retard"
         value={counts.reviews_due}
         tone={counts.reviews_due ? 'warn' : 'ok'}
-        href={`/admin/pilotage?organisation=${organizationId}`}
+        href={`${base}/suivi?vue=revues`}
         detailTitle="Cas d’usage dont la revue est passée"
         detail={
           stakes.reviews_due.length ? (

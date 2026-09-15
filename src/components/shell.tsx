@@ -52,6 +52,7 @@ export const ORGANIZATION_SECTIONS = [
   { key: 'controles', label: 'Contrôles', href: '/controles' },
   { key: 'preuves', label: 'Preuves', href: '/preuves' },
   { key: 'decisions', label: 'Décisions', href: '/decisions' },
+  { key: 'suivi', label: 'Suivi', href: '/suivi' },
   { key: 'soa', label: 'Déclaration d’Applicabilité', href: '/declaration-applicabilite' },
 ] as const
 
@@ -149,7 +150,11 @@ export async function Shell({
                       ? orgAttention.soa_undecided
                       : section.key === 'processus'
                         ? orgAttention.high_risks_open
-                        : 0)
+                        : section.key === 'suivi'
+                          ? orgAttention.overdue_actions +
+                            orgAttention.open_incidents +
+                            orgAttention.reviews_due
+                          : 0)
 
                 return (
                   <Link

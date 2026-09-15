@@ -22,10 +22,20 @@ import {
   DecisionNote,
   GateNote,
   ImpactNote,
+  IncidentNote,
   OversightNote,
   RiskNote,
 } from '@/components/governance/rubric-notes'
 import { TransitionPanel } from '@/components/transition-panel'
+import {
+  ActionForm,
+  ActionStatusForm,
+  CapaCloseForm,
+  CapaForm,
+  ChangeRequestForm,
+  IncidentForm,
+  IncidentProgressForm,
+} from '@/components/governance/operations-forms'
 import { UI_TRANSITIONS } from '@/lib/domain/transitions'
 import {
   AcceptRiskForm,
@@ -34,8 +44,10 @@ import {
   TriagePanel,
 } from '@/components/governance/use-case-panels'
 import {
+  ACTION_STATUS_LABELS,
   AUTONOMY_LABELS,
   DECISION_STATUS_LABELS,
+  INCIDENT_STATUS_LABELS,
   DECISION_TYPE_LABELS,
   formatDate,
   formatDateTime,
@@ -88,6 +100,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
     { data: controls },
     { data: actions },
     { data: changes },
+    { data: incidents },
     { data: timeline },
     { data: gateData },
     { data: memberships },
@@ -143,6 +156,13 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
         'id, business_ref, title, description, change_types, status, planned_at, reassessment:reassessment (engine_verdict, final_verdict, status, scope)',
       )
       .eq('use_case_id', id),
+    supabase
+      .from('incident')
+      .select(
+        'id, business_ref, title, kind, severity, status, detected_at, containment_action, root_cause, is_recurrence, capa:capa (id, business_ref, correction, cause_analysis, corrective_action, preventive_action, owner_user_id, due_date, status)',
+      )
+      .eq('use_case_id', id)
+      .order('detected_at', { ascending: false }),
     supabase
       .from('audit_log')
       .select('id, occurred_at, action, summary, actor_email')
@@ -591,6 +611,13 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             aside={<ChangeNote />}
             summary="Ce qui a rouvert l’évaluation, et pourquoi"
           >
+            <div className="mb-4">
+              <ChangeRequestForm
+                organizationId={useCase.organization_id}
+                useCaseId={id}
+                currentAutonomy={useCase.autonomy_level}
+              />
+            </div>
             {changes?.length ? (
               <ul className="space-y-4">
                 {changes.map((change) => {
@@ -700,25 +727,183 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             )}
           </Disclosure>
 
-          <Card title="Actions" action={<ActionNote />}>
+          <Disclosure
+            title="Actions"
+            aside={<ActionNote />}
+            summary={
+              actions?.length
+                ? `${actions.filter((a) => !['done', 'cancelled'].includes(a.status)).length} ouverte(s) sur ${actions.length}`
+                : 'Aucune action'
+            }
+            tone={overdueActions ? 'todo' : 'neutral'}
+            defaultOpen={overdueActions > 0}
+          >
+            <div className="mb-4">
+              <ActionForm organizationId={useCase.organization_id} useCaseId={id} people={people} />
+            </div>
             {actions?.length ? (
-              <ul className="space-y-2">
-                {actions.map((a) => (
-                  <li key={a.id} className="text-sm">
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="text-ink-900">{a.title}</span>
-                      {a.is_blocking ? <Badge tone="stop">Bloquante</Badge> : null}
-                    </div>
-                    <span className="text-xs text-ink-400">
-                      {a.business_ref} · {a.status} · échéance {formatDate(a.due_date)}
-                    </span>
-                  </li>
-                ))}
+              <ul className="space-y-3">
+                {actions.map((a) => {
+                  const late =
+                    !['done', 'cancelled'].includes(a.status) &&
+                    a.due_date !== null &&
+                    a.due_date < new Date().toISOString().slice(0, 10)
+                  return (
+                    <li key={a.id} className="flex items-start justify-between gap-3 text-sm">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-ink-900">{a.title}</span>
+                          {a.is_blocking ? <Badge tone="stop">Bloquante</Badge> : null}
+                          {late ? <Badge tone="stop">Échue</Badge> : null}
+                        </div>
+                        <span className="text-xs text-ink-400">
+                          {a.business_ref} · {ACTION_STATUS_LABELS[a.status] ?? a.status}
+                          {a.due_date ? ` · échéance ${formatDate(a.due_date)}` : ' · sans échéance'}
+                        </span>
+                      </div>
+                      <ActionStatusForm
+                        organizationId={useCase.organization_id}
+                        useCaseId={id}
+                        action={a}
+                      />
+                    </li>
+                  )
+                })}
               </ul>
             ) : (
               <Empty>Aucune action ouverte.</Empty>
             )}
-          </Card>
+          </Disclosure>
+
+          <Disclosure
+            title="Incidents"
+            aside={<IncidentNote />}
+            summary={
+              incidents?.length
+                ? `${incidents.filter((i) => i.status !== 'CLOSED').length} ouvert(s) sur ${incidents.length}`
+                : 'Aucun incident'
+            }
+            tone={incidents?.some((i) => i.status !== 'CLOSED') ? 'todo' : 'neutral'}
+            defaultOpen={Boolean(incidents?.some((i) => i.status !== 'CLOSED'))}
+          >
+            <div className="mb-4">
+              <IncidentForm organizationId={useCase.organization_id} useCaseId={id} people={people} />
+            </div>
+            {incidents?.length ? (
+              <ul className="space-y-4">
+                {incidents.map((incident) => {
+                  const capas = (incident.capa ?? []) as {
+                    id: string
+                    business_ref: string
+                    correction: string
+                    cause_analysis: string
+                    corrective_action: string
+                    preventive_action: string | null
+                    owner_user_id: string | null
+                    due_date: string | null
+                    status: string
+                  }[]
+                  const significant =
+                    ['S1', 'S2'].includes(incident.severity) ||
+                    incident.kind === 'non_conformity' ||
+                    incident.is_recurrence
+                  const hasClosedCapa = capas.some((c) => c.status === 'closed')
+                  return (
+                    <li key={incident.id} className="rounded-md border border-ink-100 p-3 text-sm">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge tone={['S1', 'S2'].includes(incident.severity) ? 'stop' : 'warn'}>
+                              {incident.severity}
+                            </Badge>
+                            <span className="font-medium text-ink-900">{incident.title}</span>
+                          </div>
+                          <span className="text-xs text-ink-400">
+                            {incident.business_ref} · {INCIDENT_STATUS_LABELS[incident.status] ?? incident.status}
+                            {' · détecté le '}
+                            {formatDateTime(incident.detected_at)}
+                            {significant ? ' · significatif : CAPA close exigée' : ''}
+                          </span>
+                        </div>
+                        <IncidentProgressForm
+                          organizationId={useCase.organization_id}
+                          useCaseId={id}
+                          incident={{
+                            id: incident.id,
+                            title: incident.title,
+                            status: incident.status,
+                            containment_action: incident.containment_action,
+                            root_cause: incident.root_cause,
+                            significant,
+                            has_closed_capa: hasClosedCapa,
+                          }}
+                        />
+                      </div>
+
+                      {/* La CAPA vit sous son incident : c'est lui qu'elle corrige. */}
+                      <div className="mt-3 border-t border-ink-100 pt-3">
+                        {capas.length ? (
+                          <ul className="space-y-2">
+                            {capas.map((capa) => (
+                              <li key={capa.id} className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <span className="text-xs font-medium uppercase tracking-wide text-ink-500">
+                                    CAPA {capa.business_ref}
+                                  </span>
+                                  <span className="block text-ink-800">{capa.corrective_action}</span>
+                                  <span className="text-xs text-ink-400">
+                                    {capa.status === 'closed'
+                                      ? 'Close, efficacité vérifiée'
+                                      : capa.status === 'ineffective'
+                                        ? 'Inefficace — à reprendre'
+                                        : `En cours${capa.due_date ? ` · échéance ${formatDate(capa.due_date)}` : ''}`}
+                                  </span>
+                                </div>
+                                <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                                  {capa.status !== 'closed' ? (
+                                    <>
+                                      <CapaForm
+                                        organizationId={useCase.organization_id}
+                                        useCaseId={id}
+                                        incidentId={incident.id}
+                                        people={people}
+                                        current={capa}
+                                      />
+                                      <CapaCloseForm
+                                        organizationId={useCase.organization_id}
+                                        useCaseId={id}
+                                        capa={capa}
+                                      />
+                                    </>
+                                  ) : null}
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : incident.status !== 'CLOSED' ? (
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="text-xs text-ink-500">
+                              {significant
+                                ? 'Aucune CAPA : la clôture sera refusée tant qu’une CAPA n’est pas close.'
+                                : 'Aucune CAPA. Facultative pour un incident mineur.'}
+                            </span>
+                            <CapaForm
+                              organizationId={useCase.organization_id}
+                              useCaseId={id}
+                              incidentId={incident.id}
+                              people={people}
+                            />
+                          </div>
+                        ) : null}
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : (
+              <Empty>Aucun incident déclaré sur ce cas d’usage.</Empty>
+            )}
+          </Disclosure>
 
           <Disclosure
             title="Journal d’audit"

@@ -215,3 +215,21 @@ export function AuditNote() {
     </Note>
   )
 }
+
+export function IncidentNote() {
+  return (
+    <Note label="À quoi servent les incidents" title="Ce qui s’est passé, et ce qu’on en a appris">
+      <p>
+        Un incident se déclare avec les faits, se circonscrit, s’investigue, puis se clôt sur une{' '}
+        <strong className="font-medium text-ink-800">cause racine</strong> documentée. Un incident
+        clos sans cause se reproduit.
+      </p>
+      <p>
+        Un incident <strong className="font-medium text-ink-800">significatif</strong> — gravité S1
+        ou S2, non-conformité, récurrence — ne se clôt pas sans une CAPA close : correction, cause,
+        action corrective, et un test d’efficacité vérifié nominativement. La base le refuse sinon.
+      </p>
+      <p>Les incidents ouverts remontent au pilotage et pèsent sur l’indice de santé.</p>
+    </Note>
+  )
+}

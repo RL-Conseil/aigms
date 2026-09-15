@@ -77,8 +77,8 @@ test('le tableau de bord remonte ce qui appelle une action', async ({ page }) =>
   await page.getByRole('link', { name: 'Pilotage' }).click()
 
   await expect(page.getByRole('heading', { name: 'Pilotage' })).toBeVisible()
-  await expect(page.getByText('Risques élevés ouverts')).toBeVisible()
-  await expect(page.getByText('Preuves à renouveler')).toBeVisible()
+  await expect(page.getByText('Risques élevés ouverts', { exact: true })).toBeVisible()
+  await expect(page.getByText('Preuves à renouveler', { exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Incidents ouverts' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Gates refusés récemment' })).toBeVisible()
 })
@@ -114,7 +114,7 @@ test('la fiche d’un cas d’usage ouvre sur ce qu’il y a à faire', async ({
   await page.getByRole('link', { name: 'Assistant support client' }).click()
 
   // Les chiffres saillants precedent le dossier.
-  await expect(page.getByText('Risques élevés ouverts')).toBeVisible()
+  await expect(page.getByText('Risques élevés ouverts', { exact: true })).toBeVisible()
   await expect(page.getByText('Contrôles obligatoires non statués')).toBeVisible()
   await expect(page.getByText('Décisions à instruire')).toBeVisible()
 
