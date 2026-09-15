@@ -37,7 +37,7 @@
       "region": "eu-west-1",
       "notes": "Meme organisation Supabase que la production (caritis) depuis le 15 septembre 2026 : un seul jeton Owner de cette organisation couvre les deux projets."
     },
-    "notes": "Les deux projets vivent dans l'organisation caritis (yrjuqpiubhcwbpwvaxqq) depuis le 15 septembre 2026. Les migrations s'appliquent via le CLI Supabase avec un SUPABASE_ACCESS_TOKEN cree depuis le compte Owner de cette organisation : supabase db push --project-ref <ref>. Un jeton d'un compte simplement invite sur un projet ne voit ni l'organisation ni l'autre projet.",
+    "notes": "Les deux projets vivent dans l'organisation caritis (yrjuqpiubhcwbpwvaxqq). Un seul SUPABASE_ACCESS_TOKEN, cree depuis le compte Owner de cette organisation, couvre les deux : supabase db push --project-ref <ref>. Verifie le 15 septembre 2026 : les deux projets et l'organisation sont visibles par ce jeton.",
     "organizationId": "yrjuqpiubhcwbpwvaxqq",
     "organizationName": "caritis"
   },
