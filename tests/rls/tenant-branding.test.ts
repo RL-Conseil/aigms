@@ -33,7 +33,7 @@ describe('Marque de la plateforme', () => {
 
     expect(result).not.toBeNull()
     expect(result!.label).toBe('AIGMS')
-    expect(result!.tagline).toBe('Designed by Caritis')
+    expect(result!.tagline).toBe('by Caritis')
     expect(result!.logo_path).toBeNull()
   })
 

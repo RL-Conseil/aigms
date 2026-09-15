@@ -218,7 +218,7 @@ export function BrandingForm({
               type="text"
               maxLength={80}
               defaultValue={tagline ?? ''}
-              placeholder="Designed by Caritis"
+              placeholder="by Caritis"
               className={FIELD}
             />
           </div>
