@@ -137,7 +137,7 @@ test('la frise marque les jalons obligatoires et porte l’action qui la fait av
   await page.getByRole('link', { name: 'IzarLink Demo' }).click()
 
   // Le bouton de declaration se trouve aussi la ou l'on lit l'inventaire.
-  await expect(page.getByRole('link', { name: 'Déclarer un cas d’usage' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Déclarer un cas d’usage', exact: true })).toBeVisible()
 
   await page.getByRole('link', { name: 'Assistant support client' }).click()
 

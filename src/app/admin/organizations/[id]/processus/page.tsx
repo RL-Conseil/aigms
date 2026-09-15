@@ -2,13 +2,11 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
-import { Badge, Card, Empty } from '@/components/ui'
+import { Card, Empty } from '@/components/ui'
 import { InfoTip } from '@/components/info-tip'
-import {
-  GovernanceHealth,
-  Metric,
-  type Health,
-} from '@/components/governance/governance-health'
+import { GovernanceHealth, type Health } from '@/components/governance/governance-health'
+import { ActivityStakes, type Stakes } from '@/components/governance/activity-stakes'
+import { ProcessTree, type TreeProcess } from '@/components/governance/process-tree'
 import {
   CoverageView,
   HeatmapView,
@@ -22,12 +20,7 @@ import {
   type RiskChoice,
   type RiskPath,
 } from '@/components/governance/risk-path'
-import {
-  RISK_LEVEL_LABELS,
-  USE_CASE_STATUS_LABELS,
-  type RiskLevel,
-  type UseCaseStatus,
-} from '@/lib/domain/governance'
+import { type RiskLevel } from '@/lib/domain/governance'
 
 /**
  * Process & Risk Map.
@@ -41,12 +34,6 @@ import {
  * pour ce qu'un arbre ne sait pas faire — un controle qui traverse plusieurs
  * processus, une preuve mutualisee — et il vit dans la vue « Graphe ».
  */
-
-const CATEGORY_LABELS: Record<string, string> = {
-  management: 'Pilotage',
-  core: 'Réalisation',
-  support: 'Support',
-}
 
 type MapRow = {
   process_id: string
@@ -67,12 +54,6 @@ type MapRow = {
   open_incidents: number
   overdue_actions: number
   reviews_due: number
-}
-
-function riskTone(level: RiskLevel | null) {
-  if (level === 'critical' || level === 'high') return 'stop' as const
-  if (level === 'moderate') return 'warn' as const
-  return 'neutral' as const
 }
 
 const VIEWS = [
@@ -141,30 +122,71 @@ export default async function ProcessMapPage({
 
   const selected = activite ? rows.find((r) => r.activity_id === activite) : undefined
 
-  const [{ data: useCases }, { data: activityHealthData }] = await Promise.all([
-    selected
-      ? supabase
-          .from('ai_use_case')
-          .select('id, business_ref, name, status, criticality, autonomy_level, next_review_at')
-          .eq('activity_id', selected.activity_id!)
-          .order('business_ref')
-      : Promise.resolve({ data: null }),
-    selected
-      ? supabase.rpc('governance_health', {
-          p_organization_id: id,
-          p_activity_id: selected.activity_id,
-        })
-      : Promise.resolve({ data: null }),
-  ])
+  const [{ data: useCases }, { data: activityHealthData }, { data: stakesData }] =
+    await Promise.all([
+      // Les usages se lisent sous chaque activite de l'arbre : une seule
+      // lecture pour toute l'organisation.
+      view === 'arbre'
+        ? supabase
+            .from('ai_use_case')
+            .select('id, name, status, activity_id')
+            .eq('organization_id', id)
+            .order('business_ref')
+        : Promise.resolve({ data: null }),
+      selected
+        ? supabase.rpc('governance_health', {
+            p_organization_id: id,
+            p_activity_id: selected.activity_id,
+          })
+        : Promise.resolve({ data: null }),
+      selected
+        ? supabase.rpc('activity_stakes', { p_activity_id: selected.activity_id! })
+        : Promise.resolve({ data: null }),
+    ])
 
   const activityHealth = (activityHealthData ?? { available: false }) as Health
+  const stakes = (stakesData ?? { available: false }) as Stakes
 
-  // Regroupement par processus, en conservant l'ordre de la fonction.
-  const byProcess = new Map<string, MapRow[]>()
+  // L'arbre : processus, puis activites, chacune avec ses usages. L'ordre est
+  // celui de la fonction ; les familles sont posees par le composant.
+  const useCasesByActivity = new Map<string, { id: string; name: string; status: string }[]>()
+  for (const useCase of useCases ?? []) {
+    if (!useCase.activity_id) continue
+    const list = useCasesByActivity.get(useCase.activity_id) ?? []
+    list.push({ id: useCase.id, name: useCase.name, status: useCase.status })
+    useCasesByActivity.set(useCase.activity_id, list)
+  }
+  const processes: TreeProcess[] = []
   for (const row of rows) {
-    const list = byProcess.get(row.process_id) ?? []
-    list.push(row)
-    byProcess.set(row.process_id, list)
+    let process = processes.find((p) => p.process_id === row.process_id)
+    if (!process) {
+      process = {
+        process_id: row.process_id,
+        process_code: row.process_code,
+        process_name: row.process_name,
+        process_category: row.process_category,
+        activities: [],
+      }
+      processes.push(process)
+    }
+    if (row.activity_id) {
+      process.activities.push({
+        activity_id: row.activity_id,
+        activity_ref: row.activity_ref,
+        activity_name: row.activity_name ?? '—',
+        use_case_count: row.use_case_count,
+        in_service_count: row.in_service_count,
+        max_risk_level: row.max_risk_level,
+        open_high_risks: row.open_high_risks,
+        controls_total: row.controls_total,
+        controls_operating: row.controls_operating,
+        evidence_stale: row.evidence_stale,
+        open_incidents: row.open_incidents,
+        reviews_due: row.reviews_due,
+        overdue_actions: row.overdue_actions,
+        use_cases: useCasesByActivity.get(row.activity_id) ?? [],
+      })
+    }
   }
 
   return (
@@ -301,124 +323,9 @@ export default async function ProcessMapPage({
       ) : (
       <div className="grid gap-5 lg:grid-cols-5">
         {/* ---------- Arbre ---------- */}
-        <div className="flex flex-col gap-4 lg:col-span-3">
+        <div className="lg:col-span-3">
           {rows.length ? (
-            [...byProcess.values()].map((activities) => {
-              const process = activities[0]!
-              return (
-                <section
-                  key={process.process_id}
-                  className="rounded-lg border border-ink-200 bg-white"
-                >
-                  <header className="flex items-center justify-between gap-3 border-b border-ink-100 px-5 py-3">
-                    <h2 className="text-sm font-semibold text-ink-900">
-                      {process.process_code ? (
-                        <span className="mr-2 font-mono text-xs text-ink-400">
-                          {process.process_code}
-                        </span>
-                      ) : null}
-                      {process.process_name}
-                    </h2>
-                    <Badge>{CATEGORY_LABELS[process.process_category] ?? process.process_category}</Badge>
-                  </header>
-
-                  <ul className="divide-y divide-ink-100">
-                    {activities
-                      .filter((a) => a.activity_id)
-                      .map((activity) => {
-                        const isSelected = activity.activity_id === activite
-                        return (
-                          <li key={activity.activity_id}>
-                            <Link
-                              href={`/admin/organizations/${id}/processus?activite=${activity.activity_id}`}
-                              scroll={false}
-                              aria-current={isSelected ? 'true' : undefined}
-                              className={`block px-5 py-3.5 hover:bg-ink-50 ${
-                                isSelected ? 'bg-brand-500/5 ring-1 ring-inset ring-brand-500/30' : ''
-                              }`}
-                            >
-                              <div className="flex flex-wrap items-start justify-between gap-2">
-                                <span className="text-sm font-medium text-ink-900">
-                                  {activity.activity_name}
-                                </span>
-                                {activity.max_risk_level ? (
-                                  <Badge tone={riskTone(activity.max_risk_level)}>
-                                    {RISK_LEVEL_LABELS[activity.max_risk_level]}
-                                  </Badge>
-                                ) : null}
-                              </div>
-
-                              {activity.use_case_count ? (
-                                <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-500">
-                                  <span>
-                                    {activity.use_case_count} usage
-                                    {activity.use_case_count > 1 ? 's' : ''}
-                                    {activity.in_service_count
-                                      ? ` · ${activity.in_service_count} en service`
-                                      : ''}
-                                  </span>
-                                  {activity.controls_total ? (
-                                    <span>
-                                      contrôles {activity.controls_operating}/
-                                      {activity.controls_total}
-                                    </span>
-                                  ) : null}
-                                  {activity.evidence_stale ? (
-                                    <span className="text-amber-700">
-                                      {activity.evidence_stale} preuve
-                                      {activity.evidence_stale > 1 ? 's' : ''} à renouveler
-                                    </span>
-                                  ) : null}
-                                  {activity.open_high_risks ? (
-                                    <span className="text-rose-700">
-                                      {activity.open_high_risks} risque
-                                      {activity.open_high_risks > 1 ? 's' : ''} élevé
-                                      {activity.open_high_risks > 1 ? 's' : ''} ouvert
-                                      {activity.open_high_risks > 1 ? 's' : ''}
-                                    </span>
-                                  ) : null}
-                                  {activity.open_incidents ? (
-                                    <span className="text-rose-700">
-                                      {activity.open_incidents} incident
-                                      {activity.open_incidents > 1 ? 's' : ''}
-                                    </span>
-                                  ) : null}
-                                  {activity.reviews_due ? (
-                                    <span className="text-amber-700">
-                                      {activity.reviews_due} revue
-                                      {activity.reviews_due > 1 ? 's' : ''} en retard
-                                    </span>
-                                  ) : null}
-                                </div>
-                              ) : (
-                                <p className="mt-2 text-xs text-ink-400">
-                                  Aucun usage d’IA déclaré.
-                                </p>
-                              )}
-                            </Link>
-                          </li>
-                        )
-                      })}
-
-                    {activities.every((a) => !a.activity_id) ? (
-                      <li className="px-5 py-4">
-                        <Empty>
-                          Aucune activité. Un processus sans activité ne porte aucun usage d’IA
-                          gouvernable —{' '}
-                          <Link
-                            href={`/admin/organizations/${id}/processus/activite?processus=${process.process_id}`}
-                            className="text-brand-600 hover:underline"
-                          >
-                            en ajouter une
-                          </Link>
-                          .
-                        </Empty>
-                      </li>
-                    ) : null}
-                  </ul>
-                </section>
-              )
-            })
+            <ProcessTree organizationId={id} processes={processes} selectedActivity={activite} />
           ) : (
             <Card title="Cartographie">
               <Empty>
@@ -449,88 +356,16 @@ export default async function ProcessMapPage({
                 <GovernanceHealth health={activityHealth} compact />
               </Card>
 
-              <Card title="Ce qui s’y joue">
-                <div className="flex flex-col">
-                  <Metric label="Usages d’IA déclarés" value={selected.use_case_count} />
-                  <Metric label="En service" value={selected.in_service_count} />
-                  <Metric
-                    label="Risque le plus élevé"
-                    value={
-                      selected.max_risk_level
-                        ? RISK_LEVEL_LABELS[selected.max_risk_level]
-                        : '—'
-                    }
-                    tone={riskTone(selected.max_risk_level)}
-                  />
-                  <Metric
-                    label="Risques élevés ouverts"
-                    value={selected.open_high_risks}
-                    tone={selected.open_high_risks ? 'stop' : 'ok'}
-                  />
-                  <Metric
-                    label="Contrôles opérants"
-                    value={`${selected.controls_operating}/${selected.controls_total}`}
-                    tone={
-                      selected.controls_total && selected.controls_operating < selected.controls_total
-                        ? 'warn'
-                        : 'neutral'
-                    }
-                  />
-                  <Metric
-                    label="Preuves à renouveler"
-                    value={selected.evidence_stale}
-                    tone={selected.evidence_stale ? 'warn' : 'ok'}
-                    suffix={selected.evidence_total ? `/ ${selected.evidence_total}` : undefined}
-                  />
-                  <Metric
-                    label="Incidents ouverts"
-                    value={selected.open_incidents}
-                    tone={selected.open_incidents ? 'stop' : 'ok'}
-                  />
-                  <Metric
-                    label="Actions échues"
-                    value={selected.overdue_actions}
-                    tone={selected.overdue_actions ? 'stop' : 'ok'}
-                  />
-                  <Metric
-                    label="Revues en retard"
-                    value={selected.reviews_due}
-                    tone={selected.reviews_due ? 'warn' : 'ok'}
-                  />
-                </div>
-              </Card>
-
               <Card
-                title="Usages d’IA"
-                action={
-                  <Link
-                    href={`/admin/organizations/${id}/cas-d-usage/nouveau?activite=${selected.activity_id}`}
-                    className="text-xs font-medium text-brand-600 hover:underline"
-                  >
-                    + Déclarer
-                  </Link>
-                }
+                title="Ce qui s’y joue"
+                subtitle="Chaque chiffre s’ouvre sur les pièces qu’il compte, et conduit là où on agit."
               >
-                {useCases?.length ? (
-                  <ul className="flex flex-col gap-2.5">
-                    {useCases.map((useCase) => (
-                      <li key={useCase.id} className="flex flex-wrap items-center justify-between gap-2">
-                        <Link
-                          href={`/admin/use-cases/${useCase.id}`}
-                          className="text-sm text-brand-600 hover:underline"
-                        >
-                          {useCase.name}
-                        </Link>
-                        <Badge>{USE_CASE_STATUS_LABELS[useCase.status as UseCaseStatus]}</Badge>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <Empty>
-                    Aucun usage d’IA sur cette activité. S’il en existe un, il n’est pas encore
-                    déclaré.
-                  </Empty>
-                )}
+                <ActivityStakes
+                  organizationId={id}
+                  activityId={selected.activity_id!}
+                  counts={selected}
+                  stakes={stakes}
+                />
               </Card>
             </>
           ) : (

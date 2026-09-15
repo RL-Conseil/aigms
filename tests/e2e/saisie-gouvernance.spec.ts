@@ -25,12 +25,15 @@ test('la cartographie montre les processus, activités et usages rattachés', as
   await expect(page.getByRole('heading', { name: 'Processus et risques' })).toBeVisible()
   await expect(page.getByRole('heading', { name: /Servir le client/ })).toBeVisible()
 
-  // L'arbre porte les activités ; les usages qu'elles servent apparaissent dans
-  // le panneau, à la sélection.
-  await expect(page.getByRole('link', { name: /Traitement des demandes clients/ })).toBeVisible()
+  // L'arbre se lit en trois familles, et porte les usages sous chaque activité.
+  await expect(page.getByRole('button', { name: /^Réalisation/ })).toBeVisible()
+  await expect(
+    page.getByRole('link', { name: 'Traitement des demandes clients', exact: true }),
+  ).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Assistant support client' })).toBeVisible()
   await expect(page.getByText('Aucun usage d’IA déclaré.').first()).toBeVisible()
 
-  await page.getByRole('link', { name: /Traitement des demandes clients/ }).click()
+  await page.getByRole('link', { name: 'Traitement des demandes clients', exact: true }).click()
   await expect(page.getByRole('link', { name: 'Assistant support client' })).toBeVisible()
 })
 
@@ -78,7 +81,7 @@ test('un cas d’usage se déclare, se trie, se classifie et reçoit un risque',
     page.locator('section').filter({ has: page.getByRole('button', { name }) })
 
   await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001/processus')
-  await page.getByRole('link', { name: 'Déclarer un cas d’usage' }).click()
+  await page.getByRole('link', { name: 'Déclarer un cas d’usage', exact: true }).click()
 
   const name = `Analyse des réclamations ${Date.now()}`
   await page.getByLabel('Nom du cas d’usage').fill(name)
@@ -161,27 +164,39 @@ test('un risque ne s’accepte pas sans justification ni date de revue', async (
 test('la carte annote chaque activité et son panneau détaille ce qui s’y joue', async ({ page }) => {
   await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001/processus')
 
-  // L'arbre porte les indicateurs directement sur les activités.
+  // L'arbre porte les indicateurs directement sur les activités, et se replie
+  // par famille : la sélection courante garde la sienne ouverte.
   await expect(page.getByRole('heading', { name: /Servir le client/ })).toBeVisible()
   await expect(page.getByText(/contrôles \d+\/\d+/).first()).toBeVisible()
-  await expect(page.getByText(/preuves? à renouveler/).first()).toBeVisible()
+  await expect(page.getByText(/preuve\(s\) à renouveler/).first()).toBeVisible()
+  await page.getByRole('button', { name: /^Support/ }).click()
+  await expect(page.getByRole('heading', { name: /Gérer les ressources humaines/ })).toHaveCount(0)
+  await page.getByRole('button', { name: /^Support/ }).click()
+
+  // Sélection d'une activité : le panneau s'ouvre, l'URL le retient.
+  await page.getByRole('link', { name: 'Présélection des candidatures', exact: true }).click()
+  await expect(page).toHaveURL(/activite=/)
 
   // L'indice porte son cadrage, jamais présenté comme un taux de conformité.
   await expect(page.getByText(/pas un taux de conformité/)).toBeVisible()
   await expect(page.getByText(/entretien du dispositif/).first()).toBeVisible()
-
-  // Sélection d'une activité : le panneau s'ouvre, l'URL le retient.
-  await page.getByRole('link', { name: /Présélection des candidatures/ }).click()
-  await expect(page).toHaveURL(/activite=/)
   const panelPlay = page
     .locator('section')
     .filter({ has: page.getByRole('heading', { name: 'Ce qui s’y joue' }) })
   await expect(panelPlay).toBeVisible()
   await expect(panelPlay.getByText('Risques élevés ouverts')).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Scoring de candidatures' })).toBeVisible()
 
-  // Le panneau propose de déclarer un usage sur cette activité précise.
-  await page.getByRole('link', { name: '+ Déclarer' }).click()
+  // Chaque chiffre s'ouvre sur les pièces qu'il compte : le nombre ne suffit pas.
+  await panelPlay.getByRole('button', { name: 'Détail : Risques élevés ouverts' }).click()
+  await expect(page.getByRole('dialog')).toContainText('Sans traitement abouti ni acceptation')
+  await expect(page.getByRole('dialog').getByRole('link').first()).toBeVisible()
+  await page.keyboard.press('Escape')
+
+  // L'usage se lit sous l'activité, dans l'arbre, et le « + » y déclare.
+  await expect(page.getByRole('link', { name: 'Scoring de candidatures' })).toBeVisible()
+  await page
+    .getByRole('link', { name: 'Déclarer un cas d’usage sur Présélection des candidatures' })
+    .click()
   await expect(page.getByRole('heading', { name: 'Déclarer un cas d’usage' })).toBeVisible()
   await expect(page.getByLabel('Activité du processus servie')).toHaveValue(
     'c2000000-0000-4000-8000-000000000003',
