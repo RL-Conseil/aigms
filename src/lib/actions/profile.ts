@@ -55,44 +55,6 @@ export async function updateProfile(
   return { ok: true, message: 'Profil enregistré.' }
 }
 
-const tenantSchema = z.object({
-  tenantId: z.string().uuid(),
-  name: z.string().trim().min(2, 'Nom trop court.').max(160),
-})
-
-export async function updateTenant(
-  _previous: ProfileState | null,
-  formData: FormData,
-): Promise<ProfileState> {
-  const parsed = tenantSchema.safeParse({
-    tenantId: formData.get('tenantId'),
-    name: formData.get('name'),
-  })
-
-  if (!parsed.success) {
-    return { ok: false, message: parsed.error.issues[0]?.message ?? 'Formulaire incomplet.' }
-  }
-
-  const supabase = await createClient()
-  const { error, count } = await supabase
-    .from('tenant')
-    .update({ name: parsed.data.name }, { count: 'exact' })
-    .eq('id', parsed.data.tenantId)
-
-  if (error) {
-    return { ok: false, message: `Enregistrement refusé : ${error.message}` }
-  }
-  if (!count) {
-    return {
-      ok: false,
-      message: "Modification refusée : seule l'administration de la plateforme peut la porter.",
-    }
-  }
-
-  revalidatePath('/admin/parametres')
-  return { ok: true, message: 'Organisation enregistrée.' }
-}
-
 // -----------------------------------------------------------------------------
 // Organisation courante
 // -----------------------------------------------------------------------------

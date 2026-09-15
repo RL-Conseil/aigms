@@ -57,9 +57,57 @@ describe('En-tete des documents', () => {
   })
 })
 
+describe('Administration', () => {
+  it("un rôle de gouvernance ne renomme pas son client : l'écriture ne touche aucune ligne", async () => {
+    const touched = await asUser(db, DEMO.officerA, async (c) => {
+      const result = await c.query("update public.organization set name = 'Renommée' where id = $1", [
+        DEMO.orgA,
+      ])
+      return result.rowCount
+    })
+    expect(touched).toBe(0)
+  })
+
+  it("l'administration renomme, et le nom d'usage change partout", async () => {
+    const name = await asUser(db, DEMO.platformAdmin, async (c) => {
+      await c.query("update public.organization set name = 'IzarLink Demo' where id = $1", [DEMO.orgA])
+      const { rows } = await c.query<{ name: string }>(
+        'select name from public.organization where id = $1',
+        [DEMO.orgA],
+      )
+      return rows[0]?.name
+    })
+    expect(name).toBe('IzarLink Demo')
+  })
+
+  it("une organisation ne se supprime pas, même par l'administration", async () => {
+    // Aucune policy DELETE n'existe : sous RLS forcee, la suppression ne
+    // touche aucune ligne. C'est la premiere ligne de defense.
+    const touched = await asUser(db, DEMO.platformAdmin, async (c) => {
+      const result = await c.query('delete from public.organization where id = $1', [DEMO.orgA])
+      return result.rowCount
+    })
+    expect(touched).toBe(0)
+  })
+
+  it("… ni par un accès direct à la base : le trigger refuse, quel que soit le rôle", async () => {
+    // Connexion de service, hors RLS et hors GRANT : seule la regle en base
+    // reste. C'est elle qui protege contre un script ou une cle service_role.
+    await db.query('begin')
+    try {
+      await db.query('delete from public.organization where id = $1', [DEMO.orgA])
+      throw new Error('la suppression aurait dû être refusée')
+    } catch (error) {
+      expect((error as Error).message).toMatch(/ne se supprime pas/)
+    } finally {
+      await db.query('rollback')
+    }
+  })
+})
+
 describe('Logo', () => {
   it('ne peut pas etre depose sous le prefixe d’une autre organisation', async () => {
-    const failure = await asUser(db, DEMO.officerA, (c) =>
+    const failure = await asUser(db, DEMO.platformAdmin, (c) =>
       expectFailure(
         c,
         'update public.organization set logo_path = $2 where id = $1',
@@ -71,7 +119,7 @@ describe('Logo', () => {
   })
 
   it('date son depot, et oublie cette date quand il est retire', async () => {
-    const { posed, cleared } = await asUser(db, DEMO.officerA, async (c) => {
+    const { posed, cleared } = await asUser(db, DEMO.platformAdmin, async (c) => {
       const { rows: a } = await c.query<{ logo_updated_at: string | null }>(
         `update public.organization set logo_path = $2 where id = $1
          returning logo_updated_at`,

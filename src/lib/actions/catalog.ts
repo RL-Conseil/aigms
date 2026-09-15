@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { translateCsv } from '@/lib/catalog/csv'
 
 /**
  * Import d'un referentiel de controles.
@@ -50,22 +51,49 @@ export async function uploadCatalog(
 
   const file = formData.get('file')
   if (!(file instanceof File) || file.size === 0) {
-    return { ok: false, message: 'Choisissez un fichier JSON.' }
+    return { ok: false, message: 'Choisissez un fichier JSON ou CSV.' }
   }
   if (file.size > MAX_BYTES) {
     return { ok: false, message: 'Fichier trop volumineux (limite : 8 Mo).' }
   }
 
   const raw = await file.text()
+  // L'empreinte porte sur le fichier DEPOSE, pas sur sa traduction : c'est lui
+  // que l'administrateur a relu, c'est lui qui doit rester rejouable.
   const sha256 = createHash('sha256').update(raw).digest('hex')
 
   let payload: unknown
-  try {
-    payload = JSON.parse(raw)
-  } catch {
-    return {
-      ok: false,
-      message: 'Le fichier n’est pas du JSON valide. Le format canonique est le JSON du paquet.',
+  if (/\.csv$/i.test(file.name) || file.type === 'text/csv') {
+    // Un CSV ne porte pas l'identite du referentiel : elle vient du formulaire.
+    const id = String(formData.get('frameworkCode') ?? '').trim().toUpperCase()
+    const name = String(formData.get('frameworkName') ?? '').trim()
+    const version = String(formData.get('frameworkVersion') ?? '').trim()
+    if (!id || !name || !version) {
+      return {
+        ok: false,
+        message: 'Un CSV ne porte pas l’identité du référentiel : renseigner son code, son nom et sa version.',
+      }
+    }
+    if (!/^[A-Z0-9][A-Z0-9-]{1,30}$/.test(id)) {
+      return { ok: false, message: 'Le code du référentiel : lettres, chiffres et tirets (ex. CAB-CF).' }
+    }
+    const translated = translateCsv(raw, { id, name, version })
+    if (!translated.ok) {
+      return {
+        ok: false,
+        message: `CSV refusé : ${translated.issues.length} constat(s).`,
+        details: translated.issues.slice(0, 20).map((i) => `ligne ${i.line} · ${i.message}`),
+      }
+    }
+    payload = translated.payload
+  } else {
+    try {
+      payload = JSON.parse(raw)
+    } catch {
+      return {
+        ok: false,
+        message: 'Le fichier n’est ni du JSON valide ni un CSV. Le format canonique est le JSON du paquet ; le modèle CSV est téléchargeable depuis cette page.',
+      }
     }
   }
 

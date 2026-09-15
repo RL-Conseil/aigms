@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import type { Client } from 'pg'
 import { asUser, connect, DEMO, expectFailure } from '../helpers/db'
+import { translateCsv } from '@/lib/catalog/csv'
 
 /**
  * Import d'un referentiel de controles, selon IMPORT_SPEC.md.
@@ -71,6 +72,43 @@ describe('Import du referentiel de controles', () => {
     expect(result.validation.controls).toBe(120)
     expect(result.commit.status).toBe('IMPORTED')
     expect(result.stored).toBe(120)
+  })
+
+  it('un CSV au format du modele passe la meme validation et le meme import', async () => {
+    // Le CSV n'a pas son propre moteur : il est traduit en paquet canonique et
+    // suit exactement le chemin du JSON. Ce test le prouve de bout en bout.
+    const translated = translateCsv(readFileSync('public/modeles/referentiel-controles.csv', 'utf8'), {
+      id: 'CAB-CF',
+      name: 'Référentiel du cabinet',
+      version: '1.0',
+    })
+    expect(translated.ok).toBe(true)
+    if (!translated.ok) return
+
+    const result = await asUser(db, ADMIN, async (c) => {
+      const jobId = await upload(c, translated.payload, 'referentiel-controles.csv')
+      const { rows: validation } = await c.query<{ r: { status: string; controls: number; domains: number } }>(
+        'select app.validate_catalog_import($1) as r',
+        [jobId],
+      )
+      const { rows: commit } = await c.query<{ r: { status: string } }>(
+        'select app.commit_catalog_import($1) as r',
+        [jobId],
+      )
+      const { rows: domains } = await c.query<{ code: string; name: string; control_count: number }>(
+        `select code, name, control_count from public.catalog_domain
+          where version_id = (select version_id from public.catalog_import_job where id = $1)
+          order by display_order`,
+        [jobId],
+      )
+      return { validation: validation[0]!.r, commit: commit[0]!.r, domains }
+    })
+
+    expect(result.validation.status).toBe('VALIDATED')
+    expect(result.validation.controls).toBe(4)
+    expect(result.validation.domains).toBe(3)
+    expect(result.commit.status).toBe('IMPORTED')
+    expect(result.domains[0]).toMatchObject({ code: 'GOV', name: 'Gouvernance', control_count: 2 })
   })
 
   it('rejette un controle rattache a un domaine absent du document', async () => {

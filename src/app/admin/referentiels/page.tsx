@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty } from '@/components/ui'
 import { CatalogPublishForm, CatalogUploadForm } from '@/components/admin/catalog-forms'
+import { InfoTip } from '@/components/info-tip'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import { ROLE_LABELS } from '@/lib/domain/roles'
 import { formatDateTime } from '@/lib/domain/governance'
@@ -196,6 +197,43 @@ export default async function CatalogPage() {
           <Card
             title="Importer un référentiel"
             subtitle="Dépôt, validation, aperçu, import transactionnel, publication."
+            action={
+              <InfoTip
+                label="Ce qu’un import fait à l’application"
+                title="Un référentiel de contrôles, et ce qu’il commande"
+              >
+                <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
+                  <p>
+                    <strong className="font-medium text-ink-800">Ce qui s’importe ici.</strong>{' '}
+                    Une bibliothèque de <em>contrôles-types</em> — le référentiel AIGMS, ou celui
+                    d’un cabinet — dans laquelle les rôles de gouvernance puisent pour instancier
+                    les contrôles de chaque organisation. Deux formats : le JSON canonique du
+                    paquet, complet ; ou un CSV au format du modèle, une ligne par contrôle, qui ne
+                    porte que l’ossature.
+                  </p>
+                  <p>
+                    <strong className="font-medium text-ink-800">Ce qui ne s’importe pas ici.</strong>{' '}
+                    Les référentiels <em>normatifs</em> — ISO/IEC 42001, AI Act — qui portent les
+                    exigences de la Déclaration d’Applicabilité. Ils sont versionnés dans le dépôt
+                    et livrés par migration, parce qu’une exigence mal transcrite fausserait la
+                    déclaration de tous les clients. La matrice des preuves suit la même règle.
+                  </p>
+                  <p>
+                    <strong className="font-medium text-ink-800">Ce que la publication change.</strong>{' '}
+                    La version publiée devient celle que proposent les écrans de contrôles ; la
+                    précédente passe « remplacée », mais les contrôles déjà instanciés chez les
+                    clients ne bougent pas — ils gardent leur version d’origine. Une version
+                    publiée est immuable : pour la corriger, on en dépose une nouvelle.
+                  </p>
+                  <p>
+                    <strong className="font-medium text-ink-800">Ce que la validation garantit.</strong>{' '}
+                    Rien n’entre en base avant votre confirmation, l’import est atomique, et le
+                    fichier déposé, son empreinte SHA-256 et son auteur sont conservés : un import
+                    reste rejouable et comparable.
+                  </p>
+                </div>
+              </InfoTip>
+            }
           >
             <CatalogUploadForm />
 

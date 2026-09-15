@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty, Field } from '@/components/ui'
-import { BrandingForm, ProfileForm, TenantForm } from '@/components/admin/settings-forms'
+import { BrandingForm, ProfileForm } from '@/components/admin/settings-forms'
 import { tenantBranding } from '@/lib/branding'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import { ROLE_DESCRIPTIONS, ROLE_LABELS, type AppRole } from '@/lib/domain/roles'
@@ -199,18 +199,6 @@ export default async function SettingsPage() {
                   Aucun rôle ne vous a été attribué sur une organisation. L’administration de la
                   plateforme s’en charge.
                 </Empty>
-              )}
-            </Card>
-
-            <Card title="Votre espace">
-              {viewer.tenantId && viewer.tenantName ? (
-                <TenantForm
-                  tenantId={viewer.tenantId}
-                  name={viewer.tenantName}
-                  editable={administrating}
-                />
-              ) : (
-                <Empty>Aucun espace rattaché à ce compte.</Empty>
               )}
             </Card>
 

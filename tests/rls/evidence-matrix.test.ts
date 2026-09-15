@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { readFileSync } from 'node:fs'
 import type { Client } from 'pg'
-import { asUser, connect, DEMO, expectFailure } from '../helpers/db'
+import { asUser, becomeUser, connect, DEMO, expectFailure } from '../helpers/db'
 
 /**
  * Matrice des preuves et Declaration d'Applicabilite ajustee.
@@ -115,10 +115,12 @@ describe('Typologies attendues d’une organisation', () => {
   })
 
   it('ne présume aucun profil quand il n’est pas renseigné', async () => {
-    const rows = await asUser(db, DEMO.officerA, async (c) => {
+    const rows = await asUser(db, DEMO.platformAdmin, async (c) => {
+      // Le role se change en administration ; il se lit en gouvernance.
       await c.query('update public.organization set ai_activity_profile = null where id = $1', [
         DEMO.orgA,
       ])
+      await becomeUser(c, DEMO.officerA)
       const { rows } = await c.query<{ criticality: string | null; profile: string | null }>(
         'select criticality::text, profile::text from app.evidence_typologies($1)',
         [DEMO.orgA],
@@ -204,11 +206,12 @@ describe('Déclaration d’Applicabilité ajustée à la criticité', () => {
 
   it('le régime change avec le profil, sur la même exigence', async () => {
     const asHost = await soa(DEMO.officerA, DEMO.orgA)
-    const asIntegrator = await asUser(db, DEMO.officerA, async (c) => {
+    const asIntegrator = await asUser(db, DEMO.platformAdmin, async (c) => {
       await c.query(
         "update public.organization set ai_activity_profile = 'integrator_consultant' where id = $1",
         [DEMO.orgA],
       )
+      await becomeUser(c, DEMO.officerA)
       const { rows } = await c.query<Row>(
         `select requirement_reference, expected_criticality::text, evidence_regime,
                 coverage, soa_status::text, gap

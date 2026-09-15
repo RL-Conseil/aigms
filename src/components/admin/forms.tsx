@@ -556,22 +556,37 @@ export function OrganizationIdentityForm({
     <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="organizationId" value={organization.id} />
 
-      <div>
-        <label htmlFor="legalName" className="mb-1.5 block text-sm font-medium">
-          Raison sociale
-          <span className="ml-2 font-normal text-ink-500">
-            portée en en-tête des documents imprimés
-          </span>
-        </label>
-        <input
-          id="legalName"
-          name="legalName"
-          type="text"
-          maxLength={160}
-          defaultValue={organization.legal_name ?? ''}
-          placeholder={organization.name}
-          className={FIELD}
-        />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="name" className="mb-1.5 block text-sm font-medium">
+            Nom d’usage
+            <span className="ml-2 font-normal text-ink-500">celui des écrans</span>
+          </label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            required
+            maxLength={160}
+            defaultValue={organization.name}
+            className={FIELD}
+          />
+        </div>
+        <div>
+          <label htmlFor="legalName" className="mb-1.5 block text-sm font-medium">
+            Raison sociale
+            <span className="ml-2 font-normal text-ink-500">celle des documents</span>
+          </label>
+          <input
+            id="legalName"
+            name="legalName"
+            type="text"
+            maxLength={160}
+            defaultValue={organization.legal_name ?? ''}
+            placeholder={organization.name}
+            className={FIELD}
+          />
+        </div>
       </div>
 
       <IdentityFields current={organization} />
