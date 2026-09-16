@@ -21,7 +21,18 @@ test.beforeEach(async ({ page }) => {
 
 test('une preuve se dépose, reste à valider, puis se valide nominativement', async ({ page }) => {
   await page.goto(`/admin/organizations/${ORG}/preuves`)
-  await expect(page.getByRole('heading', { name: 'Registre des preuves' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Registre des preuves', level: 1 })).toBeVisible()
+
+  // Le registre s'imprime, en entier ou par typologie, avec l'en-tete de l'organisation.
+  const menu = page.locator('details').filter({ hasText: 'Imprimer le registre' })
+  await menu.locator('summary').click()
+  await menu.getByRole('link', { name: /Isolation et souveraineté physique/ }).click()
+  await expect(page).toHaveURL(/impression\/preuves\?typologie=/)
+  await expect(page.getByRole('heading', { name: 'Registre des preuves', level: 1 })).toBeVisible()
+  await expect(page.getByText(/Typologie « Isolation et souveraineté physique/)).toBeVisible()
+  await expect(page.getByText('IzarLink SAS').first()).toBeVisible()
+  await page.getByRole('link', { name: /Retour au registre/ }).click()
+  await expect(page).toHaveURL(/preuves\?typologie=/)
 
   // Le depot a sa propre page : on consulte un registre cent fois pour y
   // deposer une fois.
