@@ -1,0 +1,561 @@
+{
+  "_note": "Vague 2 d'enrichissement du référentiel AIGMS : DAT, SEC, SUP, HUM. Même schéma que la vague 1. Références ISO/IEC 42001 : Annexe A telle que chargée dans AIGMS ; AI Act textuel.",
+  "controls": {
+    "AIGMS-DAT-001": {
+      "title": "Inventaire des données mobilisées par l'IA",
+      "objective": "Chaque jeu de données que l'IA consomme, produit ou apprend — entraînement, réglage, évaluation, exploitation, journaux — est inscrit, avec sa source, son propriétaire et le système qui l'utilise.",
+      "applicability": "mandatory",
+      "owner_role": "Responsable des données",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Chaque système en service a-t-il ses jeux de données inscrits ?", "L'inventaire distingue-t-il entraînement, exploitation et journaux ?"],
+      "expected_evidence": ["Registre des actifs : jeux de données rattachés aux systèmes", "Fiche de chaque jeu : source, propriétaire, usage"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.2"}
+      ]
+    },
+    "AIGMS-DAT-002": {
+      "title": "Propriétaire des données",
+      "objective": "Chaque jeu de données a un propriétaire nommé qui répond de sa qualité, de sa base légale, de sa conservation et de son usage par l'IA — et qui est consulté avant tout nouvel usage.",
+      "applicability": "mandatory",
+      "owner_role": "Responsable des données",
+      "review_frequency": "annual",
+      "assessment_questions": ["Aucun jeu de données n'est-il sans propriétaire ?", "Le propriétaire a-t-il validé l'usage par l'IA ?"],
+      "expected_evidence": ["Inventaire : colonne propriétaire renseignée", "Trace de validation d'usage"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.3.2"}
+      ]
+    },
+    "AIGMS-DAT-003": {
+      "title": "Classification des données",
+      "objective": "Les données mobilisées par l'IA portent une classification (publique, interne, confidentielle, restreinte) qui commande ce qu'on peut leur faire : soumettre à un modèle tiers, journaliser, conserver, partager.",
+      "applicability": "mandatory",
+      "owner_role": "Responsable des données",
+      "review_frequency": "annual",
+      "assessment_questions": ["Chaque jeu de données porte-t-il sa classification ?", "La politique d'usage acceptable s'y réfère-t-elle ?"],
+      "expected_evidence": ["Grille de classification", "Inventaire classifié", "Règles d'usage par niveau"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.3"}
+      ]
+    },
+    "AIGMS-DAT-004": {
+      "title": "Données à caractère personnel",
+      "objective": "Quand l'IA traite des données personnelles, la base légale, la finalité, l'information des personnes et leurs droits sont assurés, et le traitement figure au registre RGPD ; l'analyse d'impact (AIPD) est conduite quand elle est requise.",
+      "applicability": "conditional",
+      "owner_role": "DPO",
+      "review_frequency": "annual",
+      "assessment_questions": ["Le traitement figure-t-il au registre RGPD avec sa base légale ?", "Une AIPD a-t-elle été conduite si le traitement le requiert ?", "Les personnes sont-elles informées de l'usage de l'IA ?"],
+      "expected_evidence": ["Extrait du registre des traitements", "AIPD", "Mention d'information"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.5.4"},
+        {"framework": "AI_ACT", "reference": "Art. 10 (données et gouvernance des données)"}
+      ]
+    },
+    "AIGMS-DAT-005": {
+      "title": "Données sensibles",
+      "objective": "Les catégories particulières de données — origine, opinions, santé, orientation, biométrie — ne sont mobilisées par l'IA qu'avec une base légale spécifique, une justification écrite et des mesures renforcées, et jamais soumises à un modèle tiers sans garanties contractuelles.",
+      "applicability": "conditional",
+      "owner_role": "DPO",
+      "review_frequency": "annual",
+      "assessment_questions": ["L'usage de données sensibles est-il identifié et justifié ?", "Est-il exclu des modèles tiers sans garanties ?"],
+      "expected_evidence": ["Justification et base légale", "Mesures renforcées documentées", "Clauses contractuelles du fournisseur"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.5.4"},
+        {"framework": "AI_ACT", "reference": "Art. 10 §5 (catégories particulières)"}
+      ]
+    },
+    "AIGMS-DAT-006": {
+      "title": "Données de santé",
+      "objective": "Quand l'IA traite des données de santé, l'hébergement, l'accès, le secret et la traçabilité respectent les exigences propres à ces données (hébergement certifié, habilitations, journalisation des accès), et le professionnel de santé reste décideur.",
+      "applicability": "conditional",
+      "owner_role": "DPO",
+      "review_frequency": "annual",
+      "assessment_questions": ["L'hébergement est-il conforme aux exigences applicables aux données de santé ?", "Les accès sont-ils habilités et journalisés ?"],
+      "expected_evidence": ["Attestation d'hébergement certifié", "Matrice d'habilitation", "Journal des accès"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.5.4"}
+      ]
+    },
+    "AIGMS-DAT-007": {
+      "title": "Provenance et traçabilité des données",
+      "objective": "On sait d'où vient chaque jeu de données, par quelles transformations il est passé et quelle version a servi à quel modèle. Sans provenance, ni un biais ni une fuite ne se remontent.",
+      "applicability": "mandatory",
+      "owner_role": "Responsable des données",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["La provenance de chaque jeu est-elle documentée ?", "Les transformations et versions sont-elles tracées jusqu'au modèle ?"],
+      "expected_evidence": ["Fiche de provenance (lineage)", "Journal des transformations", "Correspondance version de données / version de modèle"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.5"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.6"}
+      ]
+    },
+    "AIGMS-DAT-008": {
+      "title": "Qualité des données",
+      "objective": "Les données d'entraînement et d'exploitation sont évaluées sur des critères définis — exactitude, complétude, représentativité, actualité — avant usage et périodiquement ; les écarts sont traités ou assumés.",
+      "applicability": "mandatory",
+      "owner_role": "Responsable des données",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Des critères de qualité sont-ils définis et mesurés ?", "La représentativité par rapport aux personnes concernées est-elle vérifiée ?"],
+      "expected_evidence": ["Rapport de qualité des données", "Critères et seuils", "Traitement des écarts"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.4"},
+        {"framework": "AI_ACT", "reference": "Art. 10 §3 (pertinence, représentativité)"}
+      ]
+    },
+    "AIGMS-DAT-009": {
+      "title": "Minimisation des données",
+      "objective": "L'IA ne reçoit que les données nécessaires à sa finalité : les champs superflus sont retirés, les identifiants pseudonymisés quand c'est possible, et ce choix est justifié pour chaque flux.",
+      "applicability": "mandatory",
+      "owner_role": "DPO",
+      "review_frequency": "annual",
+      "assessment_questions": ["Les données transmises au modèle sont-elles limitées au nécessaire ?", "La pseudonymisation a-t-elle été envisagée et, sinon, l'écart justifié ?"],
+      "expected_evidence": ["Cartographie des flux vers le modèle", "Justification de chaque champ transmis"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.6"}
+      ]
+    },
+    "AIGMS-DAT-010": {
+      "title": "Conservation et suppression",
+      "objective": "Chaque catégorie de données mobilisée par l'IA — entrées, sorties, journaux, données d'entraînement — a une durée de conservation définie, appliquée et vérifiable, y compris chez le fournisseur.",
+      "applicability": "mandatory",
+      "owner_role": "Responsable des données",
+      "review_frequency": "annual",
+      "assessment_questions": ["Les durées de conservation sont-elles définies par catégorie, journaux compris ?", "Leur application est-elle vérifiée, chez le fournisseur aussi ?"],
+      "expected_evidence": ["Politique de conservation", "Preuve de purge", "Engagement contractuel du fournisseur"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.3"}
+      ]
+    },
+    "AIGMS-DAT-011": {
+      "title": "Transferts et localisation des données",
+      "objective": "On sait où les données mobilisées par l'IA sont traitées et stockées — pays, hébergeur, sous-traitants — et tout transfert hors du cadre applicable repose sur un instrument valide.",
+      "applicability": "mandatory",
+      "owner_role": "DPO",
+      "review_frequency": "annual",
+      "assessment_questions": ["La localisation des traitements est-elle connue pour chaque système ?", "Les transferts sont-ils couverts par un instrument juridique valide ?"],
+      "expected_evidence": ["Cartographie des localisations", "Clauses de transfert", "Liste des sous-traitants et de leurs pays"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.3"}
+      ]
+    },
+    "AIGMS-DAT-012": {
+      "title": "Données d'entraînement et de réglage",
+      "objective": "Les données utilisées pour entraîner ou régler un modèle sont sélectionnées, documentées et conservées avec le modèle : composition, licence, biais connus, exclusions. Un modèle dont on ne sait pas de quoi il a appris ne se défend pas.",
+      "applicability": "conditional",
+      "owner_role": "Responsable des données",
+      "review_frequency": "annual",
+      "assessment_questions": ["La composition des données d'entraînement est-elle documentée avec le modèle ?", "Les licences et droits d'usage sont-ils vérifiés ?", "Les biais connus sont-ils décrits ?"],
+      "expected_evidence": ["Fiche de données d'entraînement (datasheet)", "Vérification des licences", "Analyse de représentativité"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.4"},
+        {"framework": "AI_ACT", "reference": "Art. 10 (jeux d'entraînement, validation, test)"}
+      ]
+    },
+
+    "AIGMS-SEC-001": {
+      "title": "Sécurité dès la conception des systèmes d'IA",
+      "objective": "Les risques de sécurité propres à l'IA — injection, exfiltration, empoisonnement, abus d'API, fuite par les sorties — sont analysés à la conception de chaque système, et les mesures retenues sont décidées avant la mise en service, en articulation avec le SMSI.",
+      "applicability": "mandatory",
+      "owner_role": "RSSI",
+      "review_frequency": "annual",
+      "assessment_questions": ["Une analyse de menaces spécifique à l'IA a-t-elle été conduite avant la mise en service ?", "Les mesures retenues sont-elles tracées dans le dispositif de contrôles ?"],
+      "expected_evidence": ["Analyse de menaces IA", "Décisions de sécurité consignées", "Articulation avec le SMSI (ISO 27001)"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.1.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.2"},
+        {"framework": "AI_ACT", "reference": "Art. 15 (exactitude, robustesse, cybersécurité)"}
+      ]
+    },
+    "AIGMS-SEC-002": {
+      "title": "Identités et accès aux systèmes d'IA",
+      "objective": "L'accès aux systèmes d'IA, à leurs consoles, API, données et journaux passe par des identités nominatives, authentifiées de façon forte, attribuées et retirées selon un processus tracé.",
+      "applicability": "mandatory",
+      "owner_role": "RSSI",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Les accès sont-ils nominatifs, avec authentification forte ?", "Les attributions et retraits sont-ils tracés et revus ?"],
+      "expected_evidence": ["Matrice d'habilitation", "Revue périodique des accès", "Configuration de l'authentification"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.5"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"}
+      ]
+    },
+    "AIGMS-SEC-003": {
+      "title": "Moindre privilège",
+      "objective": "Un système d'IA — et en particulier un agent — ne dispose que des droits strictement nécessaires à sa finalité, sur les données comme sur les actions ; les droits d'écriture et d'exécution sont accordés explicitement et revus.",
+      "applicability": "mandatory",
+      "owner_role": "RSSI",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Les droits du système sont-ils limités à sa finalité ?", "Un agent qui agit a-t-il des droits d'exécution bornés et revus ?"],
+      "expected_evidence": ["Inventaire des droits par système", "Revue des privilèges", "Périmètre d'action de l'agent documenté"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.9.2"}
+      ]
+    },
+    "AIGMS-SEC-004": {
+      "title": "Gestion des secrets",
+      "objective": "Clés d'API, jetons et identifiants des systèmes d'IA sont stockés dans un coffre, jamais dans le code, les prompts ou les journaux ; ils sont renouvelés à cadence fixe et révoqués sans délai en cas de doute.",
+      "applicability": "mandatory",
+      "owner_role": "RSSI",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["Les secrets vivent-ils dans un coffre, hors du code et des prompts ?", "La rotation et la révocation sont-elles organisées ?"],
+      "expected_evidence": ["Inventaire des secrets et leur emplacement", "Journal de rotation", "Détection de secrets dans le code"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.5"}
+      ]
+    },
+    "AIGMS-SEC-005": {
+      "title": "Chiffrement",
+      "objective": "Les données mobilisées par l'IA sont chiffrées en transit et au repos — entrées, sorties, journaux, données d'entraînement, index vectoriels compris — avec des clés gérées et, quand la classification l'exige, détenues par l'organisation.",
+      "applicability": "mandatory",
+      "owner_role": "RSSI",
+      "review_frequency": "annual",
+      "assessment_questions": ["Le chiffrement couvre-t-il les index et journaux, pas seulement les bases ?", "La gestion des clés est-elle documentée ?"],
+      "expected_evidence": ["Configuration de chiffrement", "Politique de gestion des clés", "Attestation du fournisseur"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.5"}
+      ]
+    },
+    "AIGMS-SEC-006": {
+      "title": "Journalisation de sécurité des systèmes d'IA",
+      "objective": "Les accès, requêtes, réponses, actions d'agent et changements de configuration des systèmes d'IA sont journalisés, horodatés, protégés en intégrité et conservés assez longtemps pour reconstituer un incident — sans y consigner de secrets ni plus de données personnelles que nécessaire.",
+      "applicability": "mandatory",
+      "owner_role": "RSSI",
+      "review_frequency": "annual",
+      "assessment_questions": ["Les journaux permettent-ils de reconstituer qui a demandé quoi, et ce que le système a fait ?", "Sont-ils protégés en intégrité et conservés selon la politique ?"],
+      "expected_evidence": ["Spécification de journalisation", "Extrait de journal", "Configuration de conservation et d'intégrité"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.8"},
+        {"framework": "AI_ACT", "reference": "Art. 12 (enregistrement automatique)"}
+      ]
+    },
+    "AIGMS-SEC-007": {
+      "title": "Protection contre les injections de requêtes",
+      "objective": "Les systèmes fondés sur des modèles de langage sont protégés contre les instructions malveillantes injectées par l'utilisateur ou par les contenus qu'ils lisent — documents, pages, courriels : séparation des instructions et des données, filtrage, limitation des actions déclenchables, tests réguliers.",
+      "applicability": "conditional",
+      "owner_role": "RSSI",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["Les contenus lus par le modèle sont-ils traités comme non fiables ?", "Les actions qu'une injection pourrait déclencher sont-elles bornées ?", "Des tests d'injection sont-ils rejoués à chaque changement ?"],
+      "expected_evidence": ["Architecture de séparation instructions / données", "Résultats de tests d'injection", "Liste des actions déclenchables et leurs garde-fous"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.4"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"},
+        {"framework": "AI_ACT", "reference": "Art. 15 (robustesse, cybersécurité)"}
+      ]
+    },
+    "AIGMS-SEC-008": {
+      "title": "Prévention de l'exfiltration de données",
+      "objective": "Un système d'IA ne peut pas servir de canal de sortie pour des données qu'il ne devrait pas divulguer : contrôle des données soumises aux modèles tiers, filtrage des sorties, blocage des liens et appels sortants non prévus, détection des fuites par les prompts.",
+      "applicability": "mandatory",
+      "owner_role": "RSSI",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["Les données soumises aux modèles tiers sont-elles contrôlées selon leur classification ?", "Les sorties et appels sortants du système sont-ils filtrés ?"],
+      "expected_evidence": ["Règles de filtrage entrée/sortie", "Configuration des appels sortants autorisés", "Rapport de détection"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"}
+      ]
+    },
+    "AIGMS-SEC-009": {
+      "title": "Protection contre l'abus des modèles et des API",
+      "objective": "Les modèles et leurs API sont protégés contre l'usage abusif : quotas, limitation de débit, détection des motifs d'extraction ou de contournement, surveillance des coûts, révocation des clés compromises.",
+      "applicability": "mandatory",
+      "owner_role": "RSSI",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["Des quotas et limites de débit sont-ils en place par client ou par clé ?", "Les motifs d'abus sont-ils détectés et alertés ?"],
+      "expected_evidence": ["Configuration des quotas", "Alertes d'abus et leur traitement", "Suivi des coûts par système"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.5"}
+      ]
+    },
+    "AIGMS-SEC-010": {
+      "title": "Validation des entrées",
+      "objective": "Ce qui entre dans un système d'IA — requêtes, fichiers, données d'intégration — est validé : format, taille, type, provenance, absence de contenu interdit. Une entrée non validée est une surface d'attaque.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Les entrées sont-elles validées avant d'atteindre le modèle ?", "Les fichiers reçus sont-ils analysés ?"],
+      "expected_evidence": ["Règles de validation", "Tests de validation", "Journal des rejets"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.4"},
+        {"framework": "AI_ACT", "reference": "Art. 15 (robustesse)"}
+      ]
+    },
+    "AIGMS-SEC-011": {
+      "title": "Validation des sorties",
+      "objective": "Ce qu'un système d'IA produit est vérifié avant d'être remis ou exécuté : format attendu, absence de données à ne pas divulguer, de contenu interdit, d'instructions dangereuses ; une sortie qui déclenche une action passe par un contrôle supplémentaire.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Les sorties sont-elles vérifiées avant remise ou exécution ?", "Une sortie qui déclenche une action passe-t-elle un contrôle spécifique ?"],
+      "expected_evidence": ["Règles de validation des sorties", "Garde-fous sur les actions", "Journal des sorties bloquées"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.4"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.9.2"}
+      ]
+    },
+    "AIGMS-SEC-012": {
+      "title": "Tests de sécurité des systèmes d'IA",
+      "objective": "Chaque système d'IA est soumis à des tests de sécurité spécifiques avant mise en service et à chaque changement significatif — injection, extraction, contournement, abus — conduits ou revus par une équipe indépendante du développement, avec des constats suivis jusqu'à correction.",
+      "applicability": "mandatory",
+      "owner_role": "RSSI",
+      "review_frequency": "annual",
+      "assessment_questions": ["Des tests de sécurité IA (red teaming) ont-ils été conduits avant la mise en service ?", "Les constats ont-ils été corrigés et re-testés ?"],
+      "expected_evidence": ["Rapport de tests de sécurité", "Suivi des constats", "Preuve de re-test"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.4"},
+        {"framework": "AI_ACT", "reference": "Art. 15 (cybersécurité) ; Art. 55 (modèles à usage général, tests contradictoires)"}
+      ]
+    },
+
+    "AIGMS-SUP-001": {
+      "title": "Inventaire des fournisseurs d'IA",
+      "objective": "Tout tiers qui fournit un modèle, une plateforme, une API ou un service d'IA à l'organisation est inscrit, rattaché aux systèmes qu'il sert, avec sa criticité et l'état de sa revue.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Chaque système en service a-t-il ses fournisseurs inscrits ?", "Les fournisseurs de modèle sont-ils distingués des intégrateurs ?"],
+      "expected_evidence": ["Registre des fournisseurs rattachés aux cas d'usage", "Criticité et statut de revue par fournisseur"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.2"}
+      ]
+    },
+    "AIGMS-SUP-002": {
+      "title": "Revue préalable du fournisseur",
+      "objective": "Avant d'utiliser un fournisseur d'IA, une revue proportionnée à sa criticité examine sa sécurité, sa conformité, l'usage qu'il fait des données, sa localisation, sa pérennité et ses conditions ; son résultat est consigné et conditionne la mise en service.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "assessment_questions": ["Chaque fournisseur impliqué dans un usage en service a-t-il une revue close ?", "La revue est-elle proportionnée à la criticité et renouvelée ?"],
+      "expected_evidence": ["Questionnaire ou rapport de revue", "Décision de revue consignée", "Date de prochaine revue"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.2"}
+      ]
+    },
+    "AIGMS-SUP-003": {
+      "title": "Localisation des données chez le fournisseur",
+      "objective": "L'organisation sait dans quels pays le fournisseur traite et stocke ses données — y compris pour l'entraînement, le support et les sauvegardes — et cette localisation est compatible avec ses obligations.",
+      "applicability": "mandatory",
+      "owner_role": "DPO",
+      "review_frequency": "annual",
+      "assessment_questions": ["La localisation est-elle contractuellement fixée ?", "Couvre-t-elle le support et les sauvegardes ?"],
+      "expected_evidence": ["Clause de localisation", "Documentation du fournisseur", "Liste des régions utilisées"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.3"}
+      ]
+    },
+    "AIGMS-SUP-004": {
+      "title": "Conditions contractuelles d'utilisation",
+      "objective": "Les conditions d'utilisation de chaque fournisseur d'IA sont lues, comprises et acceptées en connaissance de cause : usages permis, propriété des sorties, responsabilité, changements unilatéraux ; une version de référence est conservée.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "assessment_questions": ["Les conditions ont-elles été analysées et la version acceptée conservée ?", "Les changements de conditions sont-ils surveillés ?"],
+      "expected_evidence": ["Analyse des conditions", "Version conservée et datée", "Veille sur les changements"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.3"}
+      ]
+    },
+    "AIGMS-SUP-005": {
+      "title": "Utilisation des données par le fournisseur",
+      "objective": "Il est établi contractuellement si le fournisseur peut utiliser les données soumises pour entraîner ses modèles, les conserver, les relire ; le choix de l'organisation est exercé (refus d'entraînement, options de rétention) et vérifié.",
+      "applicability": "mandatory",
+      "owner_role": "DPO",
+      "review_frequency": "annual",
+      "assessment_questions": ["L'usage des données par le fournisseur est-il contractuellement borné ?", "Les options de refus ont-elles été exercées et vérifiées ?"],
+      "expected_evidence": ["Clause d'usage des données", "Capture de la configuration (refus d'entraînement)", "Accord de traitement (DPA)"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.3"}
+      ]
+    },
+    "AIGMS-SUP-006": {
+      "title": "Engagements de service",
+      "objective": "Pour un fournisseur critique, les engagements de disponibilité, de performance, de support et de notification (incidents, changements de modèle, dépréciations) sont contractualisés et suivis.",
+      "applicability": "conditional",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["Les engagements de service sont-ils écrits et mesurés ?", "Le fournisseur notifie-t-il les changements de modèle et les incidents ?"],
+      "expected_evidence": ["SLA contractuel", "Suivi des indicateurs", "Notifications reçues"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"}
+      ]
+    },
+    "AIGMS-SUP-007": {
+      "title": "Assurance de sécurité du fournisseur",
+      "objective": "La sécurité du fournisseur est établie par des éléments vérifiables — certification, rapport d'audit indépendant, questionnaire renseigné, résultats de tests — proportionnés à la criticité, et renouvelés.",
+      "applicability": "mandatory",
+      "owner_role": "RSSI",
+      "review_frequency": "annual",
+      "assessment_questions": ["Le fournisseur produit-il une assurance de sécurité vérifiable ?", "Est-elle à jour et couvre-t-elle le service réellement utilisé ?"],
+      "expected_evidence": ["Certificat (ISO 27001, SOC 2…)", "Rapport d'audit", "Questionnaire de sécurité"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.3"}
+      ]
+    },
+    "AIGMS-SUP-008": {
+      "title": "Sous-traitants du fournisseur",
+      "objective": "Les sous-traitants auxquels le fournisseur d'IA recourt — hébergeur, fournisseur de modèle sous-jacent, support — sont connus, avec leur localisation, et leur changement est notifié.",
+      "applicability": "mandatory",
+      "owner_role": "DPO",
+      "review_frequency": "annual",
+      "assessment_questions": ["La chaîne de sous-traitance est-elle connue jusqu'au modèle sous-jacent ?", "Les changements sont-ils notifiés et évalués ?"],
+      "expected_evidence": ["Liste des sous-traitants", "Clause de notification", "Évaluation d'un changement"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.2"}
+      ]
+    },
+    "AIGMS-SUP-009": {
+      "title": "Risque de dépendance au fournisseur",
+      "objective": "La dépendance à chaque fournisseur d'IA est évaluée — substituabilité du modèle, portabilité des données et des prompts, coût de sortie — et, quand elle est forte, traitée : alternative identifiée, abstraction technique, acceptation formelle.",
+      "applicability": "mandatory",
+      "owner_role": "Responsable du risque",
+      "review_frequency": "annual",
+      "assessment_questions": ["La dépendance est-elle évaluée et inscrite au registre des risques ?", "Une alternative est-elle identifiée pour les fournisseurs critiques ?"],
+      "expected_evidence": ["Risque de dépendance au registre", "Analyse de substituabilité", "Décision de traitement ou d'acceptation"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "6.1.2"}
+      ]
+    },
+    "AIGMS-SUP-010": {
+      "title": "Réversibilité et stratégie de sortie",
+      "objective": "Pour chaque fournisseur critique, l'organisation sait comment sortir : récupération des données, des configurations, des prompts et des index ; suppression chez le fournisseur ; délai et coût ; la procédure est documentée et testée.",
+      "applicability": "conditional",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["La procédure de sortie est-elle documentée, données et configurations comprises ?", "A-t-elle été testée au moins partiellement ?"],
+      "expected_evidence": ["Plan de réversibilité", "Clause de restitution et de suppression", "Compte rendu de test"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"}
+      ]
+    },
+
+    "AIGMS-HUM-001": {
+      "title": "Niveau de supervision humaine",
+      "objective": "Pour chaque système, le niveau de supervision humaine est décidé en fonction de son autonomie et de son impact — humain dans la boucle, sur la boucle, hors boucle — et documenté dans un plan de supervision qui nomme qui surveille, quoi, et comment.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Un plan de supervision existe-t-il pour chaque usage en service ?", "Le niveau retenu est-il cohérent avec l'autonomie et l'impact ?"],
+      "expected_evidence": ["Plan de supervision humaine approuvé", "Cohérence avec le niveau d'autonomie et la criticité"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.9.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"},
+        {"framework": "AI_ACT", "reference": "Art. 14 (contrôle humain)"}
+      ]
+    },
+    "AIGMS-HUM-002": {
+      "title": "Validation humaine des décisions",
+      "objective": "Une décision produite ou proposée par l'IA qui a un effet significatif sur une personne est validée par un humain compétent avant de produire son effet — et cette validation est réelle : le validateur a le temps, l'information et le pouvoir de refuser.",
+      "applicability": "conditional",
+      "owner_role": "Porteur du système",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Les décisions à effet significatif passent-elles par une validation humaine effective ?", "Le taux de refus par les validateurs est-il suivi (une validation qui n'en refuse jamais n'en est pas une) ?"],
+      "expected_evidence": ["Procédure de validation", "Journal des validations et refus", "Indicateur de taux de refus"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.9.2"},
+        {"framework": "AI_ACT", "reference": "Art. 14 (contrôle humain) ; RGPD Art. 22"}
+      ]
+    },
+    "AIGMS-HUM-003": {
+      "title": "Compétence du validateur",
+      "objective": "Les personnes qui supervisent ou valident les sorties d'un système d'IA connaissent ses capacités, ses limites, ses biais connus et les signes de défaillance ; elles sont désignées, formées, et leur compétence est entretenue.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["Les validateurs sont-ils désignés et formés aux limites du système ?", "La formation est-elle renouvelée à chaque changement significatif ?"],
+      "expected_evidence": ["Liste des validateurs", "Support et attestations de formation", "Fiche des limites connues du système"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.6"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.9.2"},
+        {"framework": "AI_ACT", "reference": "Art. 14 §4 ; Art. 4"}
+      ]
+    },
+    "AIGMS-HUM-004": {
+      "title": "Reprise de la main",
+      "objective": "Un humain habilité peut, à tout moment, écarter une sortie, corriger une décision ou reprendre la main sur un système d'IA — et le faire sans délai ni obstacle technique ; les reprises de main sont journalisées et analysées.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Le mécanisme de reprise de main existe-t-il et est-il accessible sans délai ?", "Les reprises sont-elles journalisées et analysées ?"],
+      "expected_evidence": ["Procédure de reprise de main", "Journal des reprises", "Analyse des motifs"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.9.2"},
+        {"framework": "AI_ACT", "reference": "Art. 14 §4 d) (passer outre, inverser)"}
+      ]
+    },
+    "AIGMS-HUM-005": {
+      "title": "Escalade et arrêt",
+      "objective": "Les cas que le système ne doit pas traiter seul — incertitude, signal de dérive, demande sensible, incident — sont escaladés à une personne nommée selon des déclencheurs définis ; au-delà de L2, une autorité d'arrêt nommée peut suspendre le système, et la procédure d'arrêt est testée.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Les déclencheurs d'escalade sont-ils définis et opérants ?", "L'autorité d'arrêt est-elle nommée et la procédure testée ?"],
+      "expected_evidence": ["Déclencheurs d'escalade documentés", "Nomination de l'autorité d'arrêt", "Compte rendu de test d'arrêt"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.9.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.8.4"},
+        {"framework": "AI_ACT", "reference": "Art. 14 §4 e) (bouton d'arrêt)"}
+      ]
+    },
+    "AIGMS-HUM-006": {
+      "title": "Information de l'utilisateur",
+      "objective": "Les personnes qui interagissent avec un système d'IA, ou dont une décision en dépend, en sont informées de façon claire — qu'il s'agit d'une IA, ce qu'elle fait, ses limites, comment contester ou joindre un humain — au moment où cela compte.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["L'utilisateur sait-il qu'il interagit avec une IA, au moment de l'interaction ?", "Les personnes concernées par une décision savent-elles comment la contester ?"],
+      "expected_evidence": ["Mention d'information (bandeau, notice)", "Procédure de contestation", "Capture de l'interface"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.8.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.8.3"},
+        {"framework": "AI_ACT", "reference": "Art. 50 (obligations de transparence) ; Art. 13"}
+      ]
+    },
+    "AIGMS-HUM-007": {
+      "title": "Formation aux usages de l'IA",
+      "objective": "Les collaborateurs qui utilisent des systèmes d'IA dans leur travail sont formés aux usages permis, aux données à ne pas soumettre, aux limites des outils et au signalement — avant l'accès, puis à chaque changement significatif.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "assessment_questions": ["La formation est-elle un préalable à l'accès aux outils ?", "Le taux de collaborateurs formés est-il suivi ?"],
+      "expected_evidence": ["Programme de formation", "Attestations", "Indicateur de couverture"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.6"},
+        {"framework": "AI_ACT", "reference": "Art. 4 (maîtrise de l'IA)"}
+      ]
+    },
+    "AIGMS-HUM-008": {
+      "title": "Maîtrise de l'IA dans l'organisation",
+      "objective": "L'organisation entretient un niveau de compréhension de l'IA proportionné aux rôles — direction, gouvernance, métiers, technique — pour que les décisions qui la concernent soient prises en connaissance de cause ; les besoins sont identifiés et le plan de montée en compétence suivi.",
+      "applicability": "mandatory",
+      "owner_role": "Direction",
+      "review_frequency": "annual",
+      "assessment_questions": ["Les besoins de compétence par rôle sont-ils identifiés ?", "La direction et les décideurs ont-ils reçu une sensibilisation adaptée ?"],
+      "expected_evidence": ["Cartographie des compétences IA par rôle", "Plan de montée en compétence", "Sensibilisation de la direction"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.6"},
+        {"framework": "AI_ACT", "reference": "Art. 4 (maîtrise de l'IA)"}
+      ]
+    }
+  }
+}

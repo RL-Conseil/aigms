@@ -19,13 +19,14 @@ par migration, jamais écrit depuis l'application. Renseigné : référentiel pr
 du tenant qui l'importe. Le code d'un référentiel de l'éditeur ne peut pas être
 repris par un tenant.
 
-**Le référentiel AIGMS Control Framework est livré en v0.2**, générée depuis la
-v0.1 gelée et une vague d'enrichissement versionnée
-(`knowledge/frameworks/aigms/v0.2/wave1_enrichment.json`) : GOV, INV, USE, RSK,
-soit 42 contrôles avec objectif, questions d'évaluation, preuves attendues,
-responsable, fréquence, correspondances ISO/IEC 42001 et AI Act. Les 78 autres
-restent des titres, en attente des vagues suivantes. Une vague est une nouvelle
-version ; la v0.1 n'est jamais modifiée.
+**Le référentiel AIGMS Control Framework est livré par vagues**, chacune une
+nouvelle version générée depuis la v0.1 gelée et des fichiers d'enrichissement
+versionnés (`knowledge/frameworks/aigms/waves/`) : objectif, questions
+d'évaluation, preuves attendues, responsable, fréquence, correspondances
+ISO/IEC 42001 et AI Act. v0.2 (migration 0043) : GOV, INV, USE, RSK ; v0.3
+(migration 0044) : DAT, SEC, SUP, HUM — 84 contrôles enrichis sur 120. Les 36
+restants (OPS, MON, INC, CMP) attendent la vague 3. La v0.1 n'est jamais
+modifiée.
 
 **Un contrôle opérationnel s'ajoute d'abord depuis un référentiel.**
 `app.instantiate_catalog_control` crée le contrôle de l'organisation à partir
@@ -40,7 +41,7 @@ libre reste possible pour ce qui n'existe dans aucun référentiel.
 - Une base neuve — Production comprise — porte 120 contrôles-types dès la
   migration 0043, sans passer par l'écran d'import.
 - La liste d'une organisation s'appelle « Liste des contrôles opérationnels » et
-  chaque ligne porte son origine (`AIGMS-CF v0.2 · AIGMS-RSK-012`).
+  chaque ligne porte son origine (`AIGMS-CF v0.3 · AIGMS-RSK-012`).
 - L'administration lit chaque version contrôle par contrôle.
 - Un cabinet qui a importé un référentiel avant cette migration ne le voit plus
   partagé : c'est le but.

@@ -14,16 +14,19 @@ afterAll(async () => {
   await db.end()
 })
 
+/** Le controle-type de la version PUBLIEE : les versions remplacees restent en base. */
 async function catalogControl(c: Client, code: string): Promise<string> {
   const { rows } = await c.query<{ id: string }>(
-    'select id from public.catalog_control where control_code = $1 limit 1',
+    `select cc.id from public.catalog_control cc
+       join public.catalog_version v on v.id = cc.version_id
+      where cc.control_code = $1 and v.status = 'published' limit 1`,
     [code],
   )
   return rows[0]!.id
 }
 
 describe('Référentiel de l’éditeur', () => {
-  it('est livré publié, 120 contrôles dont 42 enrichis, visible de tout tenant', async () => {
+  it('est livré publié, 120 contrôles dont 84 enrichis, visible de tout tenant', async () => {
     for (const who of [DEMO.officerA, DEMO.officerB]) {
       const row = await asUser(db, who, async (c) => {
         const { rows } = await c.query<{ n: string; enriched: string; status: string }>(
@@ -31,12 +34,12 @@ describe('Référentiel de l’éditeur', () => {
              from public.catalog_control cc
              join public.catalog_version v on v.id = cc.version_id
              join public.catalog_framework f on f.id = v.framework_id
-            where f.code = 'AIGMS-CF' and f.tenant_id is null`,
+            where f.code = 'AIGMS-CF' and f.tenant_id is null and v.status = 'published'`,
         )
         return rows[0]!
       })
       expect(Number(row.n)).toBe(120)
-      expect(Number(row.enriched)).toBe(42)
+      expect(Number(row.enriched)).toBe(84)
       expect(row.status).toBe('published')
     }
   })

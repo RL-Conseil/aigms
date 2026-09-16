@@ -1,21 +1,36 @@
 /**
- * Produit le paquet AIGMS Control Framework v0.2 a partir de la v0.1 gelee et
- * de la vague 1 d'enrichissement, puis la migration qui le charge comme
+ * Produit un paquet AIGMS Control Framework a partir de la v0.1 gelee et des
+ * vagues d'enrichissement cumulees, puis la migration qui le charge comme
  * referentiel de l'editeur (tenant_id NULL, publie).
  *
- *   node scripts/generate-catalog-v0.2.mjs
+ *   node scripts/generate-catalog.mjs <version> <numero de migration> <vague>...
+ *   node scripts/generate-catalog.mjs 0.3 0044 wave1 wave2
  *
  * La v0.1 n'est jamais modifiee : c'est sa politique de version, et c'est ce
- * que le moteur d'import exige d'une baseline. Tout ce que la v0.2 change
- * vient de wave1_enrichment.json — relu, versionne, diffable.
+ * que le moteur d'import exige d'une baseline. Tout ce qu'une version change
+ * vient des fichiers de vague — relus, versionnes, diffables. Une vague
+ * posterieure peut reprendre un controle d'une vague anterieure : la derniere
+ * l'emporte, et le diff du paquet le montre.
  */
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 
-const base = JSON.parse(readFileSync('knowledge/frameworks/aigms/v0.1/aigms_control_framework_v0.1.json', 'utf8'))
-const wave = JSON.parse(readFileSync('knowledge/frameworks/aigms/v0.2/wave1_enrichment.json', 'utf8'))
+const [version, migrationNumber, ...waveNames] = process.argv.slice(2)
+if (!version || !migrationNumber || !waveNames.length) {
+  console.error('usage : node scripts/generate-catalog.mjs <version> <numero de migration> <vague>...')
+  process.exit(1)
+}
 
-const version = '0.2'
+const base = JSON.parse(readFileSync('knowledge/frameworks/aigms/v0.1/aigms_control_framework_v0.1.json', 'utf8'))
+const wave = { domains: {}, controls: {} }
+const completedDomains = new Set()
+for (const name of waveNames) {
+  const w = JSON.parse(readFileSync(`knowledge/frameworks/aigms/waves/${name}_enrichment.json`, 'utf8'))
+  Object.assign(wave.domains, w.domains ?? {})
+  Object.assign(wave.controls, w.controls)
+  for (const id of Object.keys(w.controls)) completedDomains.add(id.split('-')[1])
+}
+
 const enriched = new Set(Object.keys(wave.controls))
 
 const pkg = {
@@ -25,12 +40,12 @@ const pkg = {
     status: 'frozen-baseline',
     language: 'fr',
     description:
-      'Référentiel opérationnel de gouvernance, risque, sécurité, exploitation et conformité des systèmes IA. v0.2 : vague 1 d’enrichissement (GOV, INV, USE, RSK) — objectif, questions d’évaluation, preuves attendues, responsable, fréquence, correspondances ISO/IEC 42001 et AI Act.',
+      `Référentiel opérationnel de gouvernance, risque, sécurité, exploitation et conformité des systèmes IA. v${version} : ${enriched.size} contrôles enrichis (${[...completedDomains].join(', ')}) — objectif, questions d’évaluation, preuves attendues, responsable, fréquence, correspondances ISO/IEC 42001 et AI Act.`,
     control_count: base.controls.length,
     domain_count: base.domains.length,
     enrichment_waves: {
-      completed: ['GOV', 'INV', 'USE', 'RSK'],
-      pending: ['DAT', 'SEC', 'SUP', 'HUM', 'OPS', 'MON', 'INC', 'CMP'],
+      completed: [...completedDomains],
+      pending: base.domains.map((d) => d.code).filter((c) => !completedDomains.has(c)),
     },
   },
   domains: base.domains.map((d) => ({ ...d, name: wave.domains[d.code] ?? d.name })),
@@ -58,7 +73,8 @@ const pkg = {
 }
 
 const json = JSON.stringify(pkg, null, 2) + '\n'
-const out = 'knowledge/frameworks/aigms/v0.2/aigms_control_framework_v0.2.json'
+mkdirSync(`knowledge/frameworks/aigms/v${version}`, { recursive: true })
+const out = `knowledge/frameworks/aigms/v${version}/aigms_control_framework_v${version}.json`
 writeFileSync(out, json)
 const sha = createHash('sha256').update(json).digest('hex')
 
@@ -69,9 +85,9 @@ const sha = createHash('sha256').update(json).digest('hex')
 const sql = (s) => s.replace(/'/g, "''")
 const lines = []
 lines.push(`-- =============================================================================
--- AIGMS — 0043 — Référentiel de l'éditeur : AIGMS Control Framework v${version}
+-- AIGMS — ${migrationNumber} — Référentiel de l'éditeur : AIGMS Control Framework v${version}
 -- =============================================================================
--- GÉNÉRÉ par scripts/generate-catalog-v0.2.mjs — ne pas éditer à la main.
+-- GÉNÉRÉ par scripts/generate-catalog.mjs — ne pas éditer à la main.
 -- Source : ${out} (sha256 ${sha.slice(0, 16)}…).
 --
 -- Le référentiel de l'éditeur n'appartient à aucun tenant (tenant_id NULL) :
@@ -168,5 +184,7 @@ lines.push(`
    where id = v_version;
 end $$;
 `)
-writeFileSync('supabase/migrations/20260916140000_0043_editor_catalog_v0_2.sql', lines.join('\n'))
-console.log(`v${version} : ${pkg.controls.length} contrôles, ${enriched.size} enrichis, sha256 ${sha.slice(0, 12)}… ; migration écrite.`)
+const stamp = process.env.MIGRATION_STAMP ?? new Date().toISOString().replace(/[-:T]/g, '').slice(0, 12) + '00'
+const file = `supabase/migrations/${stamp}_${migrationNumber}_editor_catalog_v${version.replace('.', '_')}.sql`
+writeFileSync(file, lines.join('\n'))
+console.log(`v${version} : ${pkg.controls.length} contrôles, ${enriched.size} enrichis, sha256 ${sha.slice(0, 12)}… ; ${file} écrite.`)

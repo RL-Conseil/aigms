@@ -26,19 +26,28 @@ exigence mal transcrite fausserait la déclaration de tous les clients.
 
 - `knowledge/frameworks/aigms/v0.1/` — baseline gelée, 120 titres en 12 domaines.
   **Ne jamais la modifier.**
-- `knowledge/frameworks/aigms/v0.2/` — la v0.1 plus la **vague 1 d'enrichissement**
-  (GOV, INV, USE, RSK : 42 contrôles avec objectif, questions, preuves attendues,
-  responsable, fréquence, correspondances ISO/IEC 42001 et AI Act), domaines en
-  français. Générée par `node scripts/generate-catalog-v0.2.mjs` depuis
-  `wave1_enrichment.json` ; la migration `0043` la charge comme référentiel de
-  l'éditeur, publiée.
+- `knowledge/frameworks/aigms/waves/` — les **vagues d'enrichissement**, un
+  fichier JSON par vague, relu et diffable : objectif, questions d'évaluation,
+  preuves attendues, responsable, fréquence, correspondances ISO/IEC 42001 et
+  AI Act, domaines en français.
+  - `wave1` : GOV, INV, USE, RSK (42 contrôles) → v0.2, migration 0043
+  - `wave2` : DAT, SEC, SUP, HUM (42 contrôles) → v0.3, migration 0044
+  - à venir, `wave3` : OPS, MON, INC, CMP (36 contrôles)
+- `knowledge/frameworks/aigms/v0.x/` — les paquets générés, gelés une fois
+  livrés.
 
-Pour une **v0.3** (vague 2 : DAT, SEC, SUP, HUM) : ajouter les contrôles à un
-`wave2_enrichment.json`, adapter le script pour cumuler les vagues, générer,
-relire le diff du JSON, écrire la migration `00xx_editor_catalog_v0_3.sql`. La
-v0.2 devient « remplacée » à la publication de la v0.3 ; les contrôles
-opérationnels déjà instanciés gardent leur lien vers la v0.2 — on ne réécrit
-pas l'histoire d'un client.
+Une version se génère et se livre ainsi :
+
+```
+MIGRATION_STAMP=<AAAAMMJJHHMM>00 node scripts/generate-catalog.mjs 0.4 0045 wave1 wave2 wave3
+```
+
+Le script cumule les vagues (la dernière l'emporte sur un contrôle repris),
+écrit le paquet `v0.4/aigms_control_framework_v0.4.json` et la migration qui le
+charge comme référentiel de l'éditeur, publié. La version précédente passe
+« remplacée » ; les contrôles opérationnels déjà instanciés gardent leur lien
+vers leur version d'origine — on ne réécrit pas l'histoire d'un client. Relire
+le diff du paquet avant de committer.
 
 ## Importer un référentiel de cabinet
 
