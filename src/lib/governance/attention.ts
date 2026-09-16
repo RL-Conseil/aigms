@@ -105,3 +105,30 @@ export function attentionLabel(kind: AttentionKind, count: number): string {
   const [singular, plural] = ATTENTION_LABELS[kind]
   return count > 1 ? plural : singular
 }
+
+/**
+ * Ou conduit chaque compteur, filtre.
+ *
+ * Renvoyer vers l'ecran sans son filtre obligerait a refaire soi-meme le tri
+ * qu'on vient de lire — et ferait douter du chiffre. Une seule table pour la
+ * barre, le graphique et les tuiles : trois endroits qui divergeraient sinon.
+ */
+export function attentionDestination(kind: AttentionKind, organizationId: string): string {
+  const base = `/admin/organizations/${organizationId}`
+  switch (kind) {
+    case 'overdue_actions':
+      return `${base}/suivi?vue=actions&etat=echues`
+    case 'open_incidents':
+      return `${base}/suivi?vue=incidents`
+    case 'reviews_due':
+      return `${base}/suivi?vue=revues`
+    case 'high_risks_open':
+      return `${base}/processus?vue=risques`
+    case 'stale_evidence':
+      return `${base}/preuves?etat=a-renouveler`
+    case 'evidence_to_review':
+      return `${base}/preuves?etat=a-valider`
+    case 'soa_undecided':
+      return `${base}/declaration-applicabilite?ecart=undecided`
+  }
+}

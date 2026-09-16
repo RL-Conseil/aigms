@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import {
   ATTENTION_ORDER,
+  attentionDestination,
   attentionLabel,
   describeAttention,
   isLate,
@@ -67,25 +68,12 @@ export function AttentionBar({
     )
   }
 
-  // Chaque compteur mene a ce qu'il compte, filtre. Renvoyer vers l'ecran sans
-  // son filtre oblige a refaire soi-meme le tri qu'on vient de lire — et fait
-  // douter du chiffre.
-  const destination: Record<AttentionKind, string> = {
-    overdue_actions: `/admin/pilotage?organisation=${organizationId}`,
-    open_incidents: `/admin/pilotage?organisation=${organizationId}`,
-    reviews_due: `/admin/pilotage?organisation=${organizationId}`,
-    high_risks_open: `/admin/organizations/${organizationId}/processus?vue=risques`,
-    stale_evidence: `/admin/organizations/${organizationId}/preuves?etat=a-renouveler`,
-    evidence_to_review: `/admin/organizations/${organizationId}/preuves?etat=a-valider`,
-    soa_undecided: `/admin/organizations/${organizationId}/declaration-applicabilite?ecart=undecided`,
-  }
-
   return (
     <ul className="flex flex-wrap gap-2">
       {shown.map((kind) => (
         <li key={kind}>
           <Link
-            href={destination[kind]}
+            href={attentionDestination(kind, organizationId)}
             className={`inline-flex items-baseline gap-1.5 rounded-lg border px-3 py-2 text-sm hover:bg-ink-50 ${
               isLate(kind) ? 'border-stop-600/25 bg-stop-600/5' : 'border-ink-200 bg-white'
             }`}

@@ -145,23 +145,24 @@ test('l’administration change le rôle vis-à-vis de l’IA, et ce qui est exi
   await expect(carte.getByText('Hébergeur / Infrastructure', { exact: false }).first()).toBeVisible()
 })
 
-test('le pilotage nomme le client et se restreint à l’un d’eux', async ({ page }) => {
+test('le pilotage nomme le client, et « Toutes » rend le portefeuille', async ({ page }) => {
   await signIn(page, OFFICER)
   await page.getByRole('link', { name: 'Pilotage' }).click()
 
   await expect(page.getByRole('heading', { name: 'Pilotage' })).toBeVisible()
+  // Sans choix explicite : l'organisation courante.
+  await expect(page.getByText(/Ce qui appelle une action chez IzarLink Demo/)).toBeVisible()
 
-  // Les statuts se lisent en francais, pas dans le vocabulaire de la base.
-  await expect(page.getByText(/Traitement en cours|Identifié|Analysé/).first()).toBeVisible()
-  await expect(page.getByText('treatment_in_progress')).toHaveCount(0)
+  // Les listes ne sont plus ici : elles vivent la ou l'on agit.
+  await expect(page.getByRole('heading', { name: 'Risques élevés sans traitement abouti' })).toHaveCount(0)
 
-  // Le filtre n'apparait qu'a partir de deux organisations suivies ; quand il
-  // est la, il restreint aussi les chiffres.
+  // Le filtre n'apparait qu'a partir de deux organisations suivies ; « Toutes »
+  // demande explicitement le portefeuille, avec sa ventilation.
   const filtre = page.getByRole('navigation', { name: 'Filtrer par organisation' })
   if (await filtre.isVisible()) {
-    await filtre.getByRole('link', { name: /IzarLink Demo/ }).click()
-    await expect(page).toHaveURL(/organisation=/)
-    await expect(page.getByText(/Ce qui appelle une action chez IzarLink Demo/)).toBeVisible()
+    await filtre.getByRole('link', { name: /^Toutes/ }).click()
+    await expect(page).toHaveURL(/organisation=toutes/)
+    await expect(page.getByRole('heading', { name: 'Chez qui' })).toBeVisible()
   }
 })
 

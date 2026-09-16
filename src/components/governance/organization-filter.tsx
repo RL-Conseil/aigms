@@ -21,9 +21,11 @@ export function OrganizationFilter({
       label="Filtrer par organisation"
       param="organisation"
       basePath={basePath}
-      selected={selected}
+      // « toutes » est explicite : sans parametre, la page se place sur
+      // l'organisation courante.
+      selected={selected ?? 'toutes'}
       options={[
-        { key: '', label: 'Toutes' },
+        { key: 'toutes', label: 'Toutes' },
         ...organizations.map((organization) => ({
           key: organization.id,
           label: organization.name,
