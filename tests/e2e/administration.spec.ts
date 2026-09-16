@@ -196,3 +196,32 @@ test('on arrive sur le pilotage, « Cas d’usage » ouvre l’organisation cour
   await page.getByRole('menuitem', { name: 'Organisations gérées' }).click()
   await expect(page.getByRole('heading', { name: 'Organisations gérées' })).toBeVisible()
 })
+
+test('le journal d’audit se lit, se filtre et s’exporte depuis l’administration', async ({ page }) => {
+  await signIn(page, ADMIN)
+  await page.getByRole('link', { name: 'Journal' }).click()
+  await expect(page.getByRole('heading', { name: 'Journal d’audit' })).toBeVisible()
+
+  // Le jeu de demonstration a ete pose par le seed : des creations, au moins.
+  await page.getByLabel('Action').selectOption('create')
+  await page.getByRole('button', { name: 'Filtrer' }).click()
+  await expect(page).toHaveURL(/action=create/)
+  await expect(page.getByRole('list').getByText('Création', { exact: true }).first()).toBeVisible()
+
+  // Une ligne se deplie sur son detail.
+  await page.getByRole('button', { name: 'Détail' }).first().click()
+  await expect(page.getByRole('button', { name: 'Replier' })).toBeVisible()
+
+  // L'export porte les filtres et repond en JSON.
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('link', { name: /Exporter en JSON/ }).click(),
+  ])
+  expect(download.suggestedFilename()).toMatch(/aigms-journal-.*\.json/)
+})
+
+test('un rôle de gouvernance ne lit pas le journal de la plateforme', async ({ page }) => {
+  await signIn(page, OFFICER)
+  await page.goto('/admin/journal')
+  await expect(page.getByRole('heading', { name: 'Accès réservé' })).toBeVisible()
+})
