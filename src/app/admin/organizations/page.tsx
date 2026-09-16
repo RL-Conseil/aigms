@@ -8,6 +8,7 @@ import { managedOrganizations } from '@/lib/governance/organizations'
 import { ROLE_LABELS, type AppRole } from '@/lib/domain/roles'
 import { AttentionSummary } from '@/components/governance/attention'
 import { attentionByOrganization } from '@/lib/governance/attention'
+import { DefaultOrganizationButton } from '@/components/governance/default-organization'
 
 /**
  * Les organisations que ce compte gere.
@@ -22,7 +23,8 @@ import { attentionByOrganization } from '@/lib/governance/attention'
  */
 export default async function ManagedOrganizationsPage() {
   const supabase = await createClient()
-  const administrating = isAdministrating(await getViewerContext())
+  const viewer = await getViewerContext()
+  const administrating = isAdministrating(viewer)
 
   // « Gerer » n'est pas « pouvoir lire » : une personne voit les organisations
   // de son tenant, elle ne gouverne que celles sur lesquelles l'administration
@@ -101,6 +103,12 @@ export default async function ManagedOrganizationsPage() {
                       {counts.production} en service
                     </Badge>
                     <Badge>{org.status}</Badge>
+                    {!administrating && organizations.length > 1 ? (
+                      <DefaultOrganizationButton
+                        organizationId={org.id}
+                        isDefault={org.id === viewer?.currentOrganizationId}
+                      />
+                    ) : null}
                     {administrating ? (
                       <Link
                         href={`/admin/organizations/${org.id}/administration`}

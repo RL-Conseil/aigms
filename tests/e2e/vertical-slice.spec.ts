@@ -73,13 +73,22 @@ test('le gate refuse la mise en production et explique ce qui manque', async ({ 
   await expect(page.getByRole('heading', { name: 'Scoring de candidatures' })).toBeVisible()
 })
 
-test('le tableau de bord remonte ce qui appelle une action', async ({ page }) => {
+test('le tableau de bord se place sur l’organisation courante et ses libellés conduisent aux listes', async ({ page }) => {
   await page.getByRole('link', { name: 'Pilotage' }).click()
 
   await expect(page.getByRole('heading', { name: 'Pilotage' })).toBeVisible()
-  await expect(page.getByText('Risques élevés ouverts', { exact: true })).toBeVisible()
-  await expect(page.getByText('Preuves à renouveler', { exact: true })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Incidents ouverts' })).toBeVisible()
+  // Sans choix explicite : l'organisation courante, nommee dans le sous-titre.
+  await expect(page.getByText(/Ce qui appelle une action chez IzarLink Demo/)).toBeVisible()
+
+  // Le graphique porte les compteurs ; chaque libelle ouvre la liste filtree.
+  const chart = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Ce qui appelle une action' }) })
+  await expect(chart.getByRole('link', { name: /preuves? à renouveler/ })).toBeVisible()
+  await chart.getByRole('link', { name: /actions? échues?/ }).click()
+  await expect(page).toHaveURL(/suivi\?vue=actions&etat=echues/)
+  await expect(page.getByRole('heading', { name: 'Suivi', exact: true })).toBeVisible()
+
+  // Le refus de gate reste trace sur le tableau de bord.
+  await page.goto('/admin/pilotage')
   await expect(page.getByRole('heading', { name: 'Gates refusés récemment' })).toBeVisible()
 })
 
