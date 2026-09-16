@@ -264,9 +264,14 @@ describe('Import du referentiel de controles', () => {
       await c.query("select set_config('request.jwt.claims', $1, true)", [
         JSON.stringify({ sub: DEMO.officerA, role: 'authenticated' }),
       ])
-      // Le referentiel de l'editeur (120) plus celui du cabinet (120) : l'officier
-      // du tenant voit les deux.
-      const { rows } = await c.query('select id from public.catalog_control')
+      // Le referentiel de l'editeur (120, version publiee) plus celui du cabinet
+      // (120) : l'officier du tenant voit les deux. Les versions remplacees de
+      // l'editeur restent en base, hors compte.
+      const { rows } = await c.query(
+        `select cc.id from public.catalog_control cc
+           join public.catalog_version v on v.id = cc.version_id
+          where v.status <> 'superseded'`,
+      )
       return rows.length
     })
 
