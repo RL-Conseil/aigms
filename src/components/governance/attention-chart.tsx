@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import {
   ATTENTION_ORDER,
+  ATTENTION_SECTION_ORDER,
+  ATTENTION_SECTIONS,
   attentionDestination,
   attentionLabel,
   isLate,
@@ -47,13 +49,30 @@ export function AttentionChart({
 
   const max = Math.max(...totals.map((entry) => entry.count))
 
+  // Par rubrique : la section ou l'on agit sert d'en-tete, et le libelle
+  // dessous dit quoi. Lire « Suivi › Actions » au-dessus de « 2 actions
+  // echues » situe le chiffre avant meme de cliquer.
+  const groups = ATTENTION_SECTION_ORDER.map((section) => ({
+    section,
+    entries: totals.filter((entry) => ATTENTION_SECTIONS[entry.kind].section === section),
+  })).filter((group) => group.entries.length > 0)
+
   return (
-    <div className="flex flex-col gap-3">
-      {totals.map(({ kind, count }) => (
-        <Bar key={kind} kind={kind} count={count} max={max} organizationId={organizationId} />
+    <div className="flex flex-col gap-4">
+      {groups.map((group) => (
+        <section key={group.section}>
+          <h3 className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-500">
+            {group.section}
+          </h3>
+          <div className="flex flex-col gap-2.5 border-l-2 border-ink-100 pl-3">
+            {group.entries.map(({ kind, count }) => (
+              <Bar key={kind} kind={kind} count={count} max={max} organizationId={organizationId} />
+            ))}
+          </div>
+        </section>
       ))}
 
-      <p className="mt-1 text-xs leading-relaxed text-ink-500">
+      <p className="text-xs leading-relaxed text-ink-500">
         Les longueurs se comparent entre elles, pas à un objectif. Le rouge marque ce qui aurait
         déjà dû être fait, l’ambre ce qui attend une main.
         {organizationId ? ' Chaque libellé ouvre la liste correspondante.' : ''}
@@ -75,10 +94,12 @@ function Bar({
 }) {
   const label = attentionLabel(kind, count)
   const late = isLate(kind)
+  const tab = ATTENTION_SECTIONS[kind].tab
   const body = (
     <>
       <div className="mb-1 flex items-baseline justify-between gap-4">
         <span className={`text-sm ${organizationId ? 'text-ink-800 group-hover:underline' : 'text-ink-700'}`}>
+          {tab ? <span className="mr-1.5 text-xs text-ink-400">{tab} ›</span> : null}
           {label}
         </span>
         <span className={`text-sm font-semibold tabular-nums ${late ? 'text-stop-600' : 'text-warn-600'}`}>

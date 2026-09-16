@@ -23,20 +23,29 @@ import {
 export function AttentionDot({
   count,
   late = true,
+  inverted = false,
   label,
 }: {
   count: number
   late?: boolean
+  /** Sur fond sombre : la pastille porte la couleur pleine, le chiffre en clair. */
+  inverted?: boolean
   label?: string
 }) {
   if (!count) return null
 
+  const tone = inverted
+    ? late
+      ? 'bg-stop-600 text-white'
+      : 'bg-warn-600 text-night-950'
+    : late
+      ? 'bg-stop-600/10 text-stop-600'
+      : 'bg-warn-600/10 text-warn-600'
+
   return (
     <span
       aria-label={label ? `${count} ${label}` : undefined}
-      className={`ml-1.5 inline-flex min-w-[1.25rem] items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold tabular-nums ${
-        late ? 'bg-stop-600/10 text-stop-600' : 'bg-warn-600/10 text-warn-600'
-      }`}
+      className={`ml-1.5 inline-flex min-w-[1.25rem] items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-semibold tabular-nums ${tone}`}
     >
       {count > 99 ? '99+' : count}
     </span>

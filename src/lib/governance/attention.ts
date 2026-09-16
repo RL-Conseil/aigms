@@ -132,3 +132,26 @@ export function attentionDestination(kind: AttentionKind, organizationId: string
       return `${base}/declaration-applicabilite?ecart=undecided`
   }
 }
+
+/**
+ * La rubrique de chaque compteur : la section de l'organisation ou l'on agit,
+ * et son sous-onglet quand il y en a un. C'est l'en-tete que porte le
+ * graphique du pilotage au-dessus de chaque libelle.
+ */
+export const ATTENTION_SECTIONS: Record<AttentionKind, { section: string; tab?: string; href: (organizationId: string) => string }> = {
+  overdue_actions: { section: 'Suivi', tab: 'Actions', href: (o) => `/admin/organizations/${o}/suivi?vue=actions` },
+  open_incidents: { section: 'Suivi', tab: 'Incidents', href: (o) => `/admin/organizations/${o}/suivi?vue=incidents` },
+  reviews_due: { section: 'Suivi', tab: 'Revues', href: (o) => `/admin/organizations/${o}/suivi?vue=revues` },
+  high_risks_open: { section: 'Processus et risques', tab: 'Risques', href: (o) => `/admin/organizations/${o}/processus?vue=risques` },
+  stale_evidence: { section: 'Registre des preuves', href: (o) => `/admin/organizations/${o}/preuves` },
+  evidence_to_review: { section: 'Registre des preuves', href: (o) => `/admin/organizations/${o}/preuves` },
+  soa_undecided: { section: 'Déclaration d’Applicabilité', href: (o) => `/admin/organizations/${o}/declaration-applicabilite` },
+}
+
+/** L'ordre de lecture du graphique : par rubrique, dans l'ordre des sections. */
+export const ATTENTION_SECTION_ORDER = [
+  'Suivi',
+  'Processus et risques',
+  'Registre des preuves',
+  'Déclaration d’Applicabilité',
+] as const

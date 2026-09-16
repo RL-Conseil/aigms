@@ -33,8 +33,9 @@ type NavLink = { href: string; label: string }
 // principal pour celui de l'utilisateur — on en change rarement, et l'y laisser
 // donnait deux entrees concurrentes pour « organisation ».
 const GOVERNANCE_NAV: NavLink[] = [
-  { href: '/admin', label: 'Vue d’ensemble' },
   { href: '/admin/pilotage', label: 'Pilotage' },
+  // « Cas d'usage » ouvre l'organisation courante ; /admin s'y rend pour nous.
+  { href: '/admin/organizations/courante', label: 'Cas d’usage' },
 ]
 
 const ADMIN_NAV: NavLink[] = [
@@ -47,7 +48,7 @@ const ADMIN_NAV: NavLink[] = [
 
 /** Sections d'une organisation, dans l'ordre ou l'on y travaille. */
 export const ORGANIZATION_SECTIONS = [
-  { key: 'apercu', label: 'Vue d’ensemble', href: '' },
+  { key: 'apercu', label: 'Cas d’usage', href: '' },
   { key: 'processus', label: 'Processus et risques', href: '/processus' },
   { key: 'controles', label: 'Contrôles', href: '/controles' },
   { key: 'preuves', label: 'Preuves', href: '/preuves' },
@@ -93,27 +94,39 @@ export async function Shell({
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-ink-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center gap-6 px-6 py-3">
-          <Link href="/admin" aria-label={`${branding.label}, organisations`}>
+      {/*
+        Bandeau sombre : la marque et la navigation se detachent du contenu,
+        qui reste clair. Les teintes sont celles de la charte — bleu nuit,
+        accent bleu-vert — et le bandeau des sections, en dessous, prolonge le
+        meme fond un ton plus clair pour que les deux niveaux se lisent comme
+        un seul bloc.
+      */}
+      <header className="bg-night-950 text-white shadow-[0_1px_0_rgb(255_255_255/0.06)]">
+        <div className="mx-auto flex max-w-6xl items-center gap-8 px-6 py-3">
+          <Link
+            href={administrating ? '/admin/organizations' : '/admin/pilotage'}
+            aria-label={`${branding.label}, accueil`}
+            className="shrink-0"
+          >
             <Wordmark
               size={26}
+              tone="light"
               label={branding.label}
               tagline={branding.tagline}
               logoUrl={branding.logoUrl}
             />
           </Link>
 
-          <nav aria-label="Navigation principale" className="flex gap-4 text-sm text-ink-600">
+          <nav aria-label="Navigation principale" className="flex gap-1 text-sm">
             {nav.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="inline-flex items-baseline hover:text-ink-900"
+                className="inline-flex items-baseline rounded-md px-3 py-1.5 text-white/75 transition-colors hover:bg-white/10 hover:text-white"
               >
                 {link.label}
                 {link.href === '/admin/pilotage' ? (
-                  <AttentionDot count={pending} label="élément(s) appelant une action" />
+                  <AttentionDot count={pending} inverted label="élément(s) appelant une action" />
                 ) : null}
               </Link>
             ))}
@@ -121,7 +134,7 @@ export async function Shell({
 
           <div className="ml-auto flex items-center gap-3">
             {viewer?.tenantName ? (
-              <span className="hidden text-sm text-ink-500 lg:inline">{viewer.tenantName}</span>
+              <span className="hidden text-sm text-white/50 lg:inline">{viewer.tenantName}</span>
             ) : null}
             {viewer ? (
               <UserMenu
@@ -135,7 +148,7 @@ export async function Shell({
         </div>
 
         {organization ? (
-          <div className="border-t border-ink-100 bg-ink-50">
+          <div className="border-t border-white/10 bg-night-900">
             <nav
               aria-label="Sections de l’organisation"
               className="mx-auto flex max-w-6xl flex-wrap gap-1 px-6"
@@ -161,16 +174,17 @@ export async function Shell({
                     key={section.key}
                     href={`/admin/organizations/${organization.id}${section.href}`}
                     aria-current={active ? 'page' : undefined}
-                    className={`inline-flex items-baseline border-b-2 px-3 py-2.5 text-sm ${
+                    className={`inline-flex items-baseline border-b-2 px-3 py-2.5 text-sm transition-colors ${
                       active
-                        ? 'border-brand-600 font-medium text-ink-900'
-                        : 'border-transparent text-ink-600 hover:text-ink-900'
+                        ? 'border-teal-400 font-medium text-white'
+                        : 'border-transparent text-white/65 hover:text-white'
                     }`}
                   >
                     {section.label}
                     <AttentionDot
                       count={count ?? 0}
                       late={section.key === 'processus'}
+                      inverted
                       label="élément(s) appelant une action"
                     />
                   </Link>
@@ -181,7 +195,7 @@ export async function Shell({
         ) : null}
 
         {administrating ? (
-          <div className="border-t border-night-900/10 bg-night-900">
+          <div className="border-t border-white/10 bg-night-900">
             <div className="mx-auto flex max-w-6xl items-center gap-3 px-6 py-2 text-white">
               <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden>
                 <path

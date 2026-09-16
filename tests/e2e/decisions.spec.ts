@@ -24,7 +24,7 @@ async function signIn(page: import('@playwright/test').Page, who: typeof OFFICER
   await page.getByLabel('Adresse électronique').fill(who.email)
   await page.getByLabel('Mot de passe').fill(who.password)
   await page.getByRole('button', { name: 'Se connecter' }).click()
-  await expect(page.getByRole('heading', { name: /IzarLink Demo/ })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Pilotage|Organisations gérées/ })).toBeVisible()
 }
 
 test('le registre rassemble les décisions, transverses comprises', async ({ page }) => {
