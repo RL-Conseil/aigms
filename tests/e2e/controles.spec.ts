@@ -22,10 +22,13 @@ test.beforeEach(async ({ page }) => {
 
 test('un contrôle se crée, change d’état et se rattache à une exigence', async ({ page }) => {
   await page.goto(`/admin/organizations/${ORG}/controles`)
-  await expect(page.getByRole('heading', { name: 'Référentiel' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Liste des contrôles opérationnels' })).toBeVisible()
 
   const code = `CTL-E${Date.now().toString().slice(-5)}`
-  await page.getByRole('link', { name: 'Créer un contrôle' }).click()
+  await page.getByRole('link', { name: 'Ajouter un contrôle' }).click()
+  // Deux voies : depuis un referentiel, ou libre. Ce test prend la voie libre.
+  await page.getByRole('navigation', { name: 'Voie d’ajout' }).getByRole('link', { name: 'Libre' }).click()
+  await expect(page).toHaveURL(/voie=libre/)
 
   await page.getByLabel('Code').fill(code)
   await page.getByLabel('Intitulé').fill('Relecture humaine avant envoi')
@@ -95,4 +98,28 @@ test('un traitement de risque désigne le contrôle qui l’exécute', async ({ 
   await fenetre.getByRole('button', { name: 'Enregistrer le traitement' }).click()
 
   await expect(page.getByRole('status')).toContainText(/avec le contrôle qui le met en œuvre/)
+})
+
+test('un contrôle-type du référentiel de l’éditeur s’ajoute avec ses correspondances', async ({ page }) => {
+  await page.goto(`/admin/organizations/${ORG}/controles/nouveau`)
+  await expect(page.getByRole('heading', { name: 'Depuis un référentiel' })).toBeVisible()
+
+  // Le referentiel de l'editeur est selectionne d'office (premier de la liste).
+  await expect(page.getByLabel('Référentiel')).toContainText('AIGMS Control Framework v0.2')
+  await page.getByLabel('Domaine').selectOption('RSK')
+  const pick = page.getByLabel('Contrôle-type')
+  const option = pick.locator('option').filter({ hasText: 'AIGMS-RSK-011' })
+  await pick.selectOption({ value: await option.getAttribute('value') ?? '' })
+
+  // La fiche se lit avant l'ajout : objectif, preuves attendues, correspondances.
+  await expect(page.getByText(/Une veille est-elle organisée/)).toBeVisible()
+  await expect(page.getByText(/ISO\/IEC 42001 6\.1\.2/)).toBeVisible()
+
+  await page.getByRole('button', { name: 'Ajouter ce contrôle' }).click()
+  await expect(page.getByText(/AIGMS-RSK-011 ajouté/)).toBeVisible()
+  await expect(page.getByText(/2 exigence\(s\) ISO 42001 rattachée\(s\)/)).toBeVisible()
+
+  // Dans la liste, le controle porte son origine.
+  await page.goto(`/admin/organizations/${ORG}/controles`)
+  await expect(page.getByText('AIGMS-CF v0.2 · AIGMS-RSK-011')).toBeVisible()
 })

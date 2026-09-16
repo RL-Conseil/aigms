@@ -1161,6 +1161,7 @@ export type Database = {
           description: string | null
           id: string
           name: string
+          tenant_id: string | null
           updated_at: string
         }
         Insert: {
@@ -1169,6 +1170,7 @@ export type Database = {
           description?: string | null
           id?: string
           name: string
+          tenant_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -1177,9 +1179,18 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+          tenant_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "catalog_framework_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       catalog_import_error: {
         Row: {
@@ -5061,6 +5072,27 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      catalog_controls_for: {
+        Args: { p_organization_id: string }
+        Returns: {
+          catalog_control_id: string
+          code: string
+          control_type: string
+          default_applicability: string
+          domain_code: string
+          domain_name: string
+          framework_code: string
+          framework_name: string
+          instantiated_control_id: string
+          is_editor: boolean
+          mapping_count: number
+          objective: string
+          owner_role: string
+          review_frequency: string
+          title: string
+          version: string
+        }[]
+      }
       commit_catalog_import: { Args: { p_job_id: string }; Returns: Json }
       control_coverage: {
         Args: { p_organization_id: string }
@@ -5185,6 +5217,15 @@ export type Database = {
       }
       governance_health: {
         Args: { p_activity_id?: string; p_organization_id: string }
+        Returns: Json
+      }
+      instantiate_catalog_control: {
+        Args: {
+          p_catalog_control_id: string
+          p_code?: string
+          p_organization_id: string
+          p_owner_user_id?: string
+        }
         Returns: Json
       }
       log_audit_export: {

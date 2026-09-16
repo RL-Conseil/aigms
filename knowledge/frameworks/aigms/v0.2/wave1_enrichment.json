@@ -1,0 +1,613 @@
+{
+  "_note": "Vague 1 d'enrichissement du référentiel AIGMS : GOV, INV, USE, RSK. Chaque entrée complète le contrôle du même id de la v0.1. Les références ISO/IEC 42001 sont celles du référentiel chargé dans AIGMS (Annexe A et clauses 6.1.2, 8.4, 9.3) ; les références AI Act sont textuelles.",
+  "domains": {
+    "GOV": "Gouvernance",
+    "INV": "Inventaire des systèmes d'IA",
+    "USE": "Gestion des cas d'usage",
+    "RSK": "Gestion des risques IA",
+    "DAT": "Gouvernance des données",
+    "SEC": "Sécurité de l'IA",
+    "SUP": "Fournisseurs et modèles",
+    "HUM": "Supervision humaine",
+    "OPS": "Exploitation de l'IA",
+    "MON": "Surveillance et performance",
+    "INC": "Incidents et résilience",
+    "CMP": "Conformité et assurance"
+  },
+  "controls": {
+    "AIGMS-GOV-001": {
+      "title": "Politique de gouvernance de l'IA",
+      "objective": "Une politique approuvée par la direction fixe ce que l'organisation attend de l'IA : finalités permises, usages interdits, principes (transparence, supervision humaine, protection des données), et qui décide de quoi.",
+      "applicability": "mandatory",
+      "owner_role": "Direction",
+      "review_frequency": "annual",
+      "assessment_questions": [
+        "La politique est-elle approuvée par la direction et datée ?",
+        "Nomme-t-elle les usages interdits et les usages soumis à autorisation ?",
+        "Est-elle communiquée aux personnes concernées et retrouvable ?"
+      ],
+      "expected_evidence": ["Politique d'IA signée et versionnée", "Preuve de diffusion (intranet, accusé de lecture)", "Compte rendu de l'approbation en revue de direction"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.2.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.2.3"},
+        {"framework": "AI_ACT", "reference": "Art. 4 (maîtrise de l'IA)"}
+      ]
+    },
+    "AIGMS-GOV-002": {
+      "title": "Périmètre du système de management de l'IA",
+      "objective": "Le périmètre du système de management est écrit : entités, processus, sites, systèmes d'IA couverts, et ce qui en est exclu avec sa justification. Sans périmètre, aucune déclaration d'applicabilité ne tient.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "assessment_questions": [
+        "Le périmètre nomme-t-il les entités, processus et systèmes couverts ?",
+        "Les exclusions sont-elles justifiées ?",
+        "Le rôle de l'organisation vis-à-vis de l'IA (fournisseur, développeur, intégrateur, utilisateur) est-il déclaré ?"
+      ],
+      "expected_evidence": ["Document de périmètre du SMIA", "Déclaration du rôle vis-à-vis de l'IA", "Liste des exclusions justifiées"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.2.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.2"}
+      ]
+    },
+    "AIGMS-GOV-003": {
+      "title": "Rôles et responsabilités",
+      "objective": "Chaque responsabilité de la gouvernance de l'IA — décider, évaluer, superviser, répondre — est attribuée à un rôle nommé, avec une personne identifiée, et les séparations nécessaires (celui qui demande n'est pas celui qui approuve) sont posées.",
+      "applicability": "mandatory",
+      "owner_role": "Direction",
+      "review_frequency": "annual",
+      "assessment_questions": [
+        "Existe-t-il une matrice des responsabilités (RACI ou équivalent) pour l'IA ?",
+        "Chaque rôle est-il porté par une personne nommée, avec suppléance ?",
+        "La séparation demandeur / approbateur est-elle effective sur les décisions engageantes ?"
+      ],
+      "expected_evidence": ["Matrice des responsabilités IA", "Fiches de rôle ou lettres de mission", "Extrait du registre de décisions montrant la séparation des rôles"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.3.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.2"}
+      ]
+    },
+    "AIGMS-GOV-004": {
+      "title": "Comité de gouvernance de l'IA",
+      "objective": "Une instance se réunit à cadence fixe pour arbitrer : autorisations, acceptations de risque, exceptions, revue des incidents et du portefeuille. Ses décisions sont consignées.",
+      "applicability": "conditional",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "quarterly",
+      "assessment_questions": [
+        "Le comité a-t-il un mandat écrit, une composition et une cadence ?",
+        "Ses décisions sont-elles consignées dans le registre de décisions ?",
+        "Les sujets obligatoires (incidents, risques acceptés, exceptions) y passent-ils ?"
+      ],
+      "expected_evidence": ["Mandat du comité", "Comptes rendus datés", "Registre de décisions"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.3.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "9.3"}
+      ]
+    },
+    "AIGMS-GOV-005": {
+      "title": "Propriétaire du système d'IA",
+      "objective": "Chaque système d'IA a un propriétaire opérationnel nommé, responsable de son fonctionnement, de sa documentation et des preuves qu'il doit produire — distinct du responsable redevable.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "semiannual",
+      "assessment_questions": [
+        "Chaque usage inscrit au registre a-t-il un propriétaire nommé ?",
+        "Le propriétaire connaît-il ses obligations (preuves, revues, incidents) ?",
+        "Un changement de propriétaire est-il tracé ?"
+      ],
+      "expected_evidence": ["Registre des usages avec propriétaire", "Fiche de responsabilités du propriétaire", "Journal des changements de propriétaire"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.3.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.2"}
+      ]
+    },
+    "AIGMS-GOV-006": {
+      "title": "Responsable du risque",
+      "objective": "Un responsable du risque nommé cote les risques liés à l'IA, décide de leur traitement et porte les acceptations. Il n'est pas le propriétaire du système qu'il évalue.",
+      "applicability": "mandatory",
+      "owner_role": "Responsable du risque",
+      "review_frequency": "annual",
+      "assessment_questions": [
+        "Le responsable du risque est-il nommé et distinct du propriétaire du système ?",
+        "Les acceptations de risque portent-elles sa signature, une justification et une date de revue ?"
+      ],
+      "expected_evidence": ["Nomination du responsable du risque", "Registre des risques avec acceptations signées"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.3.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "6.1.2"}
+      ]
+    },
+    "AIGMS-GOV-007": {
+      "title": "Responsable des données",
+      "objective": "Un responsable des données est nommé pour chaque jeu de données mobilisé par l'IA — provenance, qualité, base légale, conservation — et répond de leur usage.",
+      "applicability": "conditional",
+      "owner_role": "Responsable des données",
+      "review_frequency": "annual",
+      "assessment_questions": [
+        "Chaque jeu de données d'entraînement ou d'exploitation a-t-il un responsable nommé ?",
+        "Le responsable des données est-il consulté lors de l'évaluation d'impact ?"
+      ],
+      "expected_evidence": ["Inventaire des jeux de données avec responsable", "Trace de consultation dans les évaluations d'impact"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.2"}
+      ]
+    },
+    "AIGMS-GOV-008": {
+      "title": "Politique d'usage acceptable de l'IA",
+      "objective": "Les collaborateurs savent ce qu'ils peuvent faire avec les outils d'IA — internes ou grand public — et ce qu'ils ne peuvent pas : données à ne pas soumettre, usages interdits, obligation de déclarer un nouvel usage.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "assessment_questions": [
+        "La politique d'usage est-elle diffusée à tous les collaborateurs ?",
+        "Interdit-elle explicitement la soumission de données confidentielles ou personnelles à des outils non approuvés ?",
+        "Le signalement d'un usage non déclaré (IA de l'ombre) est-il organisé ?"
+      ],
+      "expected_evidence": ["Politique d'usage acceptable", "Attestations de prise de connaissance", "Canal de signalement documenté"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.2.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.9.2"},
+        {"framework": "AI_ACT", "reference": "Art. 4 (maîtrise de l'IA)"}
+      ]
+    },
+    "AIGMS-GOV-009": {
+      "title": "Processus d'approbation des usages d'IA",
+      "objective": "Aucun usage d'IA n'entre en service sans passer les jalons prévus — déclaration, qualification, revue, décision de mise en production — chacun avec ses préconditions vérifiées et sa décision consignée.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "assessment_questions": [
+        "Le cycle de vie et ses jalons sont-ils définis et appliqués ?",
+        "Les préconditions de chaque jalon sont-elles vérifiées, et les refus tracés ?",
+        "Une décision de mise en production porte-t-elle un approbateur distinct du demandeur ?"
+      ],
+      "expected_evidence": ["Procédure du cycle de vie", "Journal des gates évalués et refusés", "Registre de décisions"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.5"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.9.2"}
+      ]
+    },
+    "AIGMS-GOV-010": {
+      "title": "Gestion des exceptions",
+      "objective": "Une dérogation à la politique se demande, se justifie, s'approuve par un rôle habilité, porte une date de fin et une revue. Une exception non tracée est une politique qui n'existe plus.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "quarterly",
+      "assessment_questions": [
+        "Les exceptions sont-elles enregistrées avec leur justification, leur approbateur et leur échéance ?",
+        "Sont-elles revues à échéance, et closes ou renouvelées explicitement ?"
+      ],
+      "expected_evidence": ["Registre de décisions filtré sur les exceptions", "Revues d'échéance"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.2.4"}
+      ]
+    },
+    "AIGMS-GOV-011": {
+      "title": "Revue de direction de l'IA",
+      "objective": "La direction revoit périodiquement le système de management : état du portefeuille, incidents, risques acceptés, résultats d'audit, ressources, et décide des orientations.",
+      "applicability": "mandatory",
+      "owner_role": "Direction",
+      "review_frequency": "annual",
+      "assessment_questions": [
+        "La revue de direction a-t-elle lieu à la cadence prévue, avec les entrées requises ?",
+        "Ses conclusions produisent-elles des décisions et des actions suivies ?"
+      ],
+      "expected_evidence": ["Dossier d'entrée de la revue", "Compte rendu et décisions", "Actions issues de la revue, suivies"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "9.3"}
+      ]
+    },
+    "AIGMS-GOV-012": {
+      "title": "Amélioration continue",
+      "objective": "Les non-conformités, incidents, constats d'audit et retours d'expérience alimentent des actions correctives dont l'efficacité est vérifiée, et le système de management évolue en conséquence.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "semiannual",
+      "assessment_questions": [
+        "Les actions correctives portent-elles une analyse de cause et une vérification d'efficacité ?",
+        "Les enseignements sont-ils réinjectés dans la politique, les contrôles ou la formation ?"
+      ],
+      "expected_evidence": ["Registre des actions correctives (CAPA) avec vérification d'efficacité", "Historique des versions de la politique et des procédures"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.2.4"}
+      ]
+    },
+
+    "AIGMS-INV-001": {
+      "title": "Inventaire central des systèmes d'IA",
+      "objective": "Tous les systèmes d'IA utilisés, développés ou fournis par l'organisation — y compris les fonctions d'IA embarquées dans des outils tiers — sont inscrits dans un registre unique, tenu à jour.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "quarterly",
+      "assessment_questions": [
+        "Existe-t-il un registre unique des systèmes et usages d'IA ?",
+        "Une démarche de détection des usages non déclarés est-elle en place (revue des achats, des connecteurs, des journaux) ?",
+        "Le registre est-il revu à cadence fixe ?"
+      ],
+      "expected_evidence": ["Registre des usages d'IA exporté et daté", "Rapport de détection des usages non déclarés", "Revue périodique du registre"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.7"},
+        {"framework": "AI_ACT", "reference": "Art. 49 (enregistrement)"}
+      ]
+    },
+    "AIGMS-INV-002": {
+      "title": "Identification du propriétaire",
+      "objective": "Chaque entrée du registre nomme son propriétaire opérationnel et son responsable redevable. Une entrée sans propriétaire n'est pas gouvernée.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["Aucune entrée du registre n'est-elle sans propriétaire ni redevable ?"],
+      "expected_evidence": ["Registre des usages : colonnes propriétaire et redevable renseignées"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.3.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.2"}
+      ]
+    },
+    "AIGMS-INV-003": {
+      "title": "Description de la finalité",
+      "objective": "Chaque système d'IA porte une finalité écrite, lisible hors contexte : à quoi il sert, ce qu'il produit, ce qu'il ne fait pas. C'est la référence pour juger de tout changement ultérieur.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["La finalité est-elle décrite en termes compréhensibles par un non-spécialiste ?", "Distingue-t-elle l'usage prévu des usages exclus ?"],
+      "expected_evidence": ["Fiche du cas d'usage : finalité et usage prévu"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.9.4"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.2"}
+      ]
+    },
+    "AIGMS-INV-004": {
+      "title": "Identification des utilisateurs",
+      "objective": "Les utilisateurs du système — internes, clients, partenaires — sont identifiés par catégorie, avec leur niveau de compétence attendu et l'information qui leur est due.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["Les catégories d'utilisateurs sont-elles décrites ?", "Les utilisateurs savent-ils qu'ils interagissent avec une IA ?"],
+      "expected_evidence": ["Fiche du cas d'usage : utilisateurs", "Notice ou mention d'information aux utilisateurs"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.8.2"},
+        {"framework": "AI_ACT", "reference": "Art. 50 (transparence)"}
+      ]
+    },
+    "AIGMS-INV-005": {
+      "title": "Identification des populations affectées",
+      "objective": "Les personnes et groupes affectés par le système sans en être les utilisateurs — candidats, clients évalués, salariés notés — sont identifiés, avec une attention particulière aux personnes vulnérables.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["Les personnes affectées sont-elles distinguées des utilisateurs ?", "Les personnes vulnérables sont-elles identifiées, et l'évaluation d'impact en tient-elle compte ?"],
+      "expected_evidence": ["Fiche du cas d'usage : personnes concernées", "Évaluation d'impact : parties affectées"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.5.4"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.8.5"}
+      ]
+    },
+    "AIGMS-INV-006": {
+      "title": "Modèle, fournisseur et version",
+      "objective": "Le modèle utilisé, son éditeur, sa version et son mode d'hébergement sont inscrits pour chaque système. Un changement de modèle est un changement à qualifier.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["Le modèle et sa version sont-ils connus pour chaque système en service ?", "Un changement de version déclenche-t-il une demande de changement ?"],
+      "expected_evidence": ["Registre des actifs : modèles et versions", "Demandes de changement liées aux montées de version"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.4"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.3"}
+      ]
+    },
+    "AIGMS-INV-007": {
+      "title": "Interfaces et dépendances",
+      "objective": "Les systèmes, données et services dont dépend chaque système d'IA — et ceux qui dépendent de lui — sont cartographiés, pour mesurer la portée d'une panne, d'une dérive ou d'un changement.",
+      "applicability": "conditional",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["Les dépendances entrantes et sortantes sont-elles documentées ?", "La cartographie est-elle utilisée dans l'analyse d'impact des changements ?"],
+      "expected_evidence": ["Schéma ou liste des dépendances", "Analyse d'impact d'un changement s'y référant"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.5"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.7"}
+      ]
+    },
+    "AIGMS-INV-008": {
+      "title": "Statut du cycle de vie",
+      "objective": "Chaque système porte un statut de cycle de vie à jour — de la déclaration au retrait — et ne change de statut que par les jalons prévus. Un système retiré reste au registre.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["Le statut de chaque système correspond-il à la réalité opérationnelle ?", "Les changements de statut sont-ils tracés avec leur motif ?"],
+      "expected_evidence": ["Registre des usages : statuts", "Journal des transitions"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.5"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"}
+      ]
+    },
+
+    "AIGMS-USE-001": {
+      "title": "Description du cas d'usage",
+      "objective": "Chaque cas d'usage est décrit avant toute mise en œuvre : contexte, processus métier servi, fonctionnement attendu, périmètre. C'est le point d'entrée de toute la gouvernance.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["Le cas d'usage est-il rattaché à un processus et une activité de l'organisation ?", "La description permet-elle à un tiers de comprendre ce qui est fait et pourquoi ?"],
+      "expected_evidence": ["Fiche du cas d'usage complète", "Rattachement à la cartographie des processus"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.9.4"}
+      ]
+    },
+    "AIGMS-USE-002": {
+      "title": "Objectif métier",
+      "objective": "L'objectif métier du cas d'usage est explicite et mesurable : quel problème il résout, pour qui, avec quel indicateur de succès.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["L'objectif est-il formulé en termes métier, avec un indicateur ?"],
+      "expected_evidence": ["Fiche du cas d'usage : objectif et indicateur"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.1.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.9.3"}
+      ]
+    },
+    "AIGMS-USE-003": {
+      "title": "Valeur attendue",
+      "objective": "Le bénéfice attendu est estimé — temps, coût, qualité, risque évité — et confronté au coût et au risque de l'usage. C'est ce qui justifie l'effort de gouvernance qu'on lui consacre.",
+      "applicability": "conditional",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["Le bénéfice attendu est-il chiffré ou qualifié ?", "Est-il revu une fois l'usage en service ?"],
+      "expected_evidence": ["Fiche du cas d'usage : bénéfice attendu", "Bilan de valeur après mise en service"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.9.3"}
+      ]
+    },
+    "AIGMS-USE-004": {
+      "title": "Parties prenantes",
+      "objective": "Les parties prenantes du cas d'usage — métier, juridique, sécurité, données, représentants du personnel, clients — sont identifiées et consultées quand la décision l'exige.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["Les parties prenantes sont-elles listées ?", "Leur consultation est-elle tracée dans l'évaluation d'impact ?"],
+      "expected_evidence": ["Évaluation d'impact : parties prenantes consultées"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.8.5"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.5.3"}
+      ]
+    },
+    "AIGMS-USE-005": {
+      "title": "Utilisateurs",
+      "objective": "Les utilisateurs du cas d'usage sont identifiés, formés à ce que le système fait et ne fait pas, et savent comment signaler un résultat douteux.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["Les utilisateurs ont-ils reçu une information ou une formation adaptée ?", "Disposent-ils d'un canal de signalement ?"],
+      "expected_evidence": ["Support de formation ou notice utilisateur", "Attestations de formation", "Canal de signalement"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.6"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.8.2"},
+        {"framework": "AI_ACT", "reference": "Art. 4 (maîtrise de l'IA)"}
+      ]
+    },
+    "AIGMS-USE-006": {
+      "title": "Décisions influencées",
+      "objective": "Les décisions que le système prend, propose ou influence sont nommées, avec leur portée sur les personnes : information, recommandation, décision automatique. C'est ce qui détermine le niveau de supervision.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["La portée des décisions est-elle décrite (informative, recommandation, automatique) ?", "Une décision automatique sur une personne est-elle identifiée comme telle ?"],
+      "expected_evidence": ["Fiche du cas d'usage : portée des décisions", "Classification réglementaire"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.5.4"},
+        {"framework": "AI_ACT", "reference": "Art. 6 et Annexe III (haut risque)"}
+      ]
+    },
+    "AIGMS-USE-007": {
+      "title": "Niveau d'autonomie",
+      "objective": "Le niveau d'autonomie du système est qualifié sur une échelle fixe (L0 assistance à L4 autonome), et toute montée d'autonomie est un changement qui rouvre l'évaluation et la supervision humaine.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Le niveau d'autonomie est-il qualifié selon l'échelle de l'organisation ?", "Au-delà de L2, une autorité d'arrêt nommée existe-t-elle ?"],
+      "expected_evidence": ["Fiche du cas d'usage : niveau d'autonomie", "Plan de supervision humaine"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.9.2"},
+        {"framework": "AI_ACT", "reference": "Art. 14 (contrôle humain)"}
+      ]
+    },
+    "AIGMS-USE-008": {
+      "title": "Impact potentiel",
+      "objective": "L'impact potentiel du cas d'usage sur les personnes, l'organisation et la société est évalué avant la mise en service, et réévalué à chaque changement significatif.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "assessment_questions": ["Une évaluation d'impact existe-t-elle pour chaque usage en service ?", "Est-elle rouverte à chaque changement significatif ?"],
+      "expected_evidence": ["Évaluation d'impact datée et approuvée", "Réévaluations liées aux changements"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.5.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "8.4"}
+      ]
+    },
+    "AIGMS-USE-009": {
+      "title": "Criticité",
+      "objective": "Chaque cas d'usage reçoit une criticité (faible à critique) justifiée, qui commande la profondeur de l'évaluation, le niveau de preuve exigé et la cadence de revue.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["La criticité est-elle attribuée avec une justification écrite ?", "La cadence de revue suit-elle la criticité ?"],
+      "expected_evidence": ["Fiche du cas d'usage : criticité et justification", "Date de prochaine revue"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "6.1.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.5.2"}
+      ]
+    },
+    "AIGMS-USE-010": {
+      "title": "Décision de mise en production",
+      "objective": "La mise en production est une décision nominative, prise par un rôle habilité distinct du demandeur, une fois les préconditions satisfaites — risques traités, contrôles opérants, supervision décrite, revue tiers close.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "assessment_questions": ["Chaque usage en service a-t-il une décision de mise en production approuvée ?", "L'approbateur est-il distinct du demandeur ?", "Les préconditions du gate étaient-elles satisfaites au moment de la décision ?"],
+      "expected_evidence": ["Registre de décisions : décisions de mise en production", "Journal du gate PRODUCTION"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.5"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.4"}
+      ]
+    },
+
+    "AIGMS-RSK-001": {
+      "title": "Méthodologie de gestion des risques IA",
+      "objective": "Une méthode écrite fixe comment les risques liés à l'IA sont identifiés, cotés, traités et acceptés : échelles, seuils, rôles, cadence. Elle s'articule avec la gestion des risques de l'organisation.",
+      "applicability": "mandatory",
+      "owner_role": "Responsable du risque",
+      "review_frequency": "annual",
+      "assessment_questions": ["La méthode est-elle écrite, approuvée et appliquée ?", "Ses échelles sont-elles celles utilisées dans le registre des risques ?"],
+      "expected_evidence": ["Méthodologie de gestion des risques IA", "Registre des risques conforme aux échelles"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "6.1.2"}
+      ]
+    },
+    "AIGMS-RSK-002": {
+      "title": "Identification des risques",
+      "objective": "Pour chaque cas d'usage, les risques sont identifiés selon une grille couvrant au moins : erreur et hallucination, biais et discrimination, fuite de données, dépendance fournisseur, sécurité, usage détourné, impact sur les personnes.",
+      "applicability": "mandatory",
+      "owner_role": "Responsable du risque",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Chaque usage en service a-t-il au moins un risque identifié par catégorie pertinente ?", "Les risques sont-ils rattachés à leur cas d'usage ?"],
+      "expected_evidence": ["Registre des risques par cas d'usage", "Grille de catégories utilisée"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "6.1.2"},
+        {"framework": "AI_ACT", "reference": "Art. 9 (système de gestion des risques)"}
+      ]
+    },
+    "AIGMS-RSK-003": {
+      "title": "Évaluation de la probabilité",
+      "objective": "La probabilité de chaque risque est cotée sur l'échelle de la méthode, avec les éléments qui la fondent — fréquence observée, retours d'expérience, résultats de tests.",
+      "applicability": "mandatory",
+      "owner_role": "Responsable du risque",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["La probabilité est-elle cotée pour chaque risque, avec une justification ?"],
+      "expected_evidence": ["Registre des risques : probabilité et justification"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "6.1.2"}
+      ]
+    },
+    "AIGMS-RSK-004": {
+      "title": "Évaluation de l'impact",
+      "objective": "L'impact de chaque risque est coté sur les personnes, l'organisation et la société — pas seulement en termes financiers — avec une attention particulière aux droits fondamentaux et aux personnes vulnérables.",
+      "applicability": "mandatory",
+      "owner_role": "Responsable du risque",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["L'impact est-il coté sur plusieurs dimensions (personnes, organisation, société) ?", "Les impacts sur les personnes s'appuient-ils sur l'évaluation d'impact ?"],
+      "expected_evidence": ["Registre des risques : impact par dimension", "Évaluation d'impact"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "6.1.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.5.4"}
+      ]
+    },
+    "AIGMS-RSK-005": {
+      "title": "Calcul du niveau de risque",
+      "objective": "Le niveau de risque inhérent puis résiduel est déduit de la probabilité et de l'impact par la règle de la méthode — jamais ajusté à la main pour passer sous un seuil.",
+      "applicability": "mandatory",
+      "owner_role": "Responsable du risque",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Le niveau découle-t-il de la matrice de la méthode ?", "Le niveau résiduel est-il distingué de l'inhérent ?"],
+      "expected_evidence": ["Registre des risques : niveaux inhérent et résiduel", "Matrice de la méthode"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "6.1.2"}
+      ]
+    },
+    "AIGMS-RSK-006": {
+      "title": "Appétence et tolérance au risque",
+      "objective": "La direction fixe le niveau de risque acceptable pour l'IA et les seuils au-delà desquels un risque exige un traitement, une acceptation formelle ou un refus. Les gates s'y réfèrent.",
+      "applicability": "mandatory",
+      "owner_role": "Direction",
+      "review_frequency": "annual",
+      "assessment_questions": ["L'appétence au risque IA est-elle écrite et approuvée par la direction ?", "Les seuils sont-ils appliqués par les gates et les acceptations ?"],
+      "expected_evidence": ["Déclaration d'appétence au risque", "Règles des gates y faisant référence"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "6.1.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.2.2"}
+      ]
+    },
+    "AIGMS-RSK-007": {
+      "title": "Plan de traitement",
+      "objective": "Chaque risque au-dessus du seuil a un traitement décidé — réduire, transférer, éviter, accepter — porté par un contrôle nommé, un responsable et une échéance. Un traitement sans contrôle est une intention.",
+      "applicability": "mandatory",
+      "owner_role": "Responsable du risque",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["Chaque risque élevé a-t-il un traitement rattaché à un contrôle ?", "Les traitements ont-ils un responsable et une échéance ?"],
+      "expected_evidence": ["Registre des risques : traitements et contrôles rattachés", "Actions de traitement suivies"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "6.1.2"},
+        {"framework": "AI_ACT", "reference": "Art. 9 (mesures de gestion des risques)"}
+      ]
+    },
+    "AIGMS-RSK-008": {
+      "title": "Évaluation du risque résiduel",
+      "objective": "Une fois le traitement en place et son efficacité constatée, le risque résiduel est recoté ; c'est lui, et non le risque inhérent, que la direction accepte ou refuse.",
+      "applicability": "mandatory",
+      "owner_role": "Responsable du risque",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Le résiduel est-il recoté après mise en œuvre du traitement, sur constat et non sur intention ?"],
+      "expected_evidence": ["Registre des risques : niveau résiduel daté", "Preuve d'efficacité du contrôle"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "6.1.2"}
+      ]
+    },
+    "AIGMS-RSK-009": {
+      "title": "Acceptation formelle du risque",
+      "objective": "Un risque résiduel au-dessus du seuil n'est accepté que par une décision nominative d'un rôle habilité, avec justification, date de revue, et sans que l'auteur de la demande soit l'approbateur.",
+      "applicability": "mandatory",
+      "owner_role": "Responsable du risque",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["Les acceptations portent-elles un approbateur nommé, une justification et une date de revue ?", "La séparation demandeur / approbateur est-elle respectée ?"],
+      "expected_evidence": ["Registre de décisions : acceptations de risque", "Registre des risques : statut accepté avec revue"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "6.1.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.3.2"}
+      ]
+    },
+    "AIGMS-RSK-010": {
+      "title": "Revue périodique des risques",
+      "objective": "Les risques sont revus à la cadence de la méthode et à chaque changement significatif ; les acceptations arrivées à échéance sont renouvelées ou retirées explicitement.",
+      "applicability": "mandatory",
+      "owner_role": "Responsable du risque",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["Les revues ont-elles lieu à la cadence prévue ?", "Aucune acceptation n'est-elle échue sans décision ?"],
+      "expected_evidence": ["Registre des risques : dates de revue", "Compte rendu de revue des risques"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "6.1.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "9.3"}
+      ]
+    },
+    "AIGMS-RSK-011": {
+      "title": "Risques émergents",
+      "objective": "L'organisation surveille les risques nouveaux — évolutions réglementaires, vulnérabilités des modèles, incidents dans le secteur, nouveaux usages — et les intègre à son registre sans attendre la revue périodique.",
+      "applicability": "conditional",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["Une veille est-elle organisée, avec un responsable et des sources ?", "Ses résultats alimentent-ils le registre des risques ?"],
+      "expected_evidence": ["Procédure de veille", "Risques ajoutés hors revue périodique, avec leur source"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "6.1.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.8.4"}
+      ]
+    },
+    "AIGMS-RSK-012": {
+      "title": "Évaluation d'impact des systèmes d'IA",
+      "objective": "Une évaluation d'impact est conduite pour chaque cas d'usage selon ISO/IEC 42005 : parties affectées, bénéfices, préjudices potentiels, mesures d'atténuation, conclusion. Elle est approuvée et rouverte à chaque changement significatif.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "assessment_questions": ["Une évaluation d'impact approuvée existe-t-elle pour chaque usage en service ?", "Couvre-t-elle les personnes affectées, y compris vulnérables, et les impacts sociétaux ?"],
+      "expected_evidence": ["Évaluation d'impact approuvée et datée", "Constats et mesures d'atténuation suivis"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "8.4"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.5.2"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.5.5"},
+        {"framework": "AI_ACT", "reference": "Art. 27 (analyse d'impact sur les droits fondamentaux)"}
+      ]
+    }
+  }
+}

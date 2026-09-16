@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty } from '@/components/ui'
@@ -55,7 +56,7 @@ export default async function CatalogPage() {
     supabase
       .from('catalog_version')
       .select(
-        'id, version, status, declared_control_count, source_filename, source_sha256, imported_at, published_at, framework:framework_id (code, name)',
+        'id, version, status, declared_control_count, source_filename, source_sha256, imported_at, published_at, framework:framework_id (code, name, tenant_id)',
       )
       .order('imported_at', { ascending: false, nullsFirst: false }),
     supabase
@@ -86,12 +87,20 @@ export default async function CatalogPage() {
                   const framework = version.framework as unknown as {
                     code: string
                     name: string
+                    tenant_id: string | null
                   } | null
                   return (
                     <li key={version.id} className="flex flex-wrap items-start justify-between gap-3 py-4">
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-ink-900">
-                          {framework?.name ?? framework?.code} — version {version.version}
+                          <Link href={`/admin/referentiels/${version.id}`} className="text-brand-600 hover:underline">
+                            {framework?.name ?? framework?.code} — version {version.version}
+                          </Link>
+                          {framework?.tenant_id === null ? (
+                            <span className="ml-2 rounded bg-brand-500/10 px-1.5 py-0.5 text-[10px] font-normal text-brand-700">
+                              éditeur
+                            </span>
+                          ) : null}
                         </p>
                         <p className="text-xs text-ink-400">
                           {version.declared_control_count ?? '—'} contrôle(s) ·{' '}
@@ -126,8 +135,8 @@ export default async function CatalogPage() {
               </ul>
             ) : (
               <Empty>
-                Aucun référentiel importé. Le paquet de référence est versionné dans le dépôt, sous
-                <span className="font-mono"> knowledge/frameworks/aigms/</span>.
+                Aucun référentiel. Celui de l’éditeur est livré par migration ; s’il manque, la base
+                n’est pas à jour.
               </Empty>
             )}
           </Card>
