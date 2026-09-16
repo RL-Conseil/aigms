@@ -31,6 +31,8 @@ type Control = {
   frequency: string | null
   last_tested_at: string | null
   next_test_at: string | null
+  /** Le contrôle-type dont il est l'instance, s'il vient d'un référentiel. */
+  catalog?: unknown
 }
 
 const STATE_FILTERS = [
@@ -59,7 +61,7 @@ export default async function ControlsPage({
       supabase
         .from('control')
         .select(
-          'id, business_ref, code, name, objective, status, is_mandatory, frequency, last_tested_at, next_test_at',
+          'id, business_ref, code, name, objective, status, is_mandatory, frequency, last_tested_at, next_test_at, catalog:catalog_control_id (control_code, version:version_id (version, framework:framework_id (code)))',
         )
         .eq('organization_id', id)
         .order('code'),
@@ -104,7 +106,7 @@ export default async function ControlsPage({
         { href: `/admin/organizations/${id}`, label: organization.name },
       ]}
       organization={{ id, section: 'controles' }}
-      title="Contrôles"
+      title="Liste des contrôles opérationnels"
       subtitle="Le dispositif de maîtrise de l’organisation, et ce qu’il couvre."
       actions={
         <div className="flex items-center gap-3">
@@ -112,14 +114,23 @@ export default async function ControlsPage({
             href={`/admin/organizations/${id}/controles/nouveau`}
             className="rounded-md bg-night-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-night-800"
           >
-            Créer un contrôle
+            Ajouter un contrôle
           </Link>
-          <InfoTip label="Comment lire ce référentiel" title="À quoi servent ces lignes">
+          <InfoTip label="Comment lire cette liste" title="Contrôles opérationnels et contrôles-types">
             <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
               <p>
-                Ce référentiel est le socle de tout ce que la plateforme sait dire : taux de
-                couverture, graphe de gouvernance, chemin d’un risque, Déclaration d’Applicabilité.
-                Un contrôle qui n’existe pas ici ne peut être ni prouvé, ni rattaché, ni opposé.
+                Cette liste est celle des contrôles que l’organisation met <em>réellement</em> en
+                œuvre — le socle de tout ce que la plateforme sait dire : taux de couverture, graphe
+                de gouvernance, chemin d’un risque, Déclaration d’Applicabilité. Un contrôle qui
+                n’existe pas ici ne peut être ni prouvé, ni rattaché, ni opposé.
+              </p>
+              <p>
+                <strong className="font-medium text-ink-800">D’où viennent-ils.</strong> D’un
+                référentiel de contrôles-types — celui de l’éditeur, livré avec la plateforme, ou
+                ceux qu’un cabinet importe — dont on ajoute un modèle, lien conservé et
+                correspondances ISO 42001 rattachées ; ou librement, pour ce qui n’y figure pas.
+                Un contrôle-type est un modèle ; un contrôle opérationnel est une réalité, avec
+                un responsable, un état et des preuves.
               </p>
               <p>
                 <strong className="font-medium text-ink-800">Trois gestes distincts.</strong> Créer
@@ -160,7 +171,7 @@ export default async function ControlsPage({
         />
       </div>
 
-      <Card title="Référentiel" subtitle={`${shown.length} contrôle(s)`}>
+      <Card title="Contrôles opérationnels" subtitle={`${shown.length} contrôle(s)`}>
         {shown.length ? (
           <ul className="flex flex-col divide-y divide-ink-100">
             {shown.map((control) => (
@@ -170,6 +181,20 @@ export default async function ControlsPage({
                     <p className="text-sm font-medium text-ink-900">
                       <span className="mr-2 font-mono text-xs text-ink-400">{control.code}</span>
                       {control.name}
+                      {(() => {
+                        const origin = control.catalog as unknown as {
+                          control_code: string
+                          version: { version: string; framework: { code: string } | null } | null
+                        } | null
+                        return origin ? (
+                          <span
+                            className="ml-2 rounded bg-ink-100 px-1.5 py-0.5 text-[10px] font-normal text-ink-600"
+                            title={`Instance du contrôle-type ${origin.control_code}`}
+                          >
+                            {origin.version?.framework?.code ?? 'référentiel'} v{origin.version?.version} · {origin.control_code}
+                          </span>
+                        ) : null
+                      })()}
                     </p>
                     <p className="mt-1 text-sm leading-relaxed text-ink-600">{control.objective}</p>
                     <p className="mt-1.5 text-xs text-ink-500">
@@ -232,13 +257,13 @@ export default async function ControlsPage({
               href={`/admin/organizations/${id}/controles`}
               className="text-brand-600 hover:underline"
             >
-              Revenir au référentiel complet
+              Revenir à la liste complète
             </Link>
             .
           </Empty>
         ) : (
           <Empty>
-            Aucun contrôle. Tant que ce référentiel est vide, la couverture, le graphe et la
+            Aucun contrôle. Tant que cette liste est vide, la couverture, le graphe et la
             Déclaration d’Applicabilité n’ont rien à montrer.
           </Empty>
         )}

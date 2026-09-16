@@ -55,13 +55,22 @@ export function CatalogUploadForm() {
         <div className="rounded-md border border-dashed border-ink-200 bg-ink-50 px-4 py-3 text-[13px] leading-relaxed text-ink-600">
           <p>
             <a
+              href="/modeles/referentiel-controles-modele.json"
+              download
+              className="font-medium text-brand-600 hover:underline"
+            >
+              Modèle JSON
+            </a>{' '}
+            — le format canonique, complet : objectif, questions, preuves attendues,
+            correspondances.{' '}
+            <a
               href="/modeles/referentiel-controles.csv"
               download
               className="font-medium text-brand-600 hover:underline"
             >
-              Télécharger le modèle CSV
+              Modèle CSV
             </a>{' '}
-            — une ligne par contrôle, séparateur point-virgule, ouvrable dans un tableur.
+            — une ligne par contrôle, l’ossature seulement, ouvrable dans un tableur.
           </p>
           <p className="mt-1 text-xs text-ink-500">
             Colonnes obligatoires : <span className="font-mono">control_id</span>,{' '}

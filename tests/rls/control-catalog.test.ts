@@ -17,7 +17,14 @@ const SOURCE = 'knowledge/frameworks/aigms/v0.1/aigms_control_framework_v0.1.jso
 
 const raw = readFileSync(SOURCE, 'utf8')
 const sha256 = createHash('sha256').update(raw).digest('hex')
-const payload = JSON.parse(raw) as Record<string, unknown>
+// Le code AIGMS-CF appartient au referentiel de l'editeur (migration 0043) :
+// un tenant ne peut pas le reprendre. Le test importe le meme paquet sous un
+// code de cabinet — c'est le cas reel d'un cabinet qui importe le sien.
+const payload = (() => {
+  const p = JSON.parse(raw) as { framework: Record<string, unknown> } & Record<string, unknown>
+  p.framework = { ...p.framework, id: 'CAB-TEST', name: 'Référentiel de test du cabinet' }
+  return p as Record<string, unknown>
+})()
 
 let db: Client
 
@@ -257,11 +264,13 @@ describe('Import du referentiel de controles', () => {
       await c.query("select set_config('request.jwt.claims', $1, true)", [
         JSON.stringify({ sub: DEMO.officerA, role: 'authenticated' }),
       ])
+      // Le referentiel de l'editeur (120) plus celui du cabinet (120) : l'officier
+      // du tenant voit les deux.
       const { rows } = await c.query('select id from public.catalog_control')
       return rows.length
     })
 
-    expect(asOfficer).toBe(120)
+    expect(asOfficer).toBe(240)
   })
 
   it("le catalogue n'est pas lisible sans session", async () => {

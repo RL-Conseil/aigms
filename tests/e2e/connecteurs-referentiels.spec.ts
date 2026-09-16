@@ -64,23 +64,56 @@ test('la base refuse une valeur ressemblant à un secret', async ({ page }) => {
   await expect(page.getByRole('status')).toContainText(/NOM de variable/)
 })
 
-test('un référentiel de 120 contrôles s’importe et se publie', async ({ page }) => {
+test('le référentiel de l’éditeur est livré, lisible contrôle par contrôle', async ({ page }) => {
   await signIn(page, ADMIN)
   await page.getByRole('link', { name: 'Référentiels' }).click()
 
+  // Livre par migration, publie, marque comme celui de l'editeur.
+  const version = page.getByRole('link', { name: /AIGMS Control Framework — version 0\.2/ })
+  await expect(version).toBeVisible()
+  await expect(page.getByText('éditeur', { exact: true })).toBeVisible()
+
+  await version.click()
+  await expect(page.getByRole('heading', { name: /AIGMS Control Framework — version 0\.2/ })).toBeVisible()
+  await expect(page.getByText(/120 contrôle\(s\) · 42 avec objectif/)).toBeVisible()
+
+  // Par domaine, et seulement les enrichis.
+  await page.getByRole('navigation', { name: 'Filtrer par domaine' }).getByRole('link', { name: /^RSK/ }).click()
+  await expect(page).toHaveURL(/domaine=RSK/)
+  await expect(page.getByText('AIGMS-RSK-012')).toBeVisible()
+  await expect(page.getByText(/Évaluation d.impact des systèmes d.IA/)).toBeVisible()
+  await page.getByRole('navigation', { name: 'Filtrer par domaine' }).getByRole('link', { name: /^DAT/ }).click()
+  await expect(page.getByText('Titre seul').first()).toBeVisible()
+})
+
+test('un référentiel de cabinet s’importe depuis le modèle JSON, puis se publie', async ({ page }) => {
+  await signIn(page, ADMIN)
+  await page.goto('/admin/referentiels')
   await expect(page.getByRole('heading', { name: 'Importer un référentiel' })).toBeVisible()
+
+  await page.getByLabel('Fichier du référentiel').setInputFiles('public/modeles/referentiel-controles-modele.json')
+  await page.getByRole('button', { name: 'Déposer et valider' }).click()
+  await expect(page.getByText(/2 domaine\(s\), 3 contrôle\(s\)/)).toBeVisible({ timeout: 15_000 })
+
+  await page.getByRole('button', { name: 'Importer le référentiel' }).click()
+  await expect(page.getByText(/3 contrôle\(s\) répartis en 2 domaine\(s\)/)).toBeVisible({ timeout: 20_000 })
+
+  // Le referentiel du cabinet n'est pas celui de l'editeur.
+  const row = page.locator('li').filter({ hasText: 'Référentiel de contrôles du cabinet — version 1.0' })
+  await expect(row.getByText('éditeur', { exact: true })).toHaveCount(0)
+})
+
+test('le code d’un référentiel de l’éditeur ne se reprend pas', async ({ page }) => {
+  await signIn(page, ADMIN)
+  await page.goto('/admin/referentiels')
 
   await page.getByLabel('Fichier du référentiel').setInputFiles(
     'knowledge/frameworks/aigms/v0.1/aigms_control_framework_v0.1.json',
   )
   await page.getByRole('button', { name: 'Déposer et valider' }).click()
-
   await expect(page.getByText(/12 domaine\(s\), 120 contrôle\(s\)/)).toBeVisible({ timeout: 15_000 })
-
   await page.getByRole('button', { name: 'Importer le référentiel' }).click()
-  await expect(page.getByText(/120 contrôle\(s\) répartis en 12 domaine\(s\)/)).toBeVisible({
-    timeout: 20_000,
-  })
+  await expect(page.getByText(/est celui d.un référentiel de l.éditeur/)).toBeVisible({ timeout: 20_000 })
 })
 
 test('un document dont le compte est faux est refusé et expliqué', async ({ page }) => {

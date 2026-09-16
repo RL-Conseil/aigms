@@ -349,3 +349,59 @@ export async function createRiskTreatment(
       : 'Traitement enregistré. Tant qu’aucun contrôle ne le met en œuvre, le chemin du risque s’arrête à l’intention.',
   }
 }
+
+// =============================================================================
+// Ajouter un contrôle depuis un référentiel
+// =============================================================================
+// Un contrôle-type publié — de l'éditeur ou du cabinet — devient le contrôle
+// opérationnel de l'organisation : code, nom, objectif, fréquence repris, lien
+// conservé, et les correspondances ISO 42001 rattachées d'emblée. C'est la base
+// qui le fait (`app.instantiate_catalog_control`) et qui refuse ce qui doit
+// l'être : version non publiée, référentiel d'un autre tenant, doublon.
+const instantiateSchema = z.object({
+  organizationId: z.string().uuid(),
+  catalogControlId: z.string().uuid({ message: 'Choisir un contrôle-type.' }),
+  code: z.string().trim().max(40).optional().or(z.literal('')),
+  ownerUserId: z.string().uuid().optional().or(z.literal('')),
+})
+
+export async function instantiateCatalogControl(
+  _previous: FormState | null,
+  formData: FormData,
+): Promise<FormState> {
+  const parsed = instantiateSchema.safeParse({
+    organizationId: formData.get('organizationId'),
+    catalogControlId: formData.get('catalogControlId'),
+    code: formData.get('code') ?? '',
+    ownerUserId: formData.get('ownerUserId') ?? '',
+  })
+  if (!parsed.success) return firstIssues(parsed.error)
+
+  const supabase = await createClient()
+  const { data, error } = await supabase.rpc('instantiate_catalog_control', {
+    p_organization_id: parsed.data.organizationId,
+    p_catalog_control_id: parsed.data.catalogControlId,
+    p_code: parsed.data.code || undefined,
+    p_owner_user_id: parsed.data.ownerUserId || undefined,
+  })
+  if (error) return { ok: false, message: explain(error) }
+
+  const result = data as {
+    code: string
+    mapped_requirements: number
+    unmapped_references: string[]
+  }
+  revalidatePath(`/admin/organizations/${parsed.data.organizationId}/controles`)
+  revalidatePath(`/admin/organizations/${parsed.data.organizationId}/declaration-applicabilite`)
+  return {
+    ok: true,
+    message:
+      `${result.code} ajouté, à l’état « proposé ». ` +
+      (result.mapped_requirements
+        ? `${result.mapped_requirements} exigence(s) ISO 42001 rattachée(s).`
+        : 'Aucune exigence rattachée automatiquement.') +
+      (result.unmapped_references.length
+        ? ` Références hors AIGMS, à garder en tête : ${result.unmapped_references.join(' ; ')}.`
+        : ''),
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "framework": {
+    "id": "CAB-CF",
+    "name": "Référentiel de contrôles du cabinet",
+    "version": "1.0",
+    "status": "frozen-baseline",
+    "language": "fr",
+    "description": "Contrôles propres au cabinet, en complément du référentiel de l'éditeur.",
+    "design_principle": "Control -> Risk -> Use Case -> Evidence -> Test -> Finding -> Remediation -> Framework Mapping",
+    "maturity_scale": "0-4",
+    "control_count": 3,
+    "domain_count": 2
+  },
+  "domains": [
+    {
+      "code": "GOV",
+      "name": "Gouvernance",
+      "control_count": 2,
+      "order": 1
+    },
+    {
+      "code": "HUM",
+      "name": "Supervision humaine",
+      "control_count": 1,
+      "order": 2
+    }
+  ],
+  "controls": [
+    {
+      "id": "CAB-GOV-001",
+      "domain": "GOV",
+      "title": "Politique d'usage de l'IA",
+      "status": "draft",
+      "version": "1.0",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Une politique approuvée fixe ce qui est permis, interdit et soumis à autorisation.",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "assessment_questions": [
+        "La politique est-elle approuvée et diffusée ?"
+      ],
+      "expected_evidence": [
+        "Politique signée",
+        "Preuve de diffusion"
+      ],
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.2.2"
+        },
+        {
+          "framework": "AI_ACT",
+          "reference": "Art. 4"
+        }
+      ],
+      "risks": [],
+      "requirements": [],
+      "tests": [],
+      "maturity_model": {},
+      "remediation_guidance": []
+    },
+    {
+      "id": "CAB-GOV-002",
+      "domain": "GOV",
+      "title": "Rôles et responsabilités",
+      "status": "draft",
+      "version": "1.0",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": null,
+      "owner_role": null,
+      "review_frequency": null,
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "framework_mappings": [],
+      "risks": [],
+      "requirements": [],
+      "tests": [],
+      "maturity_model": {},
+      "remediation_guidance": []
+    },
+    {
+      "id": "CAB-HUM-001",
+      "domain": "HUM",
+      "title": "Procédure d'interruption",
+      "status": "draft",
+      "version": "1.0",
+      "control_type": "enhanced",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": "Une personne nommée peut arrêter le système, et la procédure est testée.",
+      "owner_role": "Porteur du système",
+      "review_frequency": "quarterly",
+      "assessment_questions": [
+        "L'autorité d'arrêt est-elle nommée ?",
+        "La procédure a-t-elle été testée ?"
+      ],
+      "expected_evidence": [
+        "Procédure d'arrêt",
+        "Compte rendu de test"
+      ],
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.9.2"
+        }
+      ],
+      "risks": [],
+      "requirements": [],
+      "tests": [],
+      "maturity_model": {},
+      "remediation_guidance": []
+    }
+  ],
+  "control_profiles": [],
+  "reference_use_cases": []
+}

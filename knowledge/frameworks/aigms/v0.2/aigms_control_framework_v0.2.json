@@ -1,0 +1,4364 @@
+{
+  "framework": {
+    "id": "AIGMS-CF",
+    "name": "AIGMS Control Framework",
+    "version": "0.2",
+    "status": "frozen-baseline",
+    "language": "fr",
+    "description": "Référentiel opérationnel de gouvernance, risque, sécurité, exploitation et conformité des systèmes IA. v0.2 : vague 1 d’enrichissement (GOV, INV, USE, RSK) — objectif, questions d’évaluation, preuves attendues, responsable, fréquence, correspondances ISO/IEC 42001 et AI Act.",
+    "design_principle": "Control -> Risk -> Use Case -> Evidence -> Test -> Finding -> Remediation -> Framework Mapping",
+    "control_count": 120,
+    "domain_count": 12,
+    "maturity_scale": "0-4",
+    "enrichment_waves": {
+      "completed": [
+        "GOV",
+        "INV",
+        "USE",
+        "RSK"
+      ],
+      "pending": [
+        "DAT",
+        "SEC",
+        "SUP",
+        "HUM",
+        "OPS",
+        "MON",
+        "INC",
+        "CMP"
+      ]
+    }
+  },
+  "domains": [
+    {
+      "code": "GOV",
+      "name": "Gouvernance",
+      "control_count": 12,
+      "order": 1
+    },
+    {
+      "code": "INV",
+      "name": "Inventaire des systèmes d'IA",
+      "control_count": 8,
+      "order": 2
+    },
+    {
+      "code": "USE",
+      "name": "Gestion des cas d'usage",
+      "control_count": 10,
+      "order": 3
+    },
+    {
+      "code": "RSK",
+      "name": "Gestion des risques IA",
+      "control_count": 12,
+      "order": 4
+    },
+    {
+      "code": "DAT",
+      "name": "Gouvernance des données",
+      "control_count": 12,
+      "order": 5
+    },
+    {
+      "code": "SEC",
+      "name": "Sécurité de l'IA",
+      "control_count": 12,
+      "order": 6
+    },
+    {
+      "code": "SUP",
+      "name": "Fournisseurs et modèles",
+      "control_count": 10,
+      "order": 7
+    },
+    {
+      "code": "HUM",
+      "name": "Supervision humaine",
+      "control_count": 8,
+      "order": 8
+    },
+    {
+      "code": "OPS",
+      "name": "Exploitation de l'IA",
+      "control_count": 12,
+      "order": 9
+    },
+    {
+      "code": "MON",
+      "name": "Surveillance et performance",
+      "control_count": 8,
+      "order": 10
+    },
+    {
+      "code": "INC",
+      "name": "Incidents et résilience",
+      "control_count": 8,
+      "order": 11
+    },
+    {
+      "code": "CMP",
+      "name": "Conformité et assurance",
+      "control_count": 8,
+      "order": 12
+    }
+  ],
+  "controls": [
+    {
+      "id": "AIGMS-GOV-001",
+      "domain": "GOV",
+      "title": "Politique de gouvernance de l'IA",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Une politique approuvée par la direction fixe ce que l'organisation attend de l'IA : finalités permises, usages interdits, principes (transparence, supervision humaine, protection des données), et qui décide de quoi.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "La politique est-elle approuvée par la direction et datée ?",
+        "Nomme-t-elle les usages interdits et les usages soumis à autorisation ?",
+        "Est-elle communiquée aux personnes concernées et retrouvable ?"
+      ],
+      "expected_evidence": [
+        "Politique d'IA signée et versionnée",
+        "Preuve de diffusion (intranet, accusé de lecture)",
+        "Compte rendu de l'approbation en revue de direction"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Direction",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.2.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.2.3"
+        },
+        {
+          "framework": "AI_ACT",
+          "reference": "Art. 4 (maîtrise de l'IA)"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-GOV-002",
+      "domain": "GOV",
+      "title": "Périmètre du système de management de l'IA",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Le périmètre du système de management est écrit : entités, processus, sites, systèmes d'IA couverts, et ce qui en est exclu avec sa justification. Sans périmètre, aucune déclaration d'applicabilité ne tient.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Le périmètre nomme-t-il les entités, processus et systèmes couverts ?",
+        "Les exclusions sont-elles justifiées ?",
+        "Le rôle de l'organisation vis-à-vis de l'IA (fournisseur, développeur, intégrateur, utilisateur) est-il déclaré ?"
+      ],
+      "expected_evidence": [
+        "Document de périmètre du SMIA",
+        "Déclaration du rôle vis-à-vis de l'IA",
+        "Liste des exclusions justifiées"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.2.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.10.2"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-GOV-003",
+      "domain": "GOV",
+      "title": "Rôles et responsabilités",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Chaque responsabilité de la gouvernance de l'IA — décider, évaluer, superviser, répondre — est attribuée à un rôle nommé, avec une personne identifiée, et les séparations nécessaires (celui qui demande n'est pas celui qui approuve) sont posées.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Existe-t-il une matrice des responsabilités (RACI ou équivalent) pour l'IA ?",
+        "Chaque rôle est-il porté par une personne nommée, avec suppléance ?",
+        "La séparation demandeur / approbateur est-elle effective sur les décisions engageantes ?"
+      ],
+      "expected_evidence": [
+        "Matrice des responsabilités IA",
+        "Fiches de rôle ou lettres de mission",
+        "Extrait du registre de décisions montrant la séparation des rôles"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Direction",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.3.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.10.2"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-GOV-004",
+      "domain": "GOV",
+      "title": "Comité de gouvernance de l'IA",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": "Une instance se réunit à cadence fixe pour arbitrer : autorisations, acceptations de risque, exceptions, revue des incidents et du portefeuille. Ses décisions sont consignées.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Le comité a-t-il un mandat écrit, une composition et une cadence ?",
+        "Ses décisions sont-elles consignées dans le registre de décisions ?",
+        "Les sujets obligatoires (incidents, risques acceptés, exceptions) y passent-ils ?"
+      ],
+      "expected_evidence": [
+        "Mandat du comité",
+        "Comptes rendus datés",
+        "Registre de décisions"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "quarterly",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.3.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "9.3"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-GOV-005",
+      "domain": "GOV",
+      "title": "Propriétaire du système d'IA",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Chaque système d'IA a un propriétaire opérationnel nommé, responsable de son fonctionnement, de sa documentation et des preuves qu'il doit produire — distinct du responsable redevable.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Chaque usage inscrit au registre a-t-il un propriétaire nommé ?",
+        "Le propriétaire connaît-il ses obligations (preuves, revues, incidents) ?",
+        "Un changement de propriétaire est-il tracé ?"
+      ],
+      "expected_evidence": [
+        "Registre des usages avec propriétaire",
+        "Fiche de responsabilités du propriétaire",
+        "Journal des changements de propriétaire"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "semiannual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.3.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.10.2"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-GOV-006",
+      "domain": "GOV",
+      "title": "Responsable du risque",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Un responsable du risque nommé cote les risques liés à l'IA, décide de leur traitement et porte les acceptations. Il n'est pas le propriétaire du système qu'il évalue.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Le responsable du risque est-il nommé et distinct du propriétaire du système ?",
+        "Les acceptations de risque portent-elles sa signature, une justification et une date de revue ?"
+      ],
+      "expected_evidence": [
+        "Nomination du responsable du risque",
+        "Registre des risques avec acceptations signées"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Responsable du risque",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.3.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "6.1.2"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-GOV-007",
+      "domain": "GOV",
+      "title": "Responsable des données",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": "Un responsable des données est nommé pour chaque jeu de données mobilisé par l'IA — provenance, qualité, base légale, conservation — et répond de leur usage.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Chaque jeu de données d'entraînement ou d'exploitation a-t-il un responsable nommé ?",
+        "Le responsable des données est-il consulté lors de l'évaluation d'impact ?"
+      ],
+      "expected_evidence": [
+        "Inventaire des jeux de données avec responsable",
+        "Trace de consultation dans les évaluations d'impact"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Responsable des données",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.4.3"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.7.2"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-GOV-008",
+      "domain": "GOV",
+      "title": "Politique d'usage acceptable de l'IA",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Les collaborateurs savent ce qu'ils peuvent faire avec les outils d'IA — internes ou grand public — et ce qu'ils ne peuvent pas : données à ne pas soumettre, usages interdits, obligation de déclarer un nouvel usage.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "La politique d'usage est-elle diffusée à tous les collaborateurs ?",
+        "Interdit-elle explicitement la soumission de données confidentielles ou personnelles à des outils non approuvés ?",
+        "Le signalement d'un usage non déclaré (IA de l'ombre) est-il organisé ?"
+      ],
+      "expected_evidence": [
+        "Politique d'usage acceptable",
+        "Attestations de prise de connaissance",
+        "Canal de signalement documenté"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.2.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.9.2"
+        },
+        {
+          "framework": "AI_ACT",
+          "reference": "Art. 4 (maîtrise de l'IA)"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-GOV-009",
+      "domain": "GOV",
+      "title": "Processus d'approbation des usages d'IA",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Aucun usage d'IA n'entre en service sans passer les jalons prévus — déclaration, qualification, revue, décision de mise en production — chacun avec ses préconditions vérifiées et sa décision consignée.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Le cycle de vie et ses jalons sont-ils définis et appliqués ?",
+        "Les préconditions de chaque jalon sont-elles vérifiées, et les refus tracés ?",
+        "Une décision de mise en production porte-t-elle un approbateur distinct du demandeur ?"
+      ],
+      "expected_evidence": [
+        "Procédure du cycle de vie",
+        "Journal des gates évalués et refusés",
+        "Registre de décisions"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.6.2.5"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.9.2"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-GOV-010",
+      "domain": "GOV",
+      "title": "Gestion des exceptions",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Une dérogation à la politique se demande, se justifie, s'approuve par un rôle habilité, porte une date de fin et une revue. Une exception non tracée est une politique qui n'existe plus.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Les exceptions sont-elles enregistrées avec leur justification, leur approbateur et leur échéance ?",
+        "Sont-elles revues à échéance, et closes ou renouvelées explicitement ?"
+      ],
+      "expected_evidence": [
+        "Registre de décisions filtré sur les exceptions",
+        "Revues d'échéance"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "quarterly",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.2.4"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-GOV-011",
+      "domain": "GOV",
+      "title": "Revue de direction de l'IA",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "La direction revoit périodiquement le système de management : état du portefeuille, incidents, risques acceptés, résultats d'audit, ressources, et décide des orientations.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "La revue de direction a-t-elle lieu à la cadence prévue, avec les entrées requises ?",
+        "Ses conclusions produisent-elles des décisions et des actions suivies ?"
+      ],
+      "expected_evidence": [
+        "Dossier d'entrée de la revue",
+        "Compte rendu et décisions",
+        "Actions issues de la revue, suivies"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Direction",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "9.3"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-GOV-012",
+      "domain": "GOV",
+      "title": "Amélioration continue",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Les non-conformités, incidents, constats d'audit et retours d'expérience alimentent des actions correctives dont l'efficacité est vérifiée, et le système de management évolue en conséquence.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Les actions correctives portent-elles une analyse de cause et une vérification d'efficacité ?",
+        "Les enseignements sont-ils réinjectés dans la politique, les contrôles ou la formation ?"
+      ],
+      "expected_evidence": [
+        "Registre des actions correctives (CAPA) avec vérification d'efficacité",
+        "Historique des versions de la politique et des procédures"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "semiannual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.2.4"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-INV-001",
+      "domain": "INV",
+      "title": "Inventaire central des systèmes d'IA",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Tous les systèmes d'IA utilisés, développés ou fournis par l'organisation — y compris les fonctions d'IA embarquées dans des outils tiers — sont inscrits dans un registre unique, tenu à jour.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Existe-t-il un registre unique des systèmes et usages d'IA ?",
+        "Une démarche de détection des usages non déclarés est-elle en place (revue des achats, des connecteurs, des journaux) ?",
+        "Le registre est-il revu à cadence fixe ?"
+      ],
+      "expected_evidence": [
+        "Registre des usages d'IA exporté et daté",
+        "Rapport de détection des usages non déclarés",
+        "Revue périodique du registre"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "quarterly",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.4.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.6.2.7"
+        },
+        {
+          "framework": "AI_ACT",
+          "reference": "Art. 49 (enregistrement)"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-INV-002",
+      "domain": "INV",
+      "title": "Identification du propriétaire",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Chaque entrée du registre nomme son propriétaire opérationnel et son responsable redevable. Une entrée sans propriétaire n'est pas gouvernée.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Aucune entrée du registre n'est-elle sans propriétaire ni redevable ?"
+      ],
+      "expected_evidence": [
+        "Registre des usages : colonnes propriétaire et redevable renseignées"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "quarterly",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.3.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.4.2"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-INV-003",
+      "domain": "INV",
+      "title": "Description de la finalité",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Chaque système d'IA porte une finalité écrite, lisible hors contexte : à quoi il sert, ce qu'il produit, ce qu'il ne fait pas. C'est la référence pour juger de tout changement ultérieur.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "La finalité est-elle décrite en termes compréhensibles par un non-spécialiste ?",
+        "Distingue-t-elle l'usage prévu des usages exclus ?"
+      ],
+      "expected_evidence": [
+        "Fiche du cas d'usage : finalité et usage prévu"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.9.4"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.6.2.2"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-INV-004",
+      "domain": "INV",
+      "title": "Identification des utilisateurs",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Les utilisateurs du système — internes, clients, partenaires — sont identifiés par catégorie, avec leur niveau de compétence attendu et l'information qui leur est due.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Les catégories d'utilisateurs sont-elles décrites ?",
+        "Les utilisateurs savent-ils qu'ils interagissent avec une IA ?"
+      ],
+      "expected_evidence": [
+        "Fiche du cas d'usage : utilisateurs",
+        "Notice ou mention d'information aux utilisateurs"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.8.2"
+        },
+        {
+          "framework": "AI_ACT",
+          "reference": "Art. 50 (transparence)"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-INV-005",
+      "domain": "INV",
+      "title": "Identification des populations affectées",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Les personnes et groupes affectés par le système sans en être les utilisateurs — candidats, clients évalués, salariés notés — sont identifiés, avec une attention particulière aux personnes vulnérables.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Les personnes affectées sont-elles distinguées des utilisateurs ?",
+        "Les personnes vulnérables sont-elles identifiées, et l'évaluation d'impact en tient-elle compte ?"
+      ],
+      "expected_evidence": [
+        "Fiche du cas d'usage : personnes concernées",
+        "Évaluation d'impact : parties affectées"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.5.4"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.8.5"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-INV-006",
+      "domain": "INV",
+      "title": "Modèle, fournisseur et version",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Le modèle utilisé, son éditeur, sa version et son mode d'hébergement sont inscrits pour chaque système. Un changement de modèle est un changement à qualifier.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Le modèle et sa version sont-ils connus pour chaque système en service ?",
+        "Un changement de version déclenche-t-il une demande de changement ?"
+      ],
+      "expected_evidence": [
+        "Registre des actifs : modèles et versions",
+        "Demandes de changement liées aux montées de version"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Porteur du système",
+      "review_frequency": "quarterly",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.4.4"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.10.3"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-INV-007",
+      "domain": "INV",
+      "title": "Interfaces et dépendances",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": "Les systèmes, données et services dont dépend chaque système d'IA — et ceux qui dépendent de lui — sont cartographiés, pour mesurer la portée d'une panne, d'une dérive ou d'un changement.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Les dépendances entrantes et sortantes sont-elles documentées ?",
+        "La cartographie est-elle utilisée dans l'analyse d'impact des changements ?"
+      ],
+      "expected_evidence": [
+        "Schéma ou liste des dépendances",
+        "Analyse d'impact d'un changement s'y référant"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.4.5"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.6.2.7"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-INV-008",
+      "domain": "INV",
+      "title": "Statut du cycle de vie",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Chaque système porte un statut de cycle de vie à jour — de la déclaration au retrait — et ne change de statut que par les jalons prévus. Un système retiré reste au registre.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Le statut de chaque système correspond-il à la réalité opérationnelle ?",
+        "Les changements de statut sont-ils tracés avec leur motif ?"
+      ],
+      "expected_evidence": [
+        "Registre des usages : statuts",
+        "Journal des transitions"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "quarterly",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.6.2.5"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.6.2.6"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-USE-001",
+      "domain": "USE",
+      "title": "Description du cas d'usage",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Chaque cas d'usage est décrit avant toute mise en œuvre : contexte, processus métier servi, fonctionnement attendu, périmètre. C'est le point d'entrée de toute la gouvernance.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Le cas d'usage est-il rattaché à un processus et une activité de l'organisation ?",
+        "La description permet-elle à un tiers de comprendre ce qui est fait et pourquoi ?"
+      ],
+      "expected_evidence": [
+        "Fiche du cas d'usage complète",
+        "Rattachement à la cartographie des processus"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.6.2.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.9.4"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-USE-002",
+      "domain": "USE",
+      "title": "Objectif métier",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "L'objectif métier du cas d'usage est explicite et mesurable : quel problème il résout, pour qui, avec quel indicateur de succès.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "L'objectif est-il formulé en termes métier, avec un indicateur ?"
+      ],
+      "expected_evidence": [
+        "Fiche du cas d'usage : objectif et indicateur"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.6.1.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.9.3"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-USE-003",
+      "domain": "USE",
+      "title": "Valeur attendue",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": "Le bénéfice attendu est estimé — temps, coût, qualité, risque évité — et confronté au coût et au risque de l'usage. C'est ce qui justifie l'effort de gouvernance qu'on lui consacre.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Le bénéfice attendu est-il chiffré ou qualifié ?",
+        "Est-il revu une fois l'usage en service ?"
+      ],
+      "expected_evidence": [
+        "Fiche du cas d'usage : bénéfice attendu",
+        "Bilan de valeur après mise en service"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.9.3"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-USE-004",
+      "domain": "USE",
+      "title": "Parties prenantes",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Les parties prenantes du cas d'usage — métier, juridique, sécurité, données, représentants du personnel, clients — sont identifiées et consultées quand la décision l'exige.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Les parties prenantes sont-elles listées ?",
+        "Leur consultation est-elle tracée dans l'évaluation d'impact ?"
+      ],
+      "expected_evidence": [
+        "Évaluation d'impact : parties prenantes consultées"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.8.5"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.5.3"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-USE-005",
+      "domain": "USE",
+      "title": "Utilisateurs",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Les utilisateurs du cas d'usage sont identifiés, formés à ce que le système fait et ne fait pas, et savent comment signaler un résultat douteux.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Les utilisateurs ont-ils reçu une information ou une formation adaptée ?",
+        "Disposent-ils d'un canal de signalement ?"
+      ],
+      "expected_evidence": [
+        "Support de formation ou notice utilisateur",
+        "Attestations de formation",
+        "Canal de signalement"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.4.6"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.8.2"
+        },
+        {
+          "framework": "AI_ACT",
+          "reference": "Art. 4 (maîtrise de l'IA)"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-USE-006",
+      "domain": "USE",
+      "title": "Décisions influencées",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Les décisions que le système prend, propose ou influence sont nommées, avec leur portée sur les personnes : information, recommandation, décision automatique. C'est ce qui détermine le niveau de supervision.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "La portée des décisions est-elle décrite (informative, recommandation, automatique) ?",
+        "Une décision automatique sur une personne est-elle identifiée comme telle ?"
+      ],
+      "expected_evidence": [
+        "Fiche du cas d'usage : portée des décisions",
+        "Classification réglementaire"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.5.4"
+        },
+        {
+          "framework": "AI_ACT",
+          "reference": "Art. 6 et Annexe III (haut risque)"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-USE-007",
+      "domain": "USE",
+      "title": "Niveau d'autonomie",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Le niveau d'autonomie du système est qualifié sur une échelle fixe (L0 assistance à L4 autonome), et toute montée d'autonomie est un changement qui rouvre l'évaluation et la supervision humaine.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Le niveau d'autonomie est-il qualifié selon l'échelle de l'organisation ?",
+        "Au-delà de L2, une autorité d'arrêt nommée existe-t-elle ?"
+      ],
+      "expected_evidence": [
+        "Fiche du cas d'usage : niveau d'autonomie",
+        "Plan de supervision humaine"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "semiannual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.9.2"
+        },
+        {
+          "framework": "AI_ACT",
+          "reference": "Art. 14 (contrôle humain)"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-USE-008",
+      "domain": "USE",
+      "title": "Impact potentiel",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "L'impact potentiel du cas d'usage sur les personnes, l'organisation et la société est évalué avant la mise en service, et réévalué à chaque changement significatif.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Une évaluation d'impact existe-t-elle pour chaque usage en service ?",
+        "Est-elle rouverte à chaque changement significatif ?"
+      ],
+      "expected_evidence": [
+        "Évaluation d'impact datée et approuvée",
+        "Réévaluations liées aux changements"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.5.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "8.4"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-USE-009",
+      "domain": "USE",
+      "title": "Criticité",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Chaque cas d'usage reçoit une criticité (faible à critique) justifiée, qui commande la profondeur de l'évaluation, le niveau de preuve exigé et la cadence de revue.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "La criticité est-elle attribuée avec une justification écrite ?",
+        "La cadence de revue suit-elle la criticité ?"
+      ],
+      "expected_evidence": [
+        "Fiche du cas d'usage : criticité et justification",
+        "Date de prochaine revue"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "semiannual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "6.1.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.5.2"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-USE-010",
+      "domain": "USE",
+      "title": "Décision de mise en production",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "La mise en production est une décision nominative, prise par un rôle habilité distinct du demandeur, une fois les préconditions satisfaites — risques traités, contrôles opérants, supervision décrite, revue tiers close.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Chaque usage en service a-t-il une décision de mise en production approuvée ?",
+        "L'approbateur est-il distinct du demandeur ?",
+        "Les préconditions du gate étaient-elles satisfaites au moment de la décision ?"
+      ],
+      "expected_evidence": [
+        "Registre de décisions : décisions de mise en production",
+        "Journal du gate PRODUCTION"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.6.2.5"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.6.2.4"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-RSK-001",
+      "domain": "RSK",
+      "title": "Méthodologie de gestion des risques IA",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Une méthode écrite fixe comment les risques liés à l'IA sont identifiés, cotés, traités et acceptés : échelles, seuils, rôles, cadence. Elle s'articule avec la gestion des risques de l'organisation.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "La méthode est-elle écrite, approuvée et appliquée ?",
+        "Ses échelles sont-elles celles utilisées dans le registre des risques ?"
+      ],
+      "expected_evidence": [
+        "Méthodologie de gestion des risques IA",
+        "Registre des risques conforme aux échelles"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Responsable du risque",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "6.1.2"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-RSK-002",
+      "domain": "RSK",
+      "title": "Identification des risques",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Pour chaque cas d'usage, les risques sont identifiés selon une grille couvrant au moins : erreur et hallucination, biais et discrimination, fuite de données, dépendance fournisseur, sécurité, usage détourné, impact sur les personnes.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Chaque usage en service a-t-il au moins un risque identifié par catégorie pertinente ?",
+        "Les risques sont-ils rattachés à leur cas d'usage ?"
+      ],
+      "expected_evidence": [
+        "Registre des risques par cas d'usage",
+        "Grille de catégories utilisée"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Responsable du risque",
+      "review_frequency": "semiannual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "6.1.2"
+        },
+        {
+          "framework": "AI_ACT",
+          "reference": "Art. 9 (système de gestion des risques)"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-RSK-003",
+      "domain": "RSK",
+      "title": "Évaluation de la probabilité",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "La probabilité de chaque risque est cotée sur l'échelle de la méthode, avec les éléments qui la fondent — fréquence observée, retours d'expérience, résultats de tests.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "La probabilité est-elle cotée pour chaque risque, avec une justification ?"
+      ],
+      "expected_evidence": [
+        "Registre des risques : probabilité et justification"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Responsable du risque",
+      "review_frequency": "semiannual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "6.1.2"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-RSK-004",
+      "domain": "RSK",
+      "title": "Évaluation de l'impact",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "L'impact de chaque risque est coté sur les personnes, l'organisation et la société — pas seulement en termes financiers — avec une attention particulière aux droits fondamentaux et aux personnes vulnérables.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "L'impact est-il coté sur plusieurs dimensions (personnes, organisation, société) ?",
+        "Les impacts sur les personnes s'appuient-ils sur l'évaluation d'impact ?"
+      ],
+      "expected_evidence": [
+        "Registre des risques : impact par dimension",
+        "Évaluation d'impact"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Responsable du risque",
+      "review_frequency": "semiannual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "6.1.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.5.4"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-RSK-005",
+      "domain": "RSK",
+      "title": "Calcul du niveau de risque",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Le niveau de risque inhérent puis résiduel est déduit de la probabilité et de l'impact par la règle de la méthode — jamais ajusté à la main pour passer sous un seuil.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Le niveau découle-t-il de la matrice de la méthode ?",
+        "Le niveau résiduel est-il distingué de l'inhérent ?"
+      ],
+      "expected_evidence": [
+        "Registre des risques : niveaux inhérent et résiduel",
+        "Matrice de la méthode"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Responsable du risque",
+      "review_frequency": "semiannual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "6.1.2"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-RSK-006",
+      "domain": "RSK",
+      "title": "Appétence et tolérance au risque",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "La direction fixe le niveau de risque acceptable pour l'IA et les seuils au-delà desquels un risque exige un traitement, une acceptation formelle ou un refus. Les gates s'y réfèrent.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "L'appétence au risque IA est-elle écrite et approuvée par la direction ?",
+        "Les seuils sont-ils appliqués par les gates et les acceptations ?"
+      ],
+      "expected_evidence": [
+        "Déclaration d'appétence au risque",
+        "Règles des gates y faisant référence"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Direction",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "6.1.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.2.2"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-RSK-007",
+      "domain": "RSK",
+      "title": "Plan de traitement",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Chaque risque au-dessus du seuil a un traitement décidé — réduire, transférer, éviter, accepter — porté par un contrôle nommé, un responsable et une échéance. Un traitement sans contrôle est une intention.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Chaque risque élevé a-t-il un traitement rattaché à un contrôle ?",
+        "Les traitements ont-ils un responsable et une échéance ?"
+      ],
+      "expected_evidence": [
+        "Registre des risques : traitements et contrôles rattachés",
+        "Actions de traitement suivies"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Responsable du risque",
+      "review_frequency": "quarterly",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "6.1.2"
+        },
+        {
+          "framework": "AI_ACT",
+          "reference": "Art. 9 (mesures de gestion des risques)"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-RSK-008",
+      "domain": "RSK",
+      "title": "Évaluation du risque résiduel",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Une fois le traitement en place et son efficacité constatée, le risque résiduel est recoté ; c'est lui, et non le risque inhérent, que la direction accepte ou refuse.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Le résiduel est-il recoté après mise en œuvre du traitement, sur constat et non sur intention ?"
+      ],
+      "expected_evidence": [
+        "Registre des risques : niveau résiduel daté",
+        "Preuve d'efficacité du contrôle"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Responsable du risque",
+      "review_frequency": "semiannual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "6.1.2"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-RSK-009",
+      "domain": "RSK",
+      "title": "Acceptation formelle du risque",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Un risque résiduel au-dessus du seuil n'est accepté que par une décision nominative d'un rôle habilité, avec justification, date de revue, et sans que l'auteur de la demande soit l'approbateur.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Les acceptations portent-elles un approbateur nommé, une justification et une date de revue ?",
+        "La séparation demandeur / approbateur est-elle respectée ?"
+      ],
+      "expected_evidence": [
+        "Registre de décisions : acceptations de risque",
+        "Registre des risques : statut accepté avec revue"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Responsable du risque",
+      "review_frequency": "quarterly",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "6.1.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.3.2"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-RSK-010",
+      "domain": "RSK",
+      "title": "Revue périodique des risques",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Les risques sont revus à la cadence de la méthode et à chaque changement significatif ; les acceptations arrivées à échéance sont renouvelées ou retirées explicitement.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Les revues ont-elles lieu à la cadence prévue ?",
+        "Aucune acceptation n'est-elle échue sans décision ?"
+      ],
+      "expected_evidence": [
+        "Registre des risques : dates de revue",
+        "Compte rendu de revue des risques"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "Responsable du risque",
+      "review_frequency": "quarterly",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "6.1.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "9.3"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-RSK-011",
+      "domain": "RSK",
+      "title": "Risques émergents",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": "L'organisation surveille les risques nouveaux — évolutions réglementaires, vulnérabilités des modèles, incidents dans le secteur, nouveaux usages — et les intègre à son registre sans attendre la revue périodique.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Une veille est-elle organisée, avec un responsable et des sources ?",
+        "Ses résultats alimentent-ils le registre des risques ?"
+      ],
+      "expected_evidence": [
+        "Procédure de veille",
+        "Risques ajoutés hors revue périodique, avec leur source"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "quarterly",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "6.1.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.8.4"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-RSK-012",
+      "domain": "RSK",
+      "title": "Évaluation d'impact des systèmes d'IA",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "mandatory"
+      },
+      "objective": "Une évaluation d'impact est conduite pour chaque cas d'usage selon ISO/IEC 42005 : parties affectées, bénéfices, préjudices potentiels, mesures d'atténuation, conclusion. Elle est approuvée et rouverte à chaque changement significatif.",
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [
+        "Une évaluation d'impact approuvée existe-t-elle pour chaque usage en service ?",
+        "Couvre-t-elle les personnes affectées, y compris vulnérables, et les impacts sociétaux ?"
+      ],
+      "expected_evidence": [
+        "Évaluation d'impact approuvée et datée",
+        "Constats et mesures d'atténuation suivis"
+      ],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "framework_mappings": [
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "8.4"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.5.2"
+        },
+        {
+          "framework": "ISO_IEC_42001",
+          "version": "2023",
+          "reference": "A.5.5"
+        },
+        {
+          "framework": "AI_ACT",
+          "reference": "Art. 27 (analyse d'impact sur les droits fondamentaux)"
+        }
+      ],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-DAT-001",
+      "domain": "DAT",
+      "title": "Inventaire des données IA",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-DAT-002",
+      "domain": "DAT",
+      "title": "Data Owner",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-DAT-003",
+      "domain": "DAT",
+      "title": "Classification des données",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-DAT-004",
+      "domain": "DAT",
+      "title": "Données personnelles",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-DAT-005",
+      "domain": "DAT",
+      "title": "Données sensibles",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-DAT-006",
+      "domain": "DAT",
+      "title": "Données de santé",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-DAT-007",
+      "domain": "DAT",
+      "title": "Provenance et traçabilité",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-DAT-008",
+      "domain": "DAT",
+      "title": "Qualité des données",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-DAT-009",
+      "domain": "DAT",
+      "title": "Minimisation des données",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-DAT-010",
+      "domain": "DAT",
+      "title": "Rétention",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-DAT-011",
+      "domain": "DAT",
+      "title": "Transferts et localisation",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-DAT-012",
+      "domain": "DAT",
+      "title": "Données d'entraînement et de fine-tuning",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SEC-001",
+      "domain": "SEC",
+      "title": "Security by Design IA",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SEC-002",
+      "domain": "SEC",
+      "title": "Identity and Access Management",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SEC-003",
+      "domain": "SEC",
+      "title": "Principe du moindre privilège",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SEC-004",
+      "domain": "SEC",
+      "title": "Gestion des secrets",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SEC-005",
+      "domain": "SEC",
+      "title": "Chiffrement",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SEC-006",
+      "domain": "SEC",
+      "title": "Journalisation de sécurité",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SEC-007",
+      "domain": "SEC",
+      "title": "Protection contre les prompt injections",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SEC-008",
+      "domain": "SEC",
+      "title": "Prévention de l'exfiltration de données",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SEC-009",
+      "domain": "SEC",
+      "title": "Protection contre l'abus des modèles et API",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SEC-010",
+      "domain": "SEC",
+      "title": "Validation des entrées",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SEC-011",
+      "domain": "SEC",
+      "title": "Validation des sorties",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SEC-012",
+      "domain": "SEC",
+      "title": "Tests de sécurité IA",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SUP-001",
+      "domain": "SUP",
+      "title": "Inventaire des fournisseurs IA",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SUP-002",
+      "domain": "SUP",
+      "title": "Due diligence fournisseur",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SUP-003",
+      "domain": "SUP",
+      "title": "Localisation des données",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SUP-004",
+      "domain": "SUP",
+      "title": "Conditions contractuelles d'utilisation",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SUP-005",
+      "domain": "SUP",
+      "title": "Utilisation des données par le fournisseur",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SUP-006",
+      "domain": "SUP",
+      "title": "SLA et engagements de service",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SUP-007",
+      "domain": "SUP",
+      "title": "Assurance de sécurité fournisseur",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SUP-008",
+      "domain": "SUP",
+      "title": "Sous-traitants et sous-processeurs",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SUP-009",
+      "domain": "SUP",
+      "title": "Risque de dépendance fournisseur",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-SUP-010",
+      "domain": "SUP",
+      "title": "Stratégie de sortie et réversibilité",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-HUM-001",
+      "domain": "HUM",
+      "title": "Niveau de supervision humaine",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-HUM-002",
+      "domain": "HUM",
+      "title": "Validation humaine des décisions",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-HUM-003",
+      "domain": "HUM",
+      "title": "Compétence du validateur",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-HUM-004",
+      "domain": "HUM",
+      "title": "Mécanisme d'override",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-HUM-005",
+      "domain": "HUM",
+      "title": "Escalade humaine",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-HUM-006",
+      "domain": "HUM",
+      "title": "Information de l'utilisateur",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-HUM-007",
+      "domain": "HUM",
+      "title": "Formation aux usages IA",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-HUM-008",
+      "domain": "HUM",
+      "title": "AI Literacy",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-OPS-001",
+      "domain": "OPS",
+      "title": "Processus de mise en production",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-OPS-002",
+      "domain": "OPS",
+      "title": "Séparation Dev / Test / Prod",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-OPS-003",
+      "domain": "OPS",
+      "title": "Versionnement des modèles",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-OPS-004",
+      "domain": "OPS",
+      "title": "Versionnement des prompts",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-OPS-005",
+      "domain": "OPS",
+      "title": "Gestion de configuration",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-OPS-006",
+      "domain": "OPS",
+      "title": "Change Management",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-OPS-007",
+      "domain": "OPS",
+      "title": "Rollback",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-OPS-008",
+      "domain": "OPS",
+      "title": "Gestion des dépendances",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-OPS-009",
+      "domain": "OPS",
+      "title": "Capacity Management",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-OPS-010",
+      "domain": "OPS",
+      "title": "Disponibilité",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-OPS-011",
+      "domain": "OPS",
+      "title": "Sauvegarde et restauration",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-OPS-012",
+      "domain": "OPS",
+      "title": "Décommissionnement",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-MON-001",
+      "domain": "MON",
+      "title": "KPI IA",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-MON-002",
+      "domain": "MON",
+      "title": "Qualité des réponses",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-MON-003",
+      "domain": "MON",
+      "title": "Mesure des hallucinations",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-MON-004",
+      "domain": "MON",
+      "title": "Détection du drift",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-MON-005",
+      "domain": "MON",
+      "title": "Latence et performance",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-MON-006",
+      "domain": "MON",
+      "title": "Suivi des coûts",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-MON-007",
+      "domain": "MON",
+      "title": "Adoption et usage",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-MON-008",
+      "domain": "MON",
+      "title": "Revue périodique des performances",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-INC-001",
+      "domain": "INC",
+      "title": "Définition d'un incident IA",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-INC-002",
+      "domain": "INC",
+      "title": "Détection des incidents",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-INC-003",
+      "domain": "INC",
+      "title": "Classification des incidents",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-INC-004",
+      "domain": "INC",
+      "title": "Escalade",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-INC-005",
+      "domain": "INC",
+      "title": "Containment",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-INC-006",
+      "domain": "INC",
+      "title": "Investigation",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-INC-007",
+      "domain": "INC",
+      "title": "Communication",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-INC-008",
+      "domain": "INC",
+      "title": "Retour d'expérience et amélioration",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-CMP-001",
+      "domain": "CMP",
+      "title": "Identification des exigences applicables",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-CMP-002",
+      "domain": "CMP",
+      "title": "Mapping réglementaire",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-CMP-003",
+      "domain": "CMP",
+      "title": "Mapping normatif",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-CMP-004",
+      "domain": "CMP",
+      "title": "Gestion des preuves",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-CMP-005",
+      "domain": "CMP",
+      "title": "Auto-évaluation",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-CMP-006",
+      "domain": "CMP",
+      "title": "Audit interne",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-CMP-007",
+      "domain": "CMP",
+      "title": "Non-conformités",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    },
+    {
+      "id": "AIGMS-CMP-008",
+      "domain": "CMP",
+      "title": "Préparation à l'audit",
+      "status": "draft",
+      "version": "0.2",
+      "control_type": "baseline",
+      "applicability": {
+        "default": "conditional"
+      },
+      "objective": null,
+      "risks": [],
+      "requirements": [],
+      "assessment_questions": [],
+      "expected_evidence": [],
+      "tests": [],
+      "maturity_model": {
+        "0": "Absent",
+        "1": "Documenté",
+        "2": "Implémenté",
+        "3": "Mesuré",
+        "4": "Automatisé / Amélioré"
+      },
+      "owner_role": null,
+      "review_frequency": null,
+      "framework_mappings": [],
+      "remediation_guidance": []
+    }
+  ],
+  "control_profiles": [
+    {
+      "id": "AIGMS-PROFILE-01",
+      "name": "Employee GenAI",
+      "description": "Assistants IA généralistes pour collaborateurs."
+    },
+    {
+      "id": "AIGMS-PROFILE-02",
+      "name": "Internal RAG",
+      "description": "RAG interne sur procédures, KB et documentation."
+    },
+    {
+      "id": "AIGMS-PROFILE-03",
+      "name": "Customer Chatbot",
+      "description": "Chatbot ou assistant conversationnel exposé aux clients."
+    },
+    {
+      "id": "AIGMS-PROFILE-04",
+      "name": "AI Assisted Operations",
+      "description": "IA d'assistance aux opérations NOC / exploitation."
+    },
+    {
+      "id": "AIGMS-PROFILE-05",
+      "name": "AI Security Operations",
+      "description": "IA d'assistance SOC / cybersécurité."
+    },
+    {
+      "id": "AIGMS-PROFILE-06",
+      "name": "Autonomous Agent",
+      "description": "Agent capable d'exécuter des actions sur le SI."
+    },
+    {
+      "id": "AIGMS-PROFILE-07",
+      "name": "AI SaaS Provider",
+      "description": "Service IA fourni en mode SaaS."
+    },
+    {
+      "id": "AIGMS-PROFILE-08",
+      "name": "AI Infrastructure Provider",
+      "description": "Hébergement, GPU, LLM gateway ou infrastructure IA."
+    },
+    {
+      "id": "AIGMS-PROFILE-09",
+      "name": "Sensitive Data AI",
+      "description": "IA traitant des données sensibles ou critiques."
+    },
+    {
+      "id": "AIGMS-PROFILE-10",
+      "name": "Healthcare AI",
+      "description": "IA impliquant des données ou usages liés à la santé."
+    }
+  ],
+  "reference_use_cases": [
+    {
+      "id": "UC01",
+      "name": "Copilot bureautique",
+      "example": "Microsoft 365 Copilot / ChatGPT Enterprise / Claude Enterprise pour collaborateurs"
+    },
+    {
+      "id": "UC02",
+      "name": "IA support client",
+      "example": "Assistant de réponse aux tickets"
+    },
+    {
+      "id": "UC03",
+      "name": "RAG documentation",
+      "example": "Interrogation de procédures, KB, contrats et documentation"
+    },
+    {
+      "id": "UC04",
+      "name": "IA NOC",
+      "example": "Analyse d'alarmes réseau et datacenter"
+    },
+    {
+      "id": "UC05",
+      "name": "IA SOC",
+      "example": "Analyse d'événements cybersécurité"
+    },
+    {
+      "id": "UC06",
+      "name": "Incident summarization",
+      "example": "Résumé automatique d'incidents"
+    },
+    {
+      "id": "UC07",
+      "name": "Root Cause Analysis",
+      "example": "Proposition de causes probables d'incidents"
+    },
+    {
+      "id": "UC08",
+      "name": "Capacity Planning",
+      "example": "Prévision CPU, RAM, stockage et bande passante"
+    },
+    {
+      "id": "UC09",
+      "name": "Predictive Maintenance",
+      "example": "Anticipation de pannes d'équipements"
+    },
+    {
+      "id": "UC10",
+      "name": "Ticket classification",
+      "example": "Classification et routage des tickets"
+    },
+    {
+      "id": "UC11",
+      "name": "Customer chatbot",
+      "example": "Chatbot client cloud / télécom"
+    },
+    {
+      "id": "UC12",
+      "name": "Contract assistant",
+      "example": "Analyse de SLA, contrats et DPA"
+    },
+    {
+      "id": "UC13",
+      "name": "Sales assistant",
+      "example": "Génération de propositions commerciales"
+    },
+    {
+      "id": "UC14",
+      "name": "Customer AI hosting",
+      "example": "Hébergement de workloads IA clients"
+    },
+    {
+      "id": "UC15",
+      "name": "GPU-as-a-Service",
+      "example": "Infrastructure GPU locale"
+    },
+    {
+      "id": "UC16",
+      "name": "Managed RAG",
+      "example": "RAG opéré pour le compte d'un client"
+    },
+    {
+      "id": "UC17",
+      "name": "Managed AI agent",
+      "example": "Agent IA opéré en service managé"
+    },
+    {
+      "id": "UC18",
+      "name": "HDS + AI",
+      "example": "Traitement IA de données liées à la santé"
+    }
+  ],
+  "autonomy_levels": [
+    {
+      "level": "L0",
+      "label": "Information"
+    },
+    {
+      "level": "L1",
+      "label": "Assistance"
+    },
+    {
+      "level": "L2",
+      "label": "Recommandation"
+    },
+    {
+      "level": "L3",
+      "label": "Action après validation humaine"
+    },
+    {
+      "level": "L4",
+      "label": "Action automatique réversible"
+    },
+    {
+      "level": "L5",
+      "label": "Action autonome critique"
+    }
+  ],
+  "risk_categories": [
+    "SECURITY",
+    "PRIVACY",
+    "LEGAL",
+    "REGULATORY",
+    "OPERATIONAL",
+    "FINANCIAL",
+    "REPUTATION",
+    "HUMAN",
+    "BIAS",
+    "TRANSPARENCY",
+    "RELIABILITY",
+    "DEPENDENCY",
+    "SOVEREIGNTY"
+  ],
+  "evidence_status": [
+    "VALID",
+    "EXPIRED",
+    "MISSING",
+    "PARTIAL",
+    "REJECTED"
+  ]
+}
