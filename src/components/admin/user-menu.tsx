@@ -64,9 +64,9 @@ export function UserMenu({
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         aria-haspopup="menu"
-        className="flex items-center gap-2 rounded-md py-1.5 pl-1.5 pr-2.5 text-sm text-ink-600 hover:bg-ink-100 hover:text-ink-900"
+        className="flex items-center gap-2 rounded-md py-1.5 pl-1.5 pr-2.5 text-sm text-white/80 transition-colors hover:bg-white/10 hover:text-white"
       >
-        <span className="flex size-7 items-center justify-center rounded-full bg-night-900 text-[11px] font-semibold text-white">
+        <span className="flex size-7 items-center justify-center rounded-full bg-teal-400 text-[11px] font-semibold text-night-950">
           {initials}
         </span>
         <span className="hidden sm:inline">{fullName ?? email}</span>

@@ -13,7 +13,7 @@ async function signIn(page: import('@playwright/test').Page, who: typeof ADMIN) 
   await page.getByLabel('Adresse électronique').fill(who.email)
   await page.getByLabel('Mot de passe').fill(who.password)
   await page.getByRole('button', { name: 'Se connecter' }).click()
-  await expect(page.getByRole('heading', { name: /IzarLink Demo|Organisations gérées/ })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Pilotage|Organisations gérées/ })).toBeVisible()
 }
 
 test('la mire de connexion renvoie vers l’administration, pas vers l’officer', async ({ page }) => {

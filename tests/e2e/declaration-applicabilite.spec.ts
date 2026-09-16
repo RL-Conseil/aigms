@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
   await page.getByLabel('Adresse électronique').fill(OFFICER.email)
   await page.getByLabel('Mot de passe').fill(OFFICER.password)
   await page.getByRole('button', { name: 'Se connecter' }).click()
-  await expect(page.getByRole('heading', { name: /IzarLink Demo|Organisations gérées/ })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Pilotage|Organisations gérées/ })).toBeVisible()
 })
 
 test('la Déclaration exige une décision par exigence et nomme le régime de preuve', async ({

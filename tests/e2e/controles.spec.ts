@@ -17,7 +17,7 @@ test.beforeEach(async ({ page }) => {
   await page.getByLabel('Adresse électronique').fill(OFFICER.email)
   await page.getByLabel('Mot de passe').fill(OFFICER.password)
   await page.getByRole('button', { name: 'Se connecter' }).click()
-  await expect(page.getByRole('heading', { name: /IzarLink Demo/ })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Pilotage|Organisations gérées/ })).toBeVisible()
 })
 
 test('un contrôle se crée, change d’état et se rattache à une exigence', async ({ page }) => {

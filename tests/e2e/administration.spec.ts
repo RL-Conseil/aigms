@@ -12,7 +12,7 @@ async function signIn(page: import('@playwright/test').Page, who: typeof ADMIN) 
   await page.getByLabel('Adresse électronique').fill(who.email)
   await page.getByLabel('Mot de passe').fill(who.password)
   await page.getByRole('button', { name: 'Se connecter' }).click()
-  await expect(page.getByRole('heading', { name: /IzarLink Demo|Organisations gérées/ })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Pilotage|Organisations gérées/ })).toBeVisible()
 }
 
 test("le bandeau annonce le mode administration des la connexion", async ({ page }) => {
@@ -166,10 +166,15 @@ test('le pilotage nomme le client, et « Toutes » rend le portefeuille', async 
   }
 })
 
-test('la racine conduit à l’organisation courante, la liste vit dans le menu', async ({ page }) => {
+test('on arrive sur le pilotage, « Cas d’usage » ouvre l’organisation courante', async ({ page }) => {
   await signIn(page, OFFICER)
 
-  // Une seule organisation gérée : il n'y a rien à choisir, on y atterrit.
+  // L'accueil, c'est le pilotage — place sur l'organisation courante.
+  await expect(page).toHaveURL(/\/admin\/pilotage/)
+  await expect(page.getByText(/Ce qui appelle une action chez IzarLink Demo/)).toBeVisible()
+
+  // « Cas d'usage » conduit a l'organisation courante sans passer par la liste.
+  await page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('link', { name: 'Cas d’usage' }).click()
   await expect(page).toHaveURL(/\/admin\/organizations\/cccccccc/)
   await expect(page.getByRole('heading', { name: 'IzarLink Demo' })).toBeVisible()
 
@@ -184,7 +189,7 @@ test('la racine conduit à l’organisation courante, la liste vit dans le menu'
 
   // La liste des organisations gérées a quitté le menu principal.
   const principal = page.getByRole('navigation', { name: 'Navigation principale' })
-  await expect(principal.getByRole('link', { name: 'Vue d’ensemble' })).toBeVisible()
+  await expect(principal.getByRole('link', { name: 'Cas d’usage' })).toBeVisible()
   await expect(principal.getByRole('link', { name: /Organisations/ })).toHaveCount(0)
 
   await page.getByRole('button', { name: /Camille|Rôle|@/ }).first().click()

@@ -14,7 +14,7 @@ test.beforeEach(async ({ page }) => {
   await page.getByLabel('Adresse électronique').fill(OFFICER.email)
   await page.getByLabel('Mot de passe').fill(OFFICER.password)
   await page.getByRole('button', { name: 'Se connecter' }).click()
-  await expect(page.getByRole('heading', { name: /IzarLink Demo|Organisations gérées/ })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Pilotage|Organisations gérées/ })).toBeVisible()
 })
 
 test('la cartographie montre les processus, activités et usages rattachés', async ({ page }) => {
@@ -301,7 +301,7 @@ test('la navigation porte l’avancement et les retards', async ({ page }) => {
 
   // Second niveau de navigation : les sections de l'organisation.
   const sections = page.getByRole('navigation', { name: 'Sections de l’organisation' })
-  await expect(sections.getByRole('link', { name: /Vue d’ensemble/ })).toBeVisible()
+  await expect(sections.getByRole('link', { name: /Cas d’usage/ })).toBeVisible()
   await expect(sections.getByRole('link', { name: /Processus et risques/ })).toBeVisible()
   await expect(sections.getByRole('link', { name: /Déclaration d’Applicabilité/ })).toBeVisible()
 
