@@ -175,3 +175,28 @@ Deux garde-fous complètent le dispositif :
 Trois exclusions, assumées : `audit_log` et `governance_event` sont les journaux
 eux-mêmes ; `connector_sync_run` est la sortie machine d'une synchronisation —
 la journaliser reviendrait à journaliser un journal.
+
+## Journal d'audit — couverture et lecture (v1.2, 16 septembre 2026)
+
+**Ce qui est journalisé.** Un déclencheur générique (`app.audit_business`,
+migration 0033) écrit une ligne *avant/après* sur chaque insertion, modification
+et suppression de toute table portant un `tenant_id`. Trois tables sans
+`tenant_id` ont leur propre déclencheur (migration 0041) : `tenant` (marque
+blanche), `user_profile` (par l'appartenance active), `catalog_version` (par le
+travail d'import). `app.audit_coverage_gaps()` doit rester vide — un test
+l'exige — et connaît ces trois tables.
+
+**Ce que cela signifie.** Aucune action serveur n'écrit dans le journal
+elle-même ; il n'existe donc aucun chemin applicatif qui l'évite, y compris une
+écriture directe par l'API ou par une clé de service.
+
+**Lecture.** RLS : `platform_admin`, `governance_officer`, `client_admin`,
+`auditor`, dans leur tenant. L'écran `/admin/journal` (administration) filtre,
+pagine (`public.audit_log_page`), montre les champs modifiés et exporte en JSON
+(5 000 lignes au plus). L'export est lui-même journalisé (`export`, avec les
+filtres et le nombre de lignes) par `public.log_audit_export`, réservée à
+l'administration.
+
+**Ce que le journal ne fait pas.** Il ne se modifie ni ne se purge depuis
+l'application. Une politique de rétention — durée, archivage hors base — reste
+à décider ; elle relève de l'hébergement, pas du produit.

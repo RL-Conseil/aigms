@@ -5000,6 +5000,67 @@ export type Database = {
           total: number
         }[]
       }
+      audit_log_facets: { Args: never; Returns: Json }
+      audit_log_page: {
+        Args: {
+          p_action?: string
+          p_actor?: string
+          p_entity_type?: string
+          p_limit?: number
+          p_offset?: number
+          p_search?: string
+          p_since?: string
+          p_until?: string
+        }
+        Returns: {
+          action:
+            | "create"
+            | "update"
+            | "delete"
+            | "archive"
+            | "status_transition"
+            | "gate_evaluated"
+            | "gate_blocked"
+            | "decision_approved"
+            | "decision_rejected"
+            | "risk_accepted"
+            | "evidence_validated"
+            | "reassessment_triggered"
+            | "access_granted"
+            | "access_revoked"
+            | "login"
+            | "export"
+            | "read_sensitive"
+          actor_email: string | null
+          actor_role:
+            | "platform_admin"
+            | "governance_officer"
+            | "client_admin"
+            | "system_owner"
+            | "risk_owner"
+            | "reviewer"
+            | "auditor"
+            | "executive_viewer"
+            | null
+          actor_user_id: string | null
+          after_state: Json | null
+          before_state: Json | null
+          entity_id: string | null
+          entity_ref: string | null
+          entity_type: string
+          id: number
+          metadata: Json
+          occurred_at: string
+          summary: string | null
+          tenant_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "audit_log"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       commit_catalog_import: { Args: { p_job_id: string }; Returns: Json }
       control_coverage: {
         Args: { p_organization_id: string }
@@ -5125,6 +5186,10 @@ export type Database = {
       governance_health: {
         Args: { p_activity_id?: string; p_organization_id: string }
         Returns: Json
+      }
+      log_audit_export: {
+        Args: { p_count: number; p_filters?: Json; p_tenant_id: string }
+        Returns: undefined
       }
       managed_organizations: {
         Args: never

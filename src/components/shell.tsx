@@ -43,6 +43,7 @@ const ADMIN_NAV: NavLink[] = [
   { href: '/admin/comptes', label: 'Comptes et rôles' },
   { href: '/admin/connecteurs', label: 'Connecteurs' },
   { href: '/admin/referentiels', label: 'Référentiels' },
+  { href: '/admin/journal', label: 'Journal' },
   { href: '/admin/contacts', label: 'Demandes' },
 ]
 
