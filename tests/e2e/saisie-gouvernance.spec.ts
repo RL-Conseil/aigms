@@ -80,7 +80,8 @@ test('un cas d’usage se déclare, se trie, se classifie et reçoit un risque',
   const panel = (name: RegExp) =>
     page.locator('section').filter({ has: page.getByRole('button', { name }) })
 
-  await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001/processus')
+  // Un cas d'usage se declare depuis la vue d'ensemble — pas depuis la carte.
+  await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001')
   await page.getByRole('link', { name: 'Déclarer un cas d’usage', exact: true }).click()
 
   const name = `Analyse des réclamations ${Date.now()}`
@@ -192,15 +193,22 @@ test('la carte annote chaque activité et son panneau détaille ce qui s’y jou
   await expect(page.getByRole('dialog').getByRole('link').first()).toBeVisible()
   await page.keyboard.press('Escape')
 
-  // L'usage se lit sous l'activité, dans l'arbre, et le « + » y déclare.
+  // L'usage se lit sous l'activité, dans l'arbre. Le « + » rattache un cas
+  // d'usage existant — declarer un nouveau reste un lien, en second.
   await expect(page.getByRole('link', { name: 'Scoring de candidatures' })).toBeVisible()
   await page
-    .getByRole('link', { name: 'Déclarer un cas d’usage sur Présélection des candidatures' })
+    .getByRole('button', { name: 'Rattacher un cas d’usage à Présélection des candidatures' })
     .click()
-  await expect(page.getByRole('heading', { name: 'Déclarer un cas d’usage' })).toBeVisible()
-  await expect(page.getByLabel('Activité du processus servie')).toHaveValue(
-    'c2000000-0000-4000-8000-000000000003',
-  )
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByLabel('Cas d’usage')).toBeVisible()
+  await expect(
+    dialog.getByRole('link', { name: 'Déclarer un nouveau cas d’usage sur cette activité' }),
+  ).toHaveAttribute('href', /cas-d-usage\/nouveau\?activite=c2000000-0000-4000-8000-000000000003/)
+  await page.keyboard.press('Escape')
+
+  // Le bandeau des quatre lectures ne bouge pas ; « Déclarer » n'y est plus.
+  await expect(page.getByRole('link', { name: 'Déclarer un cas d’usage', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Ajouter un processus' })).toBeVisible()
 })
 
 test('l’indice de santé n’est pas produit sans usage déclaré', async ({ page }) => {

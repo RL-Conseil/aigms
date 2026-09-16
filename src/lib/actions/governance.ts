@@ -585,3 +585,45 @@ export async function updateUseCaseLabels(
     message: 'Fiche corrigée. La qualification et le statut restent ce qu’ils étaient.',
   }
 }
+
+// =============================================================================
+// Rattacher un cas d'usage existant a une activite
+// =============================================================================
+// Un cas d'usage declare depuis la vue d'ensemble n'est rattache a aucune
+// activite : il flotte. Le « + » de la carte sert d'abord a le poser au bon
+// endroit — declarer un nouveau cas d'usage est l'autre geste, pas le meme.
+//
+// Le rattachement decrit ; il ne qualifie rien. Il n'en est pas moins
+// journalise (migration 0033).
+const attachSchema = z.object({
+  organizationId: z.string().uuid(),
+  activityId: z.string().uuid(),
+  useCaseId: z.string().uuid({ message: 'Choisir un cas d’usage.' }),
+})
+
+export async function attachUseCaseToActivity(
+  _previous: FormState | null,
+  formData: FormData,
+): Promise<FormState> {
+  const parsed = attachSchema.safeParse({
+    organizationId: formData.get('organizationId'),
+    activityId: formData.get('activityId'),
+    useCaseId: formData.get('useCaseId'),
+  })
+  if (!parsed.success) return firstIssues(parsed.error)
+
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('ai_use_case')
+    .update({ activity_id: parsed.data.activityId })
+    .eq('id', parsed.data.useCaseId)
+    .eq('organization_id', parsed.data.organizationId)
+    .select('id, name')
+
+  if (error) return { ok: false, message: explain(error) }
+  if (!data?.length) return { ok: false, message: 'Votre rôle ne permet pas cette écriture.' }
+
+  revalidatePath(`/admin/organizations/${parsed.data.organizationId}/processus`)
+  revalidatePath(`/admin/use-cases/${parsed.data.useCaseId}`)
+  return { ok: true, message: `« ${data[0]!.name} » rattaché à cette activité.` }
+}

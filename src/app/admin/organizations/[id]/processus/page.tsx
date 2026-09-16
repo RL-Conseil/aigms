@@ -129,7 +129,7 @@ export default async function ProcessMapPage({
       view === 'arbre'
         ? supabase
             .from('ai_use_case')
-            .select('id, name, status, activity_id')
+            .select('id, name, business_ref, status, activity_id')
             .eq('organization_id', id)
             .order('business_ref')
         : Promise.resolve({ data: null }),
@@ -156,6 +156,16 @@ export default async function ProcessMapPage({
     list.push({ id: useCase.id, name: useCase.name, status: useCase.status })
     useCasesByActivity.set(useCase.activity_id, list)
   }
+  // Le « + » d'une activite rattache un cas d'usage existant : ceux qui
+  // flottent, et ceux poses ailleurs.
+  const activityName = new Map(rows.filter((r) => r.activity_id).map((r) => [r.activity_id!, r.activity_name ?? '—']))
+  const candidates = (useCases ?? []).map((u) => ({
+    id: u.id,
+    name: u.name,
+    business_ref: u.business_ref,
+    activity_id: u.activity_id,
+    activity_name: u.activity_id ? (activityName.get(u.activity_id) ?? null) : null,
+  }))
   const processes: TreeProcess[] = []
   for (const row of rows) {
     let process = processes.find((p) => p.process_id === row.process_id)
@@ -199,23 +209,7 @@ export default async function ProcessMapPage({
       title="Processus et risques"
       subtitle="Ce que fait l’organisation, et ce que la gouvernance de l’IA y produit."
       actions={
-          <div className="flex flex-wrap items-center gap-3">
-          {view === 'arbre' ? (
-            <>
-              <Link
-                href={`/admin/organizations/${id}/processus/nouveau`}
-                className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
-              >
-                Ajouter un processus
-              </Link>
-              <Link
-                href={`/admin/organizations/${id}/processus/activite`}
-                className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
-              >
-                Ajouter une activité
-              </Link>
-            </>
-          ) : null}
+        <div className="flex flex-wrap items-center gap-3">
           <nav aria-label="Lecture de la carte" className="flex rounded-md border border-ink-200 bg-white p-0.5">
             {VIEWS.map((option) => (
               <Link
@@ -233,12 +227,6 @@ export default async function ProcessMapPage({
               </Link>
             ))}
           </nav>
-          <Link
-            href={`/admin/organizations/${id}/cas-d-usage/nouveau`}
-            className="rounded-md bg-night-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-night-800"
-          >
-            Déclarer un cas d’usage
-          </Link>
           <InfoTip label="Comment lire cette carte" title="Quatre lectures du même modèle">
             <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
               <p>
@@ -286,6 +274,31 @@ export default async function ProcessMapPage({
         </div>
       }
     >
+      {/*
+        Le bandeau du haut ne bouge pas d'une vue a l'autre : les quatre
+        lectures y restent a la meme place. Ce qui n'a de sens que sur l'arbre
+        — ajouter un processus, une activite — vient dessous.
+      */}
+      {view === 'arbre' ? (
+        <div className="mb-5 flex flex-wrap items-center gap-3">
+          <Link
+            href={`/admin/organizations/${id}/processus/nouveau`}
+            className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
+          >
+            Ajouter un processus
+          </Link>
+          <Link
+            href={`/admin/organizations/${id}/processus/activite`}
+            className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
+          >
+            Ajouter une activité
+          </Link>
+          <span className="text-xs text-ink-500">
+            Un cas d’usage se déclare depuis la vue d’ensemble, puis se rattache ici avec le « + » de son activité.
+          </span>
+        </div>
+      ) : null}
+
       {view === 'couverture' ? (
         <CoverageView rows={(coverageData ?? []) as CoverageRow[]} organizationId={id} />
       ) : view === 'risques' ? (
@@ -325,7 +338,12 @@ export default async function ProcessMapPage({
         {/* ---------- Arbre ---------- */}
         <div className="lg:col-span-3">
           {rows.length ? (
-            <ProcessTree organizationId={id} processes={processes} selectedActivity={activite} />
+            <ProcessTree
+              organizationId={id}
+              processes={processes}
+              selectedActivity={activite}
+              candidates={candidates}
+            />
           ) : (
             <Card title="Cartographie">
               <Empty>

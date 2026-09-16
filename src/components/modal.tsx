@@ -22,10 +22,16 @@ export function Modal({
   title,
   description,
   hideTrigger = false,
+  triggerLabel,
+  triggerClassName,
   children,
 }: {
   /** Libelle du bouton qui l'ouvre. */
   trigger: string
+  /** Nom accessible, quand le libelle visible est un signe (« + »). */
+  triggerLabel?: string
+  /** Remplace le style du bouton d'ouverture. */
+  triggerClassName?: string
   title: string
   description?: string
   /**
@@ -66,7 +72,12 @@ export function Modal({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="rounded-md border border-ink-200 px-3.5 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-100"
+          aria-label={triggerLabel}
+          title={triggerLabel}
+          className={
+            triggerClassName ??
+            'rounded-md border border-ink-200 px-3.5 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-100'
+          }
         >
           {trigger}
         </button>
