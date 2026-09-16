@@ -12,6 +12,7 @@ import {
 } from '@/components/governance/evidence-forms'
 import { SegmentedFilter } from '@/components/governance/segmented-filter'
 import { InfoTip } from '@/components/info-tip'
+import { PrintMenu } from '@/components/print/print-menu'
 import {
   EvidenceMatrixCard,
   type MatrixGap,
@@ -236,13 +237,19 @@ export default async function EvidencePage({
         { href: `/admin/organizations/${id}`, label: organization.name },
       ]}
       organization={{ id, section: 'preuves' }}
-      title="Preuves"
+      title="Registre des preuves"
       subtitle="Ce que l’organisation peut produire pour démontrer que ses contrôles tiennent."
       actions={
         <div className="flex items-center gap-3">
           <Badge tone={toValidate ? 'warn' : 'neutral'}>
             {rows.length} pièce{rows.length > 1 ? 's' : ''}
           </Badge>
+          <PrintMenu
+            label="Imprimer le registre"
+            basePath={`/admin/organizations/${id}/impression/preuves`}
+            current={typologie}
+            options={typologyFilters.filter((t) => t.key !== '')}
+          />
           <Link
             href={`/admin/organizations/${id}/preuves/deposer`}
             className="rounded-md bg-night-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-night-800"
