@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { Badge, Empty } from '@/components/ui'
+import { AttachUseCaseButton } from '@/components/governance/attach-use-case'
 import {
   RISK_LEVEL_LABELS,
   USE_CASE_STATUS_LABELS,
@@ -37,6 +38,14 @@ export type TreeActivity = {
   reviews_due: number
   overdue_actions: number
   use_cases: { id: string; name: string; status: string }[]
+}
+
+export type UseCaseCandidate = {
+  id: string
+  name: string
+  business_ref: string
+  activity_id: string | null
+  activity_name: string | null
 }
 
 export type TreeProcess = {
@@ -104,10 +113,12 @@ function ActivityRow({
   organizationId,
   activity,
   selected,
+  candidates,
 }: {
   organizationId: string
   activity: TreeActivity
   selected: boolean
+  candidates: UseCaseCandidate[]
 }) {
   const base = `/admin/organizations/${organizationId}`
   return (
@@ -162,14 +173,19 @@ function ActivityRow({
           </li>
         ))}
         <li>
-          <Link
-            href={`${base}/cas-d-usage/nouveau?activite=${activity.activity_id}`}
-            aria-label={`Déclarer un cas d’usage sur ${activity.activity_name}`}
-            title="Déclarer un cas d’usage sur cette activité"
-            className="inline-flex size-6 items-center justify-center rounded-full border border-dashed border-ink-300 text-sm leading-none text-ink-500 hover:border-brand-500 hover:text-brand-700"
-          >
-            +
-          </Link>
+          <AttachUseCaseButton
+            organizationId={organizationId}
+            activityId={activity.activity_id}
+            activityName={activity.activity_name}
+            candidates={candidates
+              .filter((c) => c.activity_id !== activity.activity_id)
+              .map((c) => ({
+                id: c.id,
+                name: c.name,
+                business_ref: c.business_ref,
+                activity_name: c.activity_name,
+              }))}
+          />
         </li>
         {!activity.use_cases.length ? (
           <li className="text-xs text-ink-400">Aucun usage d’IA déclaré.</li>
@@ -185,12 +201,14 @@ function Family({
   hint,
   processes,
   selectedActivity,
+  candidates,
 }: {
   organizationId: string
   label: string
   hint: string
   processes: TreeProcess[]
   selectedActivity?: string
+  candidates: UseCaseCandidate[]
 }) {
   const holdsSelection = processes.some((p) =>
     p.activities.some((a) => a.activity_id === selectedActivity),
@@ -258,6 +276,7 @@ function Family({
                         organizationId={organizationId}
                         activity={activity}
                         selected={activity.activity_id === selectedActivity}
+                        candidates={candidates}
                       />
                     ))}
                   </ul>
@@ -293,10 +312,13 @@ export function ProcessTree({
   organizationId,
   processes,
   selectedActivity,
+  candidates,
 }: {
   organizationId: string
   processes: TreeProcess[]
   selectedActivity?: string
+  /** Tous les cas d'usage de l'organisation : le « + » rattache l'un d'eux. */
+  candidates: UseCaseCandidate[]
 }) {
   return (
     <div className="flex flex-col gap-4">
@@ -308,6 +330,7 @@ export function ProcessTree({
           hint={family.hint}
           processes={processes.filter((p) => p.process_category === family.key)}
           selectedActivity={selectedActivity}
+          candidates={candidates}
         />
       ))}
     </div>
