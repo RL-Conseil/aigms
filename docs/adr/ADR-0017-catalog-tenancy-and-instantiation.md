@@ -24,9 +24,8 @@ nouvelle version générée depuis la v0.1 gelée et des fichiers d'enrichisseme
 versionnés (`knowledge/frameworks/aigms/waves/`) : objectif, questions
 d'évaluation, preuves attendues, responsable, fréquence, correspondances
 ISO/IEC 42001 et AI Act. v0.2 (migration 0043) : GOV, INV, USE, RSK ; v0.3
-(migration 0044) : DAT, SEC, SUP, HUM — 84 contrôles enrichis sur 120. Les 36
-restants (OPS, MON, INC, CMP) attendent la vague 3. La v0.1 n'est jamais
-modifiée.
+(migration 0044) : DAT, SEC, SUP, HUM ; v0.4 (migration 0045) : OPS, MON, INC,
+CMP — les 120 contrôles sont enrichis. La v0.1 n'est jamais modifiée.
 
 **Un contrôle opérationnel s'ajoute d'abord depuis un référentiel.**
 `app.instantiate_catalog_control` crée le contrôle de l'organisation à partir
@@ -41,7 +40,7 @@ libre reste possible pour ce qui n'existe dans aucun référentiel.
 - Une base neuve — Production comprise — porte 120 contrôles-types dès la
   migration 0043, sans passer par l'écran d'import.
 - La liste d'une organisation s'appelle « Liste des contrôles opérationnels » et
-  chaque ligne porte son origine (`AIGMS-CF v0.3 · AIGMS-RSK-012`).
+  chaque ligne porte son origine (`AIGMS-CF v0.4 · AIGMS-RSK-012`).
 - L'administration lit chaque version contrôle par contrôle.
 - Un cabinet qui a importé un référentiel avant cette migration ne le voit plus
   partagé : c'est le but.

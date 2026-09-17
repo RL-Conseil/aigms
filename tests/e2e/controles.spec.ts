@@ -105,7 +105,7 @@ test('un contrôle-type du référentiel de l’éditeur s’ajoute avec ses cor
   await expect(page.getByRole('heading', { name: 'Depuis un référentiel' })).toBeVisible()
 
   // Le referentiel de l'editeur est selectionne d'office (premier de la liste).
-  await expect(page.getByLabel('Référentiel')).toContainText('AIGMS Control Framework v0.3')
+  await expect(page.getByLabel('Référentiel')).toContainText('AIGMS Control Framework v0.4')
   await page.getByLabel('Domaine').selectOption('RSK')
   const pick = page.getByLabel('Contrôle-type')
   const option = pick.locator('option').filter({ hasText: 'AIGMS-RSK-011' })
@@ -121,5 +121,5 @@ test('un contrôle-type du référentiel de l’éditeur s’ajoute avec ses cor
 
   // Dans la liste, le controle porte son origine.
   await page.goto(`/admin/organizations/${ORG}/controles`)
-  await expect(page.getByText('AIGMS-CF v0.3 · AIGMS-RSK-011')).toBeVisible()
+  await expect(page.getByText('AIGMS-CF v0.4 · AIGMS-RSK-011')).toBeVisible()
 })

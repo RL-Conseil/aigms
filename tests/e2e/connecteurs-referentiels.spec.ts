@@ -69,21 +69,22 @@ test('le référentiel de l’éditeur est livré, lisible contrôle par contrô
   await page.getByRole('link', { name: 'Référentiels' }).click()
 
   // Livre par migration, publie, marque comme celui de l'editeur.
-  const version = page.getByRole('link', { name: /AIGMS Control Framework — version 0\.3/ })
+  const version = page.getByRole('link', { name: /AIGMS Control Framework — version 0\.4/ })
   await expect(version).toBeVisible()
   await expect(page.getByText('éditeur', { exact: true }).first()).toBeVisible()
 
   await version.click()
-  await expect(page.getByRole('heading', { name: /AIGMS Control Framework — version 0\.3/ })).toBeVisible()
-  await expect(page.getByText(/120 contrôle\(s\) · 84 avec objectif/)).toBeVisible()
+  await expect(page.getByRole('heading', { name: /AIGMS Control Framework — version 0\.4/ })).toBeVisible()
+  await expect(page.getByText(/120 contrôle\(s\) · 120 avec objectif/)).toBeVisible()
 
   // Par domaine, et seulement les enrichis.
   await page.getByRole('navigation', { name: 'Filtrer par domaine' }).getByRole('link', { name: /^RSK/ }).click()
   await expect(page).toHaveURL(/domaine=RSK/)
   await expect(page.getByText('AIGMS-RSK-012')).toBeVisible()
   await expect(page.getByText(/Évaluation d.impact des systèmes d.IA/)).toBeVisible()
+  // Toutes les vagues livrees : plus aucun controle reduit a son titre.
   await page.getByRole('navigation', { name: 'Filtrer par domaine' }).getByRole('link', { name: /^OPS/ }).click()
-  await expect(page.getByText('Titre seul').first()).toBeVisible()
+  await expect(page.getByText('Titre seul')).toHaveCount(0)
 })
 
 test('un référentiel de cabinet s’importe depuis le modèle JSON, puis se publie', async ({ page }) => {
