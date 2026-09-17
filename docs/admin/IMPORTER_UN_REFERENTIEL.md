@@ -32,18 +32,18 @@ exigence mal transcrite fausserait la déclaration de tous les clients.
   AI Act, domaines en français.
   - `wave1` : GOV, INV, USE, RSK (42 contrôles) → v0.2, migration 0043
   - `wave2` : DAT, SEC, SUP, HUM (42 contrôles) → v0.3, migration 0044
-  - à venir, `wave3` : OPS, MON, INC, CMP (36 contrôles)
+  - `wave3` : OPS, MON, INC, CMP (36 contrôles) → v0.4, migration 0045 — les 120 contrôles sont enrichis
 - `knowledge/frameworks/aigms/v0.x/` — les paquets générés, gelés une fois
   livrés.
 
 Une version se génère et se livre ainsi :
 
 ```
-MIGRATION_STAMP=<AAAAMMJJHHMM>00 node scripts/generate-catalog.mjs 0.4 0045 wave1 wave2 wave3
+MIGRATION_STAMP=<AAAAMMJJHHMM>00 node scripts/generate-catalog.mjs 0.5 0046 wave1 wave2 wave3 wave4
 ```
 
 Le script cumule les vagues (la dernière l'emporte sur un contrôle repris),
-écrit le paquet `v0.4/aigms_control_framework_v0.4.json` et la migration qui le
+écrit le paquet `v0.5/aigms_control_framework_v0.5.json` et la migration qui le
 charge comme référentiel de l'éditeur, publié. La version précédente passe
 « remplacée » ; les contrôles opérationnels déjà instanciés gardent leur lien
 vers leur version d'origine — on ne réécrit pas l'histoire d'un client. Relire

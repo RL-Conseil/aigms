@@ -26,7 +26,7 @@ async function catalogControl(c: Client, code: string): Promise<string> {
 }
 
 describe('Référentiel de l’éditeur', () => {
-  it('est livré publié, 120 contrôles dont 84 enrichis, visible de tout tenant', async () => {
+  it('est livré publié, 120 contrôles, tous enrichis, visible de tout tenant', async () => {
     for (const who of [DEMO.officerA, DEMO.officerB]) {
       const row = await asUser(db, who, async (c) => {
         const { rows } = await c.query<{ n: string; enriched: string; status: string }>(
@@ -39,7 +39,7 @@ describe('Référentiel de l’éditeur', () => {
         return rows[0]!
       })
       expect(Number(row.n)).toBe(120)
-      expect(Number(row.enriched)).toBe(84)
+      expect(Number(row.enriched)).toBe(120)
       expect(row.status).toBe('published')
     }
   })

@@ -1,0 +1,478 @@
+{
+  "_note": "Vague 3 d'enrichissement du référentiel AIGMS : OPS, MON, INC, CMP. Même schéma que les vagues 1 et 2.",
+  "controls": {
+    "AIGMS-OPS-001": {
+      "title": "Processus de mise en production",
+      "objective": "Aucun système d'IA n'atteint la production sans passer par un processus défini : validation technique, gate de gouvernance satisfait, décision nominative, plan de retour arrière, communication aux utilisateurs. Le déploiement lui-même est tracé.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["Le processus de mise en production est-il écrit et suivi ?", "Chaque déploiement est-il rattaché à une décision et journalisé ?"],
+      "expected_evidence": ["Procédure de mise en production", "Journal des déploiements", "Décision de mise en production liée"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.5"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.4"}
+      ]
+    },
+    "AIGMS-OPS-002": {
+      "title": "Séparation des environnements",
+      "objective": "Développement, test et production des systèmes d'IA sont séparés — données, modèles, accès, clés — de sorte qu'un essai ne touche jamais des données réelles ni des utilisateurs réels, et qu'un changement soit éprouvé avant d'être livré.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["Les environnements sont-ils séparés, données et clés comprises ?", "Les données de production sont-elles exclues des environnements de test, ou anonymisées ?"],
+      "expected_evidence": ["Schéma des environnements", "Politique de données de test", "Configuration des accès par environnement"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.4"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.5"}
+      ]
+    },
+    "AIGMS-OPS-003": {
+      "title": "Versionnement des modèles",
+      "objective": "Chaque modèle en service est identifié par une version précise — éditeur, nom, version, éventuellement empreinte — et tout changement de version est un changement géré, évalué et journalisé ; on sait à tout moment quelle version a produit quelle sortie.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["La version du modèle en production est-elle connue et figée ?", "Une montée de version passe-t-elle par une demande de changement ?"],
+      "expected_evidence": ["Registre des actifs : version du modèle", "Demandes de changement liées", "Journal de correspondance version / sorties"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.7"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.4"}
+      ]
+    },
+    "AIGMS-OPS-004": {
+      "title": "Versionnement des instructions et prompts",
+      "objective": "Les instructions système, prompts, gabarits et paramètres qui gouvernent le comportement d'un système d'IA sont versionnés comme du code : historique, revue, déploiement contrôlé, possibilité de retour. Un prompt modifié à la main en production est un changement non géré.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["Les prompts et instructions sont-ils versionnés et revus ?", "Le prompt en production correspond-il à la version déployée ?"],
+      "expected_evidence": ["Dépôt versionné des prompts", "Revue des changements de prompt", "Preuve de correspondance production / dépôt"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.7"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.3"}
+      ]
+    },
+    "AIGMS-OPS-005": {
+      "title": "Gestion de configuration",
+      "objective": "La configuration complète d'un système d'IA — modèle, prompts, paramètres, sources de données, connecteurs, garde-fous, droits — est décrite, versionnée et reconstituable ; un écart entre la configuration décrite et la configuration réelle est détecté.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["La configuration de référence est-elle décrite et versionnée ?", "Les écarts entre référence et réalité sont-ils détectés ?"],
+      "expected_evidence": ["Fiche de configuration de référence", "Contrôle d'écart de configuration", "Historique des versions"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.7"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"}
+      ]
+    },
+    "AIGMS-OPS-006": {
+      "title": "Gestion des changements",
+      "objective": "Tout changement sur un système d'IA en service — modèle, données, prompt, finalité, fournisseur, autonomie, sécurité — passe par une demande de changement qualifiée par le moteur de réévaluation, qui dit ce qui doit être réévalué avant mise en œuvre.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["Les changements sont-ils déclarés et qualifiés avant mise en œuvre ?", "Les réévaluations demandées sont-elles conduites avant le déploiement ?"],
+      "expected_evidence": ["Registre des demandes de changement", "Verdicts de réévaluation", "Réévaluations closes avant déploiement"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "8.4"}
+      ]
+    },
+    "AIGMS-OPS-007": {
+      "title": "Retour arrière",
+      "objective": "Pour chaque système d'IA en service, on sait revenir à la version précédente — modèle, prompts, configuration — en un délai défini, sans perte de données ; la procédure est écrite et testée.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["Une procédure de retour arrière existe-t-elle pour chaque système ?", "A-t-elle été testée ?"],
+      "expected_evidence": ["Procédure de retour arrière", "Compte rendu de test", "Versions précédentes conservées"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.5"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"}
+      ]
+    },
+    "AIGMS-OPS-008": {
+      "title": "Gestion des dépendances",
+      "objective": "Les bibliothèques, modèles, services et jeux de données dont dépend un système d'IA sont inventoriés avec leur version, surveillés pour leurs vulnérabilités et leurs dépréciations, et mis à jour de façon maîtrisée.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["L'inventaire des dépendances est-il à jour ?", "Les vulnérabilités et dépréciations sont-elles surveillées et traitées ?"],
+      "expected_evidence": ["Nomenclature des dépendances (SBOM ou équivalent)", "Rapport de vulnérabilités", "Journal des mises à jour"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.4"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.3"}
+      ]
+    },
+    "AIGMS-OPS-009": {
+      "title": "Gestion de la capacité",
+      "objective": "Les ressources nécessaires au fonctionnement des systèmes d'IA — calcul, quotas d'API, stockage, jetons — sont dimensionnées, surveillées et anticipées, pour qu'un pic de charge ne dégrade ni le service ni le budget.",
+      "applicability": "conditional",
+      "owner_role": "Porteur du système",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["Les quotas et capacités sont-ils suivis avec des seuils d'alerte ?", "Les besoins sont-ils anticipés avant les pics ?"],
+      "expected_evidence": ["Tableau de suivi de capacité", "Seuils d'alerte configurés", "Plan de capacité"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.5"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"}
+      ]
+    },
+    "AIGMS-OPS-010": {
+      "title": "Disponibilité et continuité",
+      "objective": "Le niveau de disponibilité attendu de chaque système d'IA est défini selon sa criticité ; les modes dégradés — sans le modèle, sans le fournisseur — sont prévus, et les processus métier savent fonctionner quand l'IA ne répond pas.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["Le niveau de disponibilité attendu est-il défini et mesuré ?", "Le mode dégradé sans IA est-il prévu et connu des équipes ?"],
+      "expected_evidence": ["Exigence de disponibilité par système", "Procédure de mode dégradé", "Mesure de disponibilité"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.5"}
+      ]
+    },
+    "AIGMS-OPS-011": {
+      "title": "Sauvegarde et restauration",
+      "objective": "Ce qui permet de reconstituer un système d'IA — modèles, prompts, configurations, index, données d'entraînement, journaux — est sauvegardé selon une politique définie, et la restauration est testée.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["Les sauvegardes couvrent-elles les index, prompts et configurations, pas seulement les bases ?", "Une restauration a-t-elle été testée ?"],
+      "expected_evidence": ["Politique de sauvegarde", "Périmètre sauvegardé", "Compte rendu de test de restauration"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.5"}
+      ]
+    },
+    "AIGMS-OPS-012": {
+      "title": "Retrait d'un système d'IA",
+      "objective": "Un système d'IA retiré du service l'est proprement : accès révoqués, clés supprimées, données et modèles conservés ou détruits selon la politique, fournisseur notifié, utilisateurs informés — et il reste inscrit au registre avec sa date de retrait.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["Une procédure de retrait existe-t-elle ?", "Les systèmes retirés restent-ils au registre, avec ce qu'il est advenu de leurs données ?"],
+      "expected_evidence": ["Procédure de retrait", "Registre : systèmes retirés", "Preuve de suppression ou d'archivage"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.7.2"}
+      ]
+    },
+
+    "AIGMS-MON-001": {
+      "title": "Indicateurs de pilotage des systèmes d'IA",
+      "objective": "Chaque système d'IA en service a des indicateurs définis — qualité, usage, incidents, coût, délai — avec des seuils, un responsable et une cadence de lecture ; un système sans indicateur n'est pas piloté.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["Chaque système en service a-t-il ses indicateurs et leurs seuils ?", "Sont-ils lus à la cadence prévue, par quelqu'un de nommé ?"],
+      "expected_evidence": ["Tableau de bord par système", "Définition des indicateurs et seuils", "Trace des lectures"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.9.3"}
+      ]
+    },
+    "AIGMS-MON-002": {
+      "title": "Qualité des sorties",
+      "objective": "La qualité des sorties de chaque système d'IA est mesurée en continu ou par échantillonnage — exactitude, pertinence, conformité aux consignes — par des évaluations reproductibles, humaines ou automatisées, dont les résultats sont conservés et comparés dans le temps.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["La qualité des sorties est-elle mesurée avec une méthode reproductible ?", "Les résultats sont-ils comparés dans le temps ?"],
+      "expected_evidence": ["Protocole d'évaluation", "Jeu d'évaluation versionné", "Résultats datés"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.4"},
+        {"framework": "AI_ACT", "reference": "Art. 15 (exactitude)"}
+      ]
+    },
+    "AIGMS-MON-003": {
+      "title": "Mesure des réponses erronées",
+      "objective": "Les réponses fausses, inventées ou hors périmètre d'un système génératif sont détectées, comptées et analysées — par échantillonnage, signalement des utilisateurs, vérification automatique — et leur taux est suivi contre un seuil accepté.",
+      "applicability": "conditional",
+      "owner_role": "Porteur du système",
+      "review_frequency": "monthly",
+      "assessment_questions": ["Le taux de réponses erronées est-il mesuré et suivi contre un seuil ?", "Les signalements des utilisateurs alimentent-ils la mesure ?"],
+      "expected_evidence": ["Méthode de détection", "Taux mesuré et seuil", "Analyse des cas"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"},
+        {"framework": "AI_ACT", "reference": "Art. 15 (exactitude, robustesse)"}
+      ]
+    },
+    "AIGMS-MON-004": {
+      "title": "Détection de la dérive",
+      "objective": "La dérive d'un système d'IA — changement des données d'entrée, du comportement du modèle, des résultats par rapport à l'évaluation initiale — est surveillée par des indicateurs comparés à une référence, avec un seuil qui déclenche une réévaluation.",
+      "applicability": "conditional",
+      "owner_role": "Porteur du système",
+      "review_frequency": "monthly",
+      "assessment_questions": ["Une référence de comportement est-elle conservée et comparée ?", "Le dépassement d'un seuil déclenche-t-il une réévaluation ?"],
+      "expected_evidence": ["Référence de comportement", "Indicateurs de dérive et seuils", "Réévaluations déclenchées"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "8.4"}
+      ]
+    },
+    "AIGMS-MON-005": {
+      "title": "Latence et performance technique",
+      "objective": "Les temps de réponse, les taux d'erreur et la disponibilité de chaque système d'IA sont mesurés contre les engagements pris, et les dégradations sont détectées avant que les utilisateurs ne les signalent.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "monthly",
+      "assessment_questions": ["Latence, erreurs et disponibilité sont-elles mesurées contre des seuils ?", "Les dégradations déclenchent-elles une alerte ?"],
+      "expected_evidence": ["Tableau de bord technique", "Seuils et alertes", "Historique des incidents de performance"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"}
+      ]
+    },
+    "AIGMS-MON-006": {
+      "title": "Suivi des coûts",
+      "objective": "Le coût de chaque système d'IA — jetons, appels d'API, calcul, licences — est mesuré, rattaché à son cas d'usage, comparé au budget et au bénéfice attendu, avec des alertes sur les dérives.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "monthly",
+      "assessment_questions": ["Le coût est-il mesuré par cas d'usage ?", "Est-il comparé au budget et au bénéfice attendu ?"],
+      "expected_evidence": ["Suivi des coûts par système", "Budget et alertes", "Bilan coût / bénéfice"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.4.5"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.9.3"}
+      ]
+    },
+    "AIGMS-MON-007": {
+      "title": "Adoption et usage réel",
+      "objective": "L'usage réel de chaque système d'IA — qui l'utilise, combien, pour quoi — est mesuré et confronté à l'usage prévu : un usage détourné, un usage inexistant ou un usage massif hors périmètre sont des signaux de gouvernance.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["L'usage réel est-il mesuré et comparé à l'usage prévu ?", "Les écarts sont-ils analysés ?"],
+      "expected_evidence": ["Indicateurs d'usage", "Analyse des écarts avec l'usage prévu"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.9.4"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"}
+      ]
+    },
+    "AIGMS-MON-008": {
+      "title": "Revue périodique des performances",
+      "objective": "À cadence fixe, et à chaque changement significatif, les performances de chaque système d'IA sont revues avec son propriétaire et son responsable redevable : indicateurs, incidents, coûts, usage, écarts — et la revue conclut : maintenir, corriger, réévaluer, retirer.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Chaque système en service a-t-il une date de revue, et est-elle tenue ?", "La revue conclut-elle par une décision tracée ?"],
+      "expected_evidence": ["Compte rendu de revue", "Décision issue de la revue", "Date de prochaine revue"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.6"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "9.3"}
+      ]
+    },
+
+    "AIGMS-INC-001": {
+      "title": "Définition d'un incident lié à l'IA",
+      "objective": "L'organisation a défini ce qui constitue un incident lié à l'IA — sortie erronée à effet réel, décision injuste, fuite de données par le système, comportement inattendu d'un agent, indisponibilité — ses niveaux de gravité, et l'a fait connaître à ceux qui peuvent en observer.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "assessment_questions": ["La définition d'un incident IA et ses gravités sont-elles écrites ?", "Sont-elles connues des utilisateurs et des opérateurs ?"],
+      "expected_evidence": ["Définition et échelle de gravité", "Diffusion aux équipes"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.8.4"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.3.3"}
+      ]
+    },
+    "AIGMS-INC-002": {
+      "title": "Détection et signalement des incidents",
+      "objective": "Les incidents liés à l'IA sont détectés par la surveillance et signalés par les utilisateurs et les opérateurs, par un canal connu, simple et sans crainte ; chaque signalement est enregistré.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Un canal de signalement existe-t-il et est-il connu ?", "Les signalements sont-ils tous enregistrés, y compris ceux jugés mineurs ?"],
+      "expected_evidence": ["Canal de signalement documenté", "Registre des signalements", "Alertes de surveillance"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.3.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.8.3"}
+      ]
+    },
+    "AIGMS-INC-003": {
+      "title": "Classification des incidents",
+      "objective": "Chaque incident est classé à l'enregistrement — nature, gravité, personnes affectées, systèmes concernés, récurrence — selon l'échelle définie, et cette classification commande le délai de traitement, l'escalade et les obligations de notification.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["Chaque incident porte-t-il une gravité et une nature dès l'enregistrement ?", "La classification commande-t-elle effectivement le traitement ?"],
+      "expected_evidence": ["Registre des incidents classés", "Règles de traitement par gravité"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.8.4"},
+        {"framework": "AI_ACT", "reference": "Art. 3 (49) et Art. 73 (incident grave)"}
+      ]
+    },
+    "AIGMS-INC-004": {
+      "title": "Escalade des incidents",
+      "objective": "Les incidents significatifs sont escaladés sans délai aux personnes nommées — propriétaire, responsable redevable, gouvernance, direction selon la gravité — et, quand la réglementation l'exige, aux autorités et aux personnes concernées dans les délais prescrits.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "assessment_questions": ["Les règles d'escalade par gravité sont-elles définies avec des personnes nommées ?", "Les obligations de notification externe et leurs délais sont-ils identifiés ?"],
+      "expected_evidence": ["Matrice d'escalade", "Procédure de notification externe", "Trace d'escalade d'un incident"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.8.4"},
+        {"framework": "AI_ACT", "reference": "Art. 73 (notification des incidents graves)"}
+      ]
+    },
+    "AIGMS-INC-005": {
+      "title": "Circonscription",
+      "objective": "Face à un incident, le système est circonscrit sans attendre l'analyse : suspension, bascule en mode dégradé, retrait d'une fonction, révocation d'un accès — par une personne habilitée, dans un délai adapté à la gravité, et la mesure est datée.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["Les mesures de circonscription possibles sont-elles prévues et exécutables sans délai ?", "Chaque incident porte-t-il sa mesure et sa date de circonscription ?"],
+      "expected_evidence": ["Mesures de circonscription par système", "Registre des incidents : circonscription datée"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.8.4"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.9.2"}
+      ]
+    },
+    "AIGMS-INC-006": {
+      "title": "Investigation et cause racine",
+      "objective": "Chaque incident significatif fait l'objet d'une investigation qui établit les faits, la chronologie et la cause racine — données, modèle, prompt, intégration, usage, supervision — à partir des journaux ; un incident ne se clôt pas sans cause racine.",
+      "applicability": "mandatory",
+      "owner_role": "Porteur du système",
+      "review_frequency": "annual",
+      "assessment_questions": ["Les journaux permettent-ils de reconstituer l'incident ?", "Aucun incident significatif n'est-il clos sans cause racine documentée ?"],
+      "expected_evidence": ["Rapport d'investigation", "Chronologie reconstituée", "Registre des incidents : cause racine"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.8.4"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.8"}
+      ]
+    },
+    "AIGMS-INC-007": {
+      "title": "Communication sur les incidents",
+      "objective": "Les personnes affectées, les utilisateurs, les parties intéressées et, le cas échéant, les autorités sont informés d'un incident de façon proportionnée, exacte et à temps — ce qui s'est passé, ce qui est fait, ce qu'elles peuvent faire — selon un plan de communication décidé à l'avance.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "assessment_questions": ["Un plan de communication par gravité existe-t-il ?", "Les communications faites sont-elles conservées ?"],
+      "expected_evidence": ["Plan de communication", "Communications émises", "Notifications aux autorités"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.8.4"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.8.5"}
+      ]
+    },
+    "AIGMS-INC-008": {
+      "title": "Retour d'expérience et actions correctives",
+      "objective": "Chaque incident significatif produit un retour d'expérience et, quand la cause le justifie, une action corrective dont l'efficacité est vérifiée ; les enseignements sont réinjectés dans les contrôles, les formations, les prompts ou le référentiel de risques.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Les incidents significatifs ont-ils une CAPA close, efficacité vérifiée ?", "Les enseignements ont-ils modifié quelque chose — contrôle, formation, risque ?"],
+      "expected_evidence": ["Retour d'expérience", "CAPA avec test d'efficacité", "Modification tracée d'un contrôle ou d'un risque"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.8.4"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.2.4"}
+      ]
+    },
+
+    "AIGMS-CMP-001": {
+      "title": "Identification des exigences applicables",
+      "objective": "L'organisation identifie et tient à jour les exigences légales, réglementaires, contractuelles et normatives qui s'appliquent à ses usages d'IA — selon son rôle, ses secteurs, ses territoires — et les rattache aux systèmes concernés.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Les exigences applicables sont-elles inventoriées, par système ?", "L'inventaire est-il revu à cadence fixe et à chaque changement réglementaire ?"],
+      "expected_evidence": ["Registre des exigences applicables", "Rattachement aux systèmes", "Veille réglementaire"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.2.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.10.2"}
+      ]
+    },
+    "AIGMS-CMP-002": {
+      "title": "Qualification réglementaire des systèmes",
+      "objective": "Chaque système d'IA est qualifié au regard du règlement européen sur l'IA — pratique interdite, haut risque, obligation de transparence, modèle à usage général, hors champ — avec le rôle de l'organisation, la justification et, pour un haut risque, les obligations qui en découlent ; la qualification est revue à chaque changement de finalité.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "assessment_questions": ["Chaque système en service porte-t-il une qualification réglementaire justifiée ?", "Les obligations d'un système à haut risque sont-elles identifiées et suivies ?"],
+      "expected_evidence": ["Classification réglementaire par système", "Justification et revue juridique", "Suivi des obligations haut risque"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.2.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.5.2"},
+        {"framework": "AI_ACT", "reference": "Art. 5, 6, 50, 51 (qualification)"}
+      ]
+    },
+    "AIGMS-CMP-003": {
+      "title": "Correspondance normative",
+      "objective": "Chaque contrôle opérationnel est rattaché aux exigences des référentiels retenus — ISO/IEC 42001 en premier lieu — de sorte que la Déclaration d'Applicabilité soit dérivée du dispositif réel, exigence par exigence, et non écrite à part.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Chaque contrôle opérationnel est-il rattaché à au moins une exigence ?", "La Déclaration d'Applicabilité est-elle dérivée des rattachements, sans exigence laissée sans décision ?"],
+      "expected_evidence": ["Rattachements contrôle / exigence", "Déclaration d'Applicabilité", "Exigences sans décision : zéro"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.2.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "6.1.2"}
+      ]
+    },
+    "AIGMS-CMP-004": {
+      "title": "Gestion des preuves",
+      "objective": "Chaque contrôle opérant est démontré par au moins une preuve validée nominativement, datée, non échue, rattachée au contrôle, conservée avec son empreinte ; les preuves à renouveler sont suivies avant leur échéance.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["Chaque contrôle opérant a-t-il une preuve validée et non échue ?", "Les preuves à renouveler sont-elles suivies avant échéance ?"],
+      "expected_evidence": ["Registre des preuves", "Contrôles opérants sans preuve : zéro", "Suivi des échéances"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.7"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.5.3"}
+      ]
+    },
+    "AIGMS-CMP-005": {
+      "title": "Auto-évaluation",
+      "objective": "À cadence fixe, l'organisation évalue elle-même son dispositif — contrôles opérants, preuves valides, exigences couvertes, écarts — à l'aide des questions d'évaluation du référentiel, et en tire un plan d'actions ; l'auto-évaluation prépare l'audit, elle ne le remplace pas.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "annual",
+      "assessment_questions": ["Une auto-évaluation est-elle conduite à la cadence prévue ?", "Produit-elle un plan d'actions suivi ?"],
+      "expected_evidence": ["Rapport d'auto-évaluation", "Plan d'actions", "Indice de santé et couverture au moment de l'évaluation"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.2.4"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "9.3"}
+      ]
+    },
+    "AIGMS-CMP-006": {
+      "title": "Audit interne",
+      "objective": "Le système de management de l'IA est audité en interne selon un programme, par des personnes indépendantes de ce qu'elles auditent, avec des constats consignés et suivis jusqu'à correction ; les résultats alimentent la revue de direction.",
+      "applicability": "mandatory",
+      "owner_role": "Auditeur",
+      "review_frequency": "annual",
+      "assessment_questions": ["Un programme d'audit interne existe-t-il et est-il tenu ?", "Les auditeurs sont-ils indépendants de l'activité auditée ?", "Les constats sont-ils suivis jusqu'à correction ?"],
+      "expected_evidence": ["Programme d'audit", "Rapports d'audit", "Suivi des constats"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "9.3"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.2.4"}
+      ]
+    },
+    "AIGMS-CMP-007": {
+      "title": "Non-conformités et actions correctives",
+      "objective": "Tout écart à une exigence, une politique ou un contrôle est enregistré comme non-conformité, traité par une correction immédiate puis une action corrective fondée sur l'analyse de cause, dont l'efficacité est vérifiée avant clôture.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "quarterly",
+      "assessment_questions": ["Les non-conformités sont-elles enregistrées, avec leur origine (audit, incident, auto-évaluation) ?", "Aucune n'est-elle close sans vérification d'efficacité ?"],
+      "expected_evidence": ["Registre des non-conformités", "CAPA closes avec test d'efficacité"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.2.4"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.8.4"}
+      ]
+    },
+    "AIGMS-CMP-008": {
+      "title": "Préparation à l'audit",
+      "objective": "L'organisation peut, à tout moment, produire à un auditeur les pièces qui démontrent son dispositif — registre des usages, déclaration d'applicabilité, registre des preuves, registre de décisions, journal d'audit — à jour, cohérentes entre elles et remises sous une identité et une mention de confidentialité.",
+      "applicability": "mandatory",
+      "owner_role": "AI Governance Officer",
+      "review_frequency": "semiannual",
+      "assessment_questions": ["Les pièces d'audit sont-elles produisibles sans préparation particulière ?", "Sont-elles cohérentes entre elles — mêmes contrôles, mêmes preuves, mêmes décisions ?"],
+      "expected_evidence": ["Registre des usages imprimé", "Déclaration d'Applicabilité imprimée", "Registre des preuves imprimé", "Export du journal d'audit"],
+      "framework_mappings": [
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.6.2.7"},
+        {"framework": "ISO_IEC_42001", "version": "2023", "reference": "A.5.3"},
+        {"framework": "AI_ACT", "reference": "Art. 11 et 18 (documentation technique, conservation)"}
+      ]
+    }
+  }
+}
