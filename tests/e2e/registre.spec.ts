@@ -65,7 +65,7 @@ test('un actif d’IA s’inscrit et se rattache à un cas d’usage', async ({ 
 })
 
 test('une supervision non applicable exige sa justification', async ({ page }) => {
-  await page.goto(`/admin/use-cases/${USE_CASE}`)
+  await page.goto(`/admin/use-cases/${USE_CASE}?onglet=supervision`)
 
   await page.getByRole('button', { name: /Modifier le plan|Décrire la supervision/ }).click()
   const plan = page.getByRole('dialog', { name: 'Plan de supervision humaine' })
@@ -77,7 +77,7 @@ test('une supervision non applicable exige sa justification', async ({ page }) =
 })
 
 test('une évaluation d’impact se conduit depuis la fiche', async ({ page }) => {
-  await page.goto(`/admin/use-cases/${USE_CASE}`)
+  await page.goto(`/admin/use-cases/${USE_CASE}?onglet=impact`)
 
   await page.getByRole('button', { name: 'Conduire une évaluation' }).click()
   const fenetre = page.getByRole('dialog', { name: 'Évaluation d’impact' })

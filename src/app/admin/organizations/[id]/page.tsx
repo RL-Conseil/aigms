@@ -267,7 +267,7 @@ export default async function OrganizationPage({
             {profile ? (
               <div className="mt-4 border-t border-ink-100 pt-3">
                 <p className="mb-2 text-xs font-medium text-ink-600">
-                  Ce que ce rôle rend exigeant
+                  Ce que ce rôle rend exigeant pour l’organisation
                 </p>
                 {demanding.length ? (
                   <ul className="flex flex-col gap-1.5">
@@ -310,7 +310,7 @@ export default async function OrganizationPage({
                   href={`/admin/organizations/${id}/preuves`}
                   className="mt-3 inline-block text-xs font-medium text-brand-600 hover:underline"
                 >
-                  Voir la matrice complète et déposer une preuve
+                  Voir le registre complet et déposer une preuve
                 </Link>
               </div>
             ) : null}

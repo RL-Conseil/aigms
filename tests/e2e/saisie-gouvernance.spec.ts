@@ -100,19 +100,22 @@ test('un cas d’usage se déclare, se trie, se classifie et reçoit un risque',
   await expect(page.getByRole('heading', { name })).toBeVisible({ timeout: 15_000 })
   await expect(page.getByText(/Servir le client › Gestion des réclamations/)).toBeVisible()
 
-  // --- Triage : ouvert d'emblée, c'est ce qui reste à faire -----------------
-  const triage = panel(/Trier le cas d’usage/)
+  // --- Criticité : sur le fil conducteur, ouverte d'emblée ------------------
+  const rubriques = page.getByRole('navigation', { name: 'Rubriques du cas d’usage' })
+  const triage = panel(/Criticité du cas d’usage/)
   await triage.getByLabel('Criticité').selectOption('moderate')
   await triage
     .getByLabel('Justification')
     .fill('Usage interne d’analyse, sans décision automatisée affectant un client.')
-  await triage.getByRole('button', { name: 'Enregistrer le triage' }).click()
-  await expect(triage.getByRole('status')).toContainText('Triage enregistré')
+  await triage.getByRole('button', { name: 'Enregistrer la criticité' }).click()
+  await expect(triage.getByRole('status')).toContainText('Criticité enregistrée')
 
-  // --- Pré-classification ----------------------------------------------------
-  const classification = panel(/Pré-classifier au regard du règlement/)
+  // --- Qualification : sa propre rubrique -------------------------------------
+  await rubriques.getByRole('link', { name: 'Qualification' }).click()
+  await expect(page).toHaveURL(/onglet=qualification/)
+  const classification = panel(/Qualification au regard du règlement/)
   const classificationToggle = classification.getByRole('button', {
-    name: /Pré-classifier au regard du règlement/,
+    name: /Qualification au regard du règlement/,
   })
   if ((await classificationToggle.getAttribute('aria-expanded')) !== 'true') {
     await classificationToggle.click()
@@ -123,12 +126,13 @@ test('un cas d’usage se déclare, se trie, se classifie et reçoit un risque',
     .fill(
       'Analyse interne de réclamations déjà collectées, sans profilage ni décision individuelle : aucune pratique interdite ni cas listé comme à haut risque identifié.',
     )
-  await classification.getByRole('button', { name: 'Enregistrer la classification' }).click()
-  await expect(classification.getByRole('status')).toContainText('Pré-classification enregistrée')
+  await classification.getByRole('button', { name: 'Enregistrer la qualification' }).click()
+  await expect(classification.getByRole('status')).toContainText('Qualification enregistrée')
 
   // --- Risque ----------------------------------------------------------------
-  // La saisie se fait desormais dans une fenetre, ouverte depuis la carte
-  // qu'elle alimente : un risque n'existe que par son cas d'usage.
+  // La saisie se fait dans une fenetre, ouverte depuis la rubrique qu'elle
+  // alimente : un risque n'existe que par son cas d'usage.
+  await rubriques.getByRole('link', { name: /^Risques/ }).click()
   await page
     .locator('section')
     .filter({ has: page.getByRole('heading', { name: 'Risques', exact: true }) })
@@ -152,7 +156,7 @@ test('un cas d’usage se déclare, se trie, se classifie et reçoit un risque',
 })
 
 test('un risque ne s’accepte pas sans justification ni date de revue', async ({ page }) => {
-  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000002')
+  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000002?onglet=risques')
 
   // Le formulaire d'acceptation exige les deux champs : le navigateur bloque,
   // et la base les exigerait de toute façon.
@@ -233,21 +237,30 @@ test('trois lectures du même modèle : processus, couverture, risques', async (
     page.getByText(/opérant et prouvé par une preuve validée non échue/),
   ).toBeVisible()
 
+  // Les barres, par activite ; le detail en tableau se deplie.
+  const bar = page.getByRole('listitem').filter({ hasText: 'Présélection des candidatures' })
+  await expect(bar.getByText('75 %')).toBeVisible()
+  await page.getByRole('button', { name: /Le détail, en tableau/ }).click()
   const row = page.getByRole('row').filter({ hasText: 'Présélection des candidatures' })
-  await expect(row.getByText('75 %')).toBeVisible()
   await expect(row.getByText(/\d+ j/)).toBeVisible()
+
+  // Le meme grain se change d'un lien : par processus.
+  await page.getByRole('link', { name: 'Par processus' }).click()
+  await expect(page).toHaveURL(/par=processus/)
+  await expect(page.getByRole('listitem').filter({ hasText: 'Gérer les ressources humaines' })).toBeVisible()
 
   // --- Risques ---------------------------------------------------------------
   await page.getByRole('link', { name: 'Risques', exact: true }).click()
   await expect(page).toHaveURL(/vue=risques/)
   await expect(page.getByRole('heading', { name: 'Répartition des risques' })).toBeVisible()
-  await expect(page.getByRole('columnheader', { name: 'Critique' })).toBeVisible()
+  await expect(page.getByRole('img', { name: /risque\(s\) ouvert\(s\)/ }).first()).toBeVisible()
+  await page.getByRole('link', { name: 'Par processus' }).click()
   await expect(
-    page.getByRole('rowheader', { name: 'Gérer les ressources humaines' }),
+    page.getByRole('listitem').filter({ hasText: 'Gérer les ressources humaines' }).first(),
   ).toBeVisible()
 
   // Un risque accepté n'est pas compté comme ouvert : c'est une décision.
-  await expect(page.getByText(/l’acceptation est une\s+décision assumée/)).toBeVisible()
+  await expect(page.getByText(/ce qui a été traité ou accepté/)).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Risques ouverts les plus élevés' })).toBeVisible()
 
   // --- Retour à l'arbre ------------------------------------------------------
@@ -356,7 +369,8 @@ test('la mise en service avertit des risques non soldés', async ({ page }) => {
   await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001')
   await page.getByRole('link', { name: 'Scoring de candidatures' }).click()
 
-  const evolution = page.locator('section').filter({ hasText: 'Faire évoluer le cas d’usage' })
+  await page.getByRole('button', { name: 'Faire évoluer' }).click()
+  const evolution = page.getByRole('dialog', { name: 'Faire évoluer le cas d’usage' })
   const cible = evolution.getByLabel('Transition demandée')
 
   // Sur une transition qui n'est pas une mise en service, aucun avertissement.
@@ -374,6 +388,10 @@ test('la mise en service avertit des risques non soldés', async ({ page }) => {
 test('un risque se saisit sans quitter la fiche', async ({ page }) => {
   await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001')
   await page.getByRole('link', { name: 'Assistant support client' }).click()
+  await page
+    .getByRole('navigation', { name: 'Rubriques du cas d’usage' })
+    .getByRole('link', { name: /^Risques/ })
+    .click()
 
   const risques = page
     .locator('section')
@@ -418,9 +436,8 @@ test('le suivi liste actions, incidents et revues, et l’incident significatif 
 })
 
 test('sur la fiche, une action s’ouvre et se clôt avec son motif', async ({ page }) => {
-  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000002')
-  const volet = page.locator('section').filter({ has: page.getByRole('button', { name: /^Actions/ }) })
-  await volet.getByRole('button', { name: /^Actions/ }).click()
+  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000002?onglet=actions')
+  const volet = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Actions', exact: true }) })
   await volet.getByRole('button', { name: 'Ouvrir une action' }).click()
 
   const title = `Vérifier la procédure ${Date.now()}`

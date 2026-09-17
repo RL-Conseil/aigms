@@ -34,13 +34,28 @@ export default async function DepositEvidencePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ controle?: string; typologie?: string; remplace?: string }>
+  searchParams: Promise<{
+    controle?: string
+    typologie?: string
+    remplace?: string
+    'cas-d-usage'?: string
+    action?: string
+  }>
 }) {
   const { id } = await params
-  const { controle, typologie, remplace } = await searchParams
+  const { controle, typologie, remplace, action } = await searchParams
+  const useCaseId = (await searchParams)['cas-d-usage']
   const supabase = await createClient()
 
-  const [{ data: organization }, { data: controlData }, { data: typologyData }, { data: replaced }] =
+  const [
+    { data: organization },
+    { data: controlData },
+    { data: typologyData },
+    { data: replaced },
+    { data: useCaseData },
+    { data: applicability },
+    { data: actionData },
+  ] =
     await Promise.all([
       supabase.from('organization').select('id, name, business_ref').eq('id', id).maybeSingle(),
       supabase.rpc('controls_awaiting_evidence', { p_organization_id: id }),
@@ -54,9 +69,34 @@ export default async function DepositEvidencePage({
             .eq('organization_id', id)
             .maybeSingle()
         : Promise.resolve({ data: null }),
+      // Depuis la fiche d'un cas d'usage : la liste des controles se restreint
+      // a ceux qui s'y appliquent, et la page dit pour qui elle depose.
+      useCaseId
+        ? supabase.from('ai_use_case').select('id, name, business_ref').eq('id', useCaseId).maybeSingle()
+        : Promise.resolve({ data: null }),
+      useCaseId
+        ? supabase
+            .from('control_applicability')
+            .select('control_id')
+            .eq('use_case_id', useCaseId)
+            .eq('status', 'applicable')
+        : Promise.resolve({ data: null }),
+      // Une action a solder par ce depot : « Déposer la preuve de l'évaluation… ».
+      action
+        ? supabase
+            .from('action')
+            .select('id, business_ref, title, status')
+            .eq('id', action)
+            .eq('organization_id', id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
     ])
 
   if (!organization) notFound()
+
+  const applicableIds = new Set((applicability ?? []).map((a) => a.control_id))
+  const openAction =
+    actionData && !['done', 'cancelled'].includes(actionData.status) ? actionData : null
 
   const controls = (controlData ?? []) as Control[]
   const typologies = (typologyData ?? []) as TypologyChoice[]
@@ -75,7 +115,8 @@ export default async function DepositEvidencePage({
     : null
   // `?typologie=<code>` depuis les manques de la matrice : on retrouve l'id.
   const defaultTypologyId = typologie ? typologies.find((t) => t.code === typologie)?.id : undefined
-  const choices: ControlChoice[] = controls.map((c) => ({
+  const scoped = useCaseData ? controls.filter((c) => applicableIds.has(c.id)) : controls
+  const choices: ControlChoice[] = (scoped.length ? scoped : controls).map((c) => ({
     id: c.id,
     code: c.code,
     name: c.name,
@@ -103,6 +144,24 @@ export default async function DepositEvidencePage({
       }
     >
       <div className="max-w-3xl">
+        {useCaseData || openAction ? (
+          <p className="mb-4 rounded-md border border-ink-200 bg-white px-4 py-3 text-sm text-ink-600">
+            {useCaseData ? (
+              <>
+                Preuve pour le cas d’usage{' '}
+                <Link href={`/admin/use-cases/${useCaseData.id}?onglet=supervision`} className="font-medium text-brand-600 hover:underline">
+                  {useCaseData.name}
+                </Link>{' '}
+                ({useCaseData.business_ref}) : la liste ne propose que les contrôles qui s’y appliquent.
+              </>
+            ) : null}
+            {openAction ? (
+              <span className="block">
+                Le dépôt clôturera l’action <strong className="font-medium text-ink-900">{openAction.business_ref}</strong> — « {openAction.title} ».
+              </span>
+            ) : null}
+          </p>
+        ) : null}
         <Card title="La pièce et ce qu’elle démontre">
           {typologies.length || choices.length ? (
             <EvidenceUploadForm
@@ -112,6 +171,7 @@ export default async function DepositEvidencePage({
               defaultControlId={controle}
               defaultTypologyId={defaultTypologyId}
               replaces={replaces}
+              closesActionId={openAction?.id}
             />
           ) : (
             <Empty>

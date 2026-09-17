@@ -5,6 +5,9 @@ import { Shell } from '@/components/shell'
 import { UseCaseLabelForm } from '@/components/governance/use-case-label-form'
 import { Badge, Card, Empty, Field, Stat, StatStrip } from '@/components/ui'
 import { Disclosure } from '@/components/forms'
+import { Modal } from '@/components/modal'
+import { InfoTip } from '@/components/info-tip'
+import { resolveTab, UseCaseTabs, type TabSignal, type UseCaseTab } from '@/components/governance/use-case-tabs'
 import { GateChecklist } from '@/components/gate-checklist'
 import { Lifecycle } from '@/components/lifecycle'
 import { ApplicabilityForm, RiskTreatmentForm } from '@/components/governance/control-forms'
@@ -69,8 +72,16 @@ function riskTone(level: RiskLevel | null) {
   return 'neutral' as const
 }
 
-export default async function UseCasePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function UseCasePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ onglet?: string }>
+}) {
   const { id } = await params
+  const { onglet } = await searchParams
+  const tab = resolveTab(onglet)
   const supabase = await createClient()
 
   const { data: useCase } = await supabase
@@ -147,11 +158,11 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
       .order('approved_at', { ascending: false, nullsFirst: false }),
     supabase
       .from('control_applicability')
-      .select('id, status, justification, control:control_id (code, name, is_mandatory, status)')
+      .select('id, status, justification, control:control_id (id, code, name, is_mandatory, status)')
       .eq('use_case_id', id),
     supabase
       .from('action')
-      .select('id, business_ref, title, status, due_date, is_blocking')
+      .select('id, business_ref, title, status, due_date, is_blocking, source')
       .eq('use_case_id', id)
       .order('due_date', { nullsFirst: false }),
     supabase
@@ -167,8 +178,14 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
       )
       .eq('use_case_id', id)
       .order('detected_at', { ascending: false }),
-    supabase.rpc('suggest_controls', { p_use_case_id: id }),
-    supabase.rpc('suggest_actions', { p_use_case_id: id }),
+    // Les propositions de l'assistant ne se calculent que pour la rubrique
+    // qui les montre : ce sont les deux appels les plus lourds de la page.
+    tab === 'controles'
+      ? supabase.rpc('suggest_controls', { p_use_case_id: id })
+      : Promise.resolve({ data: null }),
+    tab === 'actions'
+      ? supabase.rpc('suggest_actions', { p_use_case_id: id })
+      : Promise.resolve({ data: null }),
     supabase
       .from('audit_log')
       .select('id, occurred_at, action, summary, actor_email')
@@ -196,7 +213,8 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
 
   // Les quatre chiffres du bandeau. Ils se calculent ici, sur des donnees deja
   // chargees : un cinquieme appel serait du trafic pour un resultat deja en
-  // memoire.
+  // memoire. Ils bougent a chaque acte pose sur la fiche : un risque identifie,
+  // un controle retenu, une action close, une decision approuvee.
   const today = new Date().toISOString().slice(0, 10)
   const openHighRisks = (risks ?? []).filter(
     (r) =>
@@ -209,8 +227,10 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
     const control = c.control as unknown as { is_mandatory: boolean } | null
     return c.status === 'to_determine' && control?.is_mandatory === true
   }).length
-  const overdueActions = (actions ?? []).filter(
-    (a) => !['done', 'cancelled'].includes(a.status) && a.due_date !== null && a.due_date <= today,
+  const applicableControls = (controls ?? []).filter((c) => c.status === 'applicable')
+  const openActions = (actions ?? []).filter((a) => !['done', 'cancelled'].includes(a.status))
+  const overdueActions = openActions.filter(
+    (a) => a.due_date !== null && a.due_date <= today,
   ).length
   const pendingDecisions = (decisions ?? []).filter((d) =>
     ['draft', 'submitted'].includes(d.status),
@@ -223,10 +243,71 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
   )
   const unsettledRisks = unsettled.length
   const unassessedRisks = unsettled.filter((r) => r.residual_level === null).length
+  const openIncidents = (incidents ?? []).filter((i) => i.status !== 'CLOSED').length
+  const pendingReassessments = (changes ?? []).filter((c) =>
+    ((c.reassessment ?? []) as { final_verdict: string | null }[]).some((r) => r.final_verdict === null),
+  ).length
+
+  // Les preuves de ce cas d'usage : celles rattachees aux controles qui s'y
+  // appliquent. Elles ne se lisent que dans la rubrique Supervision.
+  const applicableControlIds = applicableControls
+    .map((c) => (c.control as unknown as { id: string } | null)?.id)
+    .filter((cid): cid is string => Boolean(cid))
+  const { data: evidenceLinks } =
+    tab === 'supervision' && applicableControlIds.length
+      ? await supabase
+          .from('control_evidence')
+          .select(
+            'control_id, evidence:evidence_id (id, business_ref, title, validation_status, valid_until, typology:typology_id (name))',
+          )
+          .in('control_id', applicableControlIds)
+      : { data: null }
+  const useCaseEvidence = [
+    ...new Map(
+      (evidenceLinks ?? [])
+        .map((l) => l.evidence as unknown as {
+          id: string
+          business_ref: string
+          title: string
+          validation_status: string
+          valid_until: string | null
+          typology: { name: string } | null
+        } | null)
+        .filter((e): e is NonNullable<typeof e> => Boolean(e))
+        .map((e) => [e.id, e] as const),
+    ).values(),
+  ]
+
+  const signals: Partial<Record<UseCaseTab, TabSignal>> = {
+    fil: useCase.criticality ? { tone: 'done' } : { tone: 'todo' },
+    qualification: classification ? { tone: 'done' } : { tone: 'todo' },
+    actions: {
+      count: openActions.length,
+      tone: overdueActions ? 'late' : openActions.length ? 'todo' : 'neutral',
+    },
+    controles: {
+      count: applicableControls.length,
+      tone: mandatoryUndecided ? 'todo' : applicableControls.length ? 'done' : 'todo',
+    },
+    risques: {
+      count: unsettledRisks,
+      tone: openHighRisks ? 'late' : unsettledRisks ? 'todo' : 'neutral',
+    },
+    impact: { count: impacts?.length ?? 0, tone: impacts?.length ? 'done' : 'todo' },
+    supervision: oversight
+      ? { tone: oversight.status === 'approved' ? 'done' : 'todo' }
+      : { tone: 'todo' },
+    decisions: { count: pendingDecisions, tone: pendingDecisions ? 'todo' : 'neutral' },
+    changements: { count: pendingReassessments, tone: pendingReassessments ? 'todo' : 'neutral' },
+    incidents: { count: openIncidents, tone: openIncidents ? 'late' : 'neutral' },
+  }
 
   const controlChoices = (orgControls ?? [])
     .filter((c) => c.organization_id === useCase.organization_id)
     .map((c) => ({ id: c.id, code: c.code, name: c.name, status: c.status }))
+  // Un risque se traite par un controle qui S'APPLIQUE a ce cas d'usage : la
+  // liste ne propose pas les cent vingt controles du referentiel.
+  const treatmentChoices = controlChoices.filter((c) => applicableControlIds.includes(c.id))
 
   const vendorChoices = (orgVendors ?? [])
     .filter((v) => v.organization_id === useCase.organization_id)
@@ -242,6 +323,36 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
       id: u.id,
       label: u.full_name ? `${u.full_name}${u.job_title ? ` — ${u.job_title}` : ''}` : u.email,
     }))
+
+  const qualificationSummary = classification ? (
+    <div className="space-y-3">
+      <div className="flex flex-wrap gap-2">
+        <Badge tone="info">
+          {classification.framework_code} {classification.framework_version}
+        </Badge>
+        <Badge>Rôle : {classification.organization_role}</Badge>
+        {(classification.flags as string[]).map((flag) => (
+          <Badge key={flag} tone={flag === 'high_risk_potential' ? 'stop' : 'warn'}>
+            {flag}
+          </Badge>
+        ))}
+      </div>
+      <p className="text-sm text-ink-600">{classification.rationale}</p>
+      <p className="text-xs text-ink-400">
+        Revue juridique : {classification.legal_review_level}
+        {classification.legal_review_completed ? ' (close)' : ' (en attente)'} · qualifié le{' '}
+        {formatDate(classification.classified_at)}
+        {classification.next_review_at
+          ? ` · à revoir le ${formatDate(classification.next_review_at)}`
+          : ''}
+      </p>
+    </div>
+  ) : (
+    <Empty>
+      Aucune qualification enregistrée. Elle se pose dans la rubrique « Qualification » ; le
+      passage en revue l’exige.
+    </Empty>
+  )
 
   return (
     <Shell
@@ -260,99 +371,176 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
       }
       actions={
         <div className="flex items-center gap-3">
-          <UseCaseLabelForm useCase={useCase} people={people} />
           <Badge tone="info">{USE_CASE_STATUS_LABELS[status]}</Badge>
+          <UseCaseLabelForm useCase={useCase} people={people} trigger="Changer" />
+          {/*
+            Faire evoluer se demande depuis n'importe quelle rubrique : c'est
+            l'acte central de la fiche, il ne vit pas dans un onglet.
+          */}
+          <Modal
+            trigger="Faire évoluer"
+            triggerClassName="rounded-md bg-night-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-night-800"
+            title="Faire évoluer le cas d’usage"
+            description="Le serveur vérifie les préconditions ; un refus dit quoi corriger."
+          >
+            {() => (
+              <TransitionPanel
+                useCaseId={id}
+                targets={UI_TRANSITIONS[status]}
+                unsettledRisks={unsettledRisks}
+                unassessedRisks={unassessedRisks}
+              />
+            )}
+          </Modal>
         </div>
       }
     >
       {/*
-        La fiche empilait treize cartes de meme poids : le dossier de reference
-        et ce qui appelle une action s'y lisaient pareil. Les chiffres saillants
-        passent en tete, le dossier se replie, et la page s'ouvre sur ce qu'il y
-        a a faire.
+        Le bandeau ne bouge pas d'une rubrique a l'autre : les quatre chiffres
+        restent sous les yeux pendant qu'on agit dessous. Chacun change des
+        qu'un acte est pose sur la fiche.
       */}
       <StatStrip>
         <Stat
-          label="Risques élevés ouverts"
-          value={openHighRisks}
-          tone="stop"
+          label={openHighRisks ? `Risques ouverts · ${openHighRisks} élevé(s)` : 'Risques ouverts'}
+          value={unsettledRisks}
+          total={risks?.length ?? 0}
+          tone={openHighRisks ? 'stop' : 'warn'}
         />
         <Stat
-          label="Contrôles obligatoires non statués"
-          value={mandatoryUndecided}
-          tone="warn"
+          label={
+            mandatoryUndecided
+              ? `Contrôles applicables · ${mandatoryUndecided} obligatoire(s) à statuer`
+              : 'Contrôles applicables'
+          }
+          value={applicableControls.length}
+          total={controls?.length ?? 0}
+          tone={mandatoryUndecided ? 'warn' : 'ok'}
         />
-        <Stat label="Actions échues" value={overdueActions} tone="stop" />
+        <Stat
+          label={overdueActions ? `Actions ouvertes · ${overdueActions} échue(s)` : 'Actions ouvertes'}
+          value={openActions.length}
+          total={actions?.length ?? 0}
+          tone={overdueActions ? 'stop' : 'warn'}
+        />
         <Stat
           label="Décisions à instruire"
           value={pendingDecisions}
+          total={decisions?.length ?? 0}
           tone="warn"
         />
       </StatStrip>
 
-      <div className="mb-6 grid gap-5 lg:grid-cols-3">
-        <div className="rounded-lg border border-ink-200 bg-white p-5 lg:col-span-2">
-          <Lifecycle status={status} />
-          <p className="mt-3 border-t border-ink-100 pt-3 text-xs text-ink-400">
-            Dernier changement de statut : {formatDateTime(useCase.status_changed_at)}
-            {useCase.next_review_at
-              ? ` · prochaine revue le ${formatDate(useCase.next_review_at)}`
-              : ''}
-          </p>
+      <UseCaseTabs useCaseId={id} active={tab} signals={signals} />
 
-          <dl className="mt-4 grid gap-4 border-t border-ink-100 pt-4 sm:grid-cols-2">
-            <Field label="Processus métier">{useCase.business_process ?? '—'}</Field>
-            <Field label="Bénéfice attendu">{useCase.expected_benefit ?? '—'}</Field>
-            <Field label="Niveau d’autonomie">
-              {AUTONOMY_LABELS[useCase.autonomy_level] ?? useCase.autonomy_level}
-            </Field>
-            <Field label="Criticité">
-              {useCase.criticality ?? 'Non déterminée'}
-            </Field>
-            <Field label="Utilisateurs">{useCase.users_description ?? '—'}</Field>
-            <Field label="Personnes affectées">{useCase.affected_persons ?? '—'}</Field>
-            <Field label="Données">{useCase.data_description ?? '—'}</Field>
-            <Field label="Portée de la décision">{useCase.decision_impact ?? '—'}</Field>
-          </dl>
+      {tab === 'fil' ? (
+        <div className="grid gap-5 lg:grid-cols-3">
+          <div className="space-y-5 lg:col-span-2">
+            <div className="rounded-lg border border-ink-200 bg-white p-5">
+              <Lifecycle status={status} />
+              <p className="mt-3 border-t border-ink-100 pt-3 text-xs text-ink-400">
+                Dernier changement de statut : {formatDateTime(useCase.status_changed_at)}
+                {useCase.next_review_at
+                  ? ` · prochaine revue le ${formatDate(useCase.next_review_at)}`
+                  : ''}
+              </p>
 
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            {useCase.involves_personal_data ? (
-              <Badge tone="warn">Données personnelles</Badge>
-            ) : null}
-            {useCase.involves_vulnerable_persons ? (
-              <Badge tone="stop">Personnes vulnérables</Badge>
-            ) : null}
-            {/*
-              Ce que le cas d'usage emploie, et de qui il depend. Les deux
-              rattachements vivent ici parce qu'ils completent son identite —
-              et parce qu'un fournisseur rattache devient une precondition de
-              mise en production.
-            */}
-            <span className="ml-auto flex flex-wrap gap-2">
-              <LinkAssetForm useCaseId={id} assets={assetChoices} />
-              <LinkVendorForm useCaseId={id} vendors={vendorChoices} />
-            </span>
-          </div>
-        </div>
+              <dl className="mt-4 grid gap-4 border-t border-ink-100 pt-4 sm:grid-cols-2">
+                <Field label="Processus métier">{useCase.business_process ?? '—'}</Field>
+                <Field label="Bénéfice attendu">{useCase.expected_benefit ?? '—'}</Field>
+                <Field label="Niveau d’autonomie">
+                  {AUTONOMY_LABELS[useCase.autonomy_level] ?? useCase.autonomy_level}
+                </Field>
+                <Field label="Criticité">
+                  {useCase.criticality ?? 'Non déterminée'}
+                </Field>
+                <Field label="Utilisateurs">{useCase.users_description ?? '—'}</Field>
+                <Field label="Personnes affectées">{useCase.affected_persons ?? '—'}</Field>
+                <Field label="Données">{useCase.data_description ?? '—'}</Field>
+                <Field label="Portée de la décision">{useCase.decision_impact ?? '—'}</Field>
+              </dl>
 
-        <Card title="Faire évoluer le cas d’usage">
-          <TransitionPanel
-            useCaseId={id}
-            targets={UI_TRANSITIONS[status]}
-            unsettledRisks={unsettledRisks}
-            unassessedRisks={unassessedRisks}
-          />
-        </Card>
-      </div>
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                {useCase.involves_personal_data ? (
+                  <Badge tone="warn">Données personnelles</Badge>
+                ) : null}
+                {useCase.involves_vulnerable_persons ? (
+                  <Badge tone="stop">Personnes vulnérables</Badge>
+                ) : null}
+                {/*
+                  Ce que le cas d'usage emploie, et de qui il depend. Les deux
+                  rattachements vivent ici parce qu'ils completent son identite —
+                  et parce qu'un fournisseur rattache devient une precondition de
+                  mise en production.
+                */}
+                <span className="ml-auto flex flex-wrap gap-2">
+                  <LinkAssetForm useCaseId={id} assets={assetChoices} />
+                  <LinkVendorForm useCaseId={id} vendors={vendorChoices} />
+                </span>
+              </div>
+            </div>
 
-      <div className="grid gap-5 lg:grid-cols-3">
-        <div className="space-y-5 lg:col-span-2">
-          <div className="flex flex-col gap-3">
             <TriagePanel
               useCaseId={id}
               criticality={useCase.criticality}
               nextReviewAt={useCase.next_review_at}
             />
+          </div>
+
+          <div className="space-y-5">
+          <Disclosure
+            title="Gate production"
+            aside={<GateNote />}
+            summary={
+              gate
+                ? gate.satisfied
+                  ? 'Préconditions satisfaites'
+                  : `${gate.checks.filter((c) => !c.satisfied).length} précondition(s) manquante(s)`
+                : 'Évalué en continu, sans déclencher de transition'
+            }
+            tone={gate ? (gate.satisfied ? 'done' : 'todo') : 'neutral'}
+            defaultOpen={Boolean(gate && !gate.satisfied)}
+          >
+            {gate ? <GateChecklist gate={gate} /> : <Empty>Gate non évaluable.</Empty>}
+          </Disclosure>
+
+            <Card
+              title="Qualification réglementaire"
+              subtitle="Telle qu’enregistrée. Elle se pose et se révise dans la rubrique « Qualification »."
+              action={
+                <InfoTip label="Ce que dit cette carte" title="Ce qui a été qualifié, et quand">
+                  <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
+                    <p>
+                      Le rappel de la qualification au regard du{' '}
+                      <strong className="font-medium text-ink-800">règlement (UE) 2024/1689</strong>{' '}
+                      (AI Act) : le rôle que l’organisation y tient et les qualifications retenues,
+                      avec la version du règlement qui a servi et la date.
+                    </p>
+                    <p>
+                      Elle se lit ici parce qu’elle conditionne la suite du parcours — le passage en
+                      revue l’exige — mais elle ne se modifie que dans sa rubrique, où le
+                      raisonnement est demandé.
+                    </p>
+                  </div>
+                </InfoTip>
+              }
+            >
+              {qualificationSummary}
+              <Link
+                href={`/admin/use-cases/${id}?onglet=qualification`}
+                scroll={false}
+                className="mt-3 inline-block text-xs font-medium text-brand-600 hover:underline"
+              >
+                {classification ? 'Réviser la qualification' : 'Qualifier maintenant'}
+              </Link>
+            </Card>
+          </div>
+        </div>
+      ) : null}
+
+      {tab === 'qualification' ? (
+        <div className="grid gap-5 lg:grid-cols-3">
+          <div className="lg:col-span-2">
             <ClassificationPanel
               useCaseId={id}
               current={
@@ -370,39 +558,137 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
               }
             />
           </div>
+          <Card title="Qualification enregistrée" subtitle="Ce qui vaut aujourd’hui">
+            {qualificationSummary}
+          </Card>
+        </div>
+      ) : null}
 
-          <Disclosure
-            title="Pré-classification réglementaire"
-            summary="Aide au cadrage. Ne vaut pas avis juridique."
+      {tab === 'actions' ? (
+        <div className="max-w-4xl">
+          <Card
+            title="Actions"
+            subtitle={
+              actions?.length
+                ? `${openActions.length} ouverte(s) sur ${actions.length}${overdueActions ? ` · ${overdueActions} échue(s)` : ''}`
+                : 'Aucune action'
+            }
+            tone={overdueActions ? 'stop' : 'neutral'}
+            action={<ActionNote />}
           >
-            {classification ? (
-              <div className="space-y-3">
-                <div className="flex flex-wrap gap-2">
-                  <Badge tone="info">
-                    {classification.framework_code} {classification.framework_version}
-                  </Badge>
-                  <Badge>Rôle : {classification.organization_role}</Badge>
-                  {(classification.flags as string[]).map((flag) => (
-                    <Badge key={flag} tone={flag === 'high_risk_potential' ? 'stop' : 'warn'}>
-                      {flag}
-                    </Badge>
-                  ))}
-                </div>
-                <p className="text-sm text-ink-600">{classification.rationale}</p>
-                <p className="text-xs text-ink-400">
-                  Revue juridique : {classification.legal_review_level}
-                  {classification.legal_review_completed ? ' (close)' : ' (en attente)'} · classée le{' '}
-                  {formatDate(classification.classified_at)}
-                  {classification.next_review_at
-                    ? ` · à revoir le ${formatDate(classification.next_review_at)}`
-                    : ''}
-                </p>
-              </div>
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <ActionProposals
+                organizationId={useCase.organization_id}
+                useCaseId={id}
+                suggestions={(actionSuggestionsData ?? { available: false }) as ActionSuggestions}
+                people={people}
+              />
+              <ActionForm organizationId={useCase.organization_id} useCaseId={id} people={people} />
+            </div>
+            {actions?.length ? (
+              <ul className="space-y-3">
+                {actions.map((a) => {
+                  const late =
+                    !['done', 'cancelled'].includes(a.status) &&
+                    a.due_date !== null &&
+                    a.due_date < new Date().toISOString().slice(0, 10)
+                  return (
+                    <li key={a.id} className="flex items-start justify-between gap-3 text-sm">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-ink-900">{a.title}</span>
+                          {a.is_blocking ? <Badge tone="stop">Bloquante</Badge> : null}
+                          {late ? <Badge tone="stop">Échue</Badge> : null}
+                        </div>
+                        <span className="text-xs text-ink-400">
+                          {a.business_ref} · {ACTION_STATUS_LABELS[a.status] ?? a.status}
+                          {a.due_date ? ` · échéance ${formatDate(a.due_date)}` : ' · sans échéance'}
+                        </span>
+                      </div>
+                      <span className="flex shrink-0 items-center gap-2">
+                        {a.source === 'impact_finding' && !['done', 'cancelled'].includes(a.status) ? (
+                          <Link
+                            href={`/admin/organizations/${useCase.organization_id}/preuves/deposer?cas-d-usage=${id}&action=${a.id}`}
+                            className="text-xs font-medium text-brand-600 hover:underline"
+                          >
+                            Déposer
+                          </Link>
+                        ) : null}
+                        <ActionStatusForm
+                          organizationId={useCase.organization_id}
+                          useCaseId={id}
+                          action={a}
+                        />
+                      </span>
+                    </li>
+                  )
+                })}
+              </ul>
             ) : (
-              <Empty>Aucune classification enregistrée.</Empty>
+              <Empty>Aucune action ouverte.</Empty>
             )}
-          </Disclosure>
+          </Card>
+        </div>
+      ) : null}
 
+      {tab === 'controles' ? (
+        <div className="max-w-4xl">
+          <Card
+            title="Contrôles affectés"
+            subtitle={`${controls?.length ?? 0} contrôle(s) statué(s) sur ${controlChoices.length} au référentiel · ${applicableControls.length} applicable(s)`}
+            action={<ControlNote />}
+          >
+            {/*
+              Deux gestes : laisser l'assistant proposer — regles, faits, role —
+              et retenir ; ou statuer soi-meme sur un controle de la liste.
+            */}
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <ControlProposals
+                organizationId={useCase.organization_id}
+                useCaseId={id}
+                suggestions={(suggestionsData ?? { available: false }) as Suggestions}
+              />
+              <ApplicabilityForm useCaseId={id} controls={controlChoices} />
+            </div>
+
+            {controls?.length ? (
+              <ul className="space-y-2">
+                {controls.map((ca) => {
+                  const control = ca.control as unknown as {
+                    code: string
+                    name: string
+                    is_mandatory: boolean
+                    status: string
+                  }
+                  return (
+                    <li key={ca.id} className="text-sm">
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="text-ink-900">
+                          {control.code} — {control.name}
+                        </span>
+                        <Badge tone={ca.status === 'applicable' ? 'ok' : 'neutral'}>
+                          {ca.status === 'applicable' ? 'Applicable' : 'Non applicable'}
+                        </Badge>
+                      </div>
+                      {control.is_mandatory ? (
+                        <span className="text-xs text-ink-400">Contrôle obligatoire</span>
+                      ) : null}
+                      {ca.justification ? (
+                        <p className="text-xs text-ink-600">{ca.justification}</p>
+                      ) : null}
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : (
+              <Empty>Aucun contrôle affecté.</Empty>
+            )}
+          </Card>
+        </div>
+      ) : null}
+
+      {tab === 'risques' ? (
+        <div className="max-w-4xl">
           <Card
             title="Risques"
             subtitle={`${risks?.length ?? 0} risque(s)`}
@@ -455,7 +741,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
                           useCaseId={id}
                           riskTitle={risk.title}
                           people={people}
-                          controls={controlChoices}
+                          controls={treatmentChoices}
                         />
                         <AcceptRiskForm riskId={risk.id} useCaseId={id} />
                       </div>
@@ -467,7 +753,11 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
               <Empty>Aucun risque identifié.</Empty>
             )}
           </Card>
+        </div>
+      ) : null}
 
+      {tab === 'impact' ? (
+        <div className="max-w-4xl space-y-3">
           <Card
             title="Évaluation d'impact"
             subtitle="Effets sur les personnes, les groupes et la société (ISO/IEC 42005)."
@@ -502,10 +792,22 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
               <Empty>Aucune évaluation d&apos;impact.</Empty>
             )}
           </Card>
+          <p className="text-xs leading-relaxed text-ink-500">
+            Une évaluation <strong className="font-medium text-ink-700">achevée</strong> ouvre
+            d’elle-même une action « Déposer la preuve de l’évaluation d’impact » — et l’AIPD
+            lorsqu’elle est requise — confiée à la personne qui l’a conduite. Le dépôt de la pièce
+            au registre des preuves clôt cette action.
+          </p>
+        </div>
+      ) : null}
 
-          <Disclosure
+      {tab === 'supervision' ? (
+        <div className="grid gap-5 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+          <Card
             title="Supervision humaine"
-            aside={
+            subtitle="Déclencheurs d’intervention, procédures d’arrêt et de reprise, cadence de revue."
+            action={
               <span className="flex items-center gap-2">
                 <OversightForm
                   useCaseId={id}
@@ -527,7 +829,6 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
                 <OversightNote />
               </span>
             }
-            summary="Déclencheurs d’intervention, procédures d’arrêt et de reprise"
           >
             {oversight ? (
               <dl className="space-y-3">
@@ -550,8 +851,78 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             ) : (
               <Empty>Aucun plan de supervision.</Empty>
             )}
-          </Disclosure>
+          </Card>
+          </div>
+          <Card
+            title="Preuves de ce cas d’usage"
+            subtitle="Rattachées aux contrôles qui s’y appliquent."
+            action={
+              organization ? (
+                <Link
+                  href={`/admin/organizations/${organization.id}/preuves/deposer?cas-d-usage=${id}`}
+                  className="rounded-md border border-ink-200 px-3.5 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-100"
+                >
+                  Déposer une preuve
+                </Link>
+              ) : null
+            }
+          >
+            {oversight?.expected_evidence ? (
+              <p className="mb-3 rounded-md bg-ink-100 px-3.5 py-2.5 text-[13px] leading-relaxed text-ink-600">
+                Attendu par le plan : {oversight.expected_evidence}
+              </p>
+            ) : null}
+            {useCaseEvidence.length ? (
+              <ul className="divide-y divide-ink-100">
+                {useCaseEvidence.map((e) => (
+                  <li key={e.id} className="flex items-start justify-between gap-3 py-2 text-sm">
+                    <div className="min-w-0">
+                      {organization ? (
+                        <Link
+                          href={`/admin/organizations/${organization.id}/preuves?preuve=${e.id}`}
+                          className="text-ink-900 hover:underline"
+                        >
+                          {e.title}
+                        </Link>
+                      ) : (
+                        <span className="text-ink-900">{e.title}</span>
+                      )}
+                      <span className="block text-xs text-ink-400">
+                        {e.business_ref}
+                        {e.typology ? ` · ${e.typology.name}` : ''}
+                        {e.valid_until ? ` · valide jusqu’au ${formatDate(e.valid_until)}` : ''}
+                      </span>
+                    </div>
+                    <Badge
+                      tone={
+                        e.validation_status === 'validated'
+                          ? 'ok'
+                          : e.validation_status === 'pending'
+                            ? 'warn'
+                            : 'neutral'
+                      }
+                    >
+                      {e.validation_status === 'validated'
+                        ? 'Validée'
+                        : e.validation_status === 'pending'
+                          ? 'À valider'
+                          : e.validation_status}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <Empty>
+                Aucune preuve rattachée aux contrôles de ce cas d’usage. Déposer une preuve la
+                rattache au contrôle qu’elle démontre.
+              </Empty>
+            )}
+          </Card>
+        </div>
+      ) : null}
 
+      {tab === 'decisions' ? (
+        <div className="max-w-4xl">
           <Card
             title="Décisions de gouvernance"
             subtitle={`${decisions?.length ?? 0} décision(s)`}
@@ -611,11 +982,15 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
               <Empty>Aucune décision enregistrée.</Empty>
             )}
           </Card>
+        </div>
+      ) : null}
 
-          <Disclosure
+      {tab === 'changements' ? (
+        <div className="max-w-4xl">
+          <Card
             title="Changements et réévaluations"
-            aside={<ChangeNote />}
-            summary="Ce qui a rouvert l’évaluation, et pourquoi"
+            subtitle="Ce qui a rouvert l’évaluation, et pourquoi"
+            action={<ChangeNote />}
           >
             <div className="mb-4">
               <ChangeRequestForm
@@ -669,143 +1044,21 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             ) : (
               <Empty>Aucun changement enregistré.</Empty>
             )}
-          </Disclosure>
+          </Card>
         </div>
+      ) : null}
 
-        <div className="space-y-5">
-          <Disclosure
-            title="Gate production"
-            aside={<GateNote />}
-            summary={
-              gate
-                ? gate.satisfied
-                  ? 'Préconditions satisfaites'
-                  : `${gate.checks.filter((c) => !c.satisfied).length} précondition(s) manquante(s)`
-                : 'Évalué en continu, sans déclencher de transition'
-            }
-            tone={gate ? (gate.satisfied ? 'done' : 'todo') : 'neutral'}
-            defaultOpen={Boolean(gate && !gate.satisfied)}
-          >
-            {gate ? <GateChecklist gate={gate} /> : <Empty>Gate non évaluable.</Empty>}
-          </Disclosure>
-
-          <Disclosure
-            title="Contrôles affectés"
-            aside={<ControlNote />}
-            summary={`${controls?.length ?? 0} contrôle(s) statué(s) sur ${controlChoices.length} au référentiel`}
-            tone={controls?.length ? 'neutral' : 'todo'}
-          >
-            {/*
-              Deux gestes : laisser l'assistant proposer — regles, faits, role —
-              et retenir ; ou statuer soi-meme sur un controle de la liste.
-            */}
-            <div className="mb-4 flex flex-wrap items-center gap-3">
-              <ControlProposals
-                organizationId={useCase.organization_id}
-                useCaseId={id}
-                suggestions={(suggestionsData ?? { available: false }) as Suggestions}
-              />
-              <ApplicabilityForm useCaseId={id} controls={controlChoices} />
-            </div>
-
-            {controls?.length ? (
-              <ul className="space-y-2">
-                {controls.map((ca) => {
-                  const control = ca.control as unknown as {
-                    code: string
-                    name: string
-                    is_mandatory: boolean
-                    status: string
-                  }
-                  return (
-                    <li key={ca.id} className="text-sm">
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-ink-900">
-                          {control.code} — {control.name}
-                        </span>
-                        <Badge tone={ca.status === 'applicable' ? 'ok' : 'neutral'}>
-                          {ca.status === 'applicable' ? 'Applicable' : 'Non applicable'}
-                        </Badge>
-                      </div>
-                      {control.is_mandatory ? (
-                        <span className="text-xs text-ink-400">Contrôle obligatoire</span>
-                      ) : null}
-                      {ca.justification ? (
-                        <p className="text-xs text-ink-600">{ca.justification}</p>
-                      ) : null}
-                    </li>
-                  )
-                })}
-              </ul>
-            ) : (
-              <Empty>Aucun contrôle affecté.</Empty>
-            )}
-          </Disclosure>
-
-          <Disclosure
-            title="Actions"
-            aside={<ActionNote />}
-            summary={
-              actions?.length
-                ? `${actions.filter((a) => !['done', 'cancelled'].includes(a.status)).length} ouverte(s) sur ${actions.length}`
-                : 'Aucune action'
-            }
-            tone={overdueActions ? 'todo' : 'neutral'}
-            defaultOpen={overdueActions > 0}
-          >
-            <div className="mb-4 flex flex-wrap items-center gap-3">
-              <ActionProposals
-                organizationId={useCase.organization_id}
-                useCaseId={id}
-                suggestions={(actionSuggestionsData ?? { available: false }) as ActionSuggestions}
-                people={people}
-              />
-              <ActionForm organizationId={useCase.organization_id} useCaseId={id} people={people} />
-            </div>
-            {actions?.length ? (
-              <ul className="space-y-3">
-                {actions.map((a) => {
-                  const late =
-                    !['done', 'cancelled'].includes(a.status) &&
-                    a.due_date !== null &&
-                    a.due_date < new Date().toISOString().slice(0, 10)
-                  return (
-                    <li key={a.id} className="flex items-start justify-between gap-3 text-sm">
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-ink-900">{a.title}</span>
-                          {a.is_blocking ? <Badge tone="stop">Bloquante</Badge> : null}
-                          {late ? <Badge tone="stop">Échue</Badge> : null}
-                        </div>
-                        <span className="text-xs text-ink-400">
-                          {a.business_ref} · {ACTION_STATUS_LABELS[a.status] ?? a.status}
-                          {a.due_date ? ` · échéance ${formatDate(a.due_date)}` : ' · sans échéance'}
-                        </span>
-                      </div>
-                      <ActionStatusForm
-                        organizationId={useCase.organization_id}
-                        useCaseId={id}
-                        action={a}
-                      />
-                    </li>
-                  )
-                })}
-              </ul>
-            ) : (
-              <Empty>Aucune action ouverte.</Empty>
-            )}
-          </Disclosure>
-
-          <Disclosure
+      {tab === 'incidents' ? (
+        <div className="max-w-4xl">
+          <Card
             title="Incidents"
-            aside={<IncidentNote />}
-            summary={
+            subtitle={
               incidents?.length
-                ? `${incidents.filter((i) => i.status !== 'CLOSED').length} ouvert(s) sur ${incidents.length}`
+                ? `${openIncidents} ouvert(s) sur ${incidents.length}`
                 : 'Aucun incident'
             }
-            tone={incidents?.some((i) => i.status !== 'CLOSED') ? 'todo' : 'neutral'}
-            defaultOpen={Boolean(incidents?.some((i) => i.status !== 'CLOSED'))}
+            tone={openIncidents ? 'stop' : 'neutral'}
+            action={<IncidentNote />}
           >
             <div className="mb-4">
               <IncidentForm organizationId={useCase.organization_id} useCaseId={id} people={people} />
@@ -924,12 +1177,16 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             ) : (
               <Empty>Aucun incident déclaré sur ce cas d’usage.</Empty>
             )}
-          </Disclosure>
+          </Card>
+        </div>
+      ) : null}
 
-          <Disclosure
+      {tab === 'journal' ? (
+        <div className="max-w-4xl">
+          <Card
             title="Journal d’audit"
-            aside={<AuditNote />}
-            summary="Trace immuable des opérations sensibles"
+            subtitle="Trace immuable des opérations sensibles"
+            action={<AuditNote />}
           >
             {timeline?.length ? (
               <ol className="space-y-3">
@@ -946,9 +1203,9 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             ) : (
               <Empty>Aucune entrée de journal accessible depuis ce compte.</Empty>
             )}
-          </Disclosure>
+          </Card>
         </div>
-      </div>
+      ) : null}
     </Shell>
   )
 }

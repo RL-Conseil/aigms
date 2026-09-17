@@ -33,25 +33,27 @@ test('le parcours de gouvernance est consultable de bout en bout', async ({ page
   await page.getByRole('link', { name: 'Assistant support client' }).click()
   await expect(page.getByRole('heading', { name: 'Assistant support client' })).toBeVisible()
 
-  await expect(page.getByRole('heading', { name: 'Pré-classification réglementaire' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Risques' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: "Évaluation d'impact" })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Supervision humaine' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Décisions de gouvernance' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Changements et réévaluations' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Journal d’audit' })).toBeVisible()
-
-  // Le gate production est satisfait pour ce cas d'usage.
+  // La fiche se lit par rubrique : le fil conducteur d'abord, puis chacune
+  // a son onglet. Le bandeau et le fil restent en place.
+  const rubriques = page.getByRole('navigation', { name: 'Rubriques du cas d’usage' })
+  await expect(page.getByRole('heading', { name: 'Qualification réglementaire' })).toBeVisible()
   await expect(page.getByText('Préconditions satisfaites')).toBeVisible()
 
-  // La reevaluation declenchee par le changement d'autonomie reste accessible :
-  // le dossier de reference est repliable, pas absent.
-  const changements = page
-    .locator('section')
-    .filter({ hasText: 'Changements et réévaluations' })
-    .first()
-  await changements.getByRole('button', { name: /Changements et réévaluations/ }).click()
-  await expect(changements.getByText('Moteur : Réévaluation complète')).toBeVisible()
+  for (const [tab, heading] of [
+    [/^Risques/, 'Risques'],
+    [/Évaluation d’impact/, "Évaluation d'impact"],
+    [/Supervision humaine/, 'Supervision humaine'],
+    [/^Décisions/, 'Décisions de gouvernance'],
+    [/^Journal/, 'Journal d’audit'],
+  ] as const) {
+    await rubriques.getByRole('link', { name: tab }).click()
+    await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible()
+  }
+
+  // La reevaluation declenchee par le changement d'autonomie reste accessible.
+  await rubriques.getByRole('link', { name: /^Changements/ }).click()
+  await expect(page).toHaveURL(/onglet=changements/)
+  await expect(page.getByText('Moteur : Réévaluation complète')).toBeVisible()
 })
 
 test('le gate refuse la mise en production et explique ce qui manque', async ({ page }) => {
@@ -161,14 +163,18 @@ test('la frise marque les jalons obligatoires et porte l’action qui la fait av
   const triage = page.getByRole('listitem').filter({ hasText: 'Triage' }).first()
   await expect(triage).not.toContainText('jalon obligatoire')
 
-  // L'action qui fait avancer se lit a cote de la frise, pas en bas de page.
-  await expect(page.getByRole('heading', { name: 'Faire évoluer le cas d’usage' })).toBeVisible()
+  // L'action qui fait avancer se demande depuis l'en-tete, quelle que soit
+  // la rubrique ouverte.
+  await page.getByRole('button', { name: 'Faire évoluer' }).click()
+  await expect(page.getByRole('dialog', { name: 'Faire évoluer le cas d’usage' })).toBeVisible()
+  await page.keyboard.press('Escape')
 
-  // Gate et controles se replient : ce sont des constats, pas des actions.
-  const controles = page.locator('section').filter({ hasText: 'Contrôles affectés' }).first()
-  await expect(controles.getByText('CTL-01')).toHaveCount(0)
-  await controles.getByRole('button', { name: /Contrôles affectés/ }).click()
-  await expect(controles.getByText('CTL-01')).toBeVisible()
+  // Les controles ont leur rubrique : un constat, a portee d'un clic.
+  await page
+    .getByRole('navigation', { name: 'Rubriques du cas d’usage' })
+    .getByRole('link', { name: /Contrôles affectés/ })
+    .click()
+  await expect(page.getByText('CTL-01')).toBeVisible()
 })
 
 test('le fil d’Ariane d’un cas d’usage ramène à son organisation', async ({ page }) => {
@@ -196,38 +202,40 @@ test('le fil d’Ariane d’un cas d’usage ramène à son organisation', async
 })
 
 test('chaque rubrique du dossier s’explique sur place', async ({ page }) => {
-  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000001')
+  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000001?onglet=qualification')
+  const rubriques = page.getByRole('navigation', { name: 'Rubriques du cas d’usage' })
 
-  // Le volet de classification porte le terme etabli, pas un synonyme.
-  await expect(page.getByText('Pré-classifier au regard du règlement')).toBeVisible()
+  // Le volet porte le terme etabli, et nomme le reglement.
+  await expect(page.getByText('Qualification au regard du règlement')).toBeVisible()
+  await expect(page.getByText(/règlement \(UE\) 2024\/1689/).first()).toBeVisible()
 
   // Sa note distingue « haut risque » au sens du reglement de la cotation d'un
   // risque : c'est la confusion la plus couteuse de l'ecran.
-  await page.getByRole('button', { name: 'À quoi sert la pré-classification' }).click()
-  const note = page.getByRole('dialog', { name: 'À quoi sert la pré-classification' })
+  await page.getByRole('button', { name: 'À quoi sert la qualification' }).click()
+  const note = page.getByRole('dialog', { name: 'À quoi sert la qualification' })
   await expect(note.getByText(/« Haut risque » n’est pas un niveau de\s+risque/)).toBeVisible()
   await page.keyboard.press('Escape')
 
-  // Les autres rubriques en portent une aussi.
-  for (const label of [
-    'À quoi sert le triage',
-    'À quoi sert le registre des risques',
-    'À quoi sert le gate',
-    'À quoi sert le journal',
-  ]) {
+  // Les autres rubriques en portent une aussi, chacune dans son onglet.
+  for (const [tab, label] of [
+    [/^Fil conducteur/, 'À quoi sert la criticité'],
+    [/^Fil conducteur/, 'À quoi sert le gate'],
+    [/^Risques/, 'À quoi sert le registre des risques'],
+    [/^Journal/, 'À quoi sert le journal'],
+  ] as const) {
+    await rubriques.getByRole('link', { name: tab }).click()
     await expect(page.getByRole('button', { name: label })).toBeVisible()
   }
 
-  // Ouvrir une note ne replie pas le volet qui la porte.
-  const journal = page.locator('section').filter({ hasText: 'Journal d’audit' }).first()
-  await journal.getByRole('button', { name: 'À quoi sert le journal' }).click()
+  await page.getByRole('button', { name: 'À quoi sert le journal' }).click()
   await expect(page.getByRole('dialog', { name: 'À quoi sert le journal' })).toBeVisible()
 })
 
 test('une transition sans motif est refusée', async ({ page }) => {
   await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000003')
 
-  const evolution = page.locator('section').filter({ hasText: 'Faire évoluer le cas d’usage' })
+  await page.getByRole('button', { name: 'Faire évoluer' }).click()
+  const evolution = page.getByRole('dialog', { name: 'Faire évoluer le cas d’usage' })
   await expect(evolution.getByText(/C’est la seule phrase qui dira/)).toBeVisible()
 
   // Le navigateur bloque d'abord, sur `required`.
@@ -240,4 +248,12 @@ test('une transition sans motif est refusée', async ({ page }) => {
   await motif.fill('            ')
   await evolution.getByRole('button', { name: /Demander la transition/ }).click()
   await expect(page.getByText(/doit pouvoir se relire dans six mois/)).toBeVisible()
+})
+
+test('les alertes sont nominatives et se lisent depuis le bandeau', async ({ page }) => {
+  await page.goto('/admin/pilotage')
+  await page.getByRole('link', { name: /^Mes alertes/ }).click()
+  await expect(page).toHaveURL(/\/admin\/alertes/)
+  await expect(page.getByRole('heading', { name: 'Mes alertes' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'À lire' })).toBeVisible()
 })

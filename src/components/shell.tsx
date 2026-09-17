@@ -8,6 +8,7 @@ import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import { ROLE_LABELS } from '@/lib/domain/roles'
 import { AttentionDot } from '@/components/governance/attention'
 import { attentionFor, attentionTotal } from '@/lib/governance/attention'
+import { unreadNotifications } from '@/lib/governance/notifications'
 
 /**
  * Ossature de l'espace de travail.
@@ -98,6 +99,8 @@ export async function Shell({
   // qu'elle ne peut pas solder serait une invitation a outrepasser son role.
   const branding = await tenantBranding()
   const pending = administrating ? 0 : await attentionTotal()
+  // Les alertes sont nominatives : elles se comptent pour tout le monde.
+  const unread = viewer ? await unreadNotifications() : 0
   // L'organisation dont la barre parle : celle de la page, sinon la courante.
   const navOrganizationId = organization?.id ?? viewer?.currentOrganizationId ?? null
   const orgBase = navOrganizationId ? `/admin/organizations/${navOrganizationId}` : null
@@ -228,6 +231,28 @@ export async function Shell({
           <div className="ml-auto flex items-center gap-3">
             {viewer?.tenantName ? (
               <span className="hidden text-sm text-white/50 lg:inline">{viewer.tenantName}</span>
+            ) : null}
+            {viewer ? (
+              <Link
+                href="/admin/alertes"
+                aria-label={unread ? `Mes alertes, ${unread} non lue(s)` : 'Mes alertes'}
+                className="relative inline-flex items-center rounded-md p-1.5 text-white/75 hover:bg-white/10 hover:text-white"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
+                  <path
+                    d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15L6 16Z"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinejoin="round"
+                  />
+                  <path d="M10 20a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                </svg>
+                {unread ? (
+                  <span className="absolute -right-1 -top-1 inline-flex min-w-[1.1rem] items-center justify-center rounded-full bg-warn-600 px-1 text-[10px] font-semibold tabular-nums text-night-950">
+                    {unread}
+                  </span>
+                ) : null}
+              </Link>
             ) : null}
             {viewer ? (
               <UserMenu

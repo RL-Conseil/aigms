@@ -8,11 +8,20 @@ import { GovernanceHealth, type Health } from '@/components/governance/governanc
 import { ActivityStakes, type Stakes } from '@/components/governance/activity-stakes'
 import { ProcessTree, type TreeProcess } from '@/components/governance/process-tree'
 import {
-  CoverageView,
-  HeatmapView,
+  CoverageTable,
+  SevereRisksCard,
+  UncoveredActivities,
   type CoverageRow,
   type HeatmapRow,
 } from '@/components/governance/map-views'
+import {
+  ChartCard,
+  CoverageChart,
+  RiskChart,
+  type ActivityHeatmapRow,
+  type Grain,
+} from '@/components/governance/map-charts'
+import { Disclosure } from '@/components/forms'
 import { ControlGraph, type Graph } from '@/components/governance/control-graph'
 import {
   RiskPathPanel,
@@ -70,11 +79,14 @@ export default async function ProcessMapPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ activite?: string; vue?: string; risque?: string }>
+  searchParams: Promise<{ activite?: string; vue?: string; risque?: string; par?: string }>
 }) {
   const { id } = await params
-  const { activite, vue, risque } = await searchParams
+  const { activite, vue, risque, par } = await searchParams
   const view: ViewKey = VIEWS.some((v) => v.key === vue) ? (vue as ViewKey) : 'arbre'
+  // Le grain des barres : l'activite, la ou l'on agit, sinon le processus.
+  const grain: Grain = par === 'processus' ? 'processus' : 'activite'
+  const grainHref = (target: Grain) => `/admin/organizations/${id}/processus?vue=${view}&par=${target}`
   const supabase = await createClient()
 
   const [{ data: organization }, { data: mapRows }] =
@@ -87,13 +99,16 @@ export default async function ProcessMapPage({
 
   const rows = (mapRows ?? []) as MapRow[]
 
-  const [{ data: coverageData }, { data: heatmapData }, { data: graphData }, { data: riskList }, { data: pathData }] =
+  const [{ data: coverageData }, { data: heatmapData }, { data: activityHeatmapData }, { data: graphData }, { data: riskList }, { data: pathData }] =
     await Promise.all([
       view === 'couverture'
         ? supabase.rpc('control_coverage', { p_organization_id: id })
         : Promise.resolve({ data: null }),
       view === 'risques'
         ? supabase.rpc('risk_heatmap', { p_organization_id: id })
+        : Promise.resolve({ data: null }),
+      view === 'risques' && grain === 'activite'
+        ? supabase.rpc('risk_heatmap_by_activity', { p_organization_id: id })
         : Promise.resolve({ data: null }),
       view === 'graphe'
         ? supabase.rpc('control_graph', { p_organization_id: id, p_activity_id: null })
@@ -243,17 +258,17 @@ export default async function ProcessMapPage({
                 </li>
                 <li>
                   <strong className="font-medium text-ink-800">Couverture</strong> — ce qui tient
-                  réellement. Un contrôle n’est compté comme couvrant que s’il est
-                  <em> opérant</em> et <em>prouvé</em> par une preuve validée non échue. Un
-                  contrôle déclaré sans preuve ne protège personne, et c’est ce qu’un auditeur
-                  vient vérifier.
+                  réellement, en barres, par activité ou par processus. Un contrôle n’est compté
+                  comme couvrant que s’il est <em>opérant</em> et <em>prouvé</em> par une preuve
+                  validée non échue. Un contrôle déclaré sans preuve ne protège personne, et
+                  c’est ce qu’un auditeur vient vérifier.
                 </li>
                 <li>
-                  <strong className="font-medium text-ink-800">Risques</strong> — la matrice croise
-                  les processus déclarés et les quatre niveaux de risque. Elle compte les risques
-                  <em> ouverts</em>, pas le total : un risque accepté est une décision assumée, avec
-                  un responsable et une date de revue. Le laisser clignoter en rouge reviendrait à
-                  confondre une décision avec une alerte.
+                  <strong className="font-medium text-ink-800">Risques</strong> — la répartition
+                  par niveau, en barres, par activité ou par processus. Les couleurs comptent les
+                  risques <em>ouverts</em>, pas le total : un risque accepté est une décision
+                  assumée, avec un responsable et une date de revue. Le laisser clignoter en rouge
+                  reviendrait à confondre une décision avec une alerte.
                 </li>
                 <li>
                   <strong className="font-medium text-ink-800">Graphe</strong> — ce qu’une
@@ -300,20 +315,58 @@ export default async function ProcessMapPage({
       ) : null}
 
       {view === 'couverture' ? (
-        <CoverageView rows={(coverageData ?? []) as CoverageRow[]} organizationId={id} />
+        <div className="flex flex-col gap-5">
+          <ChartCard
+            title="Couverture des contrôles"
+            subtitle="Un contrôle ne compte comme couvrant que s’il est opérant et prouvé par une preuve validée non échue."
+            grain={grain}
+            href={grainHref}
+          >
+            <CoverageChart rows={(coverageData ?? []) as CoverageRow[]} grain={grain} organizationId={id} />
+          </ChartCard>
+          {grain === 'activite' ? (
+            <>
+              <Disclosure
+                title="Le détail, en tableau"
+                summary="Obligatoires statués, dernier test, date de la dernière preuve"
+              >
+                <CoverageTable rows={(coverageData ?? []) as CoverageRow[]} organizationId={id} />
+              </Disclosure>
+              <UncoveredActivities rows={(coverageData ?? []) as CoverageRow[]} organizationId={id} />
+            </>
+          ) : null}
+        </div>
       ) : view === 'risques' ? (
-        <HeatmapView
-          rows={(heatmapData ?? []) as HeatmapRow[]}
-          activities={rows
-            .filter((r) => r.activity_id && r.open_high_risks > 0)
-            .map((r) => ({
-              process_id: r.process_id,
-              activity_id: r.activity_id!,
-              activity_name: r.activity_name ?? '—',
-              open_high_risks: r.open_high_risks,
-            }))}
-          organizationId={id}
-        />
+        <div className="flex flex-col gap-5">
+          <ChartCard
+            title="Répartition des risques"
+            subtitle="Les couleurs comptent les risques encore ouverts, par niveau ; le gris, ce qui a été traité ou accepté."
+            grain={grain}
+            href={grainHref}
+          >
+            <RiskChart
+              rows={
+                grain === 'activite'
+                  ? ((activityHeatmapData ?? []) as ActivityHeatmapRow[])
+                  : ((heatmapData ?? []) as HeatmapRow[])
+              }
+              grain={grain}
+              organizationId={id}
+            />
+          </ChartCard>
+          <SevereRisksCard
+            rows={(heatmapData ?? []) as HeatmapRow[]}
+            activities={rows
+              .filter((r) => r.activity_id && r.open_high_risks > 0)
+              .map((r) => ({
+                process_id: r.process_id,
+                activity_id: r.activity_id!,
+                activity_name: r.activity_name ?? '—',
+                open_high_risks: r.open_high_risks,
+              }))}
+            organizationId={id}
+          />
+        </div>
       ) : view === 'graphe' ? (
         <div className="grid gap-5 lg:grid-cols-5">
           <div className="lg:col-span-3">
