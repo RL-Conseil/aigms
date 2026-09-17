@@ -8,6 +8,7 @@ import { Disclosure } from '@/components/forms'
 import { GateChecklist } from '@/components/gate-checklist'
 import { Lifecycle } from '@/components/lifecycle'
 import { ApplicabilityForm, RiskTreatmentForm } from '@/components/governance/control-forms'
+import { ControlProposals, type Suggestions } from '@/components/governance/control-proposals'
 import {
   ImpactForm,
   LinkAssetForm,
@@ -101,6 +102,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
     { data: actions },
     { data: changes },
     { data: incidents },
+    { data: suggestionsData },
     { data: timeline },
     { data: gateData },
     { data: memberships },
@@ -163,6 +165,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
       )
       .eq('use_case_id', id)
       .order('detected_at', { ascending: false }),
+    supabase.rpc('suggest_controls', { p_use_case_id: id }),
     supabase
       .from('audit_log')
       .select('id, occurred_at, action, summary, actor_email')
@@ -689,7 +692,16 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             summary={`${controls?.length ?? 0} contrôle(s) statué(s) sur ${controlChoices.length} au référentiel`}
             tone={controls?.length ? 'neutral' : 'todo'}
           >
-            <div className="mb-4">
+            {/*
+              Deux gestes : laisser l'assistant proposer — regles, faits, role —
+              et retenir ; ou statuer soi-meme sur un controle de la liste.
+            */}
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <ControlProposals
+                organizationId={useCase.organization_id}
+                useCaseId={id}
+                suggestions={(suggestionsData ?? { available: false }) as Suggestions}
+              />
               <ApplicabilityForm useCaseId={id} controls={controlChoices} />
             </div>
 

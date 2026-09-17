@@ -60,7 +60,7 @@ export default async function CatalogVersionPage({
   }
 
   const supabase = await createClient()
-  const [{ data: version }, { data: domains }, { data: controls }] = await Promise.all([
+  const [{ data: version }, { data: domains }, { data: controls }, { data: toolLinks }] = await Promise.all([
     supabase
       .from('catalog_version')
       .select(
@@ -76,15 +76,28 @@ export default async function CatalogVersionPage({
     supabase
       .from('catalog_control')
       .select(
-        'id, control_code, title, objective, control_type, applicability, owner_role, review_frequency, expected_evidence, assessment_questions, framework_mappings, domain_id',
+        'id, control_code, title, objective, control_type, applicability, owner_role, review_frequency, expected_evidence, assessment_questions, framework_mappings, domain_id, phase',
       )
       .eq('version_id', versionId)
       .order('control_code'),
+    // La couche outillage : avec quoi chaque controle-type se tient.
+    supabase
+      .from('catalog_tool_control')
+      .select('control_code, framework_code, tool:tool_id (code, acronym, automation)'),
   ])
 
   if (!version) notFound()
 
   const framework = version.framework as unknown as { code: string; name: string; tenant_id: string | null }
+  const toolsByControl = new Map<string, { code: string; acronym: string | null; automation: string | null }[]>()
+  for (const link of toolLinks ?? []) {
+    if (link.framework_code !== framework.code) continue
+    const tool = link.tool as unknown as { code: string; acronym: string | null; automation: string | null } | null
+    if (!tool) continue
+    const list = toolsByControl.get(link.control_code) ?? []
+    list.push(tool)
+    toolsByControl.set(link.control_code, list)
+  }
   const domainById = new Map((domains ?? []).map((d) => [d.id, d]))
   const rows = (controls ?? []).map((c) => ({
     ...c,
@@ -178,12 +191,19 @@ export default async function CatalogVersionPage({
                       {c.applicabilityDefault ? ` · ${APPLICABILITY_LABELS[c.applicabilityDefault] ?? c.applicabilityDefault}` : ''}
                       {c.owner_role ? ` · ${c.owner_role}` : ''}
                       {c.review_frequency ? ` · revue ${c.review_frequency}` : ''}
+                      {c.phase ? ` · ${c.phase}` : ''}
                     </p>
                   </div>
                   {!c.enriched ? <Badge>Titre seul</Badge> : null}
                 </div>
                 {c.objective ? (
                   <p className="mt-1.5 text-sm leading-relaxed text-ink-700">{c.objective}</p>
+                ) : null}
+                {toolsByControl.get(c.control_code)?.length ? (
+                  <p className="mt-1 text-xs text-ink-500">
+                    Se tient avec :{' '}
+                    {toolsByControl.get(c.control_code)!.map((t) => `${t.acronym ?? t.code}${t.automation === 'Automatique' ? ' (auto)' : ''}`).join(', ')}
+                  </p>
                 ) : null}
                 {c.evidence.length || c.mappings.length ? (
                   <p className="mt-1.5 text-xs text-ink-500">
