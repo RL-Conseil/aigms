@@ -28,11 +28,11 @@ ce qui rend les 70 politiques lisibles et vérifiables une à une. Le trigger
 | `platform_admin` | Administration de la plateforme | plateforme | organisations, comptes, attributions de rôle, référentiels. **Aucun objet de gouvernance** — voir [ADR-0008](../adr/ADR-0008-account-provisioning.md) |
 | `governance_officer` | AI Governance Officer | tenant | objets de gouvernance |
 | `client_admin` | Administrateur client | tenant | objets de gouvernance |
-| `system_owner` | Porteur de l'IA | organisation | cas d'usage, évaluations, preuves, actions |
-| `risk_owner` | Comité des risques | organisation | risques et traitements |
-| `reviewer` | Expert métier (DPO / RSSI) | organisation | décisions |
+| `system_owner` | Porteur de l'IA | organisation | cas d'usage, évaluations, preuves (dépôt, pas validation — 0055), actions |
+| `risk_owner` | Comité des risques | organisation | risques et traitements ; validation des preuves (0055) |
+| `reviewer` | Expert métier (DPO / RSSI) | organisation | décisions ; validation des preuves (0055) |
 | `auditor` | Auditeur | organisation | rien — lecture seule, journal d'audit inclus |
-| `executive_viewer` | Comité de direction | organisation | rien — lecture seule |
+| `executive_viewer` | Comité de direction | organisation | se prononce sur une décision soumise ; seul à approuver une mise en production critique ou une exception (0055). Rien d'autre |
 
 Les dénominations sont fixées le 18 septembre 2026 (migration 0054) ; elles
 s'appliquent aux comptes déjà attribués comme aux futurs. Le RACI de ces six

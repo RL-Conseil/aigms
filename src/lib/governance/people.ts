@@ -25,8 +25,11 @@ export type Person = {
   roles: string[]
 }
 
-/** Roles qui peuvent se prononcer sur une decision (app.roles_review). */
-const REVIEW_ROLES = ['governance_officer', 'client_admin', 'reviewer']
+/**
+ * Roles qui peuvent se prononcer sur une decision : app.roles_review, et le
+ * Comite de direction (app.roles_arbitrate), qui arbitre sans soumettre.
+ */
+const REVIEW_ROLES = ['governance_officer', 'client_admin', 'reviewer', 'executive_viewer']
 
 /** Les denominations sont celles du domaine : une seule source. */
 export const ROLE_LABELS: Record<string, string> = DOMAIN_ROLE_LABELS
