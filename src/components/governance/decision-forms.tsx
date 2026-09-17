@@ -187,6 +187,16 @@ export function DecisionForm({
           Sur ce type de décision, <strong className="font-medium text-ink-800">vous ne pourrez
           pas l’approuver vous-même</strong> : une autre personne devra se prononcer. La base le
           refuse, et c’est ce qui donne sa valeur au registre.
+          {type === 'go_production' || type === 'policy_exception' ? (
+            <>
+              {' '}
+              {type === 'policy_exception'
+                ? 'Une exception à une politique'
+                : 'La mise en production d’un cas d’usage de criticité élevée ou critique'}{' '}
+              <strong className="font-medium text-ink-800">s’approuve par le Comité de direction</strong>{' '}
+              : la personne désignée doit tenir ce rôle.
+            </>
+          ) : null}
         </p>
       ) : null}
 

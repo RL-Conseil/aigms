@@ -277,7 +277,7 @@ export async function reviewEvidence(
 
   // `validated_by` porte l'identite de l'appelant : la base refuse toute autre
   // valeur (app.guard_evidence_file), et c'est bien la l'interet.
-  const { error } = await supabase
+  const { data: reviewed, error } = await supabase
     .from('evidence')
     .update({
       validation_status: parsed.data.verdict,
@@ -285,8 +285,18 @@ export async function reviewEvidence(
       validated_at: new Date().toISOString(),
     })
     .eq('id', parsed.data.evidenceId)
+    .select('id')
+    .maybeSingle()
 
   if (error) return { ok: false, message: explain(error) }
+  // La politique a pu ecarter la ligne sans erreur : un silence n'est pas une validation.
+  if (!reviewed) {
+    return {
+      ok: false,
+      message:
+        'La validité d’une preuve se prononce par l’AI Governance Officer, l’Expert métier ou le Comité des risques.',
+    }
+  }
 
   revalidatePath(`/admin/organizations/${parsed.data.organizationId}/preuves`)
   revalidatePath(`/admin/organizations/${parsed.data.organizationId}/declaration-applicabilite`)
