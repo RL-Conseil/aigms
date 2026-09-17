@@ -16,15 +16,7 @@ afterAll(async () => {
   await db.end()
 })
 
-const REVIEWER_A = '77777777-7777-4777-8777-777777777777'
-
-/** Le jeu de demonstration n'a pas de Comite de direction : on en fait un, le temps de la transaction. */
-async function promoteToBoard(c: Client, userId: string) {
-  await c.query('set local role postgres')
-  await c.query(`update public.membership set role = 'executive_viewer' where user_id = $1`, [userId])
-  await c.query(`update public.role_assignment set role = 'executive_viewer' where user_id = $1`, [userId])
-  await c.query("select set_config('role', 'authenticated', true)")
-}
+const REVIEWER_A = DEMO.reviewerA
 
 describe('RACI — validation des preuves', () => {
   it('le Porteur de l’IA dépose ; il ne valide pas ; le Comité des risques valide, sans rien modifier d’autre', async () => {
@@ -80,8 +72,7 @@ describe('RACI — arbitrage critique', () => {
         [id, REVIEWER_A],
       )
       // Le Comite de direction : il se prononce, et rien d'autre.
-      await promoteToBoard(c, DEMO.auditorA)
-      await becomeUser(c, DEMO.auditorA)
+      await becomeUser(c, DEMO.boardA)
       const submitByBoard = await expectFailure(
         c,
         `insert into public.governance_decision (tenant_id, organization_id, decision_type, subject, status)
@@ -95,7 +86,7 @@ describe('RACI — arbitrage critique', () => {
         `update public.governance_decision
             set status = 'approved', approver_user_id = $2, approved_at = now(), effective_from = current_date, review_due_at = current_date + 180
           where id = $1`,
-        [id, DEMO.auditorA],
+        [id, DEMO.boardA],
       )
       const { rows: after } = await c.query<{ status: string }>(
         'select status from public.governance_decision where id = $1', [id],

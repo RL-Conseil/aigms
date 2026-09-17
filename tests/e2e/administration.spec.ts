@@ -225,3 +225,11 @@ test('un rôle de gouvernance ne lit pas le journal de la plateforme', async ({ 
   await page.goto('/admin/journal')
   await expect(page.getByRole('heading', { name: 'Accès réservé' })).toBeVisible()
 })
+
+test('l’administration lit si chaque organisation est opérationnelle', async ({ page }) => {
+  await signIn(page, ADMIN)
+  await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001/administration')
+  await expect(page.getByRole('heading', { name: 'Les six rôles' })).toBeVisible()
+  await expect(page.getByText('Organisation opérationnelle')).toBeVisible()
+  await expect(page.getByText('Comité de direction')).toBeVisible()
+})

@@ -50,11 +50,16 @@ Comptes de démonstration — mot de passe `Demo!Passw0rd` :
 |---|---|
 | `admin@rl-conseil.demo` | administration de la plateforme — organisations, comptes et rôles |
 | `officer@rl-conseil.demo` | AI Governance Officer |
-| `owner@izarlink.demo` | porteur du système |
-| `risk@izarlink.demo` | responsable du risque |
-| `reviewer@izarlink.demo` | relecteur des décisions |
-| `auditor@rl-conseil.demo` | auditeur, lecture seule |
-| `officer@autre-cabinet.demo` | second tenant, pour vérifier l'étanchéité |
+| `owner@izarlink.demo` | Porteur de l'IA |
+| `risk@izarlink.demo` | Comité des risques |
+| `reviewer@izarlink.demo` | Expert métier (DPO / RSSI) |
+| `board@izarlink.demo` | Comité de direction — arbitre les productions critiques et les exceptions |
+| `auditor@rl-conseil.demo` | Auditeur, lecture seule |
+| `officer@autre-cabinet.demo` | second tenant, pour vérifier l'étanchéité — avec `owner@`, `risk@`, `reviewer@`, `board@`, `auditor@autre-cabinet.demo` |
+
+Une organisation n'est **opérationnelle** qu'avec ses six rôles tenus (migration
+0056) : tant qu'il en manque un, on y lit, on n'y écrit aucun objet de
+gouvernance. Les deux organisations de démonstration sont complètes.
 
 ## Scripts
 

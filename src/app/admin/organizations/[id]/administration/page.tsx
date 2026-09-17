@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
+import { organizationReadiness } from '@/lib/governance/readiness'
+import { ReadinessCard } from '@/components/governance/readiness-banner'
 import { Badge, Card, Empty } from '@/components/ui'
 import { InfoTip } from '@/components/info-tip'
 import { OrganizationIdentityForm, OrganizationLogoForm } from '@/components/admin/forms'
@@ -48,6 +50,7 @@ export default async function OrganizationAdministrationPage({
   // pas en 404.
   if (error) throw new Error(`Lecture de l’organisation refusée : ${error.message}`)
   if (!organization) notFound()
+  const readiness = await organizationReadiness(id)
 
   const breadcrumb = [
     { href: '/admin/organizations', label: 'Organisations' },
@@ -121,6 +124,20 @@ export default async function OrganizationAdministrationPage({
         </div>
 
         <div className="flex flex-col gap-5">
+          {readiness ? (
+            <Card
+              title="Les six rôles"
+              subtitle={readiness.ready ? 'Organisation opérationnelle' : `${readiness.missing.length} rôle(s) sans titulaire`}
+              tone={readiness.ready ? 'neutral' : 'warn'}
+              action={
+                <Link href="/admin/comptes" className="text-xs font-medium text-brand-600 hover:underline">
+                  Comptes et rôles
+                </Link>
+              }
+            >
+              <ReadinessCard readiness={readiness} />
+            </Card>
+          ) : null}
           <Card
             title="Rôle vis-à-vis de l’IA"
             subtitle={profile ? ACTIVITY_PROFILE_LABELS[profile] : 'Non renseigné'}

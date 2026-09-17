@@ -69,3 +69,23 @@ Ce qui reste une responsabilité sans droit spécifique : le « A » du Porteur
 sur la déclaration (il déclare déjà), le « A » de l'AI Governance Officer sur
 l'évaluation des risques (il la conduit déjà), le « A » de l'Auditeur sur
 l'audit (lecture seule, journal compris).
+
+## Une organisation n'est opérationnelle qu'avec ses six rôles (migration 0056)
+
+Tant que les six rôles ne sont pas **chacun tenus par au moins une personne
+active** — affectation explicite sur l'organisation, ou rôle porté par
+l'appartenance au tenant — l'organisation est *non opérationnelle* : on y lit,
+on n'y écrit **aucun objet de gouvernance** (processus, cas d'usage, risques,
+contrôles, preuves, décisions, actions, incidents…). Un déclencheur le refuse
+sur chaque table, avec le nom des rôles manquants. Une même personne peut
+tenir plusieurs rôles ; c'est la couverture des six qui compte.
+
+Les écritures d'administration — organisation, comptes, attributions —
+restent ouvertes : c'est par elles qu'on rend l'organisation opérationnelle.
+L'écran le dit avant le refus : bannière en tête des pages de l'organisation,
+carte « Les six rôles » dans son administration, état par organisation sur la
+page Comptes. La lecture `organization_readiness(org)` rend les rôles requis,
+tenus, manquants.
+
+Sans utilisateur authentifié (amorçage, reprise, import), la règle ne
+s'applique pas.
