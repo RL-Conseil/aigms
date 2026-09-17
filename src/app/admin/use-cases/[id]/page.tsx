@@ -5,7 +5,7 @@ import { Shell } from '@/components/shell'
 import { UseCaseLabelForm } from '@/components/governance/use-case-label-form'
 import { Badge, Card, Empty, Field, Stat, StatStrip } from '@/components/ui'
 import { Disclosure } from '@/components/forms'
-import { Modal } from '@/components/modal'
+import { TransitionModal } from '@/components/governance/transition-modal'
 import { InfoTip } from '@/components/info-tip'
 import { resolveTab, UseCaseTabs, type TabSignal, type UseCaseTab } from '@/components/governance/use-case-tabs'
 import { GateChecklist } from '@/components/gate-checklist'
@@ -31,7 +31,6 @@ import {
   OversightNote,
   RiskNote,
 } from '@/components/governance/rubric-notes'
-import { TransitionPanel } from '@/components/transition-panel'
 import {
   ActionForm,
   ActionStatusForm,
@@ -377,21 +376,12 @@ export default async function UseCasePage({
             Faire evoluer se demande depuis n'importe quelle rubrique : c'est
             l'acte central de la fiche, il ne vit pas dans un onglet.
           */}
-          <Modal
-            trigger="Faire évoluer"
-            triggerClassName="rounded-md bg-night-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-night-800"
-            title="Faire évoluer le cas d’usage"
-            description="Le serveur vérifie les préconditions ; un refus dit quoi corriger."
-          >
-            {() => (
-              <TransitionPanel
-                useCaseId={id}
-                targets={UI_TRANSITIONS[status]}
-                unsettledRisks={unsettledRisks}
-                unassessedRisks={unassessedRisks}
-              />
-            )}
-          </Modal>
+          <TransitionModal
+            useCaseId={id}
+            targets={UI_TRANSITIONS[status]}
+            unsettledRisks={unsettledRisks}
+            unassessedRisks={unassessedRisks}
+          />
         </div>
       }
     >
