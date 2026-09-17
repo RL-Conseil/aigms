@@ -20,7 +20,7 @@ test.beforeEach(async ({ page }) => {
 test('la cartographie montre les processus, activités et usages rattachés', async ({ page }) => {
   await page.goto('/admin/organizations')
   await page.getByRole('link', { name: 'IzarLink Demo' }).click()
-  await page.getByRole('link', { name: 'Processus' }).click()
+  await page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('link', { name: /^Processus et risques/ }).click()
 
   await expect(page.getByRole('heading', { name: 'Processus et risques' })).toBeVisible()
   await expect(page.getByRole('heading', { name: /Servir le client/ })).toBeVisible()
@@ -299,19 +299,22 @@ test('la navigation porte l’avancement et les retards', async ({ page }) => {
   await page.goto('/admin/organizations')
   await page.getByRole('link', { name: 'IzarLink Demo' }).click()
 
-  // Second niveau de navigation : les sections de l'organisation.
-  const sections = page.getByRole('navigation', { name: 'Sections de l’organisation' })
-  await expect(sections.getByRole('link', { name: /Cas d’usage/ })).toBeVisible()
-  await expect(sections.getByRole('link', { name: /Processus et risques/ })).toBeVisible()
-  await expect(sections.getByRole('link', { name: /Déclaration d’Applicabilité/ })).toBeVisible()
+  // Une seule barre : deux sections en premiere ligne, les registres sous un
+  // menu, le pilotage. Le fil d'Ariane nomme « Registres » sur leurs pages.
+  const principal = page.getByRole('navigation', { name: 'Navigation principale' })
+  await expect(principal.getByRole('link', { name: /^Cas d’usage/ })).toBeVisible()
+  await expect(principal.getByRole('link', { name: /^Processus et risques/ })).toBeVisible()
+  await principal.getByRole('button', { name: /^Registres/ }).click()
+  await expect(principal.getByRole('menuitem', { name: /Déclaration d’Applicabilité/ })).toBeVisible()
+  await page.keyboard.press('Escape')
 
   // Ce qui appelle une action se lit avant le contenu, et s'atteint d'un clic.
   await page.getByRole('link', { name: /exigences sans décision/ }).click()
   await expect(page).toHaveURL(/declaration-applicabilite/)
-  await expect(sections.getByRole('link', { name: /Déclaration/ })).toHaveAttribute(
-    'aria-current',
-    'page',
-  )
+  await expect(page.getByRole('navigation', { name: "Fil d'Ariane" })).toContainText('Registres')
+  await principal.getByRole('button', { name: /^Registres/ }).click()
+  await expect(principal.getByRole('menuitem', { name: /Déclaration/ })).toHaveAttribute('aria-current', 'page')
+  await page.keyboard.press('Escape')
 })
 
 test('la carte explique ses quatre lectures', async ({ page }) => {
@@ -389,7 +392,7 @@ test('un risque se saisit sans quitter la fiche', async ({ page }) => {
 
 test('le suivi liste actions, incidents et revues, et l’incident significatif exige sa CAPA', async ({ page }) => {
   await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001/suivi')
-  await expect(page.getByRole('heading', { name: 'Suivi', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Suivi d’actions', exact: true })).toBeVisible()
 
   // Le jeu de demonstration porte une action echue et un incident S2 ouvert.
   // Le filtre porte son décompte dans son nom : « Échues 1 ».

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { Wordmark } from '@/components/logo'
 import { tenantBranding } from '@/lib/branding'
+import { NavDropdown } from '@/components/nav-dropdown'
 import { UserMenu } from '@/components/admin/user-menu'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import { ROLE_LABELS } from '@/lib/domain/roles'
@@ -32,11 +33,7 @@ type NavLink = { href: string; label: string }
 // qui appelle une action. La liste des organisations gerees a quitte le menu
 // principal pour celui de l'utilisateur — on en change rarement, et l'y laisser
 // donnait deux entrees concurrentes pour « organisation ».
-const GOVERNANCE_NAV: NavLink[] = [
-  { href: '/admin/pilotage', label: 'Pilotage' },
-  // « Cas d'usage » ouvre l'organisation courante ; /admin s'y rend pour nous.
-  { href: '/admin/organizations/courante', label: 'Cas d’usage' },
-]
+const GOVERNANCE_NAV: NavLink[] = [{ href: '/admin/pilotage', label: 'Pilotage' }]
 
 const ADMIN_NAV: NavLink[] = [
   { href: '/admin/organizations', label: 'Organisations' },
@@ -52,11 +49,19 @@ export const ORGANIZATION_SECTIONS = [
   { key: 'apercu', label: 'Cas d’usage', href: '' },
   { key: 'processus', label: 'Processus et risques', href: '/processus' },
   { key: 'controles', label: 'Contrôles', href: '/controles' },
-  { key: 'preuves', label: 'Preuves', href: '/preuves' },
   { key: 'decisions', label: 'Décisions', href: '/decisions' },
-  { key: 'suivi', label: 'Suivi', href: '/suivi' },
   { key: 'soa', label: 'Déclaration d’Applicabilité', href: '/declaration-applicabilite' },
+  { key: 'preuves', label: 'Preuves', href: '/preuves' },
+  { key: 'suivi', label: 'Suivi d’actions', href: '/suivi' },
 ] as const
+
+/**
+ * Une seule barre. Deux sections en premiere ligne — la ou l'on travaille —,
+ * cinq registres sous un menu, et le pilotage. Le fil d'Ariane porte le mot
+ * « Registres » sur les pages du menu, pour que l'endroit se nomme.
+ */
+export const PRIMARY_SECTIONS = ['apercu', 'processus'] as const
+export const REGISTER_SECTIONS = ['controles', 'decisions', 'soa', 'preuves', 'suivi'] as const
 
 export type OrganizationSection = (typeof ORGANIZATION_SECTIONS)[number]['key']
 
@@ -66,6 +71,7 @@ export async function Shell({
   subtitle,
   actions,
   organization,
+  activeNav,
   children,
 }: {
   /**
@@ -77,8 +83,10 @@ export async function Shell({
   title: string
   subtitle?: string
   actions?: ReactNode
-  /** Renseigne pour afficher le second niveau de navigation. */
+  /** Renseigne, la barre sait quelle section est active. */
   organization?: { id: string; section: OrganizationSection }
+  /** Pour les pages hors organisation : ce que la barre souligne. */
+  activeNav?: 'pilotage'
   children: ReactNode
 }) {
   const viewer = await getViewerContext()
@@ -90,8 +98,34 @@ export async function Shell({
   // qu'elle ne peut pas solder serait une invitation a outrepasser son role.
   const branding = await tenantBranding()
   const pending = administrating ? 0 : await attentionTotal()
+  // L'organisation dont la barre parle : celle de la page, sinon la courante.
+  const navOrganizationId = organization?.id ?? viewer?.currentOrganizationId ?? null
+  const orgBase = navOrganizationId ? `/admin/organizations/${navOrganizationId}` : null
   const orgAttention =
-    organization && !administrating ? await attentionFor(organization.id) : null
+    navOrganizationId && !administrating ? await attentionFor(navOrganizationId) : null
+  const sectionCount = (key: OrganizationSection): number => {
+    if (!orgAttention) return 0
+    switch (key) {
+      case 'preuves':
+        return orgAttention.stale_evidence + orgAttention.evidence_to_review
+      case 'soa':
+        return orgAttention.soa_undecided
+      case 'processus':
+        return orgAttention.high_risks_open
+      case 'suivi':
+        return orgAttention.overdue_actions + orgAttention.open_incidents + orgAttention.reviews_due
+      default:
+        return 0
+    }
+  }
+
+  // Sur une page de registre, le fil d'Ariane nomme l'endroit : « Registres »
+  // s'intercale apres l'organisation. Un jalon, pas une page.
+  const isRegister = organization ? (REGISTER_SECTIONS as readonly string[]).includes(organization.section) : false
+  const crumbs =
+    breadcrumb && isRegister && breadcrumb.length >= 2 && !breadcrumb.some((b) => b.label === 'Registres')
+      ? [...breadcrumb.slice(0, 2), { label: 'Registres' }, ...breadcrumb.slice(2)]
+      : breadcrumb
 
   return (
     <div className="min-h-screen">
@@ -118,19 +152,77 @@ export async function Shell({
             />
           </Link>
 
-          <nav aria-label="Navigation principale" className="flex gap-1 text-sm">
-            {nav.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="inline-flex items-baseline rounded-md px-3 py-1.5 text-white/75 transition-colors hover:bg-white/10 hover:text-white"
-              >
-                {link.label}
-                {link.href === '/admin/pilotage' ? (
-                  <AttentionDot count={pending} inverted label="élément(s) appelant une action" />
-                ) : null}
-              </Link>
-            ))}
+          <nav aria-label="Navigation principale" className="flex items-center gap-1 text-sm">
+            {administrating ? (
+              nav.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="inline-flex items-baseline rounded-md px-3 py-1.5 text-white/75 transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  {link.label}
+                </Link>
+              ))
+            ) : (
+              <>
+                {/*
+                  Les sections de l'organisation courante — celle de la page,
+                  sinon celle du profil. Sans organisation, les liens conduisent
+                  a la liste : il faut en choisir une.
+                */}
+                {PRIMARY_SECTIONS.map((key) => {
+                  const section = ORGANIZATION_SECTIONS.find((s) => s.key === key)!
+                  const active = organization?.section === key
+                  return (
+                    <Link
+                      key={key}
+                      href={orgBase ? `${orgBase}${section.href}` : '/admin/organizations'}
+                      aria-current={active ? 'page' : undefined}
+                      className={`inline-flex items-baseline rounded-md px-3 py-1.5 transition-colors hover:bg-white/10 hover:text-white ${
+                        active ? 'bg-white/10 text-white' : 'text-white/75'
+                      }`}
+                    >
+                      {section.label}
+                      <AttentionDot count={sectionCount(key)} late={key === 'processus'} inverted label="élément(s) appelant une action" />
+                    </Link>
+                  )
+                })}
+                <NavDropdown
+                  label="Registres"
+                  active={REGISTER_SECTIONS.some((key) => organization?.section === key)}
+                  badge={
+                    <AttentionDot
+                      count={REGISTER_SECTIONS.reduce((n, key) => n + sectionCount(key), 0)}
+                      late={false}
+                      inverted
+                      label="élément(s) appelant une action dans les registres"
+                    />
+                  }
+                  items={REGISTER_SECTIONS.map((key) => {
+                    const section = ORGANIZATION_SECTIONS.find((s) => s.key === key)!
+                    return {
+                      href: orgBase ? `${orgBase}${section.href}` : '/admin/organizations',
+                      label: section.label,
+                      active: organization?.section === key,
+                      badge: <AttentionDot count={sectionCount(key)} late={false} label="élément(s) appelant une action" />,
+                    }
+                  })}
+                />
+                {nav.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    aria-current={activeNav === 'pilotage' ? 'page' : undefined}
+                    className={`inline-flex items-baseline rounded-md px-3 py-1.5 transition-colors hover:bg-white/10 hover:text-white ${
+                      activeNav === 'pilotage' ? 'bg-white/10 text-white' : 'text-white/75'
+                    }`}
+                  >
+                    {link.label}
+                    <AttentionDot count={pending} inverted label="élément(s) appelant une action" />
+                  </Link>
+                ))}
+              </>
+            )}
           </nav>
 
           <div className="ml-auto flex items-center gap-3">
@@ -147,53 +239,6 @@ export async function Shell({
             ) : null}
           </div>
         </div>
-
-        {organization ? (
-          <div className="border-t border-white/10 bg-night-900">
-            <nav
-              aria-label="Sections de l’organisation"
-              className="mx-auto flex max-w-6xl flex-wrap gap-1 px-6"
-            >
-              {ORGANIZATION_SECTIONS.map((section) => {
-                const active = section.key === organization.section
-                const count =
-                  orgAttention &&
-                  (section.key === 'preuves'
-                    ? orgAttention.stale_evidence + orgAttention.evidence_to_review
-                    : section.key === 'soa'
-                      ? orgAttention.soa_undecided
-                      : section.key === 'processus'
-                        ? orgAttention.high_risks_open
-                        : section.key === 'suivi'
-                          ? orgAttention.overdue_actions +
-                            orgAttention.open_incidents +
-                            orgAttention.reviews_due
-                          : 0)
-
-                return (
-                  <Link
-                    key={section.key}
-                    href={`/admin/organizations/${organization.id}${section.href}`}
-                    aria-current={active ? 'page' : undefined}
-                    className={`inline-flex items-baseline border-b-2 px-3 py-2.5 text-sm transition-colors ${
-                      active
-                        ? 'border-teal-400 font-medium text-white'
-                        : 'border-transparent text-white/65 hover:text-white'
-                    }`}
-                  >
-                    {section.label}
-                    <AttentionDot
-                      count={count ?? 0}
-                      late={section.key === 'processus'}
-                      inverted
-                      label="élément(s) appelant une action"
-                    />
-                  </Link>
-                )
-              })}
-            </nav>
-          </div>
-        ) : null}
 
         {administrating ? (
           <div className="border-t border-white/10 bg-night-900">
@@ -236,19 +281,22 @@ export async function Shell({
           poste de bureau ou une tablette ; ici, la consultation passe, la saisie sera inconfortable.
         </p>
 
-        {breadcrumb?.length ? (
+        {crumbs?.length ? (
           <nav aria-label="Fil d'Ariane" className="mb-3 text-xs text-ink-400">
-            {breadcrumb.map((item, index) => (
+            {crumbs!.map((item, index) => (
               <span key={item.href ?? item.label}>
                 {index > 0 ? <span className="px-1.5">/</span> : null}
                 {item.href ? (
                   <Link href={item.href} className="hover:text-ink-600">
                     {item.label}
                   </Link>
-                ) : (
+                ) : index === crumbs!.length - 1 ? (
                   <span aria-current="page" className="text-ink-600">
                     {item.label}
                   </span>
+                ) : (
+                  // Un jalon qui nomme l'endroit sans etre une page : « Registres ».
+                  <span>{item.label}</span>
                 )}
               </span>
             ))}

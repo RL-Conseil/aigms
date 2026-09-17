@@ -76,6 +76,7 @@ export default async function DashboardPage({
 
   return (
     <Shell
+      activeNav="pilotage"
       title="Pilotage"
       subtitle={
         scoped

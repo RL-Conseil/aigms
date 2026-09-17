@@ -174,7 +174,7 @@ test('on arrive sur le pilotage, « Cas d’usage » ouvre l’organisation cour
   await expect(page.getByText(/Ce qui appelle une action chez IzarLink Demo/)).toBeVisible()
 
   // « Cas d'usage » conduit a l'organisation courante sans passer par la liste.
-  await page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('link', { name: 'Cas d’usage' }).click()
+  await page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('link', { name: /^Cas d’usage/ }).click()
   await expect(page).toHaveURL(/\/admin\/organizations\/cccccccc/)
   await expect(page.getByRole('heading', { name: 'IzarLink Demo' })).toBeVisible()
 
@@ -189,7 +189,7 @@ test('on arrive sur le pilotage, « Cas d’usage » ouvre l’organisation cour
 
   // La liste des organisations gérées a quitté le menu principal.
   const principal = page.getByRole('navigation', { name: 'Navigation principale' })
-  await expect(principal.getByRole('link', { name: 'Cas d’usage' })).toBeVisible()
+  await expect(principal.getByRole('link', { name: /^Cas d’usage/ })).toBeVisible()
   await expect(principal.getByRole('link', { name: /Organisations/ })).toHaveCount(0)
 
   await page.getByRole('button', { name: /Camille|Rôle|@/ }).first().click()
