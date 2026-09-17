@@ -80,6 +80,7 @@ const uploadSchema = z.object({
   /** La preuve que celle-ci remplace : ses controles sont repris, et sa mise a
    *  l'ecart n'a lieu qu'a la validation de la nouvelle. */
   replacesId: z.string().uuid().optional().or(z.literal('')),
+  closesActionId: z.string().uuid().optional().or(z.literal('')),
 })
 
 export async function uploadEvidence(
@@ -97,6 +98,7 @@ export async function uploadEvidence(
     controlId: formData.get('controlId') ?? '',
     typologyId: formData.get('typologyId') ?? '',
     replacesId: formData.get('replacesId') ?? '',
+    closesActionId: formData.get('closesActionId') ?? '',
   })
   if (!parsed.success) return firstIssues(parsed.error)
 
@@ -215,11 +217,33 @@ export async function uploadEvidence(
     }
   }
 
+  // Le depot solde l'action qui le demandait : « Déposer la preuve de… ».
+  // La cloture est datee et motivee, comme toute cloture d'action.
+  let closed = false
+  if (input.closesActionId) {
+    const { data: done } = await supabase
+      .from('action')
+      .update({
+        status: 'done',
+        closed_at: new Date().toISOString(),
+        closure_note: `Preuve « ${input.title} » déposée au registre (${evidenceId}).`,
+      })
+      .eq('id', input.closesActionId)
+      .eq('organization_id', input.organizationId)
+      .not('status', 'in', '("done","cancelled")')
+      .select('id, use_case_id')
+      .maybeSingle()
+    closed = Boolean(done)
+    if (done?.use_case_id) revalidatePath(`/admin/use-cases/${done.use_case_id}`)
+  }
+
   revalidatePath(`/admin/organizations/${input.organizationId}/preuves`)
   revalidatePath(`/admin/organizations/${input.organizationId}/declaration-applicabilite`)
   return {
     ok: true,
-    message: input.replacesId
+    message: closed
+      ? `Preuve « ${input.title} » déposée ; l’action qui la demandait est close. La pièce reste à valider.`
+      : input.replacesId
       ? `Preuve « ${input.title} » déposée en remplacement. L’ancienne reste ce qui vaut jusqu’à la validation de celle-ci ; à ce moment, l’action de renouvellement se clôturera d’elle-même.`
       : `Preuve « ${input.title} » déposée. Elle reste à valider — un dépôt n’est pas une validation.`,
   }

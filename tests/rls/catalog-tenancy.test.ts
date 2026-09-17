@@ -100,7 +100,9 @@ describe('Instanciation d’un contrôle-type', () => {
     })
     expect(result.control.code).toBe('AIGMS-RSK-012')
     expect(result.control.status).toBe('proposed')
-    expect(result.control.is_mandatory).toBe(true)
+    // Depuis le catalogue v0.4, RSK-012 est « conditionnel » (porte par des
+    // faits du cas d'usage) : instancie a la main, il n'est pas obligatoire.
+    expect(result.control.is_mandatory).toBe(false)
     expect(result.control.catalog_control_id).toBe(result.catalogId)
     expect(result.mapped_requirements).toBe(3)
     expect(result.maps).toBe(3)

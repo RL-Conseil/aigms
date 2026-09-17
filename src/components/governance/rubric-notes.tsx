@@ -19,16 +19,15 @@ function Note({ label, title, children }: { label: string; title: string; childr
 
 export function TriageNote() {
   return (
-    <Note label="À quoi sert le triage" title="Trier avant d’instruire">
+    <Note label="À quoi sert la criticité" title="Doser l’effort">
       <p>
-        Le triage fixe la <strong className="font-medium text-ink-800">criticité retenue</strong> :
-        l’effort d’instruction que ce cas d’usage mérite. Tous ne valent pas une évaluation
-        d’impact complète, et consacrer le même temps à un correcteur orthographique qu’à un
-        scoring de candidatures dilue l’attention là où elle compte.
+        La criticité dit <strong className="font-medium text-ink-800">combien ce cas d’usage
+        mérite d’attention</strong> : un correcteur orthographique et un scoring de candidatures
+        n’appellent pas la même instruction.
       </p>
       <p>
         Elle fixe aussi la <strong className="font-medium text-ink-800">date de prochaine revue</strong>.
-        Sans elle, rien ne fait remonter le dossier : il dort jusqu’à l’incident.
+        Sans date, rien ne fait remonter le dossier.
       </p>
     </Note>
   )
@@ -37,26 +36,27 @@ export function TriageNote() {
 export function ClassificationNote() {
   return (
     <Note
-      label="À quoi sert la pré-classification"
-      title="Une pré-classification, pas un avis juridique"
+      label="À quoi sert la qualification"
+      title="Situer le cas d’usage au regard du règlement"
     >
       <p>
-        Elle situe le cas d’usage au regard du règlement : quel{' '}
+        Le règlement est le{' '}
+        <strong className="font-medium text-ink-800">règlement (UE) 2024/1689</strong> sur
+        l’intelligence artificielle (AI Act). La qualification dit quel{' '}
         <strong className="font-medium text-ink-800">rôle</strong> l’organisation y tient —
         fournisseur, déployeur, importateur — et quelles{' '}
         <strong className="font-medium text-ink-800">obligations</strong> sont à examiner. Elle
-        oriente le niveau de revue nécessaire ; elle ne conclut pas à la conformité.
+        oriente le niveau de revue ; elle ne conclut pas à la conformité.
       </p>
       <p>
         <strong className="font-medium text-ink-800">« Haut risque » n’est pas un niveau de
-        risque.</strong> C’est une catégorie de système au sens du règlement, qui déclenche des
-        obligations — documentation technique, contrôle humain, journalisation. La cotation d’un
-        risque, elle, se fait dans la rubrique Risques, par vraisemblance et gravité. Les deux se
-        ressemblent et ne disent pas la même chose.
+        risque.</strong> C’est une catégorie du règlement, qui déclenche des obligations. Le
+        niveau d’un risque, lui, se cote dans la rubrique Risques.
       </p>
       <p>
-        La version du référentiel est conservée avec la qualification : les échéances évoluent, et
-        une qualification datée reste lisible après un report.
+        <strong className="font-medium text-ink-800">La version du règlement est notée</strong>{' '}
+        avec la qualification : quand le texte change, on sait sur quelle version celle-ci a été
+        posée.
       </p>
     </Note>
   )

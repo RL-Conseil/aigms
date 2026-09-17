@@ -21,7 +21,10 @@ import { Modal } from '@/components/modal'
 export function UseCaseLabelForm({
   useCase,
   people,
+  trigger = 'Corriger la fiche',
 }: {
+  /** Libelle du bouton d'ouverture. */
+  trigger?: string
   useCase: {
     id: string
     name: string
@@ -44,7 +47,7 @@ export function UseCaseLabelForm({
 
   return (
     <Modal
-      trigger="Corriger la fiche"
+      trigger={trigger}
       title="Corriger la fiche"
       description="Ce qui décrit le cas d’usage. Sa qualification et son statut se prononcent ailleurs."
     >

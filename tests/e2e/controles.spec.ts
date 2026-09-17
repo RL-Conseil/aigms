@@ -62,10 +62,9 @@ test('un contrôle se crée, change d’état et se rattache à une exigence', a
 })
 
 test('une exclusion d’applicabilité ne passe pas sans justification', async ({ page }) => {
-  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000001')
+  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000001?onglet=controles')
 
   const controles = page.locator('section').filter({ hasText: 'Contrôles affectés' }).first()
-  await controles.getByRole('button', { name: /Contrôles affectés/ }).click()
   await controles.getByRole('button', { name: 'Statuer un contrôle' }).click()
 
   const fenetre = page.getByRole('dialog', { name: 'Applicabilité d’un contrôle' })
@@ -78,7 +77,7 @@ test('une exclusion d’applicabilité ne passe pas sans justification', async (
 })
 
 test('un traitement de risque désigne le contrôle qui l’exécute', async ({ page }) => {
-  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000002')
+  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000002?onglet=risques')
 
   // `hasText` compare sans tenir compte de la casse : « 2 risques ni traites »
   // dans l'avertissement de transition ferait mouche avant la carte cherchee.

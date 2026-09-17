@@ -58,6 +58,7 @@ export function EvidenceUploadForm({
   controls,
   typologies,
   defaultControlId,
+  closesActionId,
   defaultTypologyId,
   replaces,
 }: {
@@ -66,6 +67,8 @@ export function EvidenceUploadForm({
   /** Typologies de la matrice, les plus critiques pour ce profil en tete. */
   typologies: TypologyChoice[]
   defaultControlId?: string
+  /** Une action que ce depot solde : « Déposer la preuve de… ». */
+  closesActionId?: string
   defaultTypologyId?: string
   /** Renouvellement : la piece remplacee pre-remplit le formulaire. */
   replaces?: {
@@ -91,6 +94,7 @@ export function EvidenceUploadForm({
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="organizationId" value={organizationId} />
+      {closesActionId ? <input type="hidden" name="closesActionId" value={closesActionId} /> : null}
       {replaces ? (
         <>
           <input type="hidden" name="replacesId" value={replaces.id} />

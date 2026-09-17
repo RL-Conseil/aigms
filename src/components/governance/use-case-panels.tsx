@@ -43,12 +43,12 @@ export function TriagePanel({
 
   return (
     <Disclosure
-      title="Trier le cas d’usage"
+      title="Criticité du cas d’usage"
       aside={<TriageNote />}
       summary={
         done
           ? `Criticité retenue : ${CRITICALITY.find((c) => c.value === criticality)?.label ?? criticality}`
-          : 'À faire — le passage en évaluation l’exige'
+          : 'À fixer — le passage en évaluation l’exige'
       }
       tone={done ? 'done' : 'todo'}
       defaultOpen={!done}
@@ -60,7 +60,7 @@ export function TriagePanel({
         <Field
           label="Criticité"
           htmlFor="triage-criticality"
-          hint="Elle proportionne le niveau de gouvernance : elle ne préjuge pas de la qualification réglementaire."
+          hint="Elle dose l’effort de gouvernance. Elle ne dit rien du règlement : c’est la qualification qui s’en charge."
         >
           <select
             id="triage-criticality"
@@ -80,7 +80,7 @@ export function TriagePanel({
           label="Justification"
           htmlFor="triage-rationale"
           error={errors.rationale}
-          hint="Pourquoi ce niveau plutôt qu’un autre. C’est ce qui sera relu à la revue."
+          hint="Pourquoi ce niveau, en une ou deux phrases. Relu à la revue."
         >
           <textarea id="triage-rationale" name="rationale" rows={3} required className={FIELD} />
         </Field>
@@ -101,7 +101,7 @@ export function TriagePanel({
         </div>
 
         <FormFeedback state={state} />
-        <Submit pending={pending} idle={done ? 'Mettre à jour le triage' : 'Enregistrer le triage'} />
+        <Submit pending={pending} idle={done ? 'Mettre à jour la criticité' : 'Enregistrer la criticité'} />
       </form>
     </Disclosure>
   )
@@ -150,12 +150,12 @@ export function ClassificationPanel({
 
   return (
     <Disclosure
-      title="Pré-classifier au regard du règlement"
+      title="Qualification au regard du règlement"
       aside={<ClassificationNote />}
       summary={
         current
           ? `${ROLES.find((r) => r.value === current.organization_role)?.label ?? current.organization_role} · ${current.flags.length} qualification(s)`
-          : 'À faire — le passage en revue l’exige'
+          : 'À poser — le passage en revue l’exige'
       }
       tone={current ? 'done' : 'todo'}
       defaultOpen={!current}
@@ -163,9 +163,10 @@ export function ClassificationPanel({
     >
       <div className="mb-4 rounded-md bg-ink-100 px-4 py-3">
         <p className="text-[13px] leading-relaxed text-ink-600">
-          Cette qualification est un <strong className="font-semibold">cadrage</strong>, pas un avis
-          juridique. Elle oriente les obligations à examiner et le niveau de revue nécessaire ; elle
-          ne conclut pas à la conformité.
+          Au regard du <strong className="font-semibold">règlement (UE) 2024/1689</strong> — l’AI
+          Act. Cette qualification est un <strong className="font-semibold">cadrage</strong>, pas un
+          avis juridique : elle dit quelles obligations examiner et quel niveau de revue prévoir ;
+          elle ne conclut pas à la conformité.
         </p>
       </div>
 
@@ -189,9 +190,9 @@ export function ClassificationPanel({
           </Field>
 
           <Field
-            label="Version du référentiel"
+            label="Version du règlement"
             htmlFor="cls-version"
-            hint="Les échéances évoluent : la version appliquée est conservée avec la classification."
+            hint="Le règlement évolue : on note la version qui a servi, pour que la qualification reste lisible plus tard."
           >
             <input
               id="cls-version"
@@ -285,7 +286,7 @@ export function ClassificationPanel({
         <FormFeedback state={state} />
         <Submit
           pending={pending}
-          idle={current ? 'Remplacer la classification' : 'Enregistrer la classification'}
+          idle={current ? 'Remplacer la qualification' : 'Enregistrer la qualification'}
         />
       </form>
     </Disclosure>

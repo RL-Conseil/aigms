@@ -254,7 +254,7 @@ export async function saveTriage(_previous: FormState | null, formData: FormData
   if (assessmentError) return { ok: false, message: explain(assessmentError) }
 
   revalidatePath(`/admin/use-cases/${d.useCaseId}`)
-  return { ok: true, message: 'Triage enregistré. Le cas d’usage peut passer en évaluation.' }
+  return { ok: true, message: 'Criticité enregistrée. Le cas d’usage peut passer en évaluation.' }
 }
 
 // =============================================================================
@@ -346,7 +346,7 @@ export async function saveClassification(
   return {
     ok: true,
     message:
-      'Pré-classification enregistrée. Elle vaut cadrage, non avis juridique : la revue reste requise selon le niveau retenu.',
+      'Qualification enregistrée. Elle vaut cadrage, non avis juridique : la revue reste requise selon le niveau retenu.',
   }
 }
 
