@@ -23,16 +23,20 @@ ce qui rend les 70 politiques lisibles et vérifiables une à une. Le trigger
 
 ## 2. Rôles
 
-| Rôle | Portée | Écrit |
-|---|---|---|
-| `platform_admin` | plateforme | organisations, comptes, attributions de rôle, référentiels. **Aucun objet de gouvernance** — voir [ADR-0008](../adr/ADR-0008-account-provisioning.md) |
-| `governance_officer` | tenant | objets de gouvernance |
-| `client_admin` | tenant | objets de gouvernance |
-| `system_owner` | organisation | cas d'usage, évaluations, preuves, actions |
-| `risk_owner` | organisation | risques et traitements |
-| `reviewer` | organisation | décisions |
-| `auditor` | organisation | rien — lecture seule, journal d'audit inclus |
-| `executive_viewer` | organisation | rien — lecture seule |
+| Rôle | Dénomination | Portée | Écrit |
+|---|---|---|---|
+| `platform_admin` | Administration de la plateforme | plateforme | organisations, comptes, attributions de rôle, référentiels. **Aucun objet de gouvernance** — voir [ADR-0008](../adr/ADR-0008-account-provisioning.md) |
+| `governance_officer` | AI Governance Officer | tenant | objets de gouvernance |
+| `client_admin` | Administrateur client | tenant | objets de gouvernance |
+| `system_owner` | Porteur de l'IA | organisation | cas d'usage, évaluations, preuves, actions |
+| `risk_owner` | Comité des risques | organisation | risques et traitements |
+| `reviewer` | Expert métier (DPO / RSSI) | organisation | décisions |
+| `auditor` | Auditeur | organisation | rien — lecture seule, journal d'audit inclus |
+| `executive_viewer` | Comité de direction | organisation | rien — lecture seule |
+
+Les dénominations sont fixées le 18 septembre 2026 (migration 0054) ; elles
+s'appliquent aux comptes déjà attribués comme aux futurs. Le RACI de ces six
+rôles est décrit dans [ROLES_ET_RACI.md](../admin/ROLES_ET_RACI.md).
 
 L'administration de la plateforme **ouvre les accès ; elle ne gouverne pas**.
 `has_tenant_role` et `has_organization_role` ne court-circuitent pas sur ce
