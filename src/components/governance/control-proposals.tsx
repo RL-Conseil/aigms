@@ -27,7 +27,7 @@ export type Proposal = {
   domain_code: string
   domain_name: string
   phase: string | null
-  tier: 'core' | 'relevant' | 'secondary'
+  tier: 'triggered' | 'baseline' | 'core' | 'relevant' | 'secondary'
   mandatory: boolean
   reasons: string[]
   state: 'already_affected' | 'operational_not_affected' | 'to_add'
@@ -44,9 +44,11 @@ export type Suggestions = {
 }
 
 const TIER_LABELS: Record<Proposal['tier'], { title: string; hint: string }> = {
+  triggered: { title: 'Propres à ce cas d’usage', hint: 'Déclenchés par ses faits : données, personnes, actifs, classification, fournisseurs, statut.' },
+  baseline: { title: 'Socle de tout cas d’usage', hint: 'Attendus quel que soit l’usage : finalité, responsables, risques, supervision, journalisation.' },
   core: { title: 'À lire d’abord', hint: 'Les domaines au cœur du rôle de l’organisation.' },
   relevant: { title: 'Ensuite', hint: 'Pertinents pour ce rôle, sans être au premier plan.' },
-  secondary: { title: 'Déclenchés par un fait', hint: 'Hors du cœur du rôle, mais un fait du cas d’usage les appelle.' },
+  secondary: { title: 'Hors du cœur du rôle', hint: 'Moins attendus pour ce rôle.' },
 }
 
 const FACT_LABELS: Record<string, string> = {
@@ -60,6 +62,16 @@ const FACT_LABELS: Record<string, string> = {
   role_developer: 'rôle : développeur',
   role_integrator: 'rôle : intégrateur',
   role_business_user: 'rôle : utilisateur métier',
+  in_service: 'en service',
+  external_persons: 'personnes extérieures concernées',
+  high_risk_potential: 'haut risque potentiel (AI Act)',
+  privacy_impact: 'impact vie privée',
+  security_impact: 'impact sécurité',
+  gpai_dependency: 'modèle à usage général',
+  transparency_obligations: 'obligations de transparence',
+  asset_agent: 'agent',
+  asset_own_model: 'modèle propre',
+  asset_dataset: 'jeu de données',
 }
 
 export function ControlProposals({
@@ -68,9 +80,11 @@ export function ControlProposals({
   suggestions,
 }: {
   organizationId: string
-  useCaseId: string
+  /** Absent : portee organisation — les controles du systeme de management. */
+  useCaseId?: string
   suggestions: Suggestions
 }) {
+  const organizationMode = !useCaseId
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(
     retainSuggestedControls,
     null,
@@ -78,7 +92,7 @@ export function ControlProposals({
   const proposals = useMemo(() => suggestions.proposals ?? [], [suggestions.proposals])
   const selectable = proposals.filter((p) => p.state !== 'already_affected')
   const [checked, setChecked] = useState<Set<string>>(new Set())
-  const [openTiers, setOpenTiers] = useState<Set<string>>(new Set(['core']))
+  const [openTiers, setOpenTiers] = useState<Set<string>>(new Set(['triggered', 'core']))
 
   const toggle = (id: string) =>
     setChecked((prev) => {
@@ -109,20 +123,24 @@ export function ControlProposals({
     .filter((p) => checked.has(p.catalog_control_id))
     .map((p) => ({ catalogControlId: p.catalog_control_id, controlId: p.control_id, reason: p.reasons.join(' ') }))
 
-  const tiers = (['core', 'relevant', 'secondary'] as const)
+  const tiers = (['triggered', 'baseline', 'core', 'relevant', 'secondary'] as const)
     .map((tier) => ({ tier, items: proposals.filter((p) => p.tier === tier) }))
     .filter((t) => t.items.length)
 
   return (
     <Modal
-      trigger="Proposer des contrôles"
-      title="Propositions de contrôles"
-      description="Calculées depuis le référentiel, le rôle de l’organisation et les faits du cas d’usage. Rien ne s’écrit avant que vous ne reteniez."
+      trigger={organizationMode ? 'Proposer les contrôles d’organisation' : 'Proposer des contrôles'}
+      title={organizationMode ? 'Contrôles du système de management' : 'Propositions de contrôles'}
+      description={
+        organizationMode
+          ? 'Se tiennent une fois pour toute l’organisation — politique, comité, audit interne, inventaire… Ils ne s’affectent pas à un cas d’usage. Rien ne s’écrit avant que vous ne reteniez.'
+          : 'Calculées depuis le référentiel, le rôle de l’organisation et les faits du cas d’usage. Rien ne s’écrit avant que vous ne reteniez.'
+      }
     >
       {() => (
         <form action={formAction} className="flex flex-col gap-4">
           <input type="hidden" name="organizationId" value={organizationId} />
-          <input type="hidden" name="useCaseId" value={useCaseId} />
+          {useCaseId ? <input type="hidden" name="useCaseId" value={useCaseId} /> : null}
           <input type="hidden" name="selections" value={JSON.stringify(selections)} />
 
           {!suggestions.available ? (
@@ -132,12 +150,12 @@ export function ControlProposals({
           ) : (
             <>
               <p className="text-xs leading-relaxed text-ink-500">
-                Ce que l’assistant a lu :{' '}
-                {(suggestions.facts ?? []).length
-                  ? (suggestions.facts ?? []).map((f) => FACT_LABELS[f] ?? f).join(' · ')
-                  : 'aucun fait particulier'}
-                . {proposals.length} proposition(s), {selectable.length} à retenir,{' '}
-                {proposals.length - selectable.length} déjà affectée(s).
+                {organizationMode ? '' : 'Ce que l’assistant a lu : '}
+                {organizationMode
+                  ? ''
+                  : `${(suggestions.facts ?? []).length ? (suggestions.facts ?? []).map((f) => FACT_LABELS[f] ?? f).join(' · ') : 'aucun fait particulier'}. `}
+                {proposals.length} proposition(s), {selectable.length} à retenir,{' '}
+                {proposals.length - selectable.length} {organizationMode ? 'déjà dans la liste' : 'déjà affectée(s)'}.
               </p>
 
               {tiers.map(({ tier, items }) => {
@@ -188,7 +206,9 @@ export function ControlProposals({
                                     <span className="font-mono text-xs text-ink-400">{p.code}</span>
                                     <span className="font-medium text-ink-900">{p.title}</span>
                                     {p.state === 'already_affected' ? (
-                                      <span className="rounded bg-ink-100 px-1.5 py-0.5 text-[10px] text-ink-600">déjà affecté</span>
+                                      <span className="rounded bg-ink-100 px-1.5 py-0.5 text-[10px] text-ink-600">
+                                        {organizationMode ? 'déjà dans la liste' : 'déjà affecté'}
+                                      </span>
                                     ) : p.state === 'operational_not_affected' ? (
                                       <span className="rounded bg-warn-600/10 px-1.5 py-0.5 text-[10px] text-warn-600">dans la liste, à affecter</span>
                                     ) : (

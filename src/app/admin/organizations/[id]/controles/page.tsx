@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty, Stat, StatStrip } from '@/components/ui'
 import { InfoTip } from '@/components/info-tip'
+import { ControlProposals, type Suggestions } from '@/components/governance/control-proposals'
 import { SegmentedFilter } from '@/components/governance/segmented-filter'
 import {
   ControlStateForm,
@@ -55,7 +56,7 @@ export default async function ControlsPage({
   const { etat } = await searchParams
   const supabase = await createClient()
 
-  const [{ data: organization }, { data: controlRows }, { data: requirementRows }, { data: links }] =
+  const [{ data: organization }, { data: controlRows }, { data: requirementRows }, { data: links }, { data: orgSuggestions }] =
     await Promise.all([
       supabase.from('organization').select('id, name, business_ref').eq('id', id).maybeSingle(),
       supabase
@@ -74,6 +75,7 @@ export default async function ControlsPage({
       supabase
         .from('control_requirement_map')
         .select('control_id, requirement:requirement_id (requirement_reference)'),
+      supabase.rpc('suggest_organization_controls', { p_organization_id: id }),
     ])
 
   if (!organization) notFound()
@@ -116,6 +118,10 @@ export default async function ControlsPage({
           >
             Ajouter un contrôle
           </Link>
+          <ControlProposals
+            organizationId={id}
+            suggestions={(orgSuggestions ?? { available: false }) as Suggestions}
+          />
           <InfoTip label="Comment lire cette liste" title="Contrôles opérationnels et contrôles-types">
             <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
               <p>

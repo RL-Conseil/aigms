@@ -1012,6 +1012,16 @@ export type Database = {
             | "role_developer"
             | "role_integrator"
             | "role_business_user"
+            | "high_risk_potential"
+            | "privacy_impact"
+            | "security_impact"
+            | "gpai_dependency"
+            | "transparency_obligations"
+            | "asset_agent"
+            | "asset_own_model"
+            | "asset_dataset"
+            | "in_service"
+            | "external_persons"
           control_code: string
           framework_code: string
           id: string
@@ -1030,6 +1040,16 @@ export type Database = {
             | "role_developer"
             | "role_integrator"
             | "role_business_user"
+            | "high_risk_potential"
+            | "privacy_impact"
+            | "security_impact"
+            | "gpai_dependency"
+            | "transparency_obligations"
+            | "asset_agent"
+            | "asset_own_model"
+            | "asset_dataset"
+            | "in_service"
+            | "external_persons"
           control_code: string
           framework_code: string
           id?: string
@@ -1048,6 +1068,16 @@ export type Database = {
             | "role_developer"
             | "role_integrator"
             | "role_business_user"
+            | "high_risk_potential"
+            | "privacy_impact"
+            | "security_impact"
+            | "gpai_dependency"
+            | "transparency_obligations"
+            | "asset_agent"
+            | "asset_own_model"
+            | "asset_dataset"
+            | "in_service"
+            | "external_persons"
           control_code?: string
           framework_code?: string
           id?: string
@@ -1085,6 +1115,7 @@ export type Database = {
           requirements: Json
           review_frequency: string | null
           risks: Json
+          scope: "organization" | "use_case"
           status: string | null
           tests: Json
           title: string
@@ -1116,6 +1147,7 @@ export type Database = {
           requirements?: Json
           review_frequency?: string | null
           risks?: Json
+          scope?: "organization" | "use_case"
           status?: string | null
           tests?: Json
           title: string
@@ -1147,6 +1179,7 @@ export type Database = {
           requirements?: Json
           review_frequency?: string | null
           risks?: Json
+          scope?: "organization" | "use_case"
           status?: string | null
           tests?: Json
           title?: string
@@ -5586,6 +5619,10 @@ export type Database = {
         }[]
       }
       suggest_controls: { Args: { p_use_case_id: string }; Returns: Json }
+      suggest_organization_controls: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
       tenant_branding: { Args: never; Returns: Json }
       tools_for_control: {
         Args: { p_control_code: string; p_framework_code: string }

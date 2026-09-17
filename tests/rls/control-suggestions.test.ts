@@ -54,13 +54,48 @@ describe('Propositions de contrôles', () => {
     expect(dat004!.reasons.join(' ')).toMatch(/données personnelles/)
   })
 
-  it('pour un hébergeur, la sécurité et l’exploitation se lisent d’abord ; les cas d’usage et la supervision, seulement sur motif', async () => {
+  it('un contrôle d’organisation ne se propose jamais sur un cas d’usage', async () => {
     const r = await suggest(DEMO.officerA, DEMO.useCasePilot)
-    const tierOf = (code: string) => r.proposals.find((p) => p.code === code)?.tier
-    expect(tierOf('AIGMS-SEC-002')).toBe('core')
-    expect(tierOf('AIGMS-OPS-001')).toBe('core')
-    // USE est secondaire pour un hebergeur : les obligatoires sans motif n'y apparaissent pas.
-    expect(r.proposals.find((p) => p.code === 'AIGMS-USE-001')).toBeUndefined()
+    for (const code of ['AIGMS-GOV-001', 'AIGMS-CMP-006', 'AIGMS-SEC-002', 'AIGMS-INV-001']) {
+      expect(r.proposals.find((p) => p.code === code), code).toBeUndefined()
+    }
+  })
+
+  it('deux cas d’usage aux faits différents reçoivent des propositions différentes', async () => {
+    const scoring = await suggest(DEMO.officerA, DEMO.useCasePilot)
+    const agent = await suggest(DEMO.officerA, DEMO.useCaseTriage)
+    const triggered = (r: Result) => new Set(r.proposals.filter((p) => p.tier === 'triggered').map((p) => p.code))
+    const a = triggered(scoring)
+    const b = triggered(agent)
+    // Le scoring : haut risque, personnes vulnerables -> validation humaine, qualite des donnees.
+    expect(a.has('AIGMS-HUM-002')).toBe(true)
+    expect(a.has('AIGMS-DAT-008')).toBe(true)
+    // L'agent : reprise de la main, escalade et arret, moindre privilege, prompts versionnes.
+    expect(b.has('AIGMS-HUM-004')).toBe(true)
+    expect(b.has('AIGMS-HUM-005')).toBe(true)
+    expect(b.has('AIGMS-SEC-003')).toBe(true)
+    expect(b.has('AIGMS-OPS-004')).toBe(true)
+    expect(a.has('AIGMS-HUM-004')).toBe(false)
+    expect(b.has('AIGMS-DAT-008')).toBe(false)
+  })
+
+  it('le socle commun est le même pour tous, et il est court', async () => {
+    const scoring = await suggest(DEMO.officerA, DEMO.useCasePilot)
+    const agent = await suggest(DEMO.officerA, DEMO.useCaseTriage)
+    const baseline = (r: Result) => r.proposals.filter((p) => p.tier === 'baseline').map((p) => p.code).sort()
+    expect(baseline(scoring)).toEqual(baseline(agent))
+    expect(baseline(scoring).length).toBeLessThanOrEqual(24)
+  })
+
+  it('les contrôles d’organisation se proposent une fois, sur l’organisation', async () => {
+    const r = await asUser(db, DEMO.officerA, async (c) => {
+      const { rows } = await c.query<{ r: Result }>('select app.suggest_organization_controls($1) as r', [DEMO.orgA])
+      return rows[0]!.r
+    })
+    const codes = new Set(r.proposals.map((p) => p.code))
+    expect(codes.has('AIGMS-GOV-001')).toBe(true)
+    expect(codes.has('AIGMS-CMP-006')).toBe(true)
+    expect(codes.has('AIGMS-USE-001')).toBe(false)
   })
 
   it('les propositions portent les outils qui les tiennent', async () => {
