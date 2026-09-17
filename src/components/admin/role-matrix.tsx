@@ -32,9 +32,9 @@ const SHORT: Record<AppRole, string> = {
   platform_admin: 'Admin',
   governance_officer: 'AIGO',
   client_admin: 'Adm. client',
-  system_owner: 'Porteur',
-  risk_owner: 'Risque',
-  reviewer: 'Relecteur',
+  system_owner: 'Porteur IA',
+  risk_owner: 'Com. risques',
+  reviewer: 'Expert',
   auditor: 'Auditeur',
   executive_viewer: 'Direction',
 }

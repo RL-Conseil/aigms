@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import { ROLE_LABELS as DOMAIN_ROLE_LABELS } from '@/lib/domain/roles'
 
 /**
  * Les personnes declarees sur une organisation.
@@ -27,15 +28,8 @@ export type Person = {
 /** Roles qui peuvent se prononcer sur une decision (app.roles_review). */
 const REVIEW_ROLES = ['governance_officer', 'client_admin', 'reviewer']
 
-export const ROLE_LABELS: Record<string, string> = {
-  governance_officer: 'AI Governance Officer',
-  client_admin: 'Administrateur client',
-  reviewer: 'Relecteur',
-  risk_owner: 'Propriétaire de risque',
-  contributor: 'Contributeur',
-  auditor: 'Auditeur',
-  viewer: 'Lecteur',
-}
+/** Les denominations sont celles du domaine : une seule source. */
+export const ROLE_LABELS: Record<string, string> = DOMAIN_ROLE_LABELS
 
 /**
  * Personnes rattachees a l'organisation, affectation en cours de validite.

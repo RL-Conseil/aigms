@@ -3,6 +3,7 @@ import { Shell } from '@/components/shell'
 import { Badge, Card, Empty } from '@/components/ui'
 import { AccountForm, RoleForm } from '@/components/admin/forms'
 import { RoleMatrix } from '@/components/admin/role-matrix'
+import { RaciTable } from '@/components/admin/raci-table'
 import { roleCapabilities } from '@/lib/admin/role-capabilities'
 import { InfoTip } from '@/components/info-tip'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
@@ -163,6 +164,40 @@ export default async function AccountsPage() {
           }
         >
           <RoleMatrix capabilities={capabilities} />
+        </Card>
+
+        <Card
+          title="Qui fait quoi : le RACI des six rôles"
+          subtitle="Ce que l’organisation attend de chaque rôle à chaque étape. La matrice au-dessus dit ce que la base laisse faire ; ici, ce dont chacun répond."
+          action={
+            <InfoTip label="Lire le RACI" title="Une responsabilité, pas un droit">
+              <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
+                <p>
+                  Six dénominations : le{' '}
+                  <strong className="font-medium text-ink-800">Porteur de l’IA</strong> — le métier
+                  ou chef de projet qui déploie l’outil ; l’{' '}
+                  <strong className="font-medium text-ink-800">AI Governance Officer</strong> — le
+                  pilote global de la conformité ; l’{' '}
+                  <strong className="font-medium text-ink-800">Expert métier (DPO / RSSI)</strong> —
+                  les relecteurs spécialisés ; le{' '}
+                  <strong className="font-medium text-ink-800">Comité des risques</strong> — le
+                  valideur indépendant des risques ; le{' '}
+                  <strong className="font-medium text-ink-800">Comité de direction</strong> —
+                  l’instance suprême d’arbitrage ; l’{' '}
+                  <strong className="font-medium text-ink-800">Auditeur</strong> — le contrôleur
+                  indépendant, a posteriori.
+                </p>
+                <p>
+                  Un « A » n’ouvre pas un droit d’écriture : le comité de direction reste en
+                  lecture, et son arbitrage se porte par la décision qui le nomme comme personne
+                  appelée à se prononcer. Ce que la base applique se lit dans la matrice des
+                  capacités.
+                </p>
+              </div>
+            </InfoTip>
+          }
+        >
+          <RaciTable />
         </Card>
       </div>
     </Shell>
