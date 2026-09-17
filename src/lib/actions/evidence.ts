@@ -77,6 +77,9 @@ const uploadSchema = z.object({
   externalUrl: z.string().trim().url('Adresse invalide.').max(500).optional().or(z.literal('')),
   controlId: z.string().uuid().optional().or(z.literal('')),
   typologyId: z.string().uuid().optional().or(z.literal('')),
+  /** La preuve que celle-ci remplace : ses controles sont repris, et sa mise a
+   *  l'ecart n'a lieu qu'a la validation de la nouvelle. */
+  replacesId: z.string().uuid().optional().or(z.literal('')),
 })
 
 export async function uploadEvidence(
@@ -93,6 +96,7 @@ export async function uploadEvidence(
     externalUrl: formData.get('externalUrl') ?? '',
     controlId: formData.get('controlId') ?? '',
     typologyId: formData.get('typologyId') ?? '',
+    replacesId: formData.get('replacesId') ?? '',
   })
   if (!parsed.success) return firstIssues(parsed.error)
 
@@ -170,6 +174,7 @@ export async function uploadEvidence(
     file_size_bytes: hasFile ? file.size : null,
     mime_type: hasFile ? file.type || 'application/octet-stream' : null,
     typology_id: input.typologyId || null,
+    replaces_evidence_id: input.replacesId || null,
     owner_user_id: user.id,
     validation_status: 'pending',
   })
@@ -180,13 +185,27 @@ export async function uploadEvidence(
     return { ok: false, message: explain(error) }
   }
 
-  if (input.controlId) {
-    const { error: linkError } = await supabase.from('control_evidence').insert({
-      tenant_id: organization.tenant_id,
-      control_id: input.controlId,
-      evidence_id: evidenceId,
-      linked_by: user.id,
-    })
+  // Un renouvellement reprend les rattachements de la piece remplacee : elle
+  // demontre les memes controles, c'est sa raison d'etre.
+  const controlIds = new Set<string>()
+  if (input.controlId) controlIds.add(input.controlId)
+  if (input.replacesId) {
+    const { data: inherited } = await supabase
+      .from('control_evidence')
+      .select('control_id')
+      .eq('evidence_id', input.replacesId)
+    for (const link of inherited ?? []) controlIds.add(link.control_id)
+  }
+
+  if (controlIds.size) {
+    const { error: linkError } = await supabase.from('control_evidence').insert(
+      [...controlIds].map((controlId) => ({
+        tenant_id: organization.tenant_id,
+        control_id: controlId,
+        evidence_id: evidenceId,
+        linked_by: user.id,
+      })),
+    )
     if (linkError) {
       revalidatePath(`/admin/organizations/${input.organizationId}/preuves`)
       return {
@@ -200,7 +219,9 @@ export async function uploadEvidence(
   revalidatePath(`/admin/organizations/${input.organizationId}/declaration-applicabilite`)
   return {
     ok: true,
-    message: `Preuve « ${input.title} » déposée. Elle reste à valider — un dépôt n’est pas une validation.`,
+    message: input.replacesId
+      ? `Preuve « ${input.title} » déposée en remplacement. L’ancienne reste ce qui vaut jusqu’à la validation de celle-ci ; à ce moment, l’action de renouvellement se clôturera d’elle-même.`
+      : `Preuve « ${input.title} » déposée. Elle reste à valider — un dépôt n’est pas une validation.`,
   }
 }
 

@@ -58,19 +58,32 @@ export function EvidenceUploadForm({
   controls,
   typologies,
   defaultControlId,
+  defaultTypologyId,
+  replaces,
 }: {
   organizationId: string
   controls: ControlChoice[]
   /** Typologies de la matrice, les plus critiques pour ce profil en tete. */
   typologies: TypologyChoice[]
   defaultControlId?: string
+  defaultTypologyId?: string
+  /** Renouvellement : la piece remplacee pre-remplit le formulaire. */
+  replaces?: {
+    id: string
+    business_ref: string
+    title: string
+    evidence_type: string
+    source: string
+    typology_id: string | null
+    control_codes: string[]
+  } | null
 }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(
     uploadEvidence,
     null,
   )
-  const [declarative, setDeclarative] = useState(false)
-  const [typologyId, setTypologyId] = useState('')
+  const [declarative, setDeclarative] = useState(replaces?.evidence_type === 'declarative')
+  const [typologyId, setTypologyId] = useState(replaces?.typology_id ?? defaultTypologyId ?? '')
   const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
   const chosen = typologies.find((t) => t.id === typologyId)
   const profile = typologies[0]?.profile ?? null
@@ -78,6 +91,18 @@ export function EvidenceUploadForm({
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="organizationId" value={organizationId} />
+      {replaces ? (
+        <>
+          <input type="hidden" name="replacesId" value={replaces.id} />
+          <p className="rounded-md border border-brand-500/30 bg-brand-500/5 px-3.5 py-3 text-sm text-ink-700">
+            <strong className="font-medium text-ink-900">Renouvellement de {replaces.business_ref}</strong>{' '}
+            — « {replaces.title} ». La nouvelle pièce reprendra ses rattachements
+            {replaces.control_codes.length ? ` (${replaces.control_codes.join(', ')})` : ''}. L’ancienne
+            reste ce qui vaut jusqu’à la validation de celle-ci ; l’action de renouvellement se
+            clôturera alors d’elle-même.
+          </p>
+        </>
+      ) : null}
 
       {/*
         La typologie se choisit AVANT le reste : elle dit ce qu'il faut
@@ -149,6 +174,7 @@ export function EvidenceUploadForm({
           name="title"
           type="text"
           required
+          defaultValue={replaces?.title ?? ''}
           className={FIELD}
           placeholder="Rapport de test de biais — version 2026-09"
         />
@@ -159,7 +185,7 @@ export function EvidenceUploadForm({
           <select
             id="evidence-type"
             name="evidenceType"
-            defaultValue="document"
+            defaultValue={replaces?.evidence_type ?? 'document'}
             className={FIELD}
             onChange={(event) => setDeclarative(event.target.value === 'declarative')}
           >
@@ -182,6 +208,7 @@ export function EvidenceUploadForm({
             name="source"
             type="text"
             required
+            defaultValue={replaces?.source ?? ''}
             className={FIELD}
             placeholder="Recette applicative"
           />

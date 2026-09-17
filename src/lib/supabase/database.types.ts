@@ -2449,6 +2449,7 @@ export type Database = {
           mime_type: string | null
           organization_id: string
           owner_user_id: string
+          replaces_evidence_id: string | null
           source: string
           storage_bucket: string | null
           storage_path: string | null
@@ -2483,6 +2484,7 @@ export type Database = {
           mime_type?: string | null
           organization_id: string
           owner_user_id: string
+          replaces_evidence_id?: string | null
           source: string
           storage_bucket?: string | null
           storage_path?: string | null
@@ -2521,6 +2523,7 @@ export type Database = {
           mime_type?: string | null
           organization_id?: string
           owner_user_id?: string
+          replaces_evidence_id?: string | null
           source?: string
           storage_bucket?: string | null
           storage_path?: string | null
@@ -2552,6 +2555,20 @@ export type Database = {
             columns: ["owner_user_id"]
             isOneToOne: false
             referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_replaces_evidence_id_fkey"
+            columns: ["replaces_evidence_id"]
+            isOneToOne: false
+            referencedRelation: "evidence"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evidence_replaces_evidence_id_fkey"
+            columns: ["replaces_evidence_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_with_freshness"
             referencedColumns: ["id"]
           },
           {
@@ -5425,6 +5442,17 @@ export type Database = {
           reference: string
           typology_code: string
           typology_name: string
+        }[]
+      }
+      evidence_open_actions: {
+        Args: { p_organization_id: string }
+        Returns: {
+          action_id: string
+          due_date: string
+          evidence_id: string
+          is_blocking: boolean
+          title: string
+          use_case_id: string
         }[]
       }
       evidence_register: {
