@@ -999,6 +999,71 @@ export type Database = {
           },
         ]
       }
+      catalog_applicability_rule: {
+        Row: {
+          condition:
+            | "personal_data"
+            | "vulnerable_persons"
+            | "autonomy_gte_l3"
+            | "criticality_high"
+            | "external_vendor"
+            | "model_provider"
+            | "role_host"
+            | "role_developer"
+            | "role_integrator"
+            | "role_business_user"
+          control_code: string
+          framework_code: string
+          id: string
+          reason: string
+          tenant_id: string | null
+        }
+        Insert: {
+          condition:
+            | "personal_data"
+            | "vulnerable_persons"
+            | "autonomy_gte_l3"
+            | "criticality_high"
+            | "external_vendor"
+            | "model_provider"
+            | "role_host"
+            | "role_developer"
+            | "role_integrator"
+            | "role_business_user"
+          control_code: string
+          framework_code: string
+          id?: string
+          reason: string
+          tenant_id?: string | null
+        }
+        Update: {
+          condition?:
+            | "personal_data"
+            | "vulnerable_persons"
+            | "autonomy_gte_l3"
+            | "criticality_high"
+            | "external_vendor"
+            | "model_provider"
+            | "role_host"
+            | "role_developer"
+            | "role_integrator"
+            | "role_business_user"
+          control_code?: string
+          framework_code?: string
+          id?: string
+          reason?: string
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_applicability_rule_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       catalog_control: {
         Row: {
           applicability: Json
@@ -1015,6 +1080,7 @@ export type Database = {
           maturity_model: Json
           objective: string | null
           owner_role: string | null
+          phase: "DISCOVERY" | "GOVERN" | "BUILD" | "CONNECT" | "OPERATE" | null
           remediation_guidance: Json
           requirements: Json
           review_frequency: string | null
@@ -1039,6 +1105,13 @@ export type Database = {
           maturity_model?: Json
           objective?: string | null
           owner_role?: string | null
+          phase?:
+            | "DISCOVERY"
+            | "GOVERN"
+            | "BUILD"
+            | "CONNECT"
+            | "OPERATE"
+            | null
           remediation_guidance?: Json
           requirements?: Json
           review_frequency?: string | null
@@ -1063,6 +1136,13 @@ export type Database = {
           maturity_model?: Json
           objective?: string | null
           owner_role?: string | null
+          phase?:
+            | "DISCOVERY"
+            | "GOVERN"
+            | "BUILD"
+            | "CONNECT"
+            | "OPERATE"
+            | null
           remediation_guidance?: Json
           requirements?: Json
           review_frequency?: string | null
@@ -1151,6 +1231,36 @@ export type Database = {
           id?: string
           objective_code?: string
           rationale?: string
+        }
+        Relationships: []
+      }
+      catalog_domain_priority: {
+        Row: {
+          domain_code: string
+          profile:
+            | "infrastructure_host"
+            | "model_developer"
+            | "integrator_consultant"
+            | "business_user"
+          tier: string
+        }
+        Insert: {
+          domain_code: string
+          profile:
+            | "infrastructure_host"
+            | "model_developer"
+            | "integrator_consultant"
+            | "business_user"
+          tier: string
+        }
+        Update: {
+          domain_code?: string
+          profile?:
+            | "infrastructure_host"
+            | "model_developer"
+            | "integrator_consultant"
+            | "business_user"
+          tier?: string
         }
         Relationships: []
       }
@@ -1387,6 +1497,136 @@ export type Database = {
             columns: ["version_id"]
             isOneToOne: false
             referencedRelation: "catalog_version"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_tool: {
+        Row: {
+          acronym: string | null
+          applicability: string | null
+          automation: string | null
+          code: string
+          comments: string | null
+          control_question: string | null
+          controlled_object: string | null
+          created_at: string
+          definition: string | null
+          domain: string | null
+          expected_evidence: Json
+          frequency: string | null
+          id: string
+          iso27001_refs: Json
+          iso42001_refs: Json
+          nature: string | null
+          other_frameworks: Json
+          owner_role: string | null
+          phase: "DISCOVERY" | "GOVERN" | "BUILD" | "CONNECT" | "OPERATE" | null
+          priority: string | null
+          risk_addressed: string | null
+          tenant_id: string | null
+          tool_examples: Json
+          tool_service: string
+          updated_at: string
+        }
+        Insert: {
+          acronym?: string | null
+          applicability?: string | null
+          automation?: string | null
+          code: string
+          comments?: string | null
+          control_question?: string | null
+          controlled_object?: string | null
+          created_at?: string
+          definition?: string | null
+          domain?: string | null
+          expected_evidence?: Json
+          frequency?: string | null
+          id?: string
+          iso27001_refs?: Json
+          iso42001_refs?: Json
+          nature?: string | null
+          other_frameworks?: Json
+          owner_role?: string | null
+          phase?:
+            | "DISCOVERY"
+            | "GOVERN"
+            | "BUILD"
+            | "CONNECT"
+            | "OPERATE"
+            | null
+          priority?: string | null
+          risk_addressed?: string | null
+          tenant_id?: string | null
+          tool_examples?: Json
+          tool_service: string
+          updated_at?: string
+        }
+        Update: {
+          acronym?: string | null
+          applicability?: string | null
+          automation?: string | null
+          code?: string
+          comments?: string | null
+          control_question?: string | null
+          controlled_object?: string | null
+          created_at?: string
+          definition?: string | null
+          domain?: string | null
+          expected_evidence?: Json
+          frequency?: string | null
+          id?: string
+          iso27001_refs?: Json
+          iso42001_refs?: Json
+          nature?: string | null
+          other_frameworks?: Json
+          owner_role?: string | null
+          phase?:
+            | "DISCOVERY"
+            | "GOVERN"
+            | "BUILD"
+            | "CONNECT"
+            | "OPERATE"
+            | null
+          priority?: string | null
+          risk_addressed?: string | null
+          tenant_id?: string | null
+          tool_examples?: Json
+          tool_service?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_tool_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      catalog_tool_control: {
+        Row: {
+          control_code: string
+          framework_code: string
+          tool_id: string
+        }
+        Insert: {
+          control_code: string
+          framework_code: string
+          tool_id: string
+        }
+        Update: {
+          control_code?: string
+          framework_code?: string
+          tool_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalog_tool_control_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_tool"
             referencedColumns: ["id"]
           },
         ]
@@ -5345,7 +5585,23 @@ export type Database = {
           typologies: Json
         }[]
       }
+      suggest_controls: { Args: { p_use_case_id: string }; Returns: Json }
       tenant_branding: { Args: never; Returns: Json }
+      tools_for_control: {
+        Args: { p_control_code: string; p_framework_code: string }
+        Returns: {
+          acronym: string
+          automation: string
+          code: string
+          definition: string
+          is_editor: boolean
+          nature: string
+          phase: string
+          tool_examples: Json
+          tool_id: string
+          tool_service: string
+        }[]
+      }
       transition_use_case: {
         Args: { p_rationale?: string; p_target: string; p_use_case_id: string }
         Returns: Json

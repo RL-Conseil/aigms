@@ -405,3 +405,103 @@ export async function instantiateCatalogControl(
         : ''),
   }
 }
+
+// =============================================================================
+// Retenir des propositions de l'assistant
+// =============================================================================
+// L'assistant a propose ; l'utilisateur a coche. Pour chaque controle-type
+// retenu : l'ajouter a la liste operationnelle s'il n'y est pas (lien conserve,
+// exigences rattachees), puis le declarer applicable au cas d'usage — en
+// portant le motif de la proposition dans la justification, precede de sa
+// provenance. Rien de tout cela ne s'ecrit sans ce clic.
+const retainSchema = z.object({
+  organizationId: z.string().uuid(),
+  useCaseId: z.string().uuid(),
+  selections: z
+    .array(
+      z.object({
+        catalogControlId: z.string().uuid(),
+        controlId: z.string().uuid().nullable(),
+        reason: z.string().trim().max(500),
+      }),
+    )
+    .min(1, 'Cocher au moins une proposition.'),
+})
+
+export async function retainSuggestedControls(
+  _previous: FormState | null,
+  formData: FormData,
+): Promise<FormState> {
+  let selections: unknown
+  try {
+    selections = JSON.parse(String(formData.get('selections') ?? '[]'))
+  } catch {
+    return { ok: false, message: 'Sélection illisible.' }
+  }
+  const parsed = retainSchema.safeParse({
+    organizationId: formData.get('organizationId'),
+    useCaseId: formData.get('useCaseId'),
+    selections,
+  })
+  if (!parsed.success) return firstIssues(parsed.error)
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { ok: false, message: 'Session expirée.' }
+
+  const { data: useCase } = await supabase
+    .from('ai_use_case')
+    .select('tenant_id')
+    .eq('id', parsed.data.useCaseId)
+    .maybeSingle()
+  if (!useCase) return { ok: false, message: 'Cas d’usage introuvable.' }
+
+  let added = 0
+  let affected = 0
+  const refusals: string[] = []
+
+  for (const s of parsed.data.selections) {
+    let controlId = s.controlId
+    if (!controlId) {
+      const { data, error } = await supabase.rpc('instantiate_catalog_control', {
+        p_organization_id: parsed.data.organizationId,
+        p_catalog_control_id: s.catalogControlId,
+      })
+      if (error) {
+        refusals.push(explain(error))
+        continue
+      }
+      controlId = (data as { control_id: string }).control_id
+      added += 1
+    }
+    const { error } = await supabase.from('control_applicability').upsert(
+      {
+        tenant_id: useCase.tenant_id,
+        control_id: controlId,
+        use_case_id: parsed.data.useCaseId,
+        status: 'applicable',
+        justification: `Proposé par l’assistant, retenu par ${user.email ?? 'l’utilisateur'} : ${s.reason}`,
+        decided_by: user.id,
+        decided_at: new Date().toISOString(),
+      },
+      { onConflict: 'control_id,use_case_id' },
+    )
+    if (error) refusals.push(explain(error))
+    else affected += 1
+  }
+
+  revalidatePath(`/admin/use-cases/${parsed.data.useCaseId}`)
+  revalidatePath(`/admin/organizations/${parsed.data.organizationId}/controles`)
+  revalidatePath(`/admin/organizations/${parsed.data.organizationId}/declaration-applicabilite`)
+
+  if (!affected) return { ok: false, message: refusals[0] ?? 'Aucune proposition retenue.' }
+  return {
+    ok: true,
+    message:
+      `${affected} contrôle(s) déclaré(s) applicable(s)` +
+      (added ? `, dont ${added} ajouté(s) à la liste opérationnelle depuis le référentiel` : '') +
+      (refusals.length ? `. ${refusals.length} refus : ${refusals[0]}` : '.'),
+  }
+}
