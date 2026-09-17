@@ -128,6 +128,8 @@ export default async function EvidencePage({
     { data: typologyData },
     { data: coverageData },
     { data: gapData },
+    { data: openActionRows },
+    { data: replacementRows },
   ] = await Promise.all([
     supabase
       .from('organization')
@@ -139,11 +141,26 @@ export default async function EvidencePage({
     supabase.rpc('evidence_typologies', { p_organization_id: id }),
     supabase.rpc('typology_coverage', { p_organization_id: id }),
     supabase.rpc('evidence_matrix_gaps'),
+    // Ce que le registre ignorait : une action ouverte sur une piece, et la
+    // piece qu'un depot remplace.
+    supabase.rpc('evidence_open_actions', { p_organization_id: id }),
+    supabase
+      .from('evidence')
+      .select('id, replaces:replaces_evidence_id (business_ref)')
+      .eq('organization_id', id)
+      .not('replaces_evidence_id', 'is', null),
   ])
 
   if (!organization) notFound()
 
   const rows = (registerData ?? []) as Row[]
+  type OpenAction = { evidence_id: string; action_id: string; title: string; due_date: string | null; use_case_id: string | null; is_blocking: boolean }
+  const openActionByEvidence = new Map(
+    ((openActionRows ?? []) as OpenAction[]).map((a) => [a.evidence_id, a]),
+  )
+  const replacesByEvidence = new Map(
+    (replacementRows ?? []).map((r) => [r.id, (r.replaces as unknown as { business_ref: string } | null)?.business_ref ?? null]),
+  )
   const controls = (controlData ?? []) as Control[]
   const typologies = (typologyData ?? []) as TypologyChoice[]
   const coverage = (coverageData ?? []) as TypologyCoverage[]
@@ -353,6 +370,31 @@ export default async function EvidencePage({
                             ) : null}
                           </p>
                         ) : null}
+                        {replacesByEvidence.get(row.id) ? (
+                          <p className="mt-1 text-xs text-ink-500">
+                            Remplace {replacesByEvidence.get(row.id)}
+                            {row.validation_status === 'pending' ? ' — prendra effet à la validation.' : '.'}
+                          </p>
+                        ) : null}
+                        {openActionByEvidence.get(row.id) ? (
+                          <p className="mt-1.5 text-xs text-warn-600">
+                            Action ouverte :{' '}
+                            {openActionByEvidence.get(row.id)!.use_case_id ? (
+                              <Link
+                                href={`/admin/use-cases/${openActionByEvidence.get(row.id)!.use_case_id}`}
+                                className="font-medium hover:underline"
+                              >
+                                {openActionByEvidence.get(row.id)!.title}
+                              </Link>
+                            ) : (
+                              <span className="font-medium">{openActionByEvidence.get(row.id)!.title}</span>
+                            )}
+                            {openActionByEvidence.get(row.id)!.due_date
+                              ? ` · échéance ${formatDate(openActionByEvidence.get(row.id)!.due_date)}`
+                              : ''}
+                            {openActionByEvidence.get(row.id)!.is_blocking ? ' · retient le gate' : ''}
+                          </p>
+                        ) : null}
                       </div>
                       <div className="flex shrink-0 gap-2">
                         <Badge tone={validationTone(row.validation_status)}>
@@ -423,6 +465,14 @@ export default async function EvidencePage({
                           Ouvrir le lien
                         </a>
                       ) : null}
+                      {isStale(row) && row.validation_status !== 'superseded' ? (
+                        <Link
+                          href={`/admin/organizations/${id}/preuves/deposer?remplace=${row.id}`}
+                          className="rounded-md border border-warn-600/40 bg-amber-50 px-3 py-1.5 text-xs font-medium text-warn-600 hover:bg-amber-100"
+                        >
+                          Renouveler
+                        </Link>
+                      ) : null}
                       <EvidenceReviewForm
                         organizationId={id}
                         evidenceId={row.id}
@@ -473,7 +523,7 @@ export default async function EvidencePage({
 
         {/* ---------- Dépôt et manques ---------- */}
         <div className="flex flex-col gap-5 lg:col-span-2">
-          <EvidenceMatrixCard rows={coverage} profile={profile} gaps={gaps} />
+          <EvidenceMatrixCard organizationId={id} rows={coverage} profile={profile} gaps={gaps} />
 
           <Card
             title="Contrôles sans preuve valide"

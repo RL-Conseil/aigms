@@ -34,22 +34,47 @@ export default async function DepositEvidencePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ controle?: string }>
+  searchParams: Promise<{ controle?: string; typologie?: string; remplace?: string }>
 }) {
   const { id } = await params
-  const { controle } = await searchParams
+  const { controle, typologie, remplace } = await searchParams
   const supabase = await createClient()
 
-  const [{ data: organization }, { data: controlData }, { data: typologyData }] = await Promise.all([
-    supabase.from('organization').select('id, name, business_ref').eq('id', id).maybeSingle(),
-    supabase.rpc('controls_awaiting_evidence', { p_organization_id: id }),
-    supabase.rpc('evidence_typologies', { p_organization_id: id }),
-  ])
+  const [{ data: organization }, { data: controlData }, { data: typologyData }, { data: replaced }] =
+    await Promise.all([
+      supabase.from('organization').select('id, name, business_ref').eq('id', id).maybeSingle(),
+      supabase.rpc('controls_awaiting_evidence', { p_organization_id: id }),
+      supabase.rpc('evidence_typologies', { p_organization_id: id }),
+      // Renouvellement : la piece remplacee pre-remplit le formulaire.
+      remplace
+        ? supabase
+            .from('evidence')
+            .select('id, business_ref, title, evidence_type, source, typology_id, links:control_evidence (control:control_id (code))')
+            .eq('id', remplace)
+            .eq('organization_id', id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+    ])
 
   if (!organization) notFound()
 
   const controls = (controlData ?? []) as Control[]
   const typologies = (typologyData ?? []) as TypologyChoice[]
+  const replaces = replaced
+    ? {
+        id: replaced.id,
+        business_ref: replaced.business_ref,
+        title: replaced.title,
+        evidence_type: replaced.evidence_type as string,
+        source: replaced.source,
+        typology_id: replaced.typology_id,
+        control_codes: ((replaced.links ?? []) as unknown as { control: { code: string } | null }[])
+          .map((l) => l.control?.code)
+          .filter((c): c is string => Boolean(c)),
+      }
+    : null
+  // `?typologie=<code>` depuis les manques de la matrice : on retrouve l'id.
+  const defaultTypologyId = typologie ? typologies.find((t) => t.code === typologie)?.id : undefined
   const choices: ControlChoice[] = controls.map((c) => ({
     id: c.id,
     code: c.code,
@@ -85,6 +110,8 @@ export default async function DepositEvidencePage({
               controls={choices}
               typologies={typologies}
               defaultControlId={controle}
+              defaultTypologyId={defaultTypologyId}
+              replaces={replaces}
             />
           ) : (
             <Empty>

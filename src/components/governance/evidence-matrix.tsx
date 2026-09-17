@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { Badge, Card, Empty } from '@/components/ui'
 import { Disclosure } from '@/components/forms'
 import {
@@ -36,10 +37,13 @@ export type MatrixGap = {
 }
 
 export function EvidenceMatrixCard({
+  organizationId,
   rows,
   profile,
   gaps,
 }: {
+  /** Renseigne, chaque typologie exigeante sans preuve propose d'en deposer une. */
+  organizationId?: string
   rows: TypologyCoverage[]
   profile: ActivityProfile | null
   gaps: MatrixGap[]
@@ -83,6 +87,16 @@ export function EvidenceMatrixCard({
                 {row.name}
               </span>
               <span className="flex items-center gap-2">
+                {organizationId &&
+                row.evidence_valid === 0 &&
+                (row.criticality === 'critical' || row.criticality === 'high') ? (
+                  <Link
+                    href={`/admin/organizations/${organizationId}/preuves/deposer?typologie=${row.code}`}
+                    className="text-xs font-medium text-brand-600 hover:underline"
+                  >
+                    Déposer
+                  </Link>
+                ) : null}
                 <span
                   className={`text-xs ${
                     row.evidence_valid === 0 ? 'text-ink-400' : 'text-ink-600'
