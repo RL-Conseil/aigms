@@ -1,0 +1,23 @@
+{
+  "_note": "Portée et applicabilité par défaut de chaque contrôle-type. Portée « organization » : se tient une fois pour toute l'organisation (système de management), jamais affecté à un cas d'usage. Portée « use_case » : s'affecte à un cas d'usage. Applicabilité « mandatory » : proposé à tout cas d'usage de la portée ; « conditional » : proposé sur règle seulement.",
+  "organization": [
+    "AIGMS-GOV-001", "AIGMS-GOV-002", "AIGMS-GOV-003", "AIGMS-GOV-004", "AIGMS-GOV-006", "AIGMS-GOV-007",
+    "AIGMS-GOV-008", "AIGMS-GOV-009", "AIGMS-GOV-010", "AIGMS-GOV-011", "AIGMS-GOV-012",
+    "AIGMS-INV-001", "AIGMS-INV-008",
+    "AIGMS-RSK-001", "AIGMS-RSK-006", "AIGMS-RSK-010", "AIGMS-RSK-011",
+    "AIGMS-DAT-002", "AIGMS-DAT-003", "AIGMS-DAT-010", "AIGMS-DAT-011",
+    "AIGMS-SEC-001", "AIGMS-SEC-002", "AIGMS-SEC-004", "AIGMS-SEC-005",
+    "AIGMS-SUP-001", "AIGMS-SUP-004", "AIGMS-SUP-007", "AIGMS-SUP-008",
+    "AIGMS-HUM-007", "AIGMS-HUM-008",
+    "AIGMS-OPS-001", "AIGMS-OPS-002", "AIGMS-OPS-006", "AIGMS-OPS-008", "AIGMS-OPS-011", "AIGMS-OPS-012",
+    "AIGMS-MON-001",
+    "AIGMS-INC-001", "AIGMS-INC-002", "AIGMS-INC-003", "AIGMS-INC-004", "AIGMS-INC-007",
+    "AIGMS-CMP-001", "AIGMS-CMP-002", "AIGMS-CMP-003", "AIGMS-CMP-004", "AIGMS-CMP-005", "AIGMS-CMP-006", "AIGMS-CMP-007", "AIGMS-CMP-008"
+  ],
+  "use_case_mandatory": [
+    "AIGMS-GOV-005", "AIGMS-INV-002", "AIGMS-INV-003", "AIGMS-INV-004", "AIGMS-INV-005", "AIGMS-INV-006",
+    "AIGMS-USE-001", "AIGMS-USE-002", "AIGMS-USE-006", "AIGMS-USE-007", "AIGMS-USE-008", "AIGMS-USE-009", "AIGMS-USE-010",
+    "AIGMS-RSK-002", "AIGMS-RSK-005", "AIGMS-RSK-007", "AIGMS-RSK-009",
+    "AIGMS-DAT-001", "AIGMS-HUM-001", "AIGMS-HUM-006", "AIGMS-SEC-006", "AIGMS-MON-008", "AIGMS-INC-005", "AIGMS-INC-006"
+  ]
+}

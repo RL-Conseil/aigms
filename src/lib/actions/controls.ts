@@ -416,7 +416,8 @@ export async function instantiateCatalogControl(
 // provenance. Rien de tout cela ne s'ecrit sans ce clic.
 const retainSchema = z.object({
   organizationId: z.string().uuid(),
-  useCaseId: z.string().uuid(),
+  // Absent : portee organisation — on ajoute a la liste, sans affecter.
+  useCaseId: z.string().uuid().optional().or(z.literal('')),
   selections: z
     .array(
       z.object({
@@ -440,7 +441,7 @@ export async function retainSuggestedControls(
   }
   const parsed = retainSchema.safeParse({
     organizationId: formData.get('organizationId'),
-    useCaseId: formData.get('useCaseId'),
+    useCaseId: formData.get('useCaseId') ?? '',
     selections,
   })
   if (!parsed.success) return firstIssues(parsed.error)
@@ -451,12 +452,11 @@ export async function retainSuggestedControls(
   } = await supabase.auth.getUser()
   if (!user) return { ok: false, message: 'Session expirée.' }
 
-  const { data: useCase } = await supabase
-    .from('ai_use_case')
-    .select('tenant_id')
-    .eq('id', parsed.data.useCaseId)
-    .maybeSingle()
-  if (!useCase) return { ok: false, message: 'Cas d’usage introuvable.' }
+  const useCaseId = parsed.data.useCaseId || null
+  const { data: useCase } = useCaseId
+    ? await supabase.from('ai_use_case').select('tenant_id').eq('id', useCaseId).maybeSingle()
+    : { data: null }
+  if (useCaseId && !useCase) return { ok: false, message: 'Cas d’usage introuvable.' }
 
   let added = 0
   let affected = 0
@@ -476,11 +476,15 @@ export async function retainSuggestedControls(
       controlId = (data as { control_id: string }).control_id
       added += 1
     }
+    if (!useCaseId || !useCase) {
+      affected += 1
+      continue
+    }
     const { error } = await supabase.from('control_applicability').upsert(
       {
         tenant_id: useCase.tenant_id,
         control_id: controlId,
-        use_case_id: parsed.data.useCaseId,
+        use_case_id: useCaseId,
         status: 'applicable',
         justification: `Proposé par l’assistant, retenu par ${user.email ?? 'l’utilisateur'} : ${s.reason}`,
         decided_by: user.id,
@@ -492,16 +496,18 @@ export async function retainSuggestedControls(
     else affected += 1
   }
 
-  revalidatePath(`/admin/use-cases/${parsed.data.useCaseId}`)
+  if (useCaseId) revalidatePath(`/admin/use-cases/${useCaseId}`)
   revalidatePath(`/admin/organizations/${parsed.data.organizationId}/controles`)
   revalidatePath(`/admin/organizations/${parsed.data.organizationId}/declaration-applicabilite`)
 
   if (!affected) return { ok: false, message: refusals[0] ?? 'Aucune proposition retenue.' }
   return {
     ok: true,
-    message:
-      `${affected} contrôle(s) déclaré(s) applicable(s)` +
-      (added ? `, dont ${added} ajouté(s) à la liste opérationnelle depuis le référentiel` : '') +
-      (refusals.length ? `. ${refusals.length} refus : ${refusals[0]}` : '.'),
+    message: useCaseId
+      ? `${affected} contrôle(s) déclaré(s) applicable(s)` +
+        (added ? `, dont ${added} ajouté(s) à la liste opérationnelle depuis le référentiel` : '') +
+        (refusals.length ? `. ${refusals.length} refus : ${refusals[0]}` : '.')
+      : `${added} contrôle(s) d’organisation ajouté(s) à la liste opérationnelle, à l’état « proposé ».` +
+        (refusals.length ? ` ${refusals.length} refus : ${refusals[0]}` : ''),
   }
 }

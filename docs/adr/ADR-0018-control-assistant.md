@@ -24,10 +24,22 @@ dit quel fait du cas d'usage déclenche quel contrôle-type conditionnel, avec
 un motif rédigé pour l'utilisateur ; `catalog_domain_priority` dit, pour chaque
 rôle, quels domaines se lisent d'abord, ensuite, ou seulement sur motif.
 
-**`app.suggest_controls(use_case)`** calcule les propositions : obligatoires
-par défaut (hors domaines secondaires du rôle), conditionnels déclenchés, avec
-motifs, rang, état (déjà affecté, dans la liste opérationnelle, à ajouter) et
-outils. **Déterministe** : règles lisibles, testées ; aucun modèle de langage.
+**Deux portées** (migration 0049). Un contrôle-type est de portée
+*organisation* — système de management : politique, comité, audit interne,
+inventaire, incidents… 51 contrôles — ou de portée *cas d'usage* — 69. Les
+premiers se proposent une fois, sur la liste opérationnelle de l'organisation ;
+ils ne s'affectent jamais à un cas d'usage. Dans la seconde portée, 24 forment
+le socle attendu de tout usage ; 45 sont conditionnels.
+
+**`app.suggest_controls(use_case)`** lit les faits — données personnelles,
+personnes vulnérables, personnes extérieures, autonomie, criticité, statut,
+fournisseurs, fournisseur de modèle, nature des actifs (agent, modèle propre,
+jeu de données), classification réglementaire (haut risque, vie privée,
+sécurité, modèle à usage général, transparence), rôle — et en déduit : le socle,
+puis ce que les faits déclenchent, avec motif, état (déjà affecté, dans la
+liste, à ajouter) et outils. Deux cas d'usage aux faits différents reçoivent des
+listes différentes ; un test le vérifie. **Déterministe** : règles lisibles,
+testées ; aucun modèle de langage.
 
 **Le panneau « Propositions »** sur la fiche du cas d'usage : on coche, on
 retient. Retenir ajoute le contrôle à la liste opérationnelle s'il n'y est pas
