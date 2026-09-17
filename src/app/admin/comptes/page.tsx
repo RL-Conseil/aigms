@@ -5,6 +5,8 @@ import { AccountForm, RoleForm } from '@/components/admin/forms'
 import { RoleMatrix } from '@/components/admin/role-matrix'
 import { RaciTable } from '@/components/admin/raci-table'
 import { roleCapabilities } from '@/lib/admin/role-capabilities'
+import { organizationReadiness } from '@/lib/governance/readiness'
+import { ReadinessCard } from '@/components/governance/readiness-banner'
 import { InfoTip } from '@/components/info-tip'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import { ROLE_LABELS, type AppRole } from '@/lib/domain/roles'
@@ -56,6 +58,10 @@ export default async function AccountsPage() {
     list.push(`${org.name} — ${ROLE_LABELS[assignment.role as AppRole] ?? assignment.role}`)
     assignmentsByUser.set(assignment.user_id, list)
   }
+
+  const readiness = await Promise.all(
+    (organizations ?? []).map(async (o) => ({ ...o, readiness: await organizationReadiness(o.id) })),
+  )
 
   return (
     <Shell
@@ -127,6 +133,24 @@ export default async function AccountsPage() {
           >
             <AccountForm organizations={organizations ?? []} />
           </Card>
+
+          {/*
+            Une organisation n'est operationnelle qu'avec ses six roles tenus :
+            c'est ici, en declarant les comptes, qu'on la rend operationnelle.
+          */}
+          {readiness.map((o) =>
+            o.readiness ? (
+              <div key={o.id} className="mt-5">
+                <Card
+                  title={o.name}
+                  subtitle={o.readiness.ready ? 'Opérationnelle : six rôles tenus' : `${o.readiness.missing.length} rôle(s) sans titulaire — aucune écriture de gouvernance possible`}
+                  tone={o.readiness.ready ? 'neutral' : 'warn'}
+                >
+                  <ReadinessCard readiness={o.readiness} />
+                </Card>
+              </div>
+            ) : null,
+          )}
         </div>
       </div>
 

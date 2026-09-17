@@ -9,6 +9,8 @@ import { ROLE_LABELS } from '@/lib/domain/roles'
 import { AttentionDot } from '@/components/governance/attention'
 import { attentionFor, attentionTotal } from '@/lib/governance/attention'
 import { unreadNotifications } from '@/lib/governance/notifications'
+import { organizationReadiness } from '@/lib/governance/readiness'
+import { ReadinessBanner } from '@/components/governance/readiness-banner'
 
 /**
  * Ossature de l'espace de travail.
@@ -101,6 +103,8 @@ export async function Shell({
   const pending = administrating ? 0 : await attentionTotal()
   // Les alertes sont nominatives : elles se comptent pour tout le monde.
   const unread = viewer ? await unreadNotifications() : 0
+  // Une organisation dont un role manque ne s'ecrit pas : la page le dit en tete.
+  const readiness = organization ? await organizationReadiness(organization.id) : null
   // L'organisation dont la barre parle : celle de la page, sinon la courante.
   const navOrganizationId = organization?.id ?? viewer?.currentOrganizationId ?? null
   const orgBase = navOrganizationId ? `/admin/organizations/${navOrganizationId}` : null
@@ -336,6 +340,7 @@ export async function Shell({
           {actions}
         </div>
 
+        {readiness ? <ReadinessBanner readiness={readiness} administrating={administrating} /> : null}
         {children}
       </main>
     </div>

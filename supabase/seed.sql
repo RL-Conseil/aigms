@@ -52,6 +52,39 @@ values
    extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Inès Duhamel"}', now(), now(),
    '', '', '', '', '', '', '', ''),
+  -- Comité de direction : l'arbitrage critique lui revient (0055).
+  ('88888888-8888-4888-8888-888888888888', '00000000-0000-0000-0000-000000000000',
+   'authenticated', 'authenticated', 'board@izarlink.demo',
+   extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Élodie Marchetti"}', now(), now(),
+   '', '', '', '', '', '', '', ''),
+  -- Second tenant, complet lui aussi : une organisation n'est opérationnelle
+  -- qu'avec ses six rôles tenus (0056).
+  ('e1000000-0000-4000-8000-000000000001', '00000000-0000-0000-0000-000000000000',
+   'authenticated', 'authenticated', 'owner@autre-cabinet.demo',
+   extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Lina Ferreira"}', now(), now(),
+   '', '', '', '', '', '', '', ''),
+  ('e1000000-0000-4000-8000-000000000002', '00000000-0000-0000-0000-000000000000',
+   'authenticated', 'authenticated', 'risk@autre-cabinet.demo',
+   extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Karim Oualid"}', now(), now(),
+   '', '', '', '', '', '', '', ''),
+  ('e1000000-0000-4000-8000-000000000003', '00000000-0000-0000-0000-000000000000',
+   'authenticated', 'authenticated', 'reviewer@autre-cabinet.demo',
+   extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Maud Perrin"}', now(), now(),
+   '', '', '', '', '', '', '', ''),
+  ('e1000000-0000-4000-8000-000000000004', '00000000-0000-0000-0000-000000000000',
+   'authenticated', 'authenticated', 'auditor@autre-cabinet.demo',
+   extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Théo Vasseur"}', now(), now(),
+   '', '', '', '', '', '', '', ''),
+  ('e1000000-0000-4000-8000-000000000005', '00000000-0000-0000-0000-000000000000',
+   'authenticated', 'authenticated', 'board@autre-cabinet.demo',
+   extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Anne Kessler"}', now(), now(),
+   '', '', '', '', '', '', '', ''),
   -- Utilisateur d'un second tenant : sert aux tests d'isolation.
   ('55555555-5555-4555-8555-555555555555', '00000000-0000-0000-0000-000000000000',
    'authenticated', 'authenticated', 'officer@autre-cabinet.demo',
@@ -80,6 +113,8 @@ update public.user_profile set job_title = 'Auditeur interne'
  where id = '44444444-4444-4444-8444-444444444444';
 update public.user_profile set job_title = 'Directeur des opérations'
  where id = '77777777-7777-4777-8777-777777777777';
+update public.user_profile set job_title = 'Directrice générale'
+ where id = '88888888-8888-4888-8888-888888888888';
 
 -- Administration plateforme : accède au suivi des demandes de contact. Ce
 -- privilège traverse les tenants, il est donc porté par un compte dédié et
@@ -102,8 +137,14 @@ insert into public.membership (tenant_id, user_id, role) values
   ('aaaaaaaa-0000-4000-8000-000000000001', '33333333-3333-4333-8333-333333333333', 'risk_owner'),
   ('aaaaaaaa-0000-4000-8000-000000000001', '44444444-4444-4444-8444-444444444444', 'auditor'),
   ('aaaaaaaa-0000-4000-8000-000000000001', '77777777-7777-4777-8777-777777777777', 'reviewer'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', '88888888-8888-4888-8888-888888888888', 'executive_viewer'),
   ('aaaaaaaa-0000-4000-8000-000000000001', '66666666-6666-4666-8666-666666666666', 'platform_admin'),
-  ('bbbbbbbb-0000-4000-8000-000000000002', '55555555-5555-4555-8555-555555555555', 'governance_officer')
+  ('bbbbbbbb-0000-4000-8000-000000000002', '55555555-5555-4555-8555-555555555555', 'governance_officer'),
+  ('bbbbbbbb-0000-4000-8000-000000000002', 'e1000000-0000-4000-8000-000000000001', 'system_owner'),
+  ('bbbbbbbb-0000-4000-8000-000000000002', 'e1000000-0000-4000-8000-000000000002', 'risk_owner'),
+  ('bbbbbbbb-0000-4000-8000-000000000002', 'e1000000-0000-4000-8000-000000000003', 'reviewer'),
+  ('bbbbbbbb-0000-4000-8000-000000000002', 'e1000000-0000-4000-8000-000000000004', 'auditor'),
+  ('bbbbbbbb-0000-4000-8000-000000000002', 'e1000000-0000-4000-8000-000000000005', 'executive_viewer')
 on conflict do nothing;
 
 -- Le profil d'activite au sens d'ISO/IEC 42001 commande les typologies de
@@ -147,7 +188,9 @@ insert into public.role_assignment (tenant_id, organization_id, user_id, role) v
   ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
    '22222222-2222-4222-8222-222222222222', 'system_owner'),
   ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
-   '77777777-7777-4777-8777-777777777777', 'reviewer')
+   '77777777-7777-4777-8777-777777777777', 'reviewer'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
+   '88888888-8888-4888-8888-888888888888', 'executive_viewer')
 on conflict do nothing;
 
 -- -----------------------------------------------------------------------------
