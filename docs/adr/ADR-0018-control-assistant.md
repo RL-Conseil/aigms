@@ -47,12 +47,22 @@ retient. Retenir ajoute le contrôle à la liste opérationnelle s'il n'y est pa
 applicable, avec le motif de la proposition dans la justification, précédé de
 sa provenance et du nom de qui a retenu. Rien ne s'écrit avant ce clic.
 
+**Le panneau « Actions »** (migration 0051) : `app.suggest_actions` transforme
+les écarts connus en actions à retenir — contrôle affecté non opérant, risque
+élevé sans traitement mis en œuvre (même prédicat que le gate), preuve à
+renouveler, précondition manquante du gate PRODUCTION (évaluation d'impact,
+supervision, revue tiers), revue passée, incident significatif sans CAPA. Une
+action déjà ouverte sur la même source n'est pas reproposée. Un responsable est
+**pressenti** — celui de l'objet, sinon la personne déclarée avec le rôle que le
+contrôle-type nomme, sinon le propriétaire du cas d'usage — et le formulaire le
+montre pour qu'on le confirme ou le change : désigner reste un acte humain.
+Chaque action retenue porte sa source et sa provenance.
+
 ## Ce qui est décidé pour la suite
 
-- Le même panneau servira aux **actions** (dérivées des écarts : contrôle non
-  opérant, risque non traité, preuve à échéance, gate refusé) et à l'**avis sur
-  une preuve** (le document démontre-t-il ce que le contrôle attend). Dans les
-  deux cas, la proposition est un état à retenir, jamais une écriture.
+- Le même principe servira à l'**avis sur une preuve** (le document
+  démontre-t-il ce que le contrôle attend) : un avis à retenir, jamais une
+  validation.
 - Un **modèle de langage** pourra, plus tard, ordonner et rédiger sur la liste
   courte que les règles produisent — jamais à sa place. Il n'entre qu'après le
   choix d'un fournisseur selon nos propres contrôles (SUP-005, DAT-011) et d'un

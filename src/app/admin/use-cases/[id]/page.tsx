@@ -9,6 +9,7 @@ import { GateChecklist } from '@/components/gate-checklist'
 import { Lifecycle } from '@/components/lifecycle'
 import { ApplicabilityForm, RiskTreatmentForm } from '@/components/governance/control-forms'
 import { ControlProposals, type Suggestions } from '@/components/governance/control-proposals'
+import { ActionProposals, type ActionSuggestions } from '@/components/governance/action-proposals'
 import {
   ImpactForm,
   LinkAssetForm,
@@ -103,6 +104,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
     { data: changes },
     { data: incidents },
     { data: suggestionsData },
+    { data: actionSuggestionsData },
     { data: timeline },
     { data: gateData },
     { data: memberships },
@@ -166,6 +168,7 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
       .eq('use_case_id', id)
       .order('detected_at', { ascending: false }),
     supabase.rpc('suggest_controls', { p_use_case_id: id }),
+    supabase.rpc('suggest_actions', { p_use_case_id: id }),
     supabase
       .from('audit_log')
       .select('id, occurred_at, action, summary, actor_email')
@@ -750,7 +753,13 @@ export default async function UseCasePage({ params }: { params: Promise<{ id: st
             tone={overdueActions ? 'todo' : 'neutral'}
             defaultOpen={overdueActions > 0}
           >
-            <div className="mb-4">
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <ActionProposals
+                organizationId={useCase.organization_id}
+                useCaseId={id}
+                suggestions={(actionSuggestionsData ?? { available: false }) as ActionSuggestions}
+                people={people}
+              />
               <ActionForm organizationId={useCase.organization_id} useCaseId={id} people={people} />
             </div>
             {actions?.length ? (

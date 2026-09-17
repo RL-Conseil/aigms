@@ -578,3 +578,81 @@ export async function submitChangeRequest(
     }`,
   }
 }
+
+// =============================================================================
+// Retenir des propositions d'actions
+// =============================================================================
+// L'assistant a derive des ecarts ; l'utilisateur a coche, confirme ou change
+// le responsable, l'echeance, le caractere bloquant. Chaque action retenue
+// porte sa source (controle, risque, gate, incident…) et sa provenance dans sa
+// description : on saura d'ou elle vient.
+const ACTION_SOURCES = ['decision', 'risk', 'impact_finding', 'incident', 'audit_finding', 'control', 'change_request', 'management_review', 'manual'] as const
+
+const retainActionsSchema = z.object({
+  organizationId: z.string().uuid(),
+  useCaseId: z.string().uuid(),
+  selections: z
+    .array(
+      z.object({
+        title: z.string().trim().min(5).max(200),
+        description: z.string().trim().max(2000).optional().or(z.literal('')),
+        source: z.enum(ACTION_SOURCES),
+        sourceId: z.string().uuid().nullable(),
+        ownerUserId: z.string().uuid().nullable(),
+        dueDate: z.string().trim().optional().or(z.literal('')),
+        isBlocking: z.boolean(),
+        reason: z.string().trim().max(500),
+      }),
+    )
+    .min(1, 'Cocher au moins une proposition.'),
+})
+
+export async function retainSuggestedActions(
+  _previous: FormState | null,
+  formData: FormData,
+): Promise<FormState> {
+  let selections: unknown
+  try {
+    selections = JSON.parse(String(formData.get('selections') ?? '[]'))
+  } catch {
+    return { ok: false, message: 'Sélection illisible.' }
+  }
+  const parsed = retainActionsSchema.safeParse({
+    organizationId: formData.get('organizationId'),
+    useCaseId: formData.get('useCaseId'),
+    selections,
+  })
+  if (!parsed.success) return firstIssues(parsed.error)
+
+  const tenantId = await tenantOf(parsed.data.organizationId)
+  if (!tenantId) return { ok: false, message: 'Organisation introuvable.' }
+  const userId = await currentUserId()
+  if (!userId) return { ok: false, message: 'Session expirée.' }
+
+  const supabase = await createClient()
+  const { data: profile } = await supabase.from('user_profile').select('email').eq('id', userId).maybeSingle()
+
+  const rows = parsed.data.selections.map((s) => ({
+    tenant_id: tenantId,
+    organization_id: parsed.data.organizationId,
+    use_case_id: parsed.data.useCaseId,
+    title: s.title,
+    description:
+      `${s.description || ''}${s.description ? '\n\n' : ''}` +
+      `Proposé par l’assistant, retenu par ${profile?.email ?? 'l’utilisateur'} : ${s.reason}`,
+    source: s.source,
+    source_id: s.sourceId,
+    owner_user_id: s.ownerUserId,
+    due_date: s.dueDate || null,
+    is_blocking: s.isBlocking,
+  }))
+
+  const { error, count } = await supabase.from('action').insert(rows, { count: 'exact' })
+  if (error) return { ok: false, message: explain(error) }
+
+  revalidateOperations(parsed.data.organizationId, parsed.data.useCaseId)
+  return {
+    ok: true,
+    message: `${count ?? rows.length} action(s) ouverte(s)${rows.some((r) => r.is_blocking) ? ', dont des bloquantes que le gate PRODUCTION attendra' : ''}.`,
+  }
+}

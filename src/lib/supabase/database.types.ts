@@ -5618,6 +5618,7 @@ export type Database = {
           typologies: Json
         }[]
       }
+      suggest_actions: { Args: { p_use_case_id: string }; Returns: Json }
       suggest_controls: { Args: { p_use_case_id: string }; Returns: Json }
       suggest_organization_controls: {
         Args: { p_organization_id: string }
