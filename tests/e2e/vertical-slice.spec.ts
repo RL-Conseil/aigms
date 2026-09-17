@@ -85,7 +85,7 @@ test('le tableau de bord se place sur l’organisation courante et ses libellés
   await expect(chart.getByRole('link', { name: /preuves? à renouveler/ })).toBeVisible()
   await chart.getByRole('link', { name: /actions? échues?/ }).click()
   await expect(page).toHaveURL(/suivi\?vue=actions&etat=echues/)
-  await expect(page.getByRole('heading', { name: 'Suivi', exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Suivi d’actions', exact: true })).toBeVisible()
 
   // Le refus de gate reste trace sur le tableau de bord.
   await page.goto('/admin/pilotage')
@@ -95,7 +95,8 @@ test('le tableau de bord se place sur l’organisation courante et ses libellés
 test('la Déclaration d’Applicabilité rend compte de la couverture ISO 42001', async ({ page }) => {
   await page.goto('/admin/organizations')
   await page.getByRole('link', { name: 'IzarLink Demo' }).click()
-  await page.getByRole('link', { name: 'Déclaration d’Applicabilité' }).click()
+  await page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('button', { name: /^Registres/ }).click()
+  await page.getByRole('menuitem', { name: /Déclaration d’Applicabilité/ }).click()
 
   await expect(
     page.getByRole('heading', { name: 'Déclaration d’Applicabilité' }),

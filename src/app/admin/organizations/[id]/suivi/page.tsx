@@ -139,7 +139,7 @@ export default async function FollowUpPage({
         { href: `/admin/organizations/${id}`, label: organization.name },
       ]}
       organization={{ id, section: 'suivi' }}
-      title="Suivi"
+      title="Suivi d’actions"
       subtitle="Ce qui reste à faire, ce qui s’est passé, ce qui doit être revu."
       actions={
         <div className="flex flex-wrap items-center gap-3">
