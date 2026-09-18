@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import {
   acceptRisk,
   createRisk,
@@ -10,6 +10,7 @@ import {
 } from '@/lib/actions/governance'
 import { Disclosure, Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
+import { ControlFinder } from '@/components/governance/control-finder'
 import { ClassificationNote, TriageNote } from '@/components/governance/rubric-notes'
 
 /**
@@ -311,11 +312,13 @@ const CATEGORIES = [
 
 export function RiskPanel({
   useCaseId,
+  organizationId,
   riskCount,
   people,
   controls = [],
 }: {
   useCaseId: string
+  organizationId: string
   riskCount: number
   people: { id: string; label: string }[]
   /** Les controles applicables a ce cas d'usage : l'un d'eux peut traiter le risque des l'identification. */
@@ -323,6 +326,8 @@ export function RiskPanel({
 }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(createRisk, null)
   const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
+  const [options, setOptions] = useState<{ id: string; code: string; name: string }[]>(controls)
+  const [controlId, setControlId] = useState('')
 
   // Le volet deplie occupait la colonne au-dessus de la liste des risques :
   // on lisait le formulaire avant ce qu'il complete. Un risque n'existe que
@@ -434,21 +439,40 @@ export function RiskPanel({
           label="Contrôle qui le traitera"
           htmlFor="risk-control"
           optional
-          hint={
-            controls.length
-              ? 'Parmi les contrôles applicables à ce cas d’usage. Un traitement « planifié » s’ouvre alors, porté par le responsable du risque.'
-              : 'Aucun contrôle applicable sur ce cas d’usage pour l’instant : le traitement se décidera après l’identification.'
-          }
+          hint="Parmi les contrôles applicables à ce cas d’usage, ou trouvé par l’assistant. Un traitement « réduire » s’ouvre alors, porté par le responsable du risque, et le contrôle devient applicable."
         >
-          <select id="risk-control" name="controlId" defaultValue="" disabled={!controls.length} className={FIELD}>
+          <select
+            id="risk-control"
+            name="controlId"
+            value={controlId}
+            onChange={(event) => setControlId(event.target.value)}
+            className={FIELD}
+          >
             <option value="">— À décider au traitement</option>
-            {controls.map((control) => (
+            {options.map((control) => (
               <option key={control.id} value={control.id}>
                 {control.code} — {control.name}
               </option>
             ))}
           </select>
         </Field>
+        <ControlFinder
+          organizationId={organizationId}
+          useCaseId={useCaseId}
+          readQuery={() =>
+            [
+              (document.getElementById('risk-title') as HTMLInputElement | null)?.value ?? '',
+              (document.getElementById('risk-scenario') as HTMLTextAreaElement | null)?.value ?? '',
+            ]
+              .filter(Boolean)
+              .join(' ')
+          }
+          ownerUserId={() => (document.getElementById('risk-owner') as HTMLSelectElement | null)?.value ?? ''}
+          onPick={(option) => {
+            setOptions((current) => (current.some((c) => c.id === option.id) ? current : [...current, option]))
+            setControlId(option.id)
+          }}
+        />
 
         <FormFeedback state={state} />
         <Submit pending={pending} idle="Enregistrer le risque" />

@@ -489,7 +489,20 @@ export async function acceptRisk(_previous: FormState | null, formData: FormData
   if (error) return { ok: false, message: explain(error) }
 
   revalidatePath(`/admin/use-cases/${parsed.data.useCaseId}`)
-  return { ok: true, message: 'Risque accepté, sous votre responsabilité et avec une date de revue.' }
+  // Eleve ou critique : la base a ouvert une decision d'acceptation, que
+  // quelqu'un d'autre doit approuver pour que le risque compte comme solde.
+  const { data: level } = await supabase
+    .from('risk')
+    .select('inherent_level, residual_level')
+    .eq('id', parsed.data.riskId)
+    .maybeSingle()
+  const severe = ['high', 'critical'].includes((level?.residual_level ?? level?.inherent_level) as string)
+  return {
+    ok: true,
+    message: severe
+      ? 'Risque accepté, sous votre responsabilité. Une décision « acceptation de risque » est soumise : elle doit être approuvée par quelqu’un d’autre pour que le risque compte comme soldé au gate de production.'
+      : 'Risque accepté, sous votre responsabilité et avec une date de revue.',
+  }
 }
 
 // =============================================================================

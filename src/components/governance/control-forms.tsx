@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import {
   createControl,
   createRiskTreatment,
@@ -11,6 +11,7 @@ import {
 } from '@/lib/actions/controls'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
+import { ControlFinder } from '@/components/governance/control-finder'
 import { CONTROL_STATUS_LABELS } from '@/lib/domain/governance'
 
 /**
@@ -100,9 +101,13 @@ export function ControlForm({
           </select>
         </Field>
 
-        <Field label="Responsable" htmlFor="ctl-owner" optional>
+        <Field
+          label="Responsable"
+          htmlFor="ctl-owner"
+          hint="Un contrôle a toujours un responsable : à défaut, vous."
+        >
           <select id="ctl-owner" name="ownerUserId" defaultValue="" className={FIELD}>
-            <option value="">— À désigner</option>
+            <option value="">— Vous-même</option>
             {people.map((person) => (
               <option key={person.id} value={person.id}>
                 {person.label}
@@ -138,6 +143,30 @@ export function ControlForm({
       >
         <textarea id="ctl-procedure" name="testProcedure" rows={2} className={FIELD} />
       </Field>
+
+      {/*
+        Ce qu'un controle-type porte d'office — pieces qui demontrent,
+        questions qu'un evaluateur pose — un controle libre le dit ici, pour
+        que le registre se lise pareil quelle que soit l'origine du controle.
+      */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field
+          label="Preuves attendues"
+          htmlFor="ctl-evidence"
+          optional
+          hint="Une par ligne : les pièces qui démontrent le contrôle."
+        >
+          <textarea id="ctl-evidence" name="expectedEvidence" rows={3} className={FIELD} placeholder={'Procédure signée\nJournal des revues'} />
+        </Field>
+        <Field
+          label="Questions d’évaluation"
+          htmlFor="ctl-questions"
+          optional
+          hint="Une par ligne : ce qu’un évaluateur demande pour juger le contrôle."
+        >
+          <textarea id="ctl-questions" name="assessmentQuestions" rows={3} className={FIELD} placeholder={'La procédure est-elle datée et approuvée ?'} />
+        </Field>
+      </div>
 
       <label className="flex items-start gap-2.5 text-sm">
         <input type="checkbox" name="isMandatory" className="mt-0.5 size-4 accent-[oklch(0.45_0.11_245)]" />
@@ -369,23 +398,45 @@ export function ApplicabilityForm({
 // -----------------------------------------------------------------------------
 // Traitement d'un risque
 // -----------------------------------------------------------------------------
+// Accepter n'est pas un traitement : c'est un acte a part, nominatif, reserve
+// au responsable du risque (0058). Les trois strategies restantes ont chacune
+// une consequence que la base applique (0059) — et qu'on annonce ici.
 const STRATEGIES = [
-  ['reduce', 'Réduire — agir sur la vraisemblance ou la gravité'],
-  ['avoid', 'Éviter — renoncer à l’usage qui porte le risque'],
-  ['transfer', 'Transférer — contrat, assurance, tiers'],
-  ['accept', 'Accepter — décision distincte, nominative et datée'],
+  {
+    value: 'reduce',
+    label: 'Réduire — agir sur la vraisemblance ou la gravité',
+    consequence:
+      'Un contrôle est désigné, obligatoirement : il devient applicable à ce cas d’usage et rejoint la Déclaration d’Applicabilité. Le traitement compte quand il est effectif ; le risque se recote ensuite.',
+  },
+  {
+    value: 'avoid',
+    label: 'Éviter — renoncer à l’usage qui porte le risque',
+    consequence:
+      'Aucun contrôle attendu. Une action s’ouvre pour le responsable : traduire l’évitement en demande de changement de périmètre, ou en suspension du cas d’usage.',
+  },
+  {
+    value: 'transfer',
+    label: 'Transférer — contrat, assurance, tiers',
+    consequence:
+      'Un tiers porte le risque : le traitement ne comptera comme effectif qu’une fois un fournisseur rattaché au cas d’usage revu (revue approuvée, même sous conditions).',
+  },
 ] as const
 
 export function RiskTreatmentForm({
   riskId,
   useCaseId,
   riskTitle,
+  riskScenario,
+  organizationId,
   people,
   controls,
 }: {
   riskId: string
   useCaseId: string
   riskTitle: string
+  /** Le scenario, pour chercher le controle qui traite. */
+  riskScenario?: string
+  organizationId: string
   people: { id: string; label: string }[]
   controls: { id: string; code: string; name: string }[]
 }) {
@@ -394,6 +445,10 @@ export function RiskTreatmentForm({
     null,
   )
   const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
+  const [strategy, setStrategy] = useState<(typeof STRATEGIES)[number]['value']>('reduce')
+  const [options, setOptions] = useState(controls)
+  const [controlId, setControlId] = useState('')
+  const chosen = STRATEGIES.find((s) => s.value === strategy)!
 
   return (
     <Modal
@@ -406,11 +461,17 @@ export function RiskTreatmentForm({
           <input type="hidden" name="riskId" value={riskId} />
           <input type="hidden" name="useCaseId" value={useCaseId} />
 
-          <Field label="Stratégie" htmlFor={`strategy-${riskId}`}>
-            <select id={`strategy-${riskId}`} name="strategy" defaultValue="reduce" className={FIELD}>
-              {STRATEGIES.map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
+          <Field label="Stratégie" htmlFor={`strategy-${riskId}`} hint={chosen.consequence}>
+            <select
+              id={`strategy-${riskId}`}
+              name="strategy"
+              value={strategy}
+              onChange={(event) => setStrategy(event.target.value as typeof strategy)}
+              className={FIELD}
+            >
+              {STRATEGIES.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
                 </option>
               ))}
             </select>
@@ -452,21 +513,50 @@ export function RiskTreatmentForm({
             risque a la mesure censee le reduire. La proximite par cas d'usage
             partage ne demontre rien.
           */}
-          <Field
-            label="Contrôle qui le met en œuvre"
-            htmlFor={`control-${riskId}`}
-            optional
-            hint="Sans contrôle désigné, le chemin du risque s’arrête à l’intention : « un traitement est prévu mais rien ne l’exécute »."
-          >
-            <select id={`control-${riskId}`} name="controlId" defaultValue="" className={FIELD}>
-              <option value="">— Aucun pour l’instant</option>
-              {controls.map((control) => (
-                <option key={control.id} value={control.id}>
-                  {control.code} — {control.name}
-                </option>
-              ))}
-            </select>
-          </Field>
+          {strategy !== 'avoid' ? (
+            <>
+              <Field
+                label="Contrôle qui le met en œuvre"
+                htmlFor={`control-${riskId}`}
+                optional={strategy !== 'reduce'}
+                error={errors.controlId}
+                hint={
+                  strategy === 'reduce'
+                    ? 'Obligatoire pour réduire : c’est lui qui agit. Il devient applicable à ce cas d’usage.'
+                    : 'Sans contrôle désigné, le chemin du risque s’arrête à l’intention : « un traitement est prévu mais rien ne l’exécute ».'
+                }
+              >
+                <select
+                  id={`control-${riskId}`}
+                  name="controlId"
+                  value={controlId}
+                  onChange={(event) => setControlId(event.target.value)}
+                  required={strategy === 'reduce'}
+                  className={FIELD}
+                >
+                  <option value="">{strategy === 'reduce' ? 'Choisir…' : '— Aucun pour l’instant'}</option>
+                  {options.map((control) => (
+                    <option key={control.id} value={control.id}>
+                      {control.code} — {control.name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <ControlFinder
+                organizationId={organizationId}
+                useCaseId={useCaseId}
+                readQuery={() => {
+                  const form = document.getElementById(`desc-${riskId}`) as HTMLTextAreaElement | null
+                  return [riskTitle, riskScenario ?? '', form?.value ?? ''].filter(Boolean).join(' ')
+                }}
+                ownerUserId={() => (document.getElementById(`owner-${riskId}`) as HTMLSelectElement | null)?.value ?? ''}
+                onPick={(option) => {
+                  setOptions((current) => (current.some((c) => c.id === option.id) ? current : [...current, option]))
+                  setControlId(option.id)
+                }}
+              />
+            </>
+          ) : null}
 
           <FormFeedback state={state} />
           <Submit pending={pending} idle="Enregistrer le traitement" />

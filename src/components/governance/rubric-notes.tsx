@@ -96,12 +96,23 @@ export function RiskNote() {
       </p>
       <p>
         <strong className="font-medium text-ink-800">Deux réponses, et deux seulement.</strong>{' '}
-        <em>Traiter</em> : un responsable, ce qui sera fait, et le contrôle qui l’exécute — le
-        responsable en est averti et rappelé à l’échéance. <em>Accepter</em> : un acte
-        nominatif, réservé à la personne désignée responsable du risque, avec justification et
-        date de revue. Un risque ni traité ni accepté bloque le passage en production s’il est
-        élevé ou critique — et passe inaperçu s’il ne l’est pas : ne jamais laisser un risque
-        sans décision.
+        <em>Traiter</em> : un responsable, ce qui sera fait, et une stratégie qui engage —{' '}
+        <strong className="font-medium text-ink-800">réduire</strong> désigne un contrôle
+        (obligatoire), qui devient applicable au cas d’usage et rejoint la Déclaration
+        d’Applicabilité ; <strong className="font-medium text-ink-800">éviter</strong> ouvre une
+        action pour traduire le renoncement en changement de périmètre ou en suspension ;{' '}
+        <strong className="font-medium text-ink-800">transférer</strong> ne compte qu’une fois le
+        fournisseur rattaché revu. Sur un risque élevé ou critique, le traitement ouvre une
+        action bloquante pour son responsable. <em>Accepter</em> : un acte nominatif, réservé à
+        la personne désignée responsable du risque, avec justification et date de revue — et,
+        pour un risque élevé ou critique, une décision « acceptation de risque » que quelqu’un
+        d’autre approuve.
+      </p>
+      <p>
+        Un risque ni traité ni accepté bloque le passage en production s’il est élevé ou
+        critique — et passe inaperçu s’il ne l’est pas : ne jamais laisser un risque sans
+        décision. L’évaluation d’impact, elle, ne dépend pas des risques mais des faits du cas
+        d’usage (données personnelles, personnes vulnérables, autonomie, criticité, qualification).
       </p>
     </Note>
   )
