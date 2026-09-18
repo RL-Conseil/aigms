@@ -23,10 +23,12 @@ test('la cartographie montre les processus, activités et usages rattachés', as
   await page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('link', { name: /^Processus et risques/ }).click()
 
   await expect(page.getByRole('heading', { name: 'Processus et risques' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: /Servir le client/ })).toBeVisible()
 
-  // L'arbre se lit en trois familles, et porte les usages sous chaque activité.
-  await expect(page.getByRole('button', { name: /^Réalisation/ })).toBeVisible()
+  // L'arbre se lit en trois familles, pliees d'emblee ; chacune porte les
+  // usages sous ses activites une fois depliee.
+  await expect(page.getByRole('heading', { name: /Servir le client/ })).toHaveCount(0)
+  await page.getByRole('button', { name: /^Réalisation/ }).click()
+  await expect(page.getByRole('heading', { name: /Servir le client/ })).toBeVisible()
   await expect(
     page.getByRole('link', { name: 'Traitement des demandes clients', exact: true }),
   ).toBeVisible()
@@ -170,13 +172,12 @@ test('la carte annote chaque activité et son panneau détaille ce qui s’y jou
   await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001/processus')
 
   // L'arbre porte les indicateurs directement sur les activités, et se replie
-  // par famille : la sélection courante garde la sienne ouverte.
-  await expect(page.getByRole('heading', { name: /Servir le client/ })).toBeVisible()
-  await expect(page.getByText(/contrôles \d+\/\d+/).first()).toBeVisible()
-  await expect(page.getByText(/preuve\(s\) à renouveler/).first()).toBeVisible()
-  await page.getByRole('button', { name: /^Support/ }).click()
+  // par famille — pliee d'emblee ; la sélection courante garde la sienne ouverte.
   await expect(page.getByRole('heading', { name: /Gérer les ressources humaines/ })).toHaveCount(0)
   await page.getByRole('button', { name: /^Support/ }).click()
+  await expect(page.getByRole('heading', { name: /Gérer les ressources humaines/ })).toBeVisible()
+  await expect(page.getByText(/contrôles \d+\/\d+/).first()).toBeVisible()
+  await expect(page.getByText(/preuve\(s\) à renouveler/).first()).toBeVisible()
 
   // Sélection d'une activité : le panneau s'ouvre, l'URL le retient.
   await page.getByRole('link', { name: 'Présélection des candidatures', exact: true }).click()
@@ -190,6 +191,13 @@ test('la carte annote chaque activité et son panneau détaille ce qui s’y jou
     .filter({ has: page.getByRole('heading', { name: 'Ce qui s’y joue' }) })
   await expect(panelPlay).toBeVisible()
   await expect(panelPlay.getByText('Risques élevés ouverts')).toBeVisible()
+
+  // Les controles se lisent par cas d'usage, avec leur etat : proposé, mis en
+  // place, opérant — un compteur ne dit pas lesquels, ni pour qui.
+  await panelPlay.getByRole('button', { name: 'Détail : Contrôles applicables' }).click()
+  await expect(page.getByRole('dialog')).toContainText('Scoring de candidatures')
+  await expect(page.getByRole('dialog')).toContainText('CTL-01')
+  await page.keyboard.press('Escape')
 
   // Chaque chiffre s'ouvre sur les pièces qu'il compte : le nombre ne suffit pas.
   await panelPlay.getByRole('button', { name: 'Détail : Risques élevés ouverts' }).click()
@@ -265,7 +273,7 @@ test('trois lectures du même modèle : processus, couverture, risques', async (
 
   // --- Retour à l'arbre ------------------------------------------------------
   await page.getByRole('link', { name: 'Processus', exact: true }).click()
-  await expect(page.getByRole('heading', { name: /Servir le client/ })).toBeVisible()
+  await expect(page.getByRole('button', { name: /^Réalisation/ })).toBeVisible()
 })
 
 test('le graphe relie les couches et le chemin d’un risque nomme sa rupture', async ({ page }) => {

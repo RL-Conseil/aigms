@@ -213,7 +213,9 @@ function Family({
   const holdsSelection = processes.some((p) =>
     p.activities.some((a) => a.activity_id === selectedActivity),
   )
-  const [open, setOpen] = useState(true)
+  // Pliee par defaut : trois familles depliees font une page a faire defiler
+  // avant de trouver la sienne. Celle qui porte la selection reste ouverte.
+  const [open, setOpen] = useState(false)
   const shown = open || holdsSelection
   const activityCount = processes.reduce((n, p) => n + p.activities.length, 0)
   const useCaseCount = processes.reduce(

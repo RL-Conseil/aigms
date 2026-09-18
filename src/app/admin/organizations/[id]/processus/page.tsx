@@ -245,37 +245,40 @@ export default async function ProcessMapPage({
           <InfoTip label="Comment lire cette carte" title="Quatre lectures du même modèle">
             <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
               <p>
-                Un seul jeu de données, quatre questions. Les onglets ne filtrent pas une liste :
-                ils changent la question posée à la même carte.
+                Cet écran est une présentation de l’organisation selon ses activités — à lister et
+                définir lors du paramétrage de la solution. Un seul jeu de données, quatre questions.
               </p>
 
               <ul className="flex flex-col gap-2.5">
                 <li>
                   <strong className="font-medium text-ink-800">Processus</strong> — ce que fait
-                  l’organisation, et où l’IA intervient. L’arbre descend du processus vers ses
-                  activités ; chaque activité annonce ce qui s’y joue, et le panneau de droite
-                  détaille celle qu’on sélectionne.
+                  l’organisation, et où l’IA intervient. Les processus sont de trois natures :
+                  pilotage, réalisation, support. Chaque volet descend du processus vers ses
+                  activités ; chaque activité annonce ce qui s’y joue, et les panneaux de droite
+                  détaillent les usages d’IA de celle qui est sélectionnée (ACT-…).
                 </li>
                 <li>
-                  <strong className="font-medium text-ink-800">Couverture</strong> — ce qui tient
-                  réellement, en barres, par activité ou par processus. Un contrôle n’est compté
-                  comme couvrant que s’il est <em>opérant</em> et <em>prouvé</em> par une preuve
-                  validée non échue. Un contrôle déclaré sans preuve ne protège personne, et
-                  c’est ce qu’un auditeur vient vérifier.
+                  <strong className="font-medium text-ink-800">Couverture</strong> — ce que les
+                  contrôles couvrent réellement. Vue synthétique en barres, par activité ou par
+                  processus. Un contrôle n’est compté comme couvrant que s’il est{' '}
+                  <em>opérant</em> et <em>prouvé</em> par une preuve validée et non échue. Un
+                  contrôle déclaré sans preuve ne protège personne, et c’est ce qu’un auditeur
+                  vient vérifier.
                 </li>
                 <li>
                   <strong className="font-medium text-ink-800">Risques</strong> — la répartition
                   par niveau, en barres, par activité ou par processus. Les couleurs comptent les
                   risques <em>ouverts</em>, pas le total : un risque accepté est une décision
-                  assumée, avec un responsable et une date de revue. Le laisser clignoter en rouge
-                  reviendrait à confondre une décision avec une alerte.
+                  assumée, avec un responsable et une date de revue. Le laisser en rouge
+                  reviendrait à confondre une décision avec une alerte — ne jamais laisser un
+                  risque sans décision.
                 </li>
                 <li>
-                  <strong className="font-medium text-ink-800">Graphe</strong> — ce qu’une
-                  hiérarchie ne sait pas montrer : un contrôle partagé entre plusieurs cas d’usage,
-                  une preuve mutualisée, un risque dont rien ne redescend vers une preuve. Suivre
-                  un risque met en évidence son chemin, du processus jusqu’à la preuve, et nomme
-                  l’endroit exact où la chaîne rompt.
+                  <strong className="font-medium text-ink-800">Graphe</strong> — vision
+                  hiérarchique du suivi des risques : un contrôle partagé entre plusieurs cas
+                  d’usage, une preuve mutualisée, un risque qui ne redescend pas vers une preuve.
+                  Suivre un risque met en évidence son chemin, du processus jusqu’à la preuve, et
+                  nomme l’endroit exact où la chaîne rompt.
                 </li>
               </ul>
 
@@ -309,7 +312,7 @@ export default async function ProcessMapPage({
             Ajouter une activité
           </Link>
           <span className="text-xs text-ink-500">
-            Un cas d’usage se déclare depuis la vue d’ensemble, puis se rattache ici avec le « + » de son activité.
+            Un cas d’usage se déclare depuis la vue « Cas d’usage », puis se rattache ici avec le « + » de son activité.
           </span>
         </div>
       ) : null}
