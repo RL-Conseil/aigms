@@ -93,9 +93,15 @@ test('un traitement de risque désigne le contrôle qui l’exécute', async ({ 
   await fenetre
     .getByLabel('Ce qui sera fait')
     .fill('Revue humaine systématique des candidatures écartées, avec journal des arbitrages.')
-  // Le responsable est exige : il en sera averti, et rappele a l'echeance.
+  // Une mesure = un controle, un responsable (exige : averti, rappele a
+  // l'echeance), une echeance. Le risque se lit en gros dans la fenetre.
+  await expect(fenetre.getByText('Discrimination indirecte à l’embauche')).toBeVisible()
   await fenetre.getByLabel('Responsable').selectOption({ index: 1 })
-  await fenetre.getByLabel('Contrôle qui le met en œuvre').selectOption({ index: 1 })
+  await fenetre.getByLabel(/^Contrôle/).selectOption({ index: 1 })
+  // Une seconde mesure s'ajoute d'un clic, et se retire.
+  await fenetre.getByRole('button', { name: '+ Ajouter un contrôle' }).click()
+  await expect(fenetre.getByLabel('Contrôle 2')).toBeVisible()
+  await fenetre.getByRole('button', { name: 'Retirer la mesure 2' }).click()
   await fenetre.getByRole('button', { name: 'Enregistrer le traitement' }).click()
 
   await expect(page.getByRole('status')).toContainText(/avec le contrôle qui le met en œuvre/)

@@ -775,6 +775,7 @@ export default async function UseCasePage({
                         */}
                         <RiskTreatmentForm
                           riskId={risk.id}
+                          riskRef={risk.business_ref}
                           useCaseId={id}
                           riskTitle={risk.title}
                           riskScenario={risk.scenario}

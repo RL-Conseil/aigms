@@ -422,8 +422,11 @@ const STRATEGIES = [
   },
 ] as const
 
+type Measure = { key: number; controlId: string; ownerUserId: string; dueDate: string }
+
 export function RiskTreatmentForm({
   riskId,
+  riskRef,
   useCaseId,
   riskTitle,
   riskScenario,
@@ -432,6 +435,7 @@ export function RiskTreatmentForm({
   controls,
 }: {
   riskId: string
+  riskRef?: string
   useCaseId: string
   riskTitle: string
   /** Le scenario, pour chercher le controle qui traite. */
@@ -447,19 +451,38 @@ export function RiskTreatmentForm({
   const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
   const [strategy, setStrategy] = useState<(typeof STRATEGIES)[number]['value']>('reduce')
   const [options, setOptions] = useState(controls)
-  const [controlId, setControlId] = useState('')
+  // Un risque se traite souvent par PLUSIEURS mesures — un controle, un
+  // responsable, une echeance chacune. Chaque ligne devient un traitement.
+  const [measures, setMeasures] = useState<Measure[]>([{ key: 1, controlId: '', ownerUserId: '', dueDate: '' }])
   const chosen = STRATEGIES.find((s) => s.value === strategy)!
+  const withControl = strategy !== 'avoid'
+
+  const update = (key: number, patch: Partial<Measure>) =>
+    setMeasures((current) => current.map((m) => (m.key === key ? { ...m, ...patch } : m)))
+  const add = () =>
+    setMeasures((current) => {
+      const last = current[current.length - 1]
+      return [...current, { key: Date.now(), controlId: '', ownerUserId: last?.ownerUserId ?? '', dueDate: last?.dueDate ?? '' }]
+    })
+  const remove = (key: number) => setMeasures((current) => (current.length > 1 ? current.filter((m) => m.key !== key) : current))
 
   return (
     <Modal
       trigger="Traiter"
       title="Traitement du risque"
-      description={riskTitle}
+      description={riskRef}
     >
       {() => (
         <form action={formAction} className="flex flex-col gap-4">
           <input type="hidden" name="riskId" value={riskId} />
           <input type="hidden" name="useCaseId" value={useCaseId} />
+          <input type="hidden" name="measures" value={JSON.stringify(measures.map(({ key: _key, ...m }) => m))} />
+
+          {/* Le risque qu'on traite se lit en gros : c'est de lui qu'il s'agit. */}
+          <div className="rounded-md border border-ink-200 bg-ink-50/60 px-4 py-3">
+            <p className="text-base font-semibold leading-snug text-ink-900">{riskTitle}</p>
+            {riskScenario ? <p className="mt-1 text-[13px] leading-relaxed text-ink-600">{riskScenario}</p> : null}
+          </div>
 
           <Field label="Stratégie" htmlFor={`strategy-${riskId}`} hint={chosen.consequence}>
             <select
@@ -485,85 +508,125 @@ export function RiskTreatmentForm({
             <textarea id={`desc-${riskId}`} name="description" rows={3} required className={FIELD} />
           </Field>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field
-              label="Responsable"
-              htmlFor={`owner-${riskId}`}
-              error={errors.ownerUserId}
-              hint="Il en est averti, et rappelé à l’échéance."
-            >
-              <select id={`owner-${riskId}`} name="ownerUserId" defaultValue="" required className={FIELD}>
-                <option value="" disabled>
-                  Choisir…
-                </option>
-                {people.map((person) => (
-                  <option key={person.id} value={person.id}>
-                    {person.label}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Échéance" htmlFor={`due-${riskId}`} optional>
-              <input id={`due-${riskId}`} name="dueDate" type="date" className={FIELD} />
-            </Field>
-          </div>
-
           {/*
-            Le lien decide en ADR-0010 : c'est lui, et lui seul, qui relie un
-            risque a la mesure censee le reduire. La proximite par cas d'usage
-            partage ne demontre rien.
+            Les mesures : une ligne par controle, avec son responsable et son
+            echeance. Le lien decide en ADR-0010 relie chaque mesure a la
+            chose qui la met en oeuvre ; c'est par mesure qu'on suit.
           */}
-          {strategy !== 'avoid' ? (
-            <>
-              <Field
-                label="Contrôle qui le met en œuvre"
-                htmlFor={`control-${riskId}`}
-                optional={strategy !== 'reduce'}
-                error={errors.controlId}
-                hint={
-                  strategy === 'reduce'
-                    ? 'Obligatoire pour réduire : c’est lui qui agit. Il devient applicable à ce cas d’usage.'
-                    : 'Sans contrôle désigné, le chemin du risque s’arrête à l’intention : « un traitement est prévu mais rien ne l’exécute ».'
-                }
+          <fieldset className="flex flex-col gap-3">
+            <legend className="text-sm font-medium">
+              {withControl ? 'Mesures — contrôle, responsable, échéance' : 'Responsable et échéance'}
+            </legend>
+            {errors.measures ? (
+              <p role="alert" className="text-[13px] text-stop-600">{errors.measures}</p>
+            ) : null}
+            {measures.map((m, index) => (
+              <div key={m.key} className="rounded-md border border-ink-200 p-3">
+                <div className={`grid gap-3 ${withControl ? 'sm:grid-cols-[1fr_auto]' : ''}`}>
+                  {withControl ? (
+                    <Field
+                      label={`Contrôle ${measures.length > 1 ? index + 1 : ''}`.trim()}
+                      htmlFor={`control-${riskId}-${m.key}`}
+                      optional={strategy !== 'reduce'}
+                    >
+                      <select
+                        id={`control-${riskId}-${m.key}`}
+                        value={m.controlId}
+                        onChange={(event) => update(m.key, { controlId: event.target.value })}
+                        required={strategy === 'reduce'}
+                        className={FIELD}
+                      >
+                        <option value="">{strategy === 'reduce' ? 'Choisir…' : '— Aucun pour l’instant'}</option>
+                        {options.map((control) => (
+                          <option key={control.id} value={control.id}>
+                            {control.code} — {control.name}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                  ) : null}
+                  {measures.length > 1 ? (
+                    <button
+                      type="button"
+                      onClick={() => remove(m.key)}
+                      className="self-end rounded-md border border-ink-200 px-2.5 py-2 text-xs text-ink-600 hover:bg-ink-100"
+                      aria-label={`Retirer la mesure ${index + 1}`}
+                    >
+                      Retirer
+                    </button>
+                  ) : null}
+                </div>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <Field label="Responsable" htmlFor={`owner-${riskId}-${m.key}`} hint="Averti, et rappelé à l’échéance.">
+                    <select
+                      id={`owner-${riskId}-${m.key}`}
+                      value={m.ownerUserId}
+                      onChange={(event) => update(m.key, { ownerUserId: event.target.value })}
+                      required
+                      className={FIELD}
+                    >
+                      <option value="" disabled>
+                        Choisir…
+                      </option>
+                      {people.map((person) => (
+                        <option key={person.id} value={person.id}>
+                          {person.label}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                  <Field label="Échéance" htmlFor={`due-${riskId}-${m.key}`} optional>
+                    <input
+                      id={`due-${riskId}-${m.key}`}
+                      type="date"
+                      value={m.dueDate}
+                      onChange={(event) => update(m.key, { dueDate: event.target.value })}
+                      className={FIELD}
+                    />
+                  </Field>
+                </div>
+              </div>
+            ))}
+            {withControl ? (
+              <button
+                type="button"
+                onClick={add}
+                className="self-start rounded-md border border-dashed border-ink-300 px-3 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-100"
               >
-                <select
-                  id={`control-${riskId}`}
-                  name="controlId"
-                  value={controlId}
-                  onChange={(event) => setControlId(event.target.value)}
-                  required={strategy === 'reduce'}
-                  className={FIELD}
-                >
-                  <option value="">{strategy === 'reduce' ? 'Choisir…' : '— Aucun pour l’instant'}</option>
-                  {options.map((control) => (
-                    <option key={control.id} value={control.id}>
-                      {control.code} — {control.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-              <ControlFinder
-                organizationId={organizationId}
-                useCaseId={useCaseId}
-                readQuery={() => {
-                  const form = document.getElementById(`desc-${riskId}`) as HTMLTextAreaElement | null
-                  return [riskTitle, riskScenario ?? '', form?.value ?? ''].filter(Boolean).join(' ')
-                }}
-                ownerUserId={() => (document.getElementById(`owner-${riskId}`) as HTMLSelectElement | null)?.value ?? ''}
-                onPick={(option) => {
-                  setOptions((current) => (current.some((c) => c.id === option.id) ? current : [...current, option]))
-                  setControlId(option.id)
-                }}
-              />
-            </>
+                + Ajouter un contrôle
+              </button>
+            ) : null}
+          </fieldset>
+
+          {withControl ? (
+            <ControlFinder
+              organizationId={organizationId}
+              useCaseId={useCaseId}
+              readQuery={() => {
+                const form = document.getElementById(`desc-${riskId}`) as HTMLTextAreaElement | null
+                return [riskTitle, riskScenario ?? '', form?.value ?? ''].filter(Boolean).join(' ')
+              }}
+              ownerUserId={() => measures[0]?.ownerUserId ?? ''}
+              onPick={(option) => {
+                setOptions((current) => (current.some((c) => c.id === option.id) ? current : [...current, option]))
+                // Une ligne vide prend le controle ; sinon une ligne de plus.
+                setMeasures((current) => {
+                  const empty = current.find((m) => !m.controlId)
+                  if (empty) return current.map((m) => (m.key === empty.key ? { ...m, controlId: option.id } : m))
+                  const last = current[current.length - 1]
+                  return [...current, { key: Date.now(), controlId: option.id, ownerUserId: last?.ownerUserId ?? '', dueDate: last?.dueDate ?? '' }]
+                })
+              }}
+            />
           ) : null}
 
           <FormFeedback state={state} />
-          <Submit pending={pending} idle="Enregistrer le traitement" />
+          <Submit
+            pending={pending}
+            idle={measures.length > 1 ? `Enregistrer les ${measures.length} mesures` : 'Enregistrer le traitement'}
+          />
         </form>
       )}
     </Modal>
   )
 }
-
-
