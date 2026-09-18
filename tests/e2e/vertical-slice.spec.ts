@@ -37,7 +37,15 @@ test('le parcours de gouvernance est consultable de bout en bout', async ({ page
   // a son onglet. Le bandeau et le fil restent en place.
   const rubriques = page.getByRole('navigation', { name: 'Rubriques du cas d’usage' })
   await expect(page.getByRole('heading', { name: 'Qualification réglementaire' })).toBeVisible()
-  await expect(page.getByText('Préconditions satisfaites')).toBeVisible()
+  // La qualification se relit en francais, pas en codes.
+  await expect(page.getByText('Rôle : Déployeur')).toBeVisible()
+  await expect(page.getByText('Obligations de transparence')).toBeVisible()
+  // Le jalon Production porte lui-meme ses preconditions.
+  await page.getByRole('button', { name: 'Préconditions du jalon Production' }).click()
+  await expect(page.getByRole('dialog', { name: 'Préconditions du jalon Production' })).toContainText(
+    'préconditions satisfaites',
+  )
+  await page.keyboard.press('Escape')
 
   for (const [tab, heading] of [
     [/^Risques/, 'Risques'],
@@ -137,9 +145,9 @@ test('la fiche d’un cas d’usage ouvre sur ce qu’il y a à faire', async ({
   await expect(page.getByText('Bénéfice attendu')).toBeVisible()
   await expect(page.getByText('Portée de la décision')).toBeVisible()
 
-  // Ce qui appelle une action reste ouvert.
-  await expect(page.getByRole('heading', { name: 'Risques' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Gate production' })).toBeVisible()
+  // Les jalons obligatoires portent leurs preconditions, en infobulle.
+  await expect(page.getByRole('button', { name: 'Préconditions du jalon Revue' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Préconditions du jalon Production' })).toBeVisible()
 })
 
 test('la frise marque les jalons obligatoires et porte l’action qui la fait avancer', async ({
@@ -202,12 +210,12 @@ test('le fil d’Ariane d’un cas d’usage ramène à son organisation', async
 })
 
 test('chaque rubrique du dossier s’explique sur place', async ({ page }) => {
-  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000001?onglet=qualification')
+  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000001')
   const rubriques = page.getByRole('navigation', { name: 'Rubriques du cas d’usage' })
 
-  // Le volet porte le terme etabli, et nomme le reglement.
-  await expect(page.getByText('Qualification au regard du règlement')).toBeVisible()
-  await expect(page.getByText(/règlement \(UE\) 2024\/1689/).first()).toBeVisible()
+  // La qualification se pose depuis le fil conducteur, et nomme le reglement.
+  await expect(page.getByRole('heading', { name: 'Qualification réglementaire' })).toBeVisible()
+  await expect(page.getByText(/Règlement \(UE\) 2024\/1689/).first()).toBeVisible()
 
   // Sa note distingue « haut risque » au sens du reglement de la cotation d'un
   // risque : c'est la confusion la plus couteuse de l'ecran.
@@ -219,7 +227,7 @@ test('chaque rubrique du dossier s’explique sur place', async ({ page }) => {
   // Les autres rubriques en portent une aussi, chacune dans son onglet.
   for (const [tab, label] of [
     [/^Fil conducteur/, 'À quoi sert la criticité'],
-    [/^Fil conducteur/, 'À quoi sert le gate'],
+    [/^Fil conducteur/, 'Préconditions du jalon Production'],
     [/^Risques/, 'À quoi sert le registre des risques'],
     [/^Journal/, 'À quoi sert le journal'],
   ] as const) {

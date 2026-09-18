@@ -17,11 +17,17 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 export function InfoTip({
   label,
   title,
+  tone = 'neutral',
+  align = 'right',
   children,
 }: {
   /** Nom accessible du bouton. Decrit ce qu'on va lire, pas l'icone. */
   label: string
   title?: string
+  /** Le bouton porte une couleur quand il signale un etat : a faire, en ordre. */
+  tone?: 'neutral' | 'ok' | 'todo'
+  /** Ou s'ouvre le panneau par rapport au bouton. */
+  align?: 'right' | 'left'
   children: ReactNode
 }) {
   const [open, setOpen] = useState(false)
@@ -55,7 +61,11 @@ export function InfoTip({
         className={`inline-flex size-7 items-center justify-center rounded-full border text-sm font-semibold transition-colors ${
           open
             ? 'border-brand-600 bg-brand-600 text-white'
-            : 'border-ink-300 text-ink-500 hover:border-ink-400 hover:text-ink-700'
+            : tone === 'todo'
+              ? 'border-warn-600 bg-warn-600/10 text-warn-600 hover:bg-warn-600/20'
+              : tone === 'ok'
+                ? 'border-ok-600 bg-ok-600/10 text-ok-600 hover:bg-ok-600/20'
+                : 'border-ink-300 text-ink-500 hover:border-ink-400 hover:text-ink-700'
         }`}
       >
         <span aria-hidden>i</span>
@@ -65,7 +75,7 @@ export function InfoTip({
         <div
           role="dialog"
           aria-label={label}
-          className="absolute right-0 z-20 mt-2 w-[min(30rem,calc(100vw-3rem))] rounded-lg border border-ink-200 bg-white p-5 text-left shadow-[0_1px_2px_rgb(30_42_68/0.04),0_12px_32px_rgb(30_42_68/0.12)]"
+          className={`absolute ${align === 'left' ? 'left-0' : 'right-0'} z-20 mt-2 w-[min(30rem,calc(100vw-3rem))] rounded-lg border border-ink-200 bg-white p-5 text-left shadow-[0_1px_2px_rgb(30_42_68/0.04),0_12px_32px_rgb(30_42_68/0.12)]`}
         >
           {title ? <p className="mb-2 text-sm font-semibold text-ink-900">{title}</p> : null}
           {children}

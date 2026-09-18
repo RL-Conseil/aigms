@@ -11,7 +11,8 @@ import {
 import { Disclosure, Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
 import { ControlFinder } from '@/components/governance/control-finder'
-import { ClassificationNote, TriageNote } from '@/components/governance/rubric-notes'
+import { TriageNote } from '@/components/governance/rubric-notes'
+import { CLASSIFICATION_FLAG_LABELS, ORGANIZATION_ROLE_LABELS } from '@/lib/domain/classification'
 
 /**
  * Etapes de gouvernance saisies depuis la fiche du cas d'usage.
@@ -108,25 +109,8 @@ export function TriagePanel({
   )
 }
 
-const FLAGS = [
-  { value: 'out_of_scope', label: 'Hors périmètre' },
-  { value: 'to_confirm', label: 'À confirmer' },
-  { value: 'prohibited_practice_suspected', label: 'Pratique interdite suspectée' },
-  { value: 'high_risk_potential', label: 'Haut risque potentiel' },
-  { value: 'transparency_obligations', label: 'Obligations de transparence' },
-  { value: 'gpai_dependency', label: 'Dépendance à un modèle à usage général' },
-  { value: 'privacy_impact', label: 'Impact sur la vie privée' },
-  { value: 'security_impact', label: 'Impact sur la sécurité' },
-] as const
-
-const ROLES = [
-  { value: 'deployer', label: 'Déployeur' },
-  { value: 'provider', label: 'Fournisseur' },
-  { value: 'importer', label: 'Importateur' },
-  { value: 'distributor', label: 'Distributeur' },
-  { value: 'other', label: 'Autre' },
-  { value: 'undetermined', label: 'À déterminer' },
-] as const
+const FLAGS = Object.entries(CLASSIFICATION_FLAG_LABELS).map(([value, label]) => ({ value, label }))
+const ROLES = Object.entries(ORGANIZATION_ROLE_LABELS).map(([value, label]) => ({ value, label }))
 
 export function ClassificationPanel({
   useCaseId,
@@ -149,19 +133,17 @@ export function ClassificationPanel({
   )
   const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
 
+  // La qualification se pose et se revise depuis la fiche, dans une fenetre :
+  // pas d'onglet a rejoindre pour un acte qui se relit ensuite a droite du
+  // fil conducteur.
   return (
-    <Disclosure
+    <Modal
+      trigger={current ? 'Réviser la qualification' : 'Qualifier maintenant'}
       title="Qualification au regard du règlement"
-      aside={<ClassificationNote />}
-      summary={
-        current
-          ? `${ROLES.find((r) => r.value === current.organization_role)?.label ?? current.organization_role} · ${current.flags.length} qualification(s)`
-          : 'À poser — le passage en revue l’exige'
-      }
-      tone={current ? 'done' : 'todo'}
-      defaultOpen={!current}
-      stayOpen={Boolean(state)}
+      description="Règlement (UE) 2024/1689 — AI Act. Un cadrage, pas un avis juridique."
     >
+      {() => (
+      <>
       <div className="mb-4 rounded-md bg-ink-100 px-4 py-3">
         <p className="text-[13px] leading-relaxed text-ink-600">
           Au regard du <strong className="font-semibold">règlement (UE) 2024/1689</strong> — l’AI
@@ -290,7 +272,9 @@ export function ClassificationPanel({
           idle={current ? 'Remplacer la qualification' : 'Enregistrer la qualification'}
         />
       </form>
-    </Disclosure>
+      </>
+      )}
+    </Modal>
   )
 }
 

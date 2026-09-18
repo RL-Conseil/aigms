@@ -112,16 +112,9 @@ test('un cas d’usage se déclare, se trie, se classifie et reçoit un risque',
   await triage.getByRole('button', { name: 'Enregistrer la criticité' }).click()
   await expect(triage.getByRole('status')).toContainText('Criticité enregistrée')
 
-  // --- Qualification : sa propre rubrique -------------------------------------
-  await rubriques.getByRole('link', { name: 'Qualification' }).click()
-  await expect(page).toHaveURL(/onglet=qualification/)
-  const classification = panel(/Qualification au regard du règlement/)
-  const classificationToggle = classification.getByRole('button', {
-    name: /Qualification au regard du règlement/,
-  })
-  if ((await classificationToggle.getAttribute('aria-expanded')) !== 'true') {
-    await classificationToggle.click()
-  }
+  // --- Qualification : une fenetre, depuis la carte de droite -----------------
+  await page.getByRole('button', { name: 'Qualifier maintenant' }).click()
+  const classification = page.getByRole('dialog', { name: 'Qualification au regard du règlement' })
   await classification.getByRole('checkbox', { name: 'Obligations de transparence' }).check()
   await classification
     .getByLabel('Justification')

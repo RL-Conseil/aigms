@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+import { InfoTip } from '@/components/info-tip'
 import {
   GATED_STEPS,
   LIFECYCLE_STEPS,
@@ -17,7 +19,18 @@ import {
  * conditions) sont annonces a part plutot que glisses dans la frise : les y
  * mettre laisserait croire a une progression, alors que ce sont des sorties.
  */
-export function Lifecycle({ status }: { status: UseCaseStatus }) {
+export function Lifecycle({
+  status,
+  gates = {},
+}: {
+  status: UseCaseStatus
+  /**
+   * Pour chaque jalon, ce qu'on montre en infobulle : la liste de ses
+   * preconditions, evaluees en continu. Le jalon dit ainsi lui-meme ce qui
+   * lui manque — sans carte a part.
+   */
+  gates?: Partial<Record<UseCaseStatus, { summary: string; satisfied: boolean | null; content: ReactNode }>>
+}) {
   const currentIndex = LIFECYCLE_STEPS.indexOf(status)
   const offPath = currentIndex === -1
 
@@ -33,8 +46,9 @@ export function Lifecycle({ status }: { status: UseCaseStatus }) {
           const current = !offPath && index === currentIndex
           const gated = GATED_STEPS.includes(step)
 
+          const gate = gates[step]
           return (
-            <li key={step}>
+            <li key={step} className="flex items-center gap-1">
               <span
                 aria-current={current ? 'step' : undefined}
                 title={gated ? 'Jalon obligatoire : passage évalué côté serveur' : undefined}
@@ -54,6 +68,16 @@ export function Lifecycle({ status }: { status: UseCaseStatus }) {
                 {USE_CASE_STATUS_LABELS[step]}
                 {gated ? <span className="sr-only"> — jalon obligatoire</span> : null}
               </span>
+              {gate ? (
+                <InfoTip
+                  label={`Préconditions du jalon ${USE_CASE_STATUS_LABELS[step]}`}
+                  title={`Jalon ${USE_CASE_STATUS_LABELS[step]} — ${gate.summary}`}
+                  tone={gate.satisfied === null ? 'neutral' : gate.satisfied ? 'ok' : 'todo'}
+                  align="left"
+                >
+                  {gate.content}
+                </InfoTip>
+              ) : null}
             </li>
           )
         })}
@@ -64,7 +88,7 @@ export function Lifecycle({ status }: { status: UseCaseStatus }) {
           ◆
         </span>
         Jalon obligatoire — le passage est refusé côté serveur tant que les préconditions ne sont
-        pas réunies, et le refus est motivé précondition par précondition.
+        pas réunies. Le « i » du jalon les liste, évaluées en continu.
       </p>
 
       {offPath ? (
