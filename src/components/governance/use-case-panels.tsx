@@ -313,10 +313,13 @@ export function RiskPanel({
   useCaseId,
   riskCount,
   people,
+  controls = [],
 }: {
   useCaseId: string
   riskCount: number
   people: { id: string; label: string }[]
+  /** Les controles applicables a ce cas d'usage : l'un d'eux peut traiter le risque des l'identification. */
+  controls?: { id: string; code: string; name: string; status: string }[]
 }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(createRisk, null)
   const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
@@ -420,6 +423,32 @@ export function RiskPanel({
           Le niveau est calculé par vraisemblance × gravité : il n’est pas saisi, pour qu’il ne
           puisse pas diverger de sa cotation.
         </p>
+
+        {/*
+          Le traitement est un acte distinct de l'identification — on cote
+          d'abord, on traite ensuite. Mais quand le controle qui le traitera
+          est deja connu, le dire ici ouvre le traitement sans repasser par
+          une seconde fenetre.
+        */}
+        <Field
+          label="Contrôle qui le traitera"
+          htmlFor="risk-control"
+          optional
+          hint={
+            controls.length
+              ? 'Parmi les contrôles applicables à ce cas d’usage. Un traitement « planifié » s’ouvre alors, porté par le responsable du risque.'
+              : 'Aucun contrôle applicable sur ce cas d’usage pour l’instant : le traitement se décidera après l’identification.'
+          }
+        >
+          <select id="risk-control" name="controlId" defaultValue="" disabled={!controls.length} className={FIELD}>
+            <option value="">— À décider au traitement</option>
+            {controls.map((control) => (
+              <option key={control.id} value={control.id}>
+                {control.code} — {control.name}
+              </option>
+            ))}
+          </select>
+        </Field>
 
         <FormFeedback state={state} />
         <Submit pending={pending} idle="Enregistrer le risque" />

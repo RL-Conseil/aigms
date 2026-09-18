@@ -54,6 +54,7 @@ export function FormFeedback({
   return (
     <p
       role="status"
+      data-outcome={state.ok ? 'ok' : 'error'}
       className={`rounded-md px-4 py-3 text-sm ${
         state.ok ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-800'
       }`}

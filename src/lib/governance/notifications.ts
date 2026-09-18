@@ -51,6 +51,8 @@ export const NOTIFICATION_KIND_LABELS: Record<string, string> = {
   change_planned: 'Changement',
   change_due: 'Changement prévu',
   impact_completed: 'Évaluation',
+  treatment_owner: 'Traitement',
+  treatment_due: 'Échéance',
 }
 
 /** Ce qui est un rappel date — a distinguer d'une simple information. */
@@ -59,4 +61,5 @@ export const REMINDER_KINDS = new Set([
   'oversight_review_due',
   'decision_effective',
   'change_due',
+  'treatment_due',
 ])

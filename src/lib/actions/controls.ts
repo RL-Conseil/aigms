@@ -301,7 +301,7 @@ const treatmentSchema = z.object({
     .trim()
     .min(20, 'Décrire ce qui sera fait : un traitement en trois mots ne se vérifie pas.')
     .max(2000),
-  ownerUserId: z.string().uuid().optional().or(z.literal('')),
+  ownerUserId: z.string().uuid({ message: 'Désignez qui porte le traitement : sans lui, rien ne l’exécute.' }),
   dueDate: z.string().trim().optional().or(z.literal('')),
   controlId: z.string().uuid().optional().or(z.literal('')),
 })
@@ -334,7 +334,7 @@ export async function createRiskTreatment(
     risk_id: parsed.data.riskId,
     strategy: parsed.data.strategy,
     description: parsed.data.description,
-    owner_user_id: parsed.data.ownerUserId || null,
+    owner_user_id: parsed.data.ownerUserId,
     due_date: parsed.data.dueDate || null,
     control_id: parsed.data.controlId || null,
   })

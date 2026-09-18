@@ -522,11 +522,12 @@ values
    'cccccccc-0000-4000-8000-000000000001', 'b1000000-0000-4000-8000-000000000001',
    'Dépendance au fournisseur de modèle',
    'Le fournisseur interrompt le service ou modifie unilatéralement ses conditions ; le support perd son outil sans solution de repli.',
-   'third_party', 3, 3, 2, 3, '11111111-1111-4111-8111-111111111111',
+   'third_party', 3, 3, 2, 3, '33333333-3333-4333-8333-333333333333',
    'analysed', current_date + interval '12 months', '11111111-1111-4111-8111-111111111111');
 
--- L'acceptation est un acte distinct, porté par le risk owner.
-
+-- L'acceptation est un acte distinct, porté par le responsable désigné du
+-- risque — le Comité des risques — en son propre nom (0058).
+set local request.jwt.claims = '{"sub":"33333333-3333-4333-8333-333333333333","role":"authenticated"}';
 
 update public.risk
    set status = 'accepted',
@@ -535,6 +536,8 @@ update public.risk
        acceptance_rationale = 'Risque accepté pour douze mois : un mode dégradé manuel existe et la réversibilité contractuelle est documentée. Réexamen à la revue annuelle du fournisseur.',
        acceptance_review_at = current_date + interval '12 months'
  where id = 'b3000000-0000-4000-8000-000000000003';
+
+set local request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","role":"authenticated"}';
 
 insert into public.risk_treatment (tenant_id, risk_id, strategy, description, owner_user_id, due_date, status, effectiveness_note, control_id) values
   ('aaaaaaaa-0000-4000-8000-000000000001', 'b3000000-0000-4000-8000-000000000001', 'reduce',

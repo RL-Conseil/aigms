@@ -84,6 +84,9 @@ export default async function UseCasePage({
   const { onglet, controle } = await searchParams
   const tab = resolveTab(onglet)
   const supabase = await createClient()
+  const {
+    data: { user: viewer },
+  } = await supabase.auth.getUser()
 
   const { data: useCase } = await supabase
     .from('ai_use_case')
@@ -135,7 +138,7 @@ export default async function UseCasePage({
     supabase
       .from('risk')
       .select(
-        'id, business_ref, title, scenario, category, inherent_level, residual_level, status, accepted_at, acceptance_review_at, next_review_at',
+        'id, business_ref, title, scenario, category, inherent_level, residual_level, inherent_likelihood, inherent_impact, residual_likelihood, residual_impact, status, accepted_at, acceptance_review_at, next_review_at, owner_user_id',
       )
       .eq('use_case_id', id)
       .order('business_ref'),
@@ -717,7 +720,7 @@ export default async function UseCasePage({
             tone={unsettledRisks ? 'warn' : 'neutral'}
             action={
               <span className="flex items-center gap-2">
-                <RiskPanel useCaseId={id} riskCount={risks?.length ?? 0} people={people} />
+                <RiskPanel useCaseId={id} riskCount={risks?.length ?? 0} people={people} controls={treatmentChoices} />
                 <RiskNote />
               </span>
             }
@@ -741,10 +744,16 @@ export default async function UseCasePage({
                       <div className="flex shrink-0 flex-col items-end gap-1">
                         <Badge tone={riskTone(risk.inherent_level as RiskLevel)}>
                           Brut : {RISK_LEVEL_LABELS[risk.inherent_level as RiskLevel]}
+                          {risk.inherent_likelihood && risk.inherent_impact
+                            ? ` (${risk.inherent_likelihood} × ${risk.inherent_impact} = ${risk.inherent_likelihood * risk.inherent_impact})`
+                            : ''}
                         </Badge>
                         {risk.residual_level ? (
                           <Badge tone={riskTone(risk.residual_level as RiskLevel)}>
                             Résiduel : {RISK_LEVEL_LABELS[risk.residual_level as RiskLevel]}
+                            {risk.residual_likelihood && risk.residual_impact
+                              ? ` (${risk.residual_likelihood} × ${risk.residual_impact} = ${risk.residual_likelihood * risk.residual_impact})`
+                              : ''}
                           </Badge>
                         ) : null}
                       </div>
@@ -765,7 +774,22 @@ export default async function UseCasePage({
                           people={people}
                           controls={treatmentChoices}
                         />
-                        <AcceptRiskForm riskId={risk.id} useCaseId={id} />
+                        {/*
+                          Accepter revient a la personne designee responsable
+                          du risque — la base le refuse a quiconque d'autre.
+                          Aux autres, on dit a qui cela revient.
+                        */}
+                        {!risk.owner_user_id || risk.owner_user_id === viewer?.id ? (
+                          <AcceptRiskForm riskId={risk.id} useCaseId={id} />
+                        ) : (
+                          <p className="text-xs text-ink-500">
+                            L’acceptation de ce risque revient à{' '}
+                            <strong className="font-medium text-ink-700">
+                              {people.find((p) => p.id === risk.owner_user_id)?.label ?? 'son responsable désigné'}
+                            </strong>
+                            , en son nom.
+                          </p>
+                        )}
                       </div>
                     ) : null}
                   </li>

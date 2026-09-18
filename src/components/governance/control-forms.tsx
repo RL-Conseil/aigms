@@ -425,9 +425,16 @@ export function RiskTreatmentForm({
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Responsable" htmlFor={`owner-${riskId}`} optional>
-              <select id={`owner-${riskId}`} name="ownerUserId" defaultValue="" className={FIELD}>
-                <option value="">— À désigner</option>
+            <Field
+              label="Responsable"
+              htmlFor={`owner-${riskId}`}
+              error={errors.ownerUserId}
+              hint="Il en est averti, et rappelé à l’échéance."
+            >
+              <select id={`owner-${riskId}`} name="ownerUserId" defaultValue="" required className={FIELD}>
+                <option value="" disabled>
+                  Choisir…
+                </option>
                 {people.map((person) => (
                   <option key={person.id} value={person.id}>
                     {person.label}

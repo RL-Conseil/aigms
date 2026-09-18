@@ -94,6 +94,7 @@ export function ActionProposals({
 
   return (
     <Modal
+      closeOnSuccess={false}
       trigger="Proposer des actions"
       title="Propositions d’actions"
       description="Dérivées des écarts du cas d’usage. Le responsable est pressenti, pas imposé ; l’échéance se change. Rien ne s’écrit avant que vous ne reteniez."
