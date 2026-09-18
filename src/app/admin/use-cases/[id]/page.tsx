@@ -4,10 +4,14 @@ import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { UseCaseLabelForm } from '@/components/governance/use-case-label-form'
 import { Badge, Card, Empty, Field, Stat, StatStrip } from '@/components/ui'
-import { Disclosure } from '@/components/forms'
 import { TransitionModal } from '@/components/governance/transition-modal'
-import { InfoTip } from '@/components/info-tip'
 import { resolveTab, UseCaseTabs, type TabSignal, type UseCaseTab } from '@/components/governance/use-case-tabs'
+import {
+  CLASSIFICATION_FLAG_LABELS,
+  FRAMEWORK_LABELS,
+  LEGAL_REVIEW_LABELS,
+  ORGANIZATION_ROLE_LABELS,
+} from '@/lib/domain/classification'
 import { GateChecklist } from '@/components/gate-checklist'
 import { Lifecycle } from '@/components/lifecycle'
 import { ApplicabilityForm, RiskTreatmentForm } from '@/components/governance/control-forms'
@@ -23,9 +27,9 @@ import {
   ActionNote,
   AuditNote,
   ChangeNote,
+  ClassificationNote,
   ControlNote,
   DecisionNote,
-  GateNote,
   ImpactNote,
   IncidentNote,
   OversightNote,
@@ -122,6 +126,7 @@ export default async function UseCasePage({
     { data: actionSuggestionsData },
     { data: timeline },
     { data: gateData },
+    { data: reviewGateData },
     { data: memberships },
     { data: orgControls },
     { data: orgVendors },
@@ -197,6 +202,7 @@ export default async function UseCasePage({
       .order('occurred_at', { ascending: false })
       .limit(30),
     supabase.rpc('evaluate_gate', { p_use_case_id: id, p_target: 'PRODUCTION' }),
+    supabase.rpc('evaluate_gate', { p_use_case_id: id, p_target: 'REVIEW' }),
     supabase
       .from('membership')
       .select('user:user_id (id, full_name, email, job_title)')
@@ -210,6 +216,19 @@ export default async function UseCasePage({
   ])
 
   const gate = gateData as GateResult | null
+  const reviewGate = reviewGateData as GateResult | null
+  // Chaque jalon dit lui-meme ce qui lui manque : l'infobulle du jalon porte
+  // ses preconditions, evaluees en continu. Plus de carte « gate » a part.
+  const gateTip = (g: GateResult | null) =>
+    g
+      ? {
+          summary: g.satisfied
+            ? 'préconditions satisfaites'
+            : `${g.checks.filter((c) => !c.satisfied).length} précondition(s) manquante(s)`,
+          satisfied: g.satisfied,
+          content: <GateChecklist gate={g} />,
+        }
+      : { summary: 'non évaluable', satisfied: null, content: <Empty>Gate non évaluable.</Empty> }
   const organization = useCase.organization as unknown as { id: string; name: string } | null
   const activity = useCase.activity as unknown as
     | { id: string; name: string; process: { name: string } | null }
@@ -283,8 +302,7 @@ export default async function UseCasePage({
   ]
 
   const signals: Partial<Record<UseCaseTab, TabSignal>> = {
-    fil: useCase.criticality ? { tone: 'done' } : { tone: 'todo' },
-    qualification: classification ? { tone: 'done' } : { tone: 'todo' },
+    fil: useCase.criticality && classification ? { tone: 'done' } : { tone: 'todo' },
     actions: {
       count: openActions.length,
       tone: overdueActions ? 'late' : openActions.length ? 'todo' : 'neutral',
@@ -332,19 +350,28 @@ export default async function UseCasePage({
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
         <Badge tone="info">
-          {classification.framework_code} {classification.framework_version}
+          {FRAMEWORK_LABELS[classification.framework_code] ?? classification.framework_code} · version{' '}
+          {classification.framework_version}
         </Badge>
-        <Badge>Rôle : {classification.organization_role}</Badge>
-        {(classification.flags as string[]).map((flag) => (
-          <Badge key={flag} tone={flag === 'high_risk_potential' ? 'stop' : 'warn'}>
-            {flag}
-          </Badge>
-        ))}
+        <Badge>
+          Rôle : {ORGANIZATION_ROLE_LABELS[classification.organization_role] ?? classification.organization_role}
+        </Badge>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {(classification.flags as string[]).length ? (
+          (classification.flags as string[]).map((flag) => (
+            <Badge key={flag} tone={flag === 'high_risk_potential' || flag === 'prohibited_practice_suspected' ? 'stop' : 'warn'}>
+              {CLASSIFICATION_FLAG_LABELS[flag] ?? flag}
+            </Badge>
+          ))
+        ) : (
+          <span className="text-xs text-ink-400">Aucune qualification retenue.</span>
+        )}
       </div>
       <p className="text-sm text-ink-600">{classification.rationale}</p>
       <p className="text-xs text-ink-400">
-        Revue juridique : {classification.legal_review_level}
-        {classification.legal_review_completed ? ' (close)' : ' (en attente)'} · qualifié le{' '}
+        Revue juridique : {LEGAL_REVIEW_LABELS[classification.legal_review_level] ?? classification.legal_review_level}
+        {classification.legal_review_completed ? ' — close' : ' — en attente'} · qualifié le{' '}
         {formatDate(classification.classified_at)}
         {classification.next_review_at
           ? ` · à revoir le ${formatDate(classification.next_review_at)}`
@@ -353,10 +380,21 @@ export default async function UseCasePage({
     </div>
   ) : (
     <Empty>
-      Aucune qualification enregistrée. Elle se pose dans la rubrique « Qualification » ; le
-      passage en revue l’exige.
+      Aucune qualification enregistrée. Le passage en revue l’exige : elle se pose ici, d’un clic.
     </Empty>
   )
+
+  const classificationCurrent = classification
+    ? {
+        organization_role: classification.organization_role,
+        flags: classification.flags as string[],
+        rationale: classification.rationale,
+        legal_review_level: classification.legal_review_level,
+        legal_review_completed: classification.legal_review_completed,
+        framework_version: classification.framework_version,
+        next_review_at: classification.next_review_at,
+      }
+    : null
 
   return (
     <Shell
@@ -432,7 +470,7 @@ export default async function UseCasePage({
         <div className="grid gap-5 lg:grid-cols-3">
           <div className="space-y-5 lg:col-span-2">
             <div className="rounded-lg border border-ink-200 bg-white p-5">
-              <Lifecycle status={status} />
+              <Lifecycle status={status} gates={{ REVIEW: gateTip(reviewGate), PRODUCTION: gateTip(gate) }} />
               <p className="mt-3 border-t border-ink-100 pt-3 text-xs text-ink-400">
                 Dernier changement de statut : {formatDateTime(useCase.status_changed_at)}
                 {useCase.next_review_at
@@ -483,79 +521,20 @@ export default async function UseCasePage({
           </div>
 
           <div className="space-y-5">
-          <Disclosure
-            title="Gate production"
-            aside={<GateNote />}
-            summary={
-              gate
-                ? gate.satisfied
-                  ? 'Préconditions satisfaites'
-                  : `${gate.checks.filter((c) => !c.satisfied).length} précondition(s) manquante(s)`
-                : 'Évalué en continu, sans déclencher de transition'
-            }
-            tone={gate ? (gate.satisfied ? 'done' : 'todo') : 'neutral'}
-            defaultOpen={Boolean(gate && !gate.satisfied)}
-          >
-            {gate ? <GateChecklist gate={gate} /> : <Empty>Gate non évaluable.</Empty>}
-          </Disclosure>
-
             <Card
               title="Qualification réglementaire"
-              subtitle="Telle qu’enregistrée. Elle se pose et se révise dans la rubrique « Qualification »."
+              subtitle="Règlement (UE) 2024/1689 — AI Act. Se pose et se révise ici, d’un clic."
+              tone={classification ? 'neutral' : 'warn'}
               action={
-                <InfoTip label="Ce que dit cette carte" title="Ce qui a été qualifié, et quand">
-                  <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
-                    <p>
-                      Le rappel de la qualification au regard du{' '}
-                      <strong className="font-medium text-ink-800">règlement (UE) 2024/1689</strong>{' '}
-                      (AI Act) : le rôle que l’organisation y tient et les qualifications retenues,
-                      avec la version du règlement qui a servi et la date.
-                    </p>
-                    <p>
-                      Elle se lit ici parce qu’elle conditionne la suite du parcours — le passage en
-                      revue l’exige — mais elle ne se modifie que dans sa rubrique, où le
-                      raisonnement est demandé.
-                    </p>
-                  </div>
-                </InfoTip>
+                <span className="flex items-center gap-2">
+                  <ClassificationPanel useCaseId={id} current={classificationCurrent} />
+                  <ClassificationNote />
+                </span>
               }
             >
               {qualificationSummary}
-              <Link
-                href={`/admin/use-cases/${id}?onglet=qualification`}
-                scroll={false}
-                className="mt-3 inline-block text-xs font-medium text-brand-600 hover:underline"
-              >
-                {classification ? 'Réviser la qualification' : 'Qualifier maintenant'}
-              </Link>
             </Card>
           </div>
-        </div>
-      ) : null}
-
-      {tab === 'qualification' ? (
-        <div className="grid gap-5 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <ClassificationPanel
-              useCaseId={id}
-              current={
-                classification
-                  ? {
-                      organization_role: classification.organization_role,
-                      flags: classification.flags as string[],
-                      rationale: classification.rationale,
-                      legal_review_level: classification.legal_review_level,
-                      legal_review_completed: classification.legal_review_completed,
-                      framework_version: classification.framework_version,
-                      next_review_at: classification.next_review_at,
-                    }
-                  : null
-              }
-            />
-          </div>
-          <Card title="Qualification enregistrée" subtitle="Ce qui vaut aujourd’hui">
-            {qualificationSummary}
-          </Card>
         </div>
       ) : null}
 

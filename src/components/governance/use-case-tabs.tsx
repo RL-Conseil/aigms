@@ -15,7 +15,6 @@ import Link from 'next/link'
  */
 export const USE_CASE_TABS = [
   { key: 'fil', label: 'Fil conducteur' },
-  { key: 'qualification', label: 'Qualification' },
   { key: 'actions', label: 'Actions' },
   { key: 'controles', label: 'Contrôles affectés' },
   { key: 'risques', label: 'Risques' },
