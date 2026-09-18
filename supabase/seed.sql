@@ -165,7 +165,8 @@ insert into public.organization (id, tenant_id, name, legal_name, sector, countr
    'Claire Ferrand', 'claire.ferrand@izarlink.example', '+33 5 59 00 00 00',
    'Confidentiel', 'Diffusion restreinte — comité de gouvernance'),
   ('dddddddd-0000-4000-8000-000000000002', 'bbbbbbbb-0000-4000-8000-000000000002',
-   'Client Concurrent', 'Concurrent SA', 'Industrie', 'FR', 90, 'active',
+   -- Archivee : elle ne sert qu'aux tests d'etancheite, pas a la demonstration.
+   'Client Concurrent', 'Concurrent SA', 'Industrie', 'FR', 90, 'archived',
    'business_user',
    null, null, null, null, null, null, null, null, null,
    'Confidentiel', null)
