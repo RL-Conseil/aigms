@@ -253,7 +253,18 @@ export async function createAccount(_previous: Result | null, formData: FormData
   const { email, fullName, jobTitle, role, organizationId, password } = parsed.data
 
   // Seul usage de la cle service_role : la creation du compte d'authentification.
-  const service = createAdminClient()
+  // Sans la cle sur cet environnement, l'action le dit — plutot que de laisser
+  // Next afficher une erreur serveur anonyme.
+  let service: ReturnType<typeof createAdminClient>
+  try {
+    service = createAdminClient()
+  } catch {
+    return {
+      ok: false,
+      message:
+        'Déclaration impossible : la clé de service (SUPABASE_SERVICE_ROLE_KEY) n’est pas configurée sur cet environnement. Elle se pose dans les variables d’environnement du déploiement, jamais dans le code — voir docs/admin/COMPTES_ET_ANNUAIRE.md.',
+    }
+  }
   const { data: created, error: createError } = await service.auth.admin.createUser({
     email,
     password,
@@ -375,9 +386,20 @@ export async function changeAccountRole(_previous: Result | null, formData: Form
     return { ok: false, message: `Modification refusée : ${error.message}` }
   }
 
+  // Les affectations aux organisations suivent : un role change pour la
+  // personne, pas pour l'une de ses organisations seulement. Sinon la fiche
+  // dirait un role et l'organisation en appliquerait un autre.
+  const { error: assignmentError } = await supabase
+    .from('role_assignment')
+    .update({ role: parsed.data.role })
+    .eq('tenant_id', admin.tenantId)
+    .eq('user_id', parsed.data.userId)
+    .is('valid_until', null)
 
   revalidatePath('/admin/comptes')
-  return { ok: true, message: 'Rôle mis à jour.' }
+  return assignmentError
+    ? { ok: false, message: `Rôle d’appartenance mis à jour, mais les affectations n’ont pas suivi : ${assignmentError.message}` }
+    : { ok: true, message: 'Rôle mis à jour, appartenance et affectations.' }
 }
 
 // -----------------------------------------------------------------------------

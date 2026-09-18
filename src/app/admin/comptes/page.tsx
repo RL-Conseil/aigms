@@ -46,18 +46,44 @@ export default async function AccountsPage() {
     supabase.from('organization').select('id, name').order('name'),
     supabase
       .from('role_assignment')
-      .select('user_id, role, organization:organization_id (name)'),
+      .select('user_id, role, organization_id, valid_until, organization:organization_id (name)'),
     roleCapabilities(),
   ])
 
-  const assignmentsByUser = new Map<string, string[]>()
-  for (const assignment of assignments ?? []) {
-    const org = assignment.organization as unknown as { name: string } | null
-    if (!org) continue
-    const list = assignmentsByUser.get(assignment.user_id) ?? []
-    list.push(`${org.name} — ${ROLE_LABELS[assignment.role as AppRole] ?? assignment.role}`)
-    assignmentsByUser.set(assignment.user_id, list)
+  type Account = {
+    membershipId: string
+    userId: string
+    email: string
+    fullName: string | null
+    jobTitle: string | null
+    role: AppRole
+    since: string
   }
+  const accounts: Account[] = (memberships ?? []).flatMap((m) => {
+    const user = m.user as unknown as { id: string; email: string; full_name: string | null; job_title: string | null } | null
+    return user
+      ? [{ membershipId: m.id, userId: user.id, email: user.email, fullName: user.full_name, jobTitle: user.job_title, role: m.role as AppRole, since: m.created_at }]
+      : []
+  })
+
+  // Les comptes se lisent PAR ORGANISATION : c'est la que les six roles
+  // doivent etre tenus. Un compte affecte a plusieurs organisations figure
+  // sous chacune ; un compte sans affectation porte le role de son
+  // appartenance, sur toutes les organisations du tenant — il se lit a part.
+  const active = (assignments ?? []).filter((a) => !a.valid_until || a.valid_until > new Date().toISOString())
+  const byOrganization = new Map<string, { account: Account; role: AppRole }[]>()
+  for (const a of active) {
+    const account = accounts.find((acc) => acc.userId === a.user_id)
+    if (!account) continue
+    const list = byOrganization.get(a.organization_id) ?? []
+    list.push({ account, role: a.role as AppRole })
+    byOrganization.set(a.organization_id, list)
+  }
+  const assignedUserIds = new Set(active.map((a) => a.user_id))
+  const admins = accounts.filter((a) => a.role === 'platform_admin')
+  const unassigned = accounts.filter((a) => a.role !== 'platform_admin' && !assignedUserIds.has(a.userId))
+  const roleOrder: AppRole[] = ['governance_officer', 'client_admin', 'system_owner', 'reviewer', 'risk_owner', 'executive_viewer', 'auditor', 'platform_admin']
+  const byRole = (x: { role: AppRole }, y: { role: AppRole }) => roleOrder.indexOf(x.role) - roleOrder.indexOf(y.role)
 
   const readiness = await Promise.all(
     (organizations ?? []).map(async (o) => ({ ...o, readiness: await organizationReadiness(o.id) })),
@@ -71,55 +97,50 @@ export default async function AccountsPage() {
     >
       <div className="grid gap-5 lg:grid-cols-5">
         <div className="lg:col-span-3">
-          <Card title="Comptes déclarés">
-            {memberships?.length ? (
-              <ul className="divide-y divide-ink-100">
-                {memberships.map((membership) => {
-                  const user = membership.user as unknown as {
-                    id: string
-                    email: string
-                    full_name: string | null
-                    job_title: string | null
-                  } | null
-                  if (!user) return null
-
-                  const role = membership.role as AppRole
-                  const scoped = assignmentsByUser.get(user.id) ?? []
-                  const isAdmin = role === 'platform_admin'
-
+          <Card
+            title="Comptes déclarés"
+            subtitle="Par organisation. Chaque organisation doit voir ses six rôles tenus pour être opérationnelle."
+          >
+            {accounts.length ? (
+              <div className="flex flex-col gap-6">
+                {readiness.map((o) => {
+                  const rows = (byOrganization.get(o.id) ?? []).sort(byRole)
                   return (
-                    <li key={membership.id} className="py-4">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-ink-900">
-                            {user.full_name ?? user.email}
-                          </p>
-                          <p className="text-xs text-ink-400">
-                            {user.email}
-                            {user.job_title ? ` · ${user.job_title}` : ''} · rattaché le{' '}
-                            {formatDate(membership.created_at)}
-                          </p>
-                          {scoped.length ? (
-                            <p className="mt-1.5 text-xs text-ink-600">
-                              Affectations : {scoped.join(' ; ')}
-                            </p>
-                          ) : null}
-                        </div>
-                        <div className="flex shrink-0 flex-col items-end gap-2">
-                          <Badge tone={isAdmin ? 'warn' : 'neutral'}>{ROLE_LABELS[role]}</Badge>
-                          {isAdmin ? (
-                            <span className="text-xs text-ink-400">
-                              Non modifiable depuis l’application
-                            </span>
-                          ) : (
-                            <RoleForm userId={user.id} currentRole={role} />
-                          )}
-                        </div>
-                      </div>
-                    </li>
+                    <AccountGroup
+                      key={o.id}
+                      title={o.name}
+                      hint={
+                        o.readiness
+                          ? o.readiness.ready
+                            ? 'Opérationnelle · six rôles tenus'
+                            : `Non opérationnelle · manque : ${o.readiness.missing.map((r) => ROLE_LABELS[r]).join(', ')}`
+                          : undefined
+                      }
+                      tone={o.readiness && !o.readiness.ready ? 'warn' : 'ok'}
+                      empty="Aucun compte affecté à cette organisation."
+                      rows={rows.map(({ account, role }) => ({ account, role, scoped: true }))}
+                    />
                   )
                 })}
-              </ul>
+
+                {unassigned.length ? (
+                  <AccountGroup
+                    title="Sans affectation à une organisation"
+                    hint="Le rôle de l’appartenance vaut sur toutes les organisations du tenant."
+                    tone="neutral"
+                    rows={unassigned.sort(byRole).map((account) => ({ account, role: account.role, scoped: false }))}
+                  />
+                ) : null}
+
+                {admins.length ? (
+                  <AccountGroup
+                    title="Administration de la plateforme"
+                    hint="Ouvre les accès ; ne gouverne pas."
+                    tone="neutral"
+                    rows={admins.map((account) => ({ account, role: account.role, scoped: false }))}
+                  />
+                ) : null}
+              </div>
             ) : (
               <Empty>Aucun compte déclaré.</Empty>
             )}
@@ -225,5 +246,104 @@ export default async function AccountsPage() {
         </Card>
       </div>
     </Shell>
+  )
+}
+
+/** Initiales, pour reconnaitre une personne d'un coup d'oeil. */
+function initials(name: string | null, email: string) {
+  return (name ?? email)
+    .split(/[\s@.]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('')
+}
+
+const ROLE_TONE: Partial<Record<AppRole, string>> = {
+  governance_officer: 'bg-brand-500/15 text-brand-700',
+  client_admin: 'bg-brand-500/15 text-brand-700',
+  system_owner: 'bg-teal-500/15 text-teal-800',
+  reviewer: 'bg-violet-500/15 text-violet-800',
+  risk_owner: 'bg-amber-500/15 text-amber-800',
+  executive_viewer: 'bg-night-900 text-white',
+  auditor: 'bg-ink-100 text-ink-700',
+  platform_admin: 'bg-warn-600/15 text-warn-600',
+}
+
+function AccountGroup({
+  title,
+  hint,
+  tone,
+  empty,
+  rows,
+}: {
+  title: string
+  hint?: string
+  tone: 'ok' | 'warn' | 'neutral'
+  empty?: string
+  rows: {
+    account: {
+      membershipId: string
+      userId: string
+      email: string
+      fullName: string | null
+      jobTitle: string | null
+      role: AppRole
+      since: string
+    }
+    role: AppRole
+    /** Vrai quand le role vient d'une affectation a l'organisation. */
+    scoped: boolean
+  }[]
+}) {
+  const dot = tone === 'ok' ? 'bg-ok-600' : tone === 'warn' ? 'bg-warn-600' : 'bg-ink-300'
+  return (
+    <section>
+      <header className="mb-2 flex flex-wrap items-baseline justify-between gap-2 border-b border-ink-200 pb-2">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-ink-900">
+          <span aria-hidden className={`size-2 rounded-full ${dot}`} />
+          {title}
+          <span className="text-xs font-normal text-ink-400">
+            {rows.length} compte{rows.length > 1 ? 's' : ''}
+          </span>
+        </h3>
+        {hint ? <p className={`text-xs ${tone === 'warn' ? 'text-warn-600' : 'text-ink-500'}`}>{hint}</p> : null}
+      </header>
+      {rows.length ? (
+        <ul className="divide-y divide-ink-100">
+          {rows.map(({ account, role, scoped }) => (
+            <li key={`${account.membershipId}-${role}`} className="flex flex-wrap items-center gap-3 py-2.5">
+              <span
+                aria-hidden
+                className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-ink-100 text-xs font-semibold text-ink-700"
+              >
+                {initials(account.fullName, account.email)}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-ink-900">{account.fullName ?? account.email}</p>
+                <p className="truncate text-xs text-ink-400">
+                  {account.email}
+                  {account.jobTitle ? ` · ${account.jobTitle}` : ''}
+                  {` · depuis le ${formatDate(account.since)}`}
+                </p>
+              </div>
+              <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${ROLE_TONE[role] ?? 'bg-ink-100 text-ink-700'}`}>
+                {ROLE_LABELS[role]}
+                {scoped && account.role !== role ? (
+                  <span className="ml-1.5 font-normal opacity-70">· appartenance : {ROLE_LABELS[account.role]}</span>
+                ) : null}
+              </span>
+              {role === 'platform_admin' ? (
+                <span className="text-xs text-ink-400">Non modifiable depuis l’application</span>
+              ) : (
+                <RoleForm userId={account.userId} currentRole={account.role} />
+              )}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="py-2 text-sm text-ink-400">{empty}</p>
+      )}
+    </section>
   )
 }

@@ -233,3 +233,21 @@ test('l’administration lit si chaque organisation est opérationnelle', async 
   await expect(page.getByText('Organisation opérationnelle')).toBeVisible()
   await expect(page.getByText('Comité de direction')).toBeVisible()
 })
+
+test("l'administration déclare un compte à la main, affecté à une organisation", async ({ page }) => {
+  await signIn(page, ADMIN)
+  await page.goto('/admin/comptes')
+
+  const stamp = Date.now().toString().slice(-6)
+  await page.getByLabel('Nom et prénom').fill(`Compte E2E ${stamp}`)
+  await page.getByLabel('Adresse électronique').fill(`e2e-${stamp}@izarlink.demo`)
+  await page.locator('#role').selectOption('auditor')
+  await page.getByLabel(/^Organisation/).selectOption({ label: 'IzarLink Demo' })
+  await page.getByLabel('Mot de passe provisoire').fill(`Provisoire!${stamp}xyz`)
+  await page.getByRole('button', { name: 'Déclarer le compte' }).click()
+
+  await expect(page.getByRole('status')).toContainText(`e2e-${stamp}@izarlink.demo`)
+  // Le compte se lit sous son organisation, avec son role.
+  const groupe = page.locator('section').filter({ has: page.getByRole('heading', { name: /^IzarLink Demo/ }) })
+  await expect(groupe.getByText(`e2e-${stamp}@izarlink.demo`)).toBeVisible()
+})
