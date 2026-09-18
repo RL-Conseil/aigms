@@ -160,12 +160,12 @@ test('un cas d’usage se déclare, se trie, se classifie et reçoit un risque',
 test('un risque ne s’accepte pas sans justification ni date de revue', async ({ page }) => {
   await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000002?onglet=risques')
 
-  // Le formulaire d'acceptation exige les deux champs : le navigateur bloque,
-  // et la base les exigerait de toute façon.
-  const rationale = page.getByLabel('Justification de l’acceptation').first()
-  await expect(rationale).toHaveAttribute('required', '')
-  await expect(page.getByLabel('Date de revue').first()).toHaveAttribute('required', '')
-  await expect(page.getByText(/Accepter un risque vous engage nominativement/).first()).toBeVisible()
+  // L'acceptation revient a la personne designee responsable du risque : les
+  // risques du pilote sont portes par le Comite des risques, pas par l'officer
+  // connecte. A lui, la fiche dit a qui cela revient — sans formulaire.
+  await expect(page.getByLabel('Justification de l’acceptation')).toHaveCount(0)
+  await expect(page.getByText(/L’acceptation de ce risque revient à/).first()).toBeVisible()
+  await expect(page.getByText(/Sacha Belarbi/).first()).toBeVisible()
 })
 
 test('la carte annote chaque activité et son panneau détaille ce qui s’y joue', async ({ page }) => {

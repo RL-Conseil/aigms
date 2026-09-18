@@ -93,6 +93,8 @@ test('un traitement de risque désigne le contrôle qui l’exécute', async ({ 
   await fenetre
     .getByLabel('Ce qui sera fait')
     .fill('Revue humaine systématique des candidatures écartées, avec journal des arbitrages.')
+  // Le responsable est exige : il en sera averti, et rappele a l'echeance.
+  await fenetre.getByLabel('Responsable').selectOption({ index: 1 })
   await fenetre.getByLabel('Contrôle qui le met en œuvre').selectOption({ index: 1 })
   await fenetre.getByRole('button', { name: 'Enregistrer le traitement' }).click()
 

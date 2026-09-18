@@ -66,18 +66,42 @@ export function RiskNote() {
   return (
     <Note label="À quoi sert le registre des risques" title="Coter, traiter, ou assumer">
       <p>
-        Un risque se cote par{' '}
-        <strong className="font-medium text-ink-800">vraisemblance × gravité</strong> — le niveau
-        n’est pas saisi, pour qu’il ne puisse pas diverger de sa cotation. Le niveau{' '}
-        <em>brut</em> est celui d’avant traitement ; le <em>résiduel</em> n’apparaît qu’une fois le
-        risque recoté.
+        <strong className="font-medium text-ink-800">La cotation.</strong> Chaque risque reçoit
+        une <em>vraisemblance</em> (1 improbable … 5 quasi certain) et une <em>gravité</em> (1
+        négligeable … 5 majeure). Le niveau est leur produit, calculé par la base — jamais saisi,
+        pour qu’il ne puisse pas diverger de sa cotation :
+      </p>
+      <ul className="flex flex-col gap-1 text-[13px]">
+        <li>
+          <span className="inline-block w-24 font-semibold text-stop-600">Critique</span> score ≥ 16
+          (par exemple 4 × 4)
+        </li>
+        <li>
+          <span className="inline-block w-24 font-semibold text-stop-600">Élevé</span> 10 à 15
+        </li>
+        <li>
+          <span className="inline-block w-24 font-semibold text-warn-600">Modéré</span> 5 à 9
+        </li>
+        <li>
+          <span className="inline-block w-24 font-semibold text-ink-500">Faible</span> 4 et moins
+        </li>
+      </ul>
+      <p>
+        <strong className="font-medium text-ink-800">Brut et résiduel.</strong> Le niveau{' '}
+        <em>brut</em> est celui d’avant tout traitement. Le <em>résiduel</em> n’apparaît qu’une
+        fois le risque <em>recoté</em> après traitement : c’est lui que lisent le gate de
+        production et les tableaux de bord. Les deux portent la même couleur — rouge pour
+        élevé et critique, ambre pour modéré, gris pour faible — et la cotation (vraisemblance ×
+        gravité) se lit sur chaque pastille.
       </p>
       <p>
-        Deux réponses, et deux seulement : <strong className="font-medium text-ink-800">traiter</strong>,
-        en désignant le contrôle qui exécute la mesure, ou{' '}
-        <strong className="font-medium text-ink-800">accepter</strong>, ce qui engage nominativement
-        et exige une justification et une date de revue. Un risque ni traité ni accepté bloque le
-        passage en production s’il est élevé ou critique — et passe inaperçu s’il ne l’est pas.
+        <strong className="font-medium text-ink-800">Deux réponses, et deux seulement.</strong>{' '}
+        <em>Traiter</em> : un responsable, ce qui sera fait, et le contrôle qui l’exécute — le
+        responsable en est averti et rappelé à l’échéance. <em>Accepter</em> : un acte
+        nominatif, réservé à la personne désignée responsable du risque, avec justification et
+        date de revue. Un risque ni traité ni accepté bloque le passage en production s’il est
+        élevé ou critique — et passe inaperçu s’il ne l’est pas : ne jamais laisser un risque
+        sans décision.
       </p>
     </Note>
   )

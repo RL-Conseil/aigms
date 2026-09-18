@@ -24,8 +24,15 @@ export function Modal({
   hideTrigger = false,
   triggerLabel,
   triggerClassName,
+  closeOnSuccess = true,
   children,
 }: {
+  /**
+   * Se ferme d'elle-meme apres un enregistrement reussi — le temps de lire la
+   * confirmation. A desactiver quand la fenetre sert a enchainer plusieurs
+   * actes (retenir des propositions) ou a lire un resultat (une transition).
+   */
+  closeOnSuccess?: boolean
   /** Libelle du bouton qui l'ouvre. */
   trigger: string
   /** Nom accessible, quand le libelle visible est un signe (« + »). */
@@ -46,6 +53,25 @@ export function Modal({
 }) {
   const [open, setOpen] = useState(false)
   const panel = useRef<HTMLDivElement>(null)
+
+  // Un enregistrement reussi ferme la fenetre : on attend que la page ait
+  // repris la main, pas que l'utilisateur cherche la croix. La confirmation
+  // (FormFeedback, data-outcome="ok") reste lisible une seconde.
+  useEffect(() => {
+    if (!open || !closeOnSuccess || !panel.current) return
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const observer = new MutationObserver(() => {
+      if (timer) return
+      if (panel.current?.querySelector('[role="status"][data-outcome="ok"]')) {
+        timer = setTimeout(() => setOpen(false), 1200)
+      }
+    })
+    observer.observe(panel.current, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-outcome'] })
+    return () => {
+      observer.disconnect()
+      if (timer) clearTimeout(timer)
+    }
+  }, [open, closeOnSuccess])
 
   useEffect(() => {
     if (!open) return

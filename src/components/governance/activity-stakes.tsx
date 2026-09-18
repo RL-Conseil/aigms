@@ -158,6 +158,48 @@ function Item({
   )
 }
 
+/**
+ * Les pieces d'un compteur, pliees PAR CAS D'USAGE : c'est par usage qu'on
+ * agit, et une activite en porte plusieurs. Le premier volet est ouvert.
+ */
+function ByUseCase<T extends { use_case_id: string; use_case: string }>({
+  items,
+  render,
+  summary,
+}: {
+  items: T[]
+  render: (item: T) => ReactNode
+  /** Le chiffre du volet : « 2 » par defaut. */
+  summary?: (items: T[]) => string
+}) {
+  const groups = new Map<string, { name: string; items: T[] }>()
+  for (const item of items) {
+    const group = groups.get(item.use_case_id) ?? { name: item.use_case, items: [] }
+    group.items.push(item)
+    groups.set(item.use_case_id, group)
+  }
+  return (
+    <div className="flex flex-col gap-3">
+      {[...groups.entries()].map(([useCaseId, group], index) => (
+        <details key={useCaseId} open={index === 0} className="group">
+          <summary className="flex cursor-pointer list-none items-baseline justify-between gap-2 text-xs font-semibold uppercase tracking-wide text-ink-700">
+            <span className="flex items-center gap-1.5">
+              <span aria-hidden className="text-ink-400 transition-transform group-open:rotate-90">›</span>
+              {group.name}
+            </span>
+            <span className="font-normal normal-case tracking-normal text-ink-400">
+              {summary ? summary(group.items) : String(group.items.length)}
+            </span>
+          </summary>
+          <div className="mt-1.5 pl-3">
+            <ItemList>{group.items.map(render)}</ItemList>
+          </div>
+        </details>
+      ))}
+    </div>
+  )
+}
+
 function riskTone(level: RiskLevel | null): Tone {
   if (level === 'critical' || level === 'high') return 'stop'
   if (level === 'moderate') return 'warn'
@@ -207,17 +249,19 @@ export function ActivityStakes({
         detailTitle="Les risques de cette activité"
         detail={
           stakes.risks.length ? (
-            <ItemList>
-              {stakes.risks.map((r) => (
+            <ByUseCase
+              items={stakes.risks}
+              summary={(items) => `${items.length} risque${items.length > 1 ? 's' : ''}`}
+              render={(r) => (
                 <Item
                   key={r.id}
-                  href={`/admin/use-cases/${r.use_case_id}`}
+                  href={`/admin/use-cases/${r.use_case_id}?onglet=risques`}
                   tone={riskTone(r.level)}
                   primary={`${RISK_LEVEL_LABELS[r.level]} — ${r.title}`}
-                  secondary={`${r.ref} · ${RISK_STATUS_LABELS[r.status] ?? r.status} · ${r.use_case}`}
+                  secondary={`${r.ref} · ${RISK_STATUS_LABELS[r.status] ?? r.status}`}
                 />
-              ))}
-            </ItemList>
+              )}
+            />
           ) : undefined
         }
       />
@@ -230,17 +274,19 @@ export function ActivityStakes({
         detailTitle="Sans traitement abouti ni acceptation"
         detail={
           openRisks.length ? (
-            <ItemList>
-              {openRisks.map((r) => (
+            <ByUseCase
+              items={openRisks}
+              summary={(items) => `${items.length} ouvert${items.length > 1 ? 's' : ''}`}
+              render={(r) => (
                 <Item
                   key={r.id}
-                  href={`/admin/use-cases/${r.use_case_id}`}
+                  href={`/admin/use-cases/${r.use_case_id}?onglet=risques`}
                   tone="stop"
                   primary={r.title}
                   secondary={`${r.ref} · ${RISK_LEVEL_LABELS[r.level]} · ${RISK_STATUS_LABELS[r.status] ?? r.status}`}
                 />
-              ))}
-            </ItemList>
+              )}
+            />
           ) : undefined
         }
       />
@@ -352,17 +398,19 @@ export function ActivityStakes({
         detailTitle="Non clos"
         detail={
           stakes.open_incidents.length ? (
-            <ItemList>
-              {stakes.open_incidents.map((i) => (
+            <ByUseCase
+              items={stakes.open_incidents}
+              summary={(items) => `${items.length} ouvert${items.length > 1 ? 's' : ''}`}
+              render={(i) => (
                 <Item
                   key={i.id}
-                  href={`/admin/use-cases/${i.use_case_id}`}
+                  href={`/admin/use-cases/${i.use_case_id}?onglet=incidents`}
                   tone="stop"
                   primary={`${i.severity} — ${i.title}`}
-                  secondary={`${i.ref} · ${INCIDENT_STATUS_LABELS[i.status] ?? i.status} · ${i.use_case}`}
+                  secondary={`${i.ref} · ${INCIDENT_STATUS_LABELS[i.status] ?? i.status}`}
                 />
-              ))}
-            </ItemList>
+              )}
+            />
           ) : undefined
         }
       />
@@ -375,19 +423,21 @@ export function ActivityStakes({
         detailTitle="Échéance dépassée"
         detail={
           stakes.overdue_actions.length ? (
-            <ItemList>
-              {stakes.overdue_actions.map((a) => (
+            <ByUseCase
+              items={stakes.overdue_actions}
+              summary={(items) => `${items.length} échue${items.length > 1 ? 's' : ''}`}
+              render={(a) => (
                 <Item
                   key={a.id}
-                  href={`/admin/use-cases/${a.use_case_id}`}
+                  href={`/admin/use-cases/${a.use_case_id}?onglet=actions`}
                   tone="stop"
                   primary={a.title}
                   secondary={`${a.ref} · échue le ${formatDate(a.due_date)} · ${
                     ACTION_STATUS_LABELS[a.status] ?? a.status
-                  } · ${a.use_case}`}
+                  }`}
                 />
-              ))}
-            </ItemList>
+              )}
+            />
           ) : undefined
         }
       />
@@ -404,7 +454,7 @@ export function ActivityStakes({
               {stakes.reviews_due.map((u) => (
                 <Item
                   key={u.use_case_id}
-                  href={`/admin/use-cases/${u.use_case_id}`}
+                  href={`/admin/use-cases/${u.use_case_id}?onglet=fil`}
                   tone="warn"
                   primary={u.use_case}
                   secondary={`${u.ref} · revue attendue le ${formatDate(u.next_review_at)}`}

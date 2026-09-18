@@ -129,6 +129,7 @@ export function ControlProposals({
 
   return (
     <Modal
+      closeOnSuccess={false}
       trigger={organizationMode ? 'Proposer les contrôles d’organisation' : 'Proposer des contrôles'}
       title={organizationMode ? 'Contrôles du système de management' : 'Propositions de contrôles'}
       description={

@@ -186,7 +186,9 @@ describe('Acceptation humaine du risque', () => {
       ]),
     )
 
-    expect(failure.message).toMatch(/risk_acceptance_requires_human/)
+    // Le garde nominatif (0058) parle avant la contrainte : sans accepted_by,
+    // ce n'est pas « en son propre nom ». L'un ou l'autre refuse.
+    expect(failure.message).toMatch(/risk_acceptance_requires_human|en son propre nom/)
   })
 
   it('une acceptation complete est enregistree', async () => {

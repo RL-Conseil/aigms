@@ -24,6 +24,7 @@ export function TransitionModal({
 }) {
   return (
     <Modal
+      closeOnSuccess={false}
       trigger="Faire évoluer"
       triggerClassName="rounded-md bg-night-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-night-800"
       title="Faire évoluer le cas d’usage"

@@ -368,6 +368,9 @@ const riskSchema = z.object({
   inherentImpact: z.coerce.number().int().min(1).max(5),
   ownerUserId: z.string().uuid({ message: 'Désignez un responsable du risque.' }),
   nextReviewAt: z.string().trim().optional().or(z.literal('')),
+  // Facultatif : le controle qui traitera le risque, si on le sait deja. Il
+  // ouvre un traitement « planifie », porte par le responsable du risque.
+  controlId: z.string().uuid().optional().or(z.literal('')),
 })
 
 export async function createRisk(_previous: FormState | null, formData: FormData): Promise<FormState> {
@@ -380,6 +383,7 @@ export async function createRisk(_previous: FormState | null, formData: FormData
     inherentImpact: formData.get('inherentImpact'),
     ownerUserId: formData.get('ownerUserId'),
     nextReviewAt: formData.get('nextReviewAt') ?? '',
+    controlId: formData.get('controlId') ?? '',
   })
   if (!parsed.success) return firstIssues(parsed.error)
 
@@ -393,25 +397,57 @@ export async function createRisk(_previous: FormState | null, formData: FormData
     .maybeSingle()
   if (!useCase) return { ok: false, message: 'Cas d’usage introuvable.' }
 
-  const { error } = await supabase.from('risk').insert({
-    tenant_id: useCase.tenant_id,
-    organization_id: useCase.organization_id,
-    use_case_id: d.useCaseId,
-    title: d.title,
-    scenario: d.scenario,
-    category: d.category,
-    // Le niveau est calcule par la base : le saisir serait le laisser diverger.
-    inherent_likelihood: d.inherentLikelihood,
-    inherent_impact: d.inherentImpact,
-    owner_user_id: d.ownerUserId,
-    status: 'identified',
-    next_review_at: d.nextReviewAt || null,
-  })
+  const { data: risk, error } = await supabase
+    .from('risk')
+    .insert({
+      tenant_id: useCase.tenant_id,
+      organization_id: useCase.organization_id,
+      use_case_id: d.useCaseId,
+      title: d.title,
+      scenario: d.scenario,
+      category: d.category,
+      // Le niveau est calcule par la base : le saisir serait le laisser diverger.
+      inherent_likelihood: d.inherentLikelihood,
+      inherent_impact: d.inherentImpact,
+      owner_user_id: d.ownerUserId,
+      status: 'identified',
+      next_review_at: d.nextReviewAt || null,
+    })
+    .select('id')
+    .single()
 
   if (error) return { ok: false, message: explain(error) }
 
+  // Un controle designe des l'identification ouvre le traitement : planifie,
+  // strategie « reduire », porte par le responsable du risque. Le recoter
+  // restera a faire une fois le controle operant.
+  if (d.controlId) {
+    const { data: control } = await supabase
+      .from('control')
+      .select('code, name')
+      .eq('id', d.controlId)
+      .maybeSingle()
+    const { error: treatmentError } = await supabase.from('risk_treatment').insert({
+      tenant_id: useCase.tenant_id,
+      risk_id: risk.id,
+      strategy: 'reduce',
+      description: `Mise en œuvre du contrôle ${control?.code ?? ''} — ${control?.name ?? ''}, désigné à l’identification du risque.`,
+      owner_user_id: d.ownerUserId,
+      control_id: d.controlId,
+    })
+    if (treatmentError) {
+      revalidatePath(`/admin/use-cases/${d.useCaseId}`)
+      return { ok: false, message: `Risque enregistré, mais le traitement n’a pas été ouvert : ${explain(treatmentError)}` }
+    }
+  }
+
   revalidatePath(`/admin/use-cases/${d.useCaseId}`)
-  return { ok: true, message: 'Risque enregistré et coté.' }
+  return {
+    ok: true,
+    message: d.controlId
+      ? 'Risque enregistré et coté ; un traitement est ouvert sur le contrôle désigné.'
+      : 'Risque enregistré et coté.',
+  }
 }
 
 const acceptRiskSchema = z.object({
