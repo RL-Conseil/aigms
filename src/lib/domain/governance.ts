@@ -165,6 +165,18 @@ export const CONTROL_STATUS_LABELS: Record<string, string> = {
   retired: 'Retiré',
 }
 
+/**
+ * Le ton d'un etat de controle, le meme partout ou il se lit : propose et mis
+ * en place appellent encore une main (ambre), operant tient (vert),
+ * inefficace alerte (rouge), retire s'efface.
+ */
+export function controlStatusTone(status: string): 'ok' | 'warn' | 'stop' | 'neutral' {
+  if (status === 'operating') return 'ok'
+  if (status === 'ineffective') return 'stop'
+  if (status === 'retired') return 'neutral'
+  return 'warn'
+}
+
 export const TREATMENT_STATUS_LABELS: Record<string, string> = {
   planned: 'Planifié',
   in_progress: 'En cours',

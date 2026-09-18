@@ -7,6 +7,7 @@ import {
   RISK_LEVEL_LABELS,
   RISK_STATUS_LABELS,
   CONTROL_STATUS_LABELS,
+  controlStatusTone,
   FRESHNESS_LABELS,
   formatDate,
   type EvidenceFreshness,
@@ -267,34 +268,39 @@ export function ActivityStakes({
                 controle operant : l'etat se lit sur chaque ligne, sous le cas
                 d'usage qui l'attend — c'est la qu'on agit.
               */}
-              {stakes.controls_by_use_case.map((group) => (
-                <section key={group.use_case_id}>
-                  <Link
-                    href={`/admin/use-cases/${group.use_case_id}?onglet=controles`}
-                    className="mb-1.5 flex items-baseline justify-between gap-2 text-xs font-semibold uppercase tracking-wide text-ink-600 hover:underline"
-                  >
-                    <span>{group.use_case}</span>
-                    <span className="font-normal normal-case tracking-normal text-ink-400">
-                      {group.ref} · {group.controls.filter((c) => c.status === 'operating').length}/{group.controls.length} opérant(s)
-                    </span>
-                  </Link>
-                  {group.controls.length ? (
-                    <ItemList>
-                      {group.controls.map((c) => (
-                        <Item
-                          key={c.id}
-                          href={`/admin/use-cases/${group.use_case_id}?onglet=controles`}
-                          tone={c.status === 'operating' ? 'ok' : 'warn'}
-                          primary={`${c.code} — ${c.name}`}
-                          secondary={`${CONTROL_STATUS_LABELS[c.status] ?? c.status}${c.is_mandatory ? ' · obligatoire' : ''}`}
-                        />
-                      ))}
-                    </ItemList>
-                  ) : (
-                    <p className="text-xs text-ink-400">Aucun contrôle retenu comme applicable.</p>
-                  )}
-                </section>
-              ))}
+              {stakes.controls_by_use_case.map((group, index) => {
+                const operating = group.controls.filter((c) => c.status === 'operating').length
+                return (
+                  <details key={group.use_case_id} open={index === 0} className="group">
+                    <summary className="flex cursor-pointer list-none items-baseline justify-between gap-2 text-xs font-semibold uppercase tracking-wide text-ink-700">
+                      <span className="flex items-center gap-1.5">
+                        <span aria-hidden className="text-ink-400 transition-transform group-open:rotate-90">›</span>
+                        {group.use_case}
+                      </span>
+                      <span className={`font-normal normal-case tracking-normal ${operating < group.controls.length ? 'text-warn-600' : 'text-ok-600'}`}>
+                        {group.ref} · {operating}/{group.controls.length} opérant{operating > 1 ? 's' : ''}
+                      </span>
+                    </summary>
+                    <div className="mt-1.5 pl-3">
+                      {group.controls.length ? (
+                        <ItemList>
+                          {group.controls.map((c) => (
+                            <Item
+                              key={c.id}
+                              href={`/admin/use-cases/${group.use_case_id}?onglet=controles&controle=${c.id}#controle-${c.id}`}
+                              tone={controlStatusTone(c.status)}
+                              primary={`${c.code} — ${c.name}`}
+                              secondary={`${CONTROL_STATUS_LABELS[c.status] ?? c.status}${c.is_mandatory ? ' · obligatoire' : ''}`}
+                            />
+                          ))}
+                        </ItemList>
+                      ) : (
+                        <p className="text-xs text-ink-400">Aucun contrôle retenu comme applicable.</p>
+                      )}
+                    </div>
+                  </details>
+                )
+              })}
             </div>
           ) : stakes.controls_not_operating.length ? (
             <ItemList>
