@@ -8,6 +8,7 @@ import { roleCapabilities } from '@/lib/admin/role-capabilities'
 import { organizationReadiness } from '@/lib/governance/readiness'
 import { ReadinessCard } from '@/components/governance/readiness-banner'
 import { InfoTip } from '@/components/info-tip'
+import { Disclosure } from '@/components/forms'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import { ROLE_LABELS, type AppRole } from '@/lib/domain/roles'
 import { formatDate } from '@/lib/domain/governance'
@@ -41,9 +42,10 @@ export default async function AccountsPage() {
     await Promise.all([
     supabase
       .from('membership')
-      .select('id, role, status, created_at, user:user_id (id, email, full_name, job_title)')
+      .select('id, tenant_id, role, status, created_at, user:user_id (id, email, full_name, job_title)')
       .order('created_at'),
-    supabase.from('organization').select('id, name').order('name'),
+    // Une organisation archivee ne recoit plus de comptes : elle ne se lit pas ici.
+    supabase.from('organization').select('id, name, tenant_id').neq('status', 'archived').order('name'),
     supabase
       .from('role_assignment')
       .select('user_id, role, organization_id, valid_until, organization:organization_id (name)'),
@@ -52,6 +54,7 @@ export default async function AccountsPage() {
 
   type Account = {
     membershipId: string
+    tenantId: string
     userId: string
     email: string
     fullName: string | null
@@ -62,26 +65,35 @@ export default async function AccountsPage() {
   const accounts: Account[] = (memberships ?? []).flatMap((m) => {
     const user = m.user as unknown as { id: string; email: string; full_name: string | null; job_title: string | null } | null
     return user
-      ? [{ membershipId: m.id, userId: user.id, email: user.email, fullName: user.full_name, jobTitle: user.job_title, role: m.role as AppRole, since: m.created_at }]
+      ? [{ membershipId: m.id, tenantId: m.tenant_id, userId: user.id, email: user.email, fullName: user.full_name, jobTitle: user.job_title, role: m.role as AppRole, since: m.created_at }]
       : []
   })
 
   // Les comptes se lisent PAR ORGANISATION : c'est la que les six roles
-  // doivent etre tenus. Un compte affecte a plusieurs organisations figure
-  // sous chacune ; un compte sans affectation porte le role de son
-  // appartenance, sur toutes les organisations du tenant — il se lit a part.
+  // doivent etre tenus. Un compte affecte a une organisation figure sous elle
+  // avec le role affecte ; un compte sans affectation porte le role de son
+  // appartenance sur TOUTES les organisations de son tenant — il figure donc
+  // sous chacune, marque « par appartenance ». C'est la meme lecture que la
+  // base (organization_roles) : ce qu'on voit ici est ce qu'elle applique.
   const active = (assignments ?? []).filter((a) => !a.valid_until || a.valid_until > new Date().toISOString())
-  const byOrganization = new Map<string, { account: Account; role: AppRole }[]>()
-  for (const a of active) {
-    const account = accounts.find((acc) => acc.userId === a.user_id)
-    if (!account) continue
-    const list = byOrganization.get(a.organization_id) ?? []
-    list.push({ account, role: a.role as AppRole })
-    byOrganization.set(a.organization_id, list)
-  }
   const assignedUserIds = new Set(active.map((a) => a.user_id))
+  const byOrganization = new Map<string, { account: Account; role: AppRole; scoped: boolean }[]>()
+  for (const o of organizations ?? []) {
+    const rows: { account: Account; role: AppRole; scoped: boolean }[] = []
+    for (const a of active.filter((a) => a.organization_id === o.id)) {
+      const account = accounts.find((acc) => acc.userId === a.user_id)
+      if (account) rows.push({ account, role: a.role as AppRole, scoped: true })
+    }
+    for (const account of accounts) {
+      if (account.tenantId === o.tenant_id && account.role !== 'platform_admin' && !assignedUserIds.has(account.userId)) {
+        rows.push({ account, role: account.role, scoped: false })
+      }
+    }
+    byOrganization.set(o.id, rows)
+  }
+  const placed = new Set([...byOrganization.values()].flat().map((r) => r.account.userId))
   const admins = accounts.filter((a) => a.role === 'platform_admin')
-  const unassigned = accounts.filter((a) => a.role !== 'platform_admin' && !assignedUserIds.has(a.userId))
+  const unassigned = accounts.filter((a) => a.role !== 'platform_admin' && !placed.has(a.userId))
   const roleOrder: AppRole[] = ['governance_officer', 'client_admin', 'system_owner', 'reviewer', 'risk_owner', 'executive_viewer', 'auditor', 'platform_admin']
   const byRole = (x: { role: AppRole }, y: { role: AppRole }) => roleOrder.indexOf(x.role) - roleOrder.indexOf(y.role)
 
@@ -102,43 +114,47 @@ export default async function AccountsPage() {
             subtitle="Par organisation. Chaque organisation doit voir ses six rôles tenus pour être opérationnelle."
           >
             {accounts.length ? (
-              <div className="flex flex-col gap-6">
-                {readiness.map((o) => {
+              <div className="flex flex-col gap-3">
+                {readiness.map((o, index) => {
                   const rows = (byOrganization.get(o.id) ?? []).sort(byRole)
+                  const ready = o.readiness?.ready ?? true
                   return (
-                    <AccountGroup
+                    <Disclosure
                       key={o.id}
                       title={o.name}
-                      hint={
+                      summary={
                         o.readiness
-                          ? o.readiness.ready
-                            ? 'Opérationnelle · six rôles tenus'
-                            : `Non opérationnelle · manque : ${o.readiness.missing.map((r) => ROLE_LABELS[r]).join(', ')}`
-                          : undefined
+                          ? ready
+                            ? `${rows.length} compte${rows.length > 1 ? 's' : ''} · opérationnelle, six rôles tenus`
+                            : `${rows.length} compte${rows.length > 1 ? 's' : ''} · non opérationnelle — manque : ${o.readiness.missing.map((r) => ROLE_LABELS[r]).join(', ')}`
+                          : `${rows.length} compte(s)`
                       }
-                      tone={o.readiness && !o.readiness.ready ? 'warn' : 'ok'}
-                      empty="Aucun compte affecté à cette organisation."
-                      rows={rows.map(({ account, role }) => ({ account, role, scoped: true }))}
-                    />
+                      tone={ready ? 'done' : 'todo'}
+                      defaultOpen={!ready || index === 0}
+                    >
+                      <AccountRows rows={rows} empty="Aucun compte sur cette organisation : déclarer les comptes de ses six rôles." />
+                    </Disclosure>
                   )
                 })}
 
                 {unassigned.length ? (
-                  <AccountGroup
-                    title="Sans affectation à une organisation"
-                    hint="Le rôle de l’appartenance vaut sur toutes les organisations du tenant."
+                  <Disclosure
+                    title="Sans organisation"
+                    summary={`${unassigned.length} compte${unassigned.length > 1 ? 's' : ''} dont le tenant n’a aucune organisation active`}
                     tone="neutral"
-                    rows={unassigned.sort(byRole).map((account) => ({ account, role: account.role, scoped: false }))}
-                  />
+                  >
+                    <AccountRows rows={unassigned.sort(byRole).map((account) => ({ account, role: account.role, scoped: false }))} />
+                  </Disclosure>
                 ) : null}
 
                 {admins.length ? (
-                  <AccountGroup
+                  <Disclosure
                     title="Administration de la plateforme"
-                    hint="Ouvre les accès ; ne gouverne pas."
+                    summary={`${admins.length} compte${admins.length > 1 ? 's' : ''} · ouvre les accès, ne gouverne pas`}
                     tone="neutral"
-                    rows={admins.map((account) => ({ account, role: account.role, scoped: false }))}
-                  />
+                  >
+                    <AccountRows rows={admins.map((account) => ({ account, role: account.role, scoped: false }))} />
+                  </Disclosure>
                 ) : null}
               </div>
             ) : (
@@ -270,17 +286,10 @@ const ROLE_TONE: Partial<Record<AppRole, string>> = {
   platform_admin: 'bg-warn-600/15 text-warn-600',
 }
 
-function AccountGroup({
-  title,
-  hint,
-  tone,
-  empty,
+function AccountRows({
   rows,
+  empty = 'Aucun compte.',
 }: {
-  title: string
-  hint?: string
-  tone: 'ok' | 'warn' | 'neutral'
-  empty?: string
   rows: {
     account: {
       membershipId: string
@@ -292,58 +301,41 @@ function AccountGroup({
       since: string
     }
     role: AppRole
-    /** Vrai quand le role vient d'une affectation a l'organisation. */
+    /** Vrai quand le role vient d'une affectation a l'organisation ; sinon de l'appartenance. */
     scoped: boolean
   }[]
+  empty?: string
 }) {
-  const dot = tone === 'ok' ? 'bg-ok-600' : tone === 'warn' ? 'bg-warn-600' : 'bg-ink-300'
+  if (!rows.length) return <p className="text-sm text-ink-400">{empty}</p>
   return (
-    <section>
-      <header className="mb-2 flex flex-wrap items-baseline justify-between gap-2 border-b border-ink-200 pb-2">
-        <h3 className="flex items-center gap-2 text-sm font-semibold text-ink-900">
-          <span aria-hidden className={`size-2 rounded-full ${dot}`} />
-          {title}
-          <span className="text-xs font-normal text-ink-400">
-            {rows.length} compte{rows.length > 1 ? 's' : ''}
+    <ul className="divide-y divide-ink-100">
+      {rows.map(({ account, role, scoped }) => (
+        <li key={`${account.membershipId}-${role}`} className="flex flex-wrap items-center gap-3 py-2.5">
+          <span
+            aria-hidden
+            className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-ink-100 text-xs font-semibold text-ink-700"
+          >
+            {initials(account.fullName, account.email)}
           </span>
-        </h3>
-        {hint ? <p className={`text-xs ${tone === 'warn' ? 'text-warn-600' : 'text-ink-500'}`}>{hint}</p> : null}
-      </header>
-      {rows.length ? (
-        <ul className="divide-y divide-ink-100">
-          {rows.map(({ account, role, scoped }) => (
-            <li key={`${account.membershipId}-${role}`} className="flex flex-wrap items-center gap-3 py-2.5">
-              <span
-                aria-hidden
-                className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-ink-100 text-xs font-semibold text-ink-700"
-              >
-                {initials(account.fullName, account.email)}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-ink-900">{account.fullName ?? account.email}</p>
-                <p className="truncate text-xs text-ink-400">
-                  {account.email}
-                  {account.jobTitle ? ` · ${account.jobTitle}` : ''}
-                  {` · depuis le ${formatDate(account.since)}`}
-                </p>
-              </div>
-              <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${ROLE_TONE[role] ?? 'bg-ink-100 text-ink-700'}`}>
-                {ROLE_LABELS[role]}
-                {scoped && account.role !== role ? (
-                  <span className="ml-1.5 font-normal opacity-70">· appartenance : {ROLE_LABELS[account.role]}</span>
-                ) : null}
-              </span>
-              {role === 'platform_admin' ? (
-                <span className="text-xs text-ink-400">Non modifiable depuis l’application</span>
-              ) : (
-                <RoleForm userId={account.userId} currentRole={account.role} />
-              )}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="py-2 text-sm text-ink-400">{empty}</p>
-      )}
-    </section>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-ink-900">{account.fullName ?? account.email}</p>
+            <p className="truncate text-xs text-ink-400">
+              {account.email}
+              {account.jobTitle ? ` · ${account.jobTitle}` : ''}
+              {` · depuis le ${formatDate(account.since)}`}
+              {role !== 'platform_admin' ? (scoped ? ' · affecté' : ' · par appartenance') : ''}
+            </p>
+          </div>
+          <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ${ROLE_TONE[role] ?? 'bg-ink-100 text-ink-700'}`}>
+            {ROLE_LABELS[role]}
+          </span>
+          {role === 'platform_admin' ? (
+            <span className="text-xs text-ink-400">Non modifiable depuis l’application</span>
+          ) : (
+            <RoleForm userId={account.userId} currentRole={account.role} />
+          )}
+        </li>
+      ))}
+    </ul>
   )
 }
