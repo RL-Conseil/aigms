@@ -50,6 +50,8 @@ import {
 import {
   ACTION_STATUS_LABELS,
   AUTONOMY_LABELS,
+  CONTROL_STATUS_LABELS,
+  controlStatusTone,
   DECISION_STATUS_LABELS,
   INCIDENT_STATUS_LABELS,
   DECISION_TYPE_LABELS,
@@ -76,10 +78,10 @@ export default async function UseCasePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ onglet?: string }>
+  searchParams: Promise<{ onglet?: string; controle?: string }>
 }) {
   const { id } = await params
-  const { onglet } = await searchParams
+  const { onglet, controle } = await searchParams
   const tab = resolveTab(onglet)
   const supabase = await createClient()
 
@@ -625,7 +627,7 @@ export default async function UseCasePage({
         <div className="max-w-4xl">
           <Card
             title="Contrôles affectés"
-            subtitle={`${controls?.length ?? 0} contrôle(s) statué(s) sur ${controlChoices.length} au référentiel · ${applicableControls.length} applicable(s)`}
+            subtitle={`${controls?.length ?? 0} contrôle(s) statué(s) sur ${controlChoices.length} au référentiel · ${applicableControls.length} applicable(s), dont ${applicableControls.filter((c) => (c.control as unknown as { status: string } | null)?.status === 'operating').length} opérant(s)`}
             action={<ControlNote />}
           >
             {/*
@@ -642,33 +644,63 @@ export default async function UseCasePage({
             </div>
 
             {controls?.length ? (
-              <ul className="space-y-2">
-                {controls.map((ca) => {
-                  const control = ca.control as unknown as {
-                    code: string
-                    name: string
-                    is_mandatory: boolean
-                    status: string
-                  }
-                  return (
-                    <li key={ca.id} className="text-sm">
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-ink-900">
-                          {control.code} — {control.name}
-                        </span>
-                        <Badge tone={ca.status === 'applicable' ? 'ok' : 'neutral'}>
-                          {ca.status === 'applicable' ? 'Applicable' : 'Non applicable'}
-                        </Badge>
-                      </div>
-                      {control.is_mandatory ? (
-                        <span className="text-xs text-ink-400">Contrôle obligatoire</span>
-                      ) : null}
-                      {ca.justification ? (
-                        <p className="text-xs text-ink-600">{ca.justification}</p>
-                      ) : null}
-                    </li>
-                  )
-                })}
+              <ul className="divide-y divide-ink-100">
+                {/*
+                  Le meme code couleur que le panneau d'une activite : l'etat
+                  du controle — propose, mis en place, operant — se lit en
+                  premier, l'applicabilite ensuite. Les controles applicables
+                  et pas encore operants viennent en tete : c'est la qu'on agit.
+                  Un lien `?controle=` depuis l'activite met sa ligne en relief.
+                */}
+                {[...controls]
+                  .map((ca) => ({
+                    ca,
+                    control: ca.control as unknown as {
+                      id: string
+                      code: string
+                      name: string
+                      is_mandatory: boolean
+                      status: string
+                    },
+                  }))
+                  .sort((a, b) => {
+                    const rank = (x: typeof a) =>
+                      x.ca.status !== 'applicable' ? 3 : x.control.status === 'operating' ? 2 : x.control.status === 'implemented' ? 1 : 0
+                    return rank(a) - rank(b) || a.control.code.localeCompare(b.control.code)
+                  })
+                  .map(({ ca, control }) => {
+                    const applicable = ca.status === 'applicable'
+                    const highlighted = controle === control.id
+                    return (
+                      <li
+                        key={ca.id}
+                        id={`controle-${control.id}`}
+                        className={`scroll-mt-24 py-2.5 text-sm ${highlighted ? '-mx-3 rounded-md bg-brand-500/10 px-3 ring-1 ring-brand-500/40' : ''}`}
+                      >
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <span className={applicable ? 'text-ink-900' : 'text-ink-500'}>
+                            {control.code} — {control.name}
+                          </span>
+                          <span className="flex shrink-0 items-center gap-1.5">
+                            {applicable ? (
+                              <Badge tone={controlStatusTone(control.status)}>
+                                {CONTROL_STATUS_LABELS[control.status] ?? control.status}
+                              </Badge>
+                            ) : null}
+                            <Badge tone="neutral">
+                              {applicable ? 'Applicable' : 'Non applicable'}
+                            </Badge>
+                          </span>
+                        </div>
+                        {control.is_mandatory ? (
+                          <span className="text-xs text-ink-400">Contrôle obligatoire</span>
+                        ) : null}
+                        {ca.justification ? (
+                          <p className="text-xs text-ink-600">{ca.justification}</p>
+                        ) : null}
+                      </li>
+                    )
+                  })}
               </ul>
             ) : (
               <Empty>Aucun contrôle affecté.</Empty>
