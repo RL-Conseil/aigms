@@ -309,38 +309,56 @@ export async function mapControlToRequirement(
 // `control_id` est le lien decide en ADR-0010 : c'est lui, et lui seul, qui
 // relie un risque a la mesure censee le reduire. Sans cette saisie, la regle
 // etait verrouillee en base mais inatteignable.
+const measureSchema = z.object({
+  controlId: z.string().uuid().optional().or(z.literal('')),
+  ownerUserId: z.string().uuid({ message: 'Désignez qui porte chaque mesure : sans lui, rien ne l’exécute.' }),
+  dueDate: z.string().trim().optional().or(z.literal('')),
+})
+
+// Un traitement peut porter plusieurs mesures — un controle, un responsable,
+// une echeance chacune. Chaque mesure devient un traitement en base : c'est
+// par mesure qu'on suit, qu'on alerte, qu'on clot. Accepter n'est pas un
+// traitement (0058) ; reduire designe un controle (0059).
 const treatmentSchema = z
   .object({
-  riskId: z.string().uuid(),
-  useCaseId: z.string().uuid(),
-  // Accepter n'est pas un traitement (0058) ; reduire designe un controle (0059).
-  strategy: z.enum(['avoid', 'reduce', 'transfer']),
-  description: z
-    .string()
-    .trim()
-    .min(20, 'Décrire ce qui sera fait : un traitement en trois mots ne se vérifie pas.')
-    .max(2000),
-  ownerUserId: z.string().uuid({ message: 'Désignez qui porte le traitement : sans lui, rien ne l’exécute.' }),
-  dueDate: z.string().trim().optional().or(z.literal('')),
-  controlId: z.string().uuid().optional().or(z.literal('')),
+    riskId: z.string().uuid(),
+    useCaseId: z.string().uuid(),
+    strategy: z.enum(['avoid', 'reduce', 'transfer']),
+    description: z
+      .string()
+      .trim()
+      .min(20, 'Décrire ce qui sera fait : un traitement en trois mots ne se vérifie pas.')
+      .max(2000),
+    measures: z.array(measureSchema).min(1, 'Au moins une mesure : un responsable, et le contrôle qui agit.'),
   })
-  .refine((d) => d.strategy !== 'reduce' || Boolean(d.controlId), {
-    path: ['controlId'],
-    message: 'Réduire un risque, c’est désigner le contrôle qui le fait.',
+  .refine((d) => d.strategy !== 'reduce' || d.measures.every((m) => Boolean(m.controlId)), {
+    path: ['measures'],
+    message: 'Réduire un risque, c’est désigner le contrôle qui le fait — sur chaque mesure.',
   })
+  .refine(
+    (d) => {
+      const ids = d.measures.map((m) => m.controlId).filter(Boolean)
+      return new Set(ids).size === ids.length
+    },
+    { path: ['measures'], message: 'Un même contrôle figure deux fois.' },
+  )
 
 export async function createRiskTreatment(
   _previous: FormState | null,
   formData: FormData,
 ): Promise<FormState> {
+  let measures: unknown = []
+  try {
+    measures = JSON.parse(String(formData.get('measures') ?? '[]'))
+  } catch {
+    return { ok: false, message: 'Mesures illisibles.' }
+  }
   const parsed = treatmentSchema.safeParse({
     riskId: formData.get('riskId'),
     useCaseId: formData.get('useCaseId'),
     strategy: formData.get('strategy') ?? 'reduce',
     description: formData.get('description'),
-    ownerUserId: formData.get('ownerUserId') ?? '',
-    dueDate: formData.get('dueDate') ?? '',
-    controlId: formData.get('controlId') ?? '',
+    measures,
   })
   if (!parsed.success) return firstIssues(parsed.error)
 
@@ -352,24 +370,31 @@ export async function createRiskTreatment(
     .maybeSingle()
   if (!risk) return { ok: false, message: 'Risque introuvable.' }
 
-  const { error } = await supabase.from('risk_treatment').insert({
-    tenant_id: risk.tenant_id,
-    risk_id: parsed.data.riskId,
-    strategy: parsed.data.strategy,
-    description: parsed.data.description,
-    owner_user_id: parsed.data.ownerUserId,
-    due_date: parsed.data.dueDate || null,
-    control_id: parsed.data.controlId || null,
-  })
+  const { error } = await supabase.from('risk_treatment').insert(
+    parsed.data.measures.map((m) => ({
+      tenant_id: risk.tenant_id,
+      risk_id: parsed.data.riskId,
+      strategy: parsed.data.strategy,
+      description: parsed.data.description,
+      owner_user_id: m.ownerUserId,
+      due_date: m.dueDate || null,
+      control_id: m.controlId || null,
+    })),
+  )
 
   if (error) return { ok: false, message: explain(error) }
 
   revalidatePath(`/admin/use-cases/${parsed.data.useCaseId}`)
+  const n = parsed.data.measures.length
+  const withControl = parsed.data.measures.filter((m) => m.controlId).length
   return {
     ok: true,
-    message: parsed.data.controlId
-      ? 'Traitement enregistré, avec le contrôle qui le met en œuvre.'
-      : 'Traitement enregistré. Tant qu’aucun contrôle ne le met en œuvre, le chemin du risque s’arrête à l’intention.',
+    message:
+      n > 1
+        ? `${n} mesures enregistrées${withControl ? `, ${withControl} avec le contrôle qui les met en œuvre` : ''}. Chaque responsable en est averti.`
+        : withControl
+          ? 'Traitement enregistré, avec le contrôle qui le met en œuvre. Le responsable en est averti.'
+          : 'Traitement enregistré. Sans contrôle désigné, le chemin du risque s’arrête ici : à compléter.',
   }
 }
 
