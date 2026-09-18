@@ -608,7 +608,11 @@ select 'aaaaaaaa-0000-4000-8000-000000000001', c.id, 'b1000000-0000-4000-8000-00
             else null end,
        '11111111-1111-4111-8111-111111111111', now()
 from public.control c
-where c.organization_id = 'cccccccc-0000-4000-8000-000000000001';
+where c.organization_id = 'cccccccc-0000-4000-8000-000000000001'
+-- Le traitement d'un risque a pu déjà rendre un contrôle applicable (0059).
+on conflict (control_id, use_case_id) do update
+  set status = excluded.status, justification = excluded.justification,
+      decided_by = excluded.decided_by, decided_at = excluded.decided_at;
 
 -- ASSESSMENT -> REVIEW
 select app.transition_use_case('b1000000-0000-4000-8000-000000000001', 'REVIEW',
@@ -756,9 +760,10 @@ insert into public.risk_treatment (tenant_id, risk_id, strategy, description, ow
    'Test de biais par groupe avant mise en service, revue humaine systématique des candidatures écartées, suivi trimestriel des taux de sélection.',
    '33333333-3333-4333-8333-333333333333', current_date + interval '2 months', 'in_progress',
    'a3000000-0000-4000-8000-000000000006'),
-  -- Volontairement sans contrôle : le traitement est écrit, rien ne le met
-  -- encore en œuvre. Le chemin du risque s'arrête à l'intention.
-  ('aaaaaaaa-0000-4000-8000-000000000001', 'b3000000-0000-4000-8000-000000000005', 'reduce',
+  -- Un transfert contractuel (DPA), volontairement sans contrôle : le
+  -- traitement est écrit, rien ne le met encore en œuvre. Le chemin du risque
+  -- s'arrête à l'intention.
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'b3000000-0000-4000-8000-000000000005', 'transfer',
    'Signature du DPA, documentation des garanties de transfert, ou relocalisation du traitement en UE.',
    '33333333-3333-4333-8333-333333333333', current_date + interval '1 month', 'planned', null);
 
@@ -802,7 +807,8 @@ insert into public.control_applicability (tenant_id, control_id, use_case_id, st
 select 'aaaaaaaa-0000-4000-8000-000000000001', c.id, 'b1000000-0000-4000-8000-000000000002',
        'applicable', '11111111-1111-4111-8111-111111111111', now()
 from public.control c
-where c.organization_id = 'cccccccc-0000-4000-8000-000000000001' and c.is_mandatory;
+where c.organization_id = 'cccccccc-0000-4000-8000-000000000001' and c.is_mandatory
+on conflict (control_id, use_case_id) do nothing;
 
 select app.transition_use_case('b1000000-0000-4000-8000-000000000002', 'REVIEW',
   'Classification haut risque, risques et AIIA en cours.');

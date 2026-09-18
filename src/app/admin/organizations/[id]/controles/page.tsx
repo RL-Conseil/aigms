@@ -30,6 +30,9 @@ type Control = {
   status: string
   is_mandatory: boolean
   frequency: string | null
+  expected_evidence: string[] | null
+  assessment_questions: string[] | null
+  owner: { full_name: string | null; email: string } | null
   last_tested_at: string | null
   next_test_at: string | null
   /** Le contrôle-type dont il est l'instance, s'il vient d'un référentiel. */
@@ -62,7 +65,7 @@ export default async function ControlsPage({
       supabase
         .from('control')
         .select(
-          'id, business_ref, code, name, objective, status, is_mandatory, frequency, last_tested_at, next_test_at, catalog:catalog_control_id (control_code, version:version_id (version, framework:framework_id (code)))',
+          'id, business_ref, code, name, objective, status, is_mandatory, frequency, last_tested_at, next_test_at, expected_evidence, assessment_questions, owner:owner_user_id (full_name, email), catalog:catalog_control_id (control_code, version:version_id (version, framework:framework_id (code)))',
         )
         .eq('organization_id', id)
         .order('code'),
@@ -80,7 +83,7 @@ export default async function ControlsPage({
 
   if (!organization) notFound()
 
-  const controls = (controlRows ?? []) as Control[]
+  const controls = (controlRows ?? []) as unknown as Control[]
   const requirements = (requirementRows ?? []).map((r) => ({
     id: r.id,
     reference: r.requirement_reference,
@@ -205,6 +208,7 @@ export default async function ControlsPage({
                     <p className="mt-1 text-sm leading-relaxed text-ink-600">{control.objective}</p>
                     <p className="mt-1.5 text-xs text-ink-500">
                       {control.business_ref}
+                      {control.owner ? ` · ${control.owner.full_name ?? control.owner.email}` : ' · sans responsable'}
                       {control.frequency ? ` · ${control.frequency}` : ''}
                       {control.last_tested_at
                         ? ` · dernier test le ${formatDate(control.last_tested_at)}`
@@ -218,6 +222,33 @@ export default async function ControlsPage({
                         ? `Exigences : ${mappedBy.get(control.id)!.join(', ')}`
                         : 'Aucune exigence rattachée — ce contrôle ne compte dans aucune Déclaration.'}
                     </p>
+                    {/*
+                      Le registre se lit pareil quelle que soit l'origine du
+                      controle : ce qu'il faut prouver, ce qu'on demande.
+                    */}
+                    {control.expected_evidence?.length || control.assessment_questions?.length ? (
+                      <details className="mt-1.5 text-xs text-ink-500">
+                        <summary className="cursor-pointer hover:text-ink-800">
+                          {control.expected_evidence?.length ?? 0} preuve(s) attendue(s) · {control.assessment_questions?.length ?? 0} question(s) d’évaluation
+                        </summary>
+                        <div className="mt-1.5 grid gap-3 sm:grid-cols-2">
+                          {control.expected_evidence?.length ? (
+                            <ul className="list-disc pl-4">
+                              {control.expected_evidence.map((e) => <li key={e}>{e}</li>)}
+                            </ul>
+                          ) : null}
+                          {control.assessment_questions?.length ? (
+                            <ul className="list-disc pl-4">
+                              {control.assessment_questions.map((q) => <li key={q}>{q}</li>)}
+                            </ul>
+                          ) : null}
+                        </div>
+                      </details>
+                    ) : (
+                      <p className="mt-1.5 text-xs text-warn-600">
+                        Ni preuve attendue ni question d’évaluation : le registre ne dit pas comment ce contrôle se démontre.
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex shrink-0 flex-col items-end gap-2">

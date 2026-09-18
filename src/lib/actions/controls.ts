@@ -40,6 +40,15 @@ function explain(error: { message: string; code?: string }): string {
   return raise?.[1] ?? error.message
 }
 
+/** Un champ « une ligne par element » devient une liste ; vide, il devient null. */
+function lines(value: string | undefined): string[] | null {
+  const items = (value ?? '')
+    .split(/\r?\n/)
+    .map((line) => line.replace(/^[-•*]\s*/, '').trim())
+    .filter(Boolean)
+  return items.length ? items : null
+}
+
 async function tenantOf(organizationId: string) {
   const supabase = await createClient()
   const { data } = await supabase
@@ -79,6 +88,10 @@ const controlSchema = z.object({
   testProcedure: z.string().trim().max(1000).optional().or(z.literal('')),
   lastTestedAt: z.string().trim().optional().or(z.literal('')),
   nextTestAt: z.string().trim().optional().or(z.literal('')),
+  // Une ligne par piece, une ligne par question : ce qu'un controle-type
+  // porte d'office, un controle libre le dit ici.
+  expectedEvidence: z.string().trim().max(2000).optional().or(z.literal('')),
+  assessmentQuestions: z.string().trim().max(2000).optional().or(z.literal('')),
 })
 
 export async function createControl(
@@ -93,6 +106,8 @@ export async function createControl(
     status: formData.get('status') ?? 'proposed',
     isMandatory: formData.get('isMandatory') === 'on',
     ownerUserId: formData.get('ownerUserId') ?? '',
+    expectedEvidence: formData.get('expectedEvidence') ?? '',
+    assessmentQuestions: formData.get('assessmentQuestions') ?? '',
     frequency: formData.get('frequency') ?? '',
     testProcedure: formData.get('testProcedure') ?? '',
     lastTestedAt: formData.get('lastTestedAt') ?? '',
@@ -118,6 +133,8 @@ export async function createControl(
     test_procedure: input.testProcedure || null,
     last_tested_at: input.lastTestedAt || null,
     next_test_at: input.nextTestAt || null,
+    expected_evidence: lines(input.expectedEvidence),
+    assessment_questions: lines(input.assessmentQuestions),
   })
 
   if (error) return { ok: false, message: explain(error) }
@@ -292,10 +309,12 @@ export async function mapControlToRequirement(
 // `control_id` est le lien decide en ADR-0010 : c'est lui, et lui seul, qui
 // relie un risque a la mesure censee le reduire. Sans cette saisie, la regle
 // etait verrouillee en base mais inatteignable.
-const treatmentSchema = z.object({
+const treatmentSchema = z
+  .object({
   riskId: z.string().uuid(),
   useCaseId: z.string().uuid(),
-  strategy: z.enum(['avoid', 'reduce', 'transfer', 'accept']),
+  // Accepter n'est pas un traitement (0058) ; reduire designe un controle (0059).
+  strategy: z.enum(['avoid', 'reduce', 'transfer']),
   description: z
     .string()
     .trim()
@@ -304,7 +323,11 @@ const treatmentSchema = z.object({
   ownerUserId: z.string().uuid({ message: 'Désignez qui porte le traitement : sans lui, rien ne l’exécute.' }),
   dueDate: z.string().trim().optional().or(z.literal('')),
   controlId: z.string().uuid().optional().or(z.literal('')),
-})
+  })
+  .refine((d) => d.strategy !== 'reduce' || Boolean(d.controlId), {
+    path: ['controlId'],
+    message: 'Réduire un risque, c’est désigner le contrôle qui le fait.',
+  })
 
 export async function createRiskTreatment(
   _previous: FormState | null,
@@ -509,5 +532,87 @@ export async function retainSuggestedControls(
         (refusals.length ? `. ${refusals.length} refus : ${refusals[0]}` : '.')
       : `${added} contrôle(s) d’organisation ajouté(s) à la liste opérationnelle, à l’état « proposé ».` +
         (refusals.length ? ` ${refusals.length} refus : ${refusals[0]}` : ''),
+  }
+}
+
+// =============================================================================
+// Chercher le contrôle qui traite un risque
+// =============================================================================
+// A partir de ce que l'utilisateur a ecrit — intitule, scenario — la base
+// cherche dans les controles de l'organisation et dans les referentiels
+// publies. Elle propose ; l'utilisateur retient. Un controle-type retenu
+// devient un controle de l'organisation (lien conserve, exigences rattachees),
+// porte par le responsable indique.
+export type ControlMatch = {
+  source: 'control' | 'catalog'
+  control_id: string | null
+  catalog_control_id: string | null
+  code: string
+  name: string
+  objective: string | null
+  status: string
+  applicable: boolean
+  rank: number
+  why: string | null
+}
+
+export async function searchControlsForRisk(input: {
+  organizationId: string
+  useCaseId: string
+  query: string
+}): Promise<{ ok: true; matches: ControlMatch[] } | { ok: false; message: string }> {
+  const parsed = z
+    .object({
+      organizationId: z.string().uuid(),
+      useCaseId: z.string().uuid(),
+      query: z.string().trim().min(3, 'Écrire au moins quelques mots : l’intitulé ou le scénario du risque.').max(2000),
+    })
+    .safeParse(input)
+  if (!parsed.success) return { ok: false, message: parsed.error.issues[0]?.message ?? 'Recherche vide.' }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase.rpc('search_controls', {
+    p_organization_id: parsed.data.organizationId,
+    p_use_case_id: parsed.data.useCaseId,
+    p_query: parsed.data.query,
+    p_limit: 8,
+  })
+  if (error) return { ok: false, message: explain(error) }
+  return { ok: true, matches: (data ?? []) as ControlMatch[] }
+}
+
+export async function adoptCatalogControl(input: {
+  organizationId: string
+  catalogControlId: string
+  ownerUserId?: string
+}): Promise<{ ok: true; controlId: string; code: string; name: string } | { ok: false; message: string }> {
+  const parsed = z
+    .object({
+      organizationId: z.string().uuid(),
+      catalogControlId: z.string().uuid(),
+      ownerUserId: z.string().uuid().optional().or(z.literal('')),
+    })
+    .safeParse(input)
+  if (!parsed.success) return { ok: false, message: 'Demande invalide.' }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase.rpc('instantiate_catalog_control', {
+    p_organization_id: parsed.data.organizationId,
+    p_catalog_control_id: parsed.data.catalogControlId,
+    p_owner_user_id: parsed.data.ownerUserId || undefined,
+  })
+  if (error) return { ok: false, message: explain(error) }
+  const result = data as { control_id: string; code: string }
+  const { data: control } = await supabase
+    .from('control')
+    .select('id, code, name')
+    .eq('id', result.control_id)
+    .maybeSingle()
+  revalidatePath(`/admin/organizations/${parsed.data.organizationId}/controles`)
+  return {
+    ok: true,
+    controlId: result.control_id,
+    code: control?.code ?? result.code,
+    name: control?.name ?? '',
   }
 }

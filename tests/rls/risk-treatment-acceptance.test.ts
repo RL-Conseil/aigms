@@ -16,18 +16,25 @@ afterAll(async () => {
 })
 
 describe('Traitement d’un risque', () => {
-  it('exige un responsable, l’avertit, et le rappelle à l’échéance', async () => {
+  it('exige un responsable ; sur un risque modéré, l’avertit et le rappelle à l’échéance', async () => {
     const r = await asUser(db, DEMO.officerA, async (c) => {
       const noOwner = await expectFailure(
         c,
         `insert into public.risk_treatment (tenant_id, risk_id, strategy, description)
-         values ($1, $2, 'reduce', 'Sans responsable')`,
+         values ($1, $2, 'transfer', 'Sans responsable')`,
         [DEMO.tenantA, DEMO.untreatedRisk],
+      )
+      // Un risque modere : le traitement vaut une alerte, pas une action.
+      const { rows: risk } = await c.query<{ id: string }>(
+        `insert into public.risk (tenant_id, organization_id, use_case_id, title, scenario, category,
+                                  owner_user_id, inherent_likelihood, inherent_impact)
+         values ($1, $2, $3, 'Risque modéré de test', 'scénario', 'operational', $4, 2, 3) returning id`,
+        [DEMO.tenantA, DEMO.orgA, DEMO.useCasePilot, DEMO.riskOwnerA],
       )
       const { rows } = await c.query<{ id: string }>(
         `insert into public.risk_treatment (tenant_id, risk_id, strategy, description, owner_user_id, due_date)
-         values ($1, $2, 'reduce', 'Revue humaine des candidatures écartées', $3, current_date + 20) returning id`,
-        [DEMO.tenantA, DEMO.untreatedRisk, DEMO.systemOwnerA],
+         values ($1, $2, 'transfer', 'Clause contractuelle avec le fournisseur', $3, current_date + 20) returning id`,
+        [DEMO.tenantA, risk[0]!.id, DEMO.systemOwnerA],
       )
       await becomeUser(c, DEMO.systemOwnerA)
       const { rows: now } = await c.query<{ kind: string; href: string }>(
@@ -42,6 +49,48 @@ describe('Traitement d’un risque', () => {
     expect(r.now.map((n) => n.kind)).toEqual(['treatment_owner'])
     expect(r.now[0]!.href).toMatch(/onglet=risques/)
     expect(r.later.map((n) => n.kind)).toEqual(['treatment_due'])
+  })
+
+  it('réduire exige un contrôle, qui devient applicable au cas d’usage', async () => {
+    const r = await asUser(db, DEMO.officerA, async (c) => {
+      const noControl = await expectFailure(
+        c,
+        `insert into public.risk_treatment (tenant_id, risk_id, strategy, description, owner_user_id)
+         values ($1, $2, 'reduce', 'Sans contrôle', $3)`,
+        [DEMO.tenantA, DEMO.untreatedRisk, DEMO.riskOwnerA],
+      )
+      const asAccept = await expectFailure(
+        c,
+        `insert into public.risk_treatment (tenant_id, risk_id, strategy, description, owner_user_id)
+         values ($1, $2, 'accept', 'Accepter comme traitement', $3)`,
+        [DEMO.tenantA, DEMO.untreatedRisk, DEMO.riskOwnerA],
+      )
+      // CTL-08 n'est pas encore applicable au pilote : le traitement l'y rend.
+      const { rows: ctl } = await c.query<{ id: string }>(
+        `select id from public.control where organization_id = $1 and code = 'CTL-08'`, [DEMO.orgA],
+      )
+      const { rows: t } = await c.query<{ id: string }>(
+        `insert into public.risk_treatment (tenant_id, risk_id, strategy, description, owner_user_id, control_id, due_date)
+         values ($1, $2, 'reduce', 'Revue périodique des décisions de gouvernance', $3, $4, current_date + 30) returning id`,
+        [DEMO.tenantA, DEMO.untreatedRisk, DEMO.riskOwnerA, ctl[0]!.id],
+      )
+      const { rows: applicability } = await c.query<{ status: string; justification: string }>(
+        `select status, justification from public.control_applicability where use_case_id = $1 and control_id = $2`,
+        [DEMO.useCasePilot, ctl[0]!.id],
+      )
+      // Risque critique : une action s'ouvre pour le responsable, bloquante.
+      const { rows: action } = await c.query<{ title: string; owner_user_id: string; is_blocking: boolean }>(
+        `select title, owner_user_id, is_blocking from public.action where source = 'risk' and source_id = $1`, [t[0]!.id],
+      )
+      return { noControl, asAccept, applicability: applicability[0], action: action[0] }
+    })
+    expect(r.noControl.message).toMatch(/désigner le contrôle/)
+    expect(r.asAccept.message).toMatch(/n’est pas un traitement|n'est pas un traitement/)
+    expect(r.applicability?.status).toBe('applicable')
+    expect(r.applicability?.justification).toMatch(/Traite le risque RSK-/)
+    expect(r.action?.owner_user_id).toBe(DEMO.riskOwnerA)
+    expect(r.action?.is_blocking).toBe(true)
+    expect(r.action?.title).toMatch(/Mettre en œuvre le traitement/)
   })
 })
 
@@ -65,9 +114,22 @@ describe('Acceptation d’un risque', () => {
           where id = $1`,
         [DEMO.untreatedRisk, DEMO.riskOwnerA],
       )
-      return { byOfficer, rowCount }
+      const { rows: decision } = await c.query<{ status: string; decision_type: string; submitted_by: string }>(
+        `select d.status, d.decision_type, d.submitted_by from public.decision_link l
+           join public.governance_decision d on d.id = l.decision_id
+          where l.target_type = 'risk' and l.target_id = $1`,
+        [DEMO.untreatedRisk],
+      )
+      const { rows: settled } = await c.query<{ s: boolean }>(
+        `select app.risk_is_settled(r) as s from public.risk r where r.id = $1`, [DEMO.untreatedRisk],
+      )
+      return { byOfficer, rowCount, decision: decision[0], settled: settled[0]!.s }
     })
     expect(r.byOfficer.message).toMatch(/personne désignée responsable/)
     expect(r.rowCount).toBe(1)
+    // Elevé ou critique : l'acceptation ouvre une decision, a approuver par
+    // quelqu'un d'autre ; jusque-la, le risque n'est pas solde au gate.
+    expect(r.decision).toEqual({ status: 'submitted', decision_type: 'risk_acceptance', submitted_by: DEMO.riskOwnerA })
+    expect(r.settled).toBe(false)
   })
 })

@@ -720,7 +720,13 @@ export default async function UseCasePage({
             tone={unsettledRisks ? 'warn' : 'neutral'}
             action={
               <span className="flex items-center gap-2">
-                <RiskPanel useCaseId={id} riskCount={risks?.length ?? 0} people={people} controls={treatmentChoices} />
+                <RiskPanel
+                  useCaseId={id}
+                  organizationId={useCase.organization_id}
+                  riskCount={risks?.length ?? 0}
+                  people={people}
+                  controls={treatmentChoices}
+                />
                 <RiskNote />
               </span>
             }
@@ -771,6 +777,8 @@ export default async function UseCasePage({
                           riskId={risk.id}
                           useCaseId={id}
                           riskTitle={risk.title}
+                          riskScenario={risk.scenario}
+                          organizationId={useCase.organization_id}
                           people={people}
                           controls={treatmentChoices}
                         />
