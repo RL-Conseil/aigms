@@ -139,7 +139,7 @@ export default async function OrganizationAdministrationPage({
             </Card>
           ) : null}
           <Card
-            title="Rôle vis-à-vis de l’IA"
+            title="Rôle de l’organisation vis-à-vis de l’IA"
             subtitle={profile ? ACTIVITY_PROFILE_LABELS[profile] : 'Non renseigné'}
           >
             <ActivityProfileForm organizationId={id} current={profile} />

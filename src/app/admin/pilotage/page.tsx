@@ -4,6 +4,7 @@ import { Card, Empty } from '@/components/ui'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import { attentionByOrganization } from '@/lib/governance/attention'
 import { AttentionByOrganization, AttentionChart } from '@/components/governance/attention-chart'
+import { OrganizationRoleCard } from '@/components/governance/organization-role-card'
 import { GovernanceHealth, type Health } from '@/components/governance/governance-health'
 import { formatDate } from '@/lib/domain/governance'
 import { OrganizationFilter } from '@/components/governance/organization-filter'
@@ -135,7 +136,9 @@ export default async function DashboardPage({
           <Card title="Chez qui" subtitle="Par organisation, du plus chargé au moins chargé. Chaque compteur ouvre sa liste.">
             <AttentionByOrganization rows={attention} />
           </Card>
-        ) : null}
+        ) : (
+          <OrganizationRoleCard organizationId={scoped} />
+        )}
 
         <Card
           title="Gates refusés récemment"

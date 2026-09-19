@@ -103,7 +103,7 @@ export default async function PrintableSoaPage({ params }: { params: Promise<{ i
       <section className="doc-keep mb-7 rounded-md border border-ink-200 bg-ink-50 p-4">
         <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-[12px] sm:grid-cols-4">
           <div>
-            <dt className="text-ink-500">Rôle vis-à-vis de l’IA</dt>
+            <dt className="text-ink-500">Rôle de l’organisation vis-à-vis de l’IA</dt>
             <dd className="font-medium text-ink-900">
               {profile ? ACTIVITY_PROFILE_LABELS[profile] : 'Non renseigné'}
             </dd>
