@@ -127,7 +127,7 @@ export default async function SettingsPage() {
                     <Field label="Nom enregistré">{viewer.fullName ?? '—'}</Field>
                     <Field label="Fonction">{viewer.jobTitle ?? '—'}</Field>
                     <Field label="Adresse électronique">{viewer.email}</Field>
-                    <Field label="Rôle vis-à-vis de l’IA">
+                    <Field label="Rôle de l’organisation vis-à-vis de l’IA">
                       {current.ai_activity_profile ? (
                         ACTIVITY_PROFILE_LABELS[current.ai_activity_profile as ActivityProfile]
                       ) : (
