@@ -6,6 +6,7 @@ import { UseCaseLabelForm } from '@/components/governance/use-case-label-form'
 import { Badge, Card, Empty, Field, Stat, StatStrip } from '@/components/ui'
 import { TransitionModal } from '@/components/governance/transition-modal'
 import { AssetMeasureForm } from '@/components/governance/asset-measure-form'
+import { unlinkAssetFromUseCase } from '@/lib/actions/registry'
 import { resolveTab, UseCaseTabs, type TabSignal, type UseCaseTab } from '@/components/governance/use-case-tabs'
 import {
   CLASSIFICATION_FLAG_LABELS,
@@ -576,10 +577,25 @@ export default async function UseCasePage({
                               {asset.hosting_location ? ` · ${asset.hosting_location}` : ''}
                             </span>
                           </span>
-                          <span className="text-xs text-ink-500">
+                          <span className="flex items-center gap-2 text-xs text-ink-500">
                             {asset.measures.length
                               ? `${asset.measures.filter((m) => m.status === 'implemented' || m.status === 'verified').length}/${asset.measures.length} mesure${asset.measures.length > 1 ? 's' : ''} technique${asset.measures.length > 1 ? 's' : ''} en place`
                               : 'aucune mesure technique posée'}
+                            {organization ? (
+                              <Link
+                                href={`/admin/organizations/${organization.id}/actifs/${asset.asset_id}`}
+                                className="text-brand-600 hover:underline"
+                              >
+                                Fiche
+                              </Link>
+                            ) : null}
+                            <form action={unlinkAssetFromUseCase}>
+                              <input type="hidden" name="useCaseId" value={id} />
+                              <input type="hidden" name="linkId" value={asset.link_id} />
+                              <button type="submit" className="text-ink-400 hover:text-stop-600 hover:underline">
+                                Détacher
+                              </button>
+                            </form>
                           </span>
                         </div>
                         {asset.measures.length ? (

@@ -1,0 +1,4 @@
+﻿name;is_model_provider;criticality;country_code;dpa_signed;security_assessed;reversibility_documented;subprocessors;notes
+OpenAI;oui;élevée;US;oui;non;non;Microsoft Azure;Modèle généraliste appelé par l'assistant support
+TalentScreen Analytics;oui;critique;FR;oui;oui;non;;Scoring de candidatures, données de candidats
+Cabinet Dupont Conseil;non;modérée;FR;non;non;oui;;Accompagnement méthodologique

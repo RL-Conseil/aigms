@@ -549,3 +549,120 @@ export async function updateVendorLabels(
   revalidatePath(`/admin/organizations/${input.organizationId}`)
   return { ok: true, message: 'Fiche corrigée. La revue tiers, elle, reste ce qu’elle était.' }
 }
+
+// =============================================================================
+// Détacher un actif d'un cas d'usage
+// =============================================================================
+// Le lien se retire ; l'actif reste au registre, avec ses mesures.
+export async function unlinkAssetFromUseCase(formData: FormData): Promise<void> {
+  const parsed = z
+    .object({ useCaseId: z.string().uuid(), linkId: z.string().uuid() })
+    .safeParse({ useCaseId: formData.get('useCaseId'), linkId: formData.get('linkId') })
+  if (!parsed.success) return
+  const supabase = await createClient()
+  await supabase.from('use_case_asset_link').delete().eq('id', parsed.data.linkId)
+  revalidatePath(`/admin/use-cases/${parsed.data.useCaseId}`)
+}
+
+// =============================================================================
+// Corriger la fiche d'un actif
+// =============================================================================
+const assetLabelSchema = z.object({
+  organizationId: z.string().uuid(),
+  assetId: z.string().uuid(),
+  name: z.string().trim().min(2, 'Nom trop court.').max(160),
+  description: z.string().trim().max(2000).optional().or(z.literal('')),
+  version: z.string().trim().max(60).optional().or(z.literal('')),
+  hostingLocation: z.string().trim().max(160).optional().or(z.literal('')),
+  containsPersonalData: z.coerce.boolean(),
+  ownerUserId: z.string().uuid().optional().or(z.literal('')),
+  vendorId: z.string().uuid().optional().or(z.literal('')),
+})
+
+export async function updateAssetLabels(_previous: FormState | null, formData: FormData): Promise<FormState> {
+  const parsed = assetLabelSchema.safeParse({
+    organizationId: formData.get('organizationId'),
+    assetId: formData.get('assetId'),
+    name: formData.get('name'),
+    description: formData.get('description') ?? '',
+    version: formData.get('version') ?? '',
+    hostingLocation: formData.get('hostingLocation') ?? '',
+    containsPersonalData: formData.get('containsPersonalData') === 'on',
+    ownerUserId: formData.get('ownerUserId') ?? '',
+    vendorId: formData.get('vendorId') ?? '',
+  })
+  if (!parsed.success) return firstIssues(parsed.error)
+  const input = parsed.data
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('ai_asset')
+    .update({
+      name: input.name,
+      description: input.description || null,
+      version: input.version || null,
+      hosting_location: input.hostingLocation || null,
+      contains_personal_data: input.containsPersonalData,
+      owner_user_id: input.ownerUserId || null,
+      vendor_id: input.vendorId || null,
+    })
+    .eq('id', input.assetId)
+    .select('id')
+  if (error) return { ok: false, message: explain(error) }
+  if (!data?.length) return { ok: false, message: 'Votre rôle ne permet pas cette écriture.' }
+  revalidatePath(`/admin/organizations/${input.organizationId}/actifs`)
+  revalidatePath(`/admin/organizations/${input.organizationId}/actifs/${input.assetId}`)
+  return { ok: true, message: 'Fiche de l’actif corrigée.' }
+}
+
+// =============================================================================
+// Importer des actifs, des fournisseurs (CSV)
+// =============================================================================
+// L'application lit le fichier et nomme les colonnes ; la base rapproche par
+// nom, cree ou met a jour, et rend compte ligne par ligne.
+export type ImportState =
+  | { ok: true; message: string; created: number; updated: number; issues: { line: number; message: string }[]; ignored: string[] }
+  | { ok: false; message: string }
+
+async function importRegistryCsv(
+  formData: FormData,
+  what: 'actifs' | 'fournisseurs',
+): Promise<ImportState> {
+  const organizationId = z.string().uuid().safeParse(formData.get('organizationId'))
+  if (!organizationId.success) return { ok: false, message: 'Organisation inconnue.' }
+  const file = formData.get('file')
+  if (!(file instanceof File) || file.size === 0) return { ok: false, message: 'Choisir un fichier CSV.' }
+  if (file.size > 2_000_000) return { ok: false, message: 'Fichier trop volumineux (2 Mo maximum).' }
+
+  const { readRegistryCsv, ASSET_COLUMNS, VENDOR_COLUMNS } = await import('@/lib/registry/csv')
+  const parsed = readRegistryCsv(await file.text(), what === 'actifs' ? ASSET_COLUMNS : VENDOR_COLUMNS)
+  if (!parsed.rows.length) return { ok: false, message: 'Aucune ligne lue : vérifier l’en-tête et le séparateur.' }
+  if (parsed.rows.length > 2000) return { ok: false, message: 'Au plus 2 000 lignes par import.' }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase.rpc(what === 'actifs' ? 'import_ai_assets' : 'import_vendors', {
+    p_organization_id: organizationId.data,
+    p_rows: parsed.rows,
+  })
+  if (error) return { ok: false, message: explain(error) }
+  const result = data as { created: number; updated: number; issues: { line: number; message: string }[] }
+
+  revalidatePath(`/admin/organizations/${organizationId.data}`)
+  revalidatePath(`/admin/organizations/${organizationId.data}/actifs`)
+  revalidatePath(`/admin/organizations/${organizationId.data}/administration`)
+  return {
+    ok: true,
+    message: `${result.created} créé(s), ${result.updated} mis à jour${result.issues.length ? `, ${result.issues.length} ligne(s) refusée(s)` : ''}.`,
+    created: result.created,
+    updated: result.updated,
+    issues: result.issues,
+    ignored: parsed.ignored,
+  }
+}
+
+export async function importAssetsCsv(_previous: ImportState | null, formData: FormData): Promise<ImportState> {
+  return importRegistryCsv(formData, 'actifs')
+}
+
+export async function importVendorsCsv(_previous: ImportState | null, formData: FormData): Promise<ImportState> {
+  return importRegistryCsv(formData, 'fournisseurs')
+}

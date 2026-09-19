@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { organizationReadiness } from '@/lib/governance/readiness'
 import { ReadinessCard } from '@/components/governance/readiness-banner'
+import { RegistryImportForm } from '@/components/governance/registry-import'
 import { Badge, Card, Empty } from '@/components/ui'
 import { InfoTip } from '@/components/info-tip'
 import { OrganizationIdentityForm, OrganizationLogoForm } from '@/components/admin/forms'
@@ -120,6 +121,25 @@ export default async function OrganizationAdministrationPage({
             subtitle="Le nom d’usage des écrans ; la raison sociale, l’adresse et les mentions des documents remis."
           >
             <OrganizationIdentityForm organization={organization} />
+          </Card>
+
+          {/*
+            Reprise de donnees : l'inventaire des actifs et le registre des
+            fournisseurs existent presque toujours ailleurs (CMDB, registre des
+            traitements, tableur). L'administration peut les verser — c'est une
+            reprise, pas un acte de gouvernance. Voir docs/admin/IMPORTER_ACTIFS_ET_FOURNISSEURS.md.
+          */}
+          <Card
+            title="Importer les actifs d’IA"
+            subtitle="Depuis une CMDB, un registre des traitements ou un tableur. Rapprochement par nom : une ligne connue met à jour, une nouvelle crée."
+          >
+            <RegistryImportForm organizationId={id} what="actifs" />
+          </Card>
+          <Card
+            title="Importer les fournisseurs"
+            subtitle="Fournisseurs de modèles, d’hébergement, de services. Chaque fournisseur créé arrive « revue non commencée »."
+          >
+            <RegistryImportForm organizationId={id} what="fournisseurs" />
           </Card>
         </div>
 

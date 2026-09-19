@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState, useMemo, useState } from 'react'
+import { MEASURE_KIND_LABELS } from '@/lib/domain/governance'
 import { instantiateCatalogControl, type FormState } from '@/lib/actions/controls'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 
@@ -30,6 +31,7 @@ export type CatalogChoice = {
   owner_role: string | null
   mapping_count: number
   instantiated_control_id: string | null
+  measure_kind: string
   assessment_questions: string[]
   expected_evidence: string[]
   framework_mappings: { framework: string; version?: string; reference: string }[]
@@ -85,7 +87,13 @@ export function CatalogPickForm({
     return [...seen.entries()]
   }, [inFramework])
   const [domain, setDomain] = useState('')
-  const inDomain = inFramework.filter((c) => !domain || c.domain_code === domain)
+  // La nature — technique, organisationnelle, contractuelle — trie la liste
+  // autant que le domaine : on cherche souvent « une mesure technique pour… ».
+  const [kind, setKind] = useState('')
+  const inDomain = inFramework.filter((c) => (!domain || c.domain_code === domain) && (!kind || c.measure_kind === kind))
+  const byKind = (['technical', 'organizational', 'contractual'] as const)
+    .map((k) => ({ kind: k, items: inDomain.filter((c) => c.measure_kind === k) }))
+    .filter((g) => g.items.length)
   const [picked, setPicked] = useState('')
   const control = choices.find((c) => c.catalog_control_id === picked) ?? null
 
@@ -141,6 +149,25 @@ export function CatalogPickForm({
         </Field>
       </div>
 
+      <Field label="Nature de la mesure" htmlFor="pick-kind" optional hint="Technique : sur un actif. Organisationnelle : organisation, processus, cas d’usage. Contractuelle : fournisseur.">
+        <select
+          id="pick-kind"
+          value={kind}
+          onChange={(e) => {
+            setKind(e.target.value)
+            setPicked('')
+          }}
+          className={FIELD}
+        >
+          <option value="">Toutes les natures</option>
+          {Object.entries(MEASURE_KIND_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </Field>
+
       <Field
         label="Contrôle-type"
         htmlFor="pick-control"
@@ -156,11 +183,15 @@ export function CatalogPickForm({
           className={FIELD}
           size={Math.min(12, Math.max(4, inDomain.length))}
         >
-          {inDomain.map((c) => (
-            <option key={c.catalog_control_id} value={c.catalog_control_id} disabled={Boolean(c.instantiated_control_id)}>
-              {c.code} — {c.title}
-              {c.instantiated_control_id ? ' (déjà présent)' : c.objective ? '' : ' (titre seul)'}
-            </option>
+          {byKind.map((group) => (
+            <optgroup key={group.kind} label={`${MEASURE_KIND_LABELS[group.kind]}s (${group.items.length})`}>
+              {group.items.map((c) => (
+                <option key={c.catalog_control_id} value={c.catalog_control_id} disabled={Boolean(c.instantiated_control_id)}>
+                  {c.code} — {c.title}
+                  {c.instantiated_control_id ? ' (déjà présent)' : c.objective ? '' : ' (titre seul)'}
+                </option>
+              ))}
+            </optgroup>
           ))}
         </select>
       </Field>
@@ -171,7 +202,7 @@ export function CatalogPickForm({
             {control.code} — {control.title}
           </p>
           <p className="mt-0.5 text-xs text-ink-500">
-            {control.domain_code} · {control.domain_name}
+            {MEASURE_KIND_LABELS[control.measure_kind] ?? control.measure_kind} · {control.domain_code} · {control.domain_name}
             {control.default_applicability ? ` · ${control.default_applicability === 'mandatory' ? 'obligatoire par défaut' : 'conditionnel'}` : ''}
             {control.review_frequency ? ` · revue ${(FREQUENCY_LABELS[control.review_frequency] ?? control.review_frequency).toLowerCase()}` : ''}
             {control.owner_role ? ` · ${control.owner_role}` : ''}

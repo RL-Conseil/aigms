@@ -1,0 +1,5 @@
+﻿name;kind;description;version;vendor;hosting_location;contains_personal_data;owner_email
+Assistant support client;système;Chatbot de réponse de premier niveau aux tickets;2.3;OpenAI;UE — Azure Francfort;oui;owner@izarlink.demo
+GPT-4o (API);modèle;Modèle de langage généraliste appelé par l'assistant;2024-08;OpenAI;US;non;
+Agent de planification;agent;Agent qui propose les tournées à partir des commandes;1.0;;UE — hébergement interne;non;owner@izarlink.demo
+Historique des tickets 2024;jeu de données;Tickets anonymisés servant à l'évaluation;2024-12;;UE — hébergement interne;non;
