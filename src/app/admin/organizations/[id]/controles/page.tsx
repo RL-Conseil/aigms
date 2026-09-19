@@ -10,7 +10,7 @@ import {
   ControlStateForm,
   RequirementMappingForm,
 } from '@/components/governance/control-forms'
-import { CONTROL_STATUS_LABELS, formatDate } from '@/lib/domain/governance'
+import { CONTROL_STATUS_LABELS, formatDate, MEASURE_KIND_LABELS } from '@/lib/domain/governance'
 
 /**
  * Referentiel de controles de l'organisation.
@@ -30,6 +30,7 @@ type Control = {
   status: string
   is_mandatory: boolean
   frequency: string | null
+  measure_kind: string
   expected_evidence: string[] | null
   assessment_questions: string[] | null
   owner: { full_name: string | null; email: string } | null
@@ -65,7 +66,7 @@ export default async function ControlsPage({
       supabase
         .from('control')
         .select(
-          'id, business_ref, code, name, objective, status, is_mandatory, frequency, last_tested_at, next_test_at, expected_evidence, assessment_questions, owner:owner_user_id (full_name, email), catalog:catalog_control_id (control_code, version:version_id (version, framework:framework_id (code)))',
+          'id, business_ref, code, name, objective, status, is_mandatory, measure_kind, frequency, last_tested_at, next_test_at, expected_evidence, assessment_questions, owner:owner_user_id (full_name, email), catalog:catalog_control_id (control_code, version:version_id (version, framework:framework_id (code)))',
         )
         .eq('organization_id', id)
         .order('code'),
@@ -253,6 +254,7 @@ export default async function ControlsPage({
 
                   <div className="flex shrink-0 flex-col items-end gap-2">
                     <div className="flex gap-2">
+                      <Badge tone="neutral">{MEASURE_KIND_LABELS[control.measure_kind] ?? control.measure_kind}</Badge>
                       {control.is_mandatory ? <Badge tone="warn">Obligatoire</Badge> : null}
                       <Badge
                         tone={

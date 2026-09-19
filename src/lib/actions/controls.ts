@@ -82,6 +82,7 @@ const controlSchema = z.object({
     )
     .max(1000),
   status: z.enum(CONTROL_STATUSES),
+  measureKind: z.enum(['technical', 'organizational', 'contractual']),
   isMandatory: z.coerce.boolean(),
   ownerUserId: z.string().uuid().optional().or(z.literal('')),
   frequency: z.string().trim().max(60).optional().or(z.literal('')),
@@ -105,6 +106,7 @@ export async function createControl(
     objective: formData.get('objective'),
     status: formData.get('status') ?? 'proposed',
     isMandatory: formData.get('isMandatory') === 'on',
+    measureKind: formData.get('measureKind') ?? 'organizational',
     ownerUserId: formData.get('ownerUserId') ?? '',
     expectedEvidence: formData.get('expectedEvidence') ?? '',
     assessmentQuestions: formData.get('assessmentQuestions') ?? '',
@@ -128,6 +130,7 @@ export async function createControl(
     objective: input.objective,
     status: input.status,
     is_mandatory: input.isMandatory,
+    measure_kind: input.measureKind,
     owner_user_id: input.ownerUserId || null,
     frequency: input.frequency || null,
     test_procedure: input.testProcedure || null,
@@ -640,4 +643,55 @@ export async function adoptCatalogControl(input: {
     code: control?.code ?? result.code,
     name: control?.name ?? '',
   }
+}
+
+// =============================================================================
+// Une mesure technique, posée sur un actif
+// =============================================================================
+// C'est la que la mesure technique se tient et se prouve : pas « quelque part
+// dans le cas d'usage », mais sur CE modele, CE systeme, CE jeu de donnees.
+const assetMeasureSchema = z.object({
+  useCaseId: z.string().uuid(),
+  assetId: z.string().uuid({ message: 'Choisir l’actif qui porte la mesure.' }),
+  controlId: z.string().uuid(),
+  status: z.enum(['planned', 'implemented', 'verified', 'not_applicable']),
+  note: z.string().trim().max(1000).optional().or(z.literal('')),
+})
+
+export async function placeMeasureOnAsset(
+  _previous: FormState | null,
+  formData: FormData,
+): Promise<FormState> {
+  const parsed = assetMeasureSchema.safeParse({
+    useCaseId: formData.get('useCaseId'),
+    assetId: formData.get('assetId'),
+    controlId: formData.get('controlId'),
+    status: formData.get('status') ?? 'planned',
+    note: formData.get('note') ?? '',
+  })
+  if (!parsed.success) return firstIssues(parsed.error)
+
+  const supabase = await createClient()
+  const { data: asset } = await supabase
+    .from('ai_asset')
+    .select('tenant_id')
+    .eq('id', parsed.data.assetId)
+    .maybeSingle()
+  if (!asset) return { ok: false, message: 'Actif introuvable.' }
+
+  const { error } = await supabase.from('asset_control').upsert(
+    {
+      tenant_id: asset.tenant_id,
+      asset_id: parsed.data.assetId,
+      control_id: parsed.data.controlId,
+      status: parsed.data.status,
+      note: parsed.data.note || null,
+      verified_at: parsed.data.status === 'verified' ? new Date().toISOString().slice(0, 10) : null,
+    },
+    { onConflict: 'asset_id,control_id' },
+  )
+  if (error) return { ok: false, message: explain(error) }
+
+  revalidatePath(`/admin/use-cases/${parsed.data.useCaseId}`)
+  return { ok: true, message: 'Mesure posée sur l’actif, avec son état.' }
 }

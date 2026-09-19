@@ -157,6 +157,30 @@ export function formatDateTime(value: string | null | undefined): string {
   )
 }
 
+/**
+ * La nature d'une mesure : ou elle se pose, et ou elle se prouve. Technique
+ * sur un actif ; organisationnelle sur l'organisation, le processus ou le cas
+ * d'usage ; contractuelle chez un fournisseur.
+ */
+export const MEASURE_KIND_LABELS: Record<string, string> = {
+  technical: 'Mesure technique',
+  organizational: 'Mesure organisationnelle',
+  contractual: 'Mesure contractuelle',
+}
+
+export const MEASURE_KIND_HINTS: Record<string, string> = {
+  technical: 'Se pose sur un actif — modèle, système, agent, jeu de données — et se prouve là.',
+  organizational: 'Se pose sur l’organisation, un processus ou le cas d’usage : politique, formation, revue, séparation des rôles.',
+  contractual: 'Se pose chez un fournisseur : DPA, conditions d’usage, clauses de réversibilité.',
+}
+
+export const ASSET_MEASURE_STATUS_LABELS: Record<string, string> = {
+  planned: 'Prévue',
+  implemented: 'Mise en œuvre',
+  verified: 'Vérifiée',
+  not_applicable: 'Sans objet',
+}
+
 export const CONTROL_STATUS_LABELS: Record<string, string> = {
   proposed: 'Proposé',
   implemented: 'Mis en place',
