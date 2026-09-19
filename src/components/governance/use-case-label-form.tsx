@@ -22,9 +22,12 @@ export function UseCaseLabelForm({
   useCase,
   people,
   trigger = 'Corriger la fiche',
+  icon = false,
 }: {
   /** Libelle du bouton d'ouverture. */
   trigger?: string
+  /** Un crayon a cote du nom, plutot qu'un bouton dans la barre d'actions. */
+  icon?: boolean
   useCase: {
     id: string
     name: string
@@ -47,7 +50,26 @@ export function UseCaseLabelForm({
 
   return (
     <Modal
-      trigger={trigger}
+      trigger={
+        icon ? (
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden>
+            <path
+              d="M11.3 2.3a1.4 1.4 0 0 1 2 2L5.5 12.1 2.5 13l.9-3L11.3 2.3Z"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinejoin="round"
+            />
+          </svg>
+        ) : (
+          trigger
+        )
+      }
+      triggerLabel={icon ? trigger : undefined}
+      triggerClassName={
+        icon
+          ? 'inline-flex size-7 items-center justify-center rounded-full border border-ink-200 text-ink-500 hover:border-ink-400 hover:text-ink-900'
+          : undefined
+      }
       title="Corriger la fiche"
       description="Ce qui décrit le cas d’usage. Sa qualification et son statut se prononcent ailleurs."
     >

@@ -33,8 +33,8 @@ export function Modal({
    * actes (retenir des propositions) ou a lire un resultat (une transition).
    */
   closeOnSuccess?: boolean
-  /** Libelle du bouton qui l'ouvre. */
-  trigger: string
+  /** Libelle du bouton qui l'ouvre — ou une icone, avec `triggerLabel`. */
+  trigger: ReactNode
   /** Nom accessible, quand le libelle visible est un signe (« + »). */
   triggerLabel?: string
   /** Remplace le style du bouton d'ouverture. */
