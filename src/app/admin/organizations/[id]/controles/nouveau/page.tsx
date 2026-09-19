@@ -41,13 +41,14 @@ export default async function NewControlPage({
       // lit avant d'ajouter : un choix eclaire vaut mieux qu'un titre.
       supabase
         .from('catalog_control')
-        .select('id, assessment_questions, expected_evidence, framework_mappings'),
+        .select('id, assessment_questions, expected_evidence, framework_mappings, measure_kind'),
     ])
 
   const detailById = new Map(
     (details ?? []).map((d) => [
       d.id,
       {
+        measure_kind: (d.measure_kind as string) ?? 'organizational',
         assessment_questions: (d.assessment_questions as string[]) ?? [],
         expected_evidence: (d.expected_evidence as string[]) ?? [],
         framework_mappings:
@@ -55,10 +56,11 @@ export default async function NewControlPage({
       },
     ]),
   )
-  const choices: CatalogChoice[] = ((catalog ?? []) as Omit<CatalogChoice, 'assessment_questions' | 'expected_evidence' | 'framework_mappings'>[]).map(
+  const choices: CatalogChoice[] = ((catalog ?? []) as Omit<CatalogChoice, 'assessment_questions' | 'expected_evidence' | 'framework_mappings' | 'measure_kind'>[]).map(
     (c) => ({
       ...c,
       ...(detailById.get(c.catalog_control_id) ?? {
+        measure_kind: 'organizational',
         assessment_questions: [],
         expected_evidence: [],
         framework_mappings: [],

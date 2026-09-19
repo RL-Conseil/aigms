@@ -42,14 +42,14 @@ export type CsvTranslation =
   | { ok: false; issues: CsvIssue[] }
 
 /** Detecte le separateur sur la ligne d'en-tete : point-virgule (Excel FR) ou virgule. */
-function detectDelimiter(header: string): ';' | ',' {
+export function detectDelimiter(header: string): ';' | ',' {
   const semicolons = (header.match(/;/g) ?? []).length
   const commas = (header.match(/,/g) ?? []).length
   return semicolons >= commas ? ';' : ','
 }
 
 /** Decoupe une ligne en champs, en respectant les guillemets doubles. */
-function splitLine(line: string, delimiter: string): string[] {
+export function splitLine(line: string, delimiter: string): string[] {
   const fields: string[] = []
   let current = ''
   let quoted = false

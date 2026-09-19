@@ -88,3 +88,19 @@ test('une évaluation d’impact se conduit depuis la fiche', async ({ page }) =
   await fenetre.getByRole('button', { name: 'Enregistrer l’évaluation' }).click()
   await expect(fenetre.getByText(/sur qui, et sous quel angle/i)).toBeVisible()
 })
+
+test('le registre des actifs se lit, s’imprime, et chaque actif a sa fiche', async ({ page }) => {
+  await page.goto(`/admin/organizations/cccccccc-0000-4000-8000-000000000001/actifs`)
+  await expect(page.getByRole('heading', { name: 'Registre des actifs d’IA' })).toBeVisible()
+  await expect(page.getByRole('navigation', { name: 'Filtrer par nature' })).toBeVisible()
+  // La barre des registres le porte.
+  await page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('button', { name: /^Registres/ }).click()
+  await expect(page.getByRole('menuitem', { name: /Actifs d’IA/ })).toHaveAttribute('aria-current', 'page')
+  await page.keyboard.press('Escape')
+  // La fiche d'un actif : identite, mesures, cas d'usage.
+  const first = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Actifs' }) }).getByRole('link').first()
+  await first.click()
+  await expect(page.getByRole('heading', { name: 'Mesures techniques posées sur cet actif' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Cas d’usage qui l’emploient' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Modifier la fiche' })).toBeVisible()
+})
