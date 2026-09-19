@@ -265,3 +265,10 @@ test('les alertes sont nominatives et se lisent depuis le bandeau', async ({ pag
   await expect(page.getByRole('heading', { name: 'Mes alertes' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'À lire' })).toBeVisible()
 })
+
+test('la fiche se corrige d’un crayon, à côté du nom', async ({ page }) => {
+  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000001')
+  await page.getByRole('button', { name: 'Modifier la fiche' }).click()
+  await expect(page.getByRole('dialog', { name: 'Corriger la fiche' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Changer' })).toHaveCount(0)
+})

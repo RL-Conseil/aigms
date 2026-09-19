@@ -72,6 +72,7 @@ export async function Shell({
   breadcrumb,
   title,
   subtitle,
+  titleAside,
   actions,
   organization,
   activeNav,
@@ -85,6 +86,8 @@ export async function Shell({
   breadcrumb?: { href?: string; label: string }[]
   title: string
   subtitle?: string
+  /** A droite du titre, colle a lui : un geste sur l'objet meme (modifier). */
+  titleAside?: ReactNode
   actions?: ReactNode
   /** Renseigne, la barre sait quelle section est active. */
   organization?: { id: string; section: OrganizationSection }
@@ -334,7 +337,10 @@ export async function Shell({
 
         <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-xl font-semibold text-ink-900">{title}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-semibold text-ink-900">{title}</h1>
+              {titleAside}
+            </div>
             {subtitle ? <p className="mt-1 text-sm text-ink-600">{subtitle}</p> : null}
           </div>
           {actions}

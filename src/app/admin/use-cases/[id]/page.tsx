@@ -406,6 +406,7 @@ export default async function UseCasePage({
         { label: useCase.name },
       ]}
       title={useCase.name}
+      titleAside={<UseCaseLabelForm useCase={useCase} people={people} trigger="Modifier la fiche" icon />}
       subtitle={
         activity
           ? `${useCase.business_ref} · ${activity.process?.name ?? '—'} › ${activity.name}`
@@ -414,7 +415,6 @@ export default async function UseCasePage({
       actions={
         <div className="flex items-center gap-3">
           <Badge tone="info">{USE_CASE_STATUS_LABELS[status]}</Badge>
-          <UseCaseLabelForm useCase={useCase} people={people} trigger="Changer" />
           {/*
             Faire evoluer se demande depuis n'importe quelle rubrique : c'est
             l'acte central de la fiche, il ne vit pas dans un onglet.
