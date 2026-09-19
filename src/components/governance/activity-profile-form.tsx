@@ -31,7 +31,7 @@ export function ActivityProfileForm({
 
       <div>
         <label htmlFor="activityProfile" className="mb-1.5 block text-sm font-medium">
-          Rôle vis-à-vis de l’IA
+          Rôle de l’organisation vis-à-vis de l’IA
           <span className="ml-2 font-normal text-ink-500">ISO/IEC 42001</span>
         </label>
         <select

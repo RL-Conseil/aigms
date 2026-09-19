@@ -69,7 +69,7 @@ test("l'administration crée une organisation", async ({ page }) => {
 
   // Le role vis-a-vis de l'IA commande les typologies de preuves attendues :
   // il se renseigne a la creation, et le formulaire l'exige.
-  await page.getByLabel(/Rôle vis-à-vis de l’IA/).selectOption('integrator_consultant')
+  await page.getByLabel(/Rôle de l’organisation vis-à-vis de l’IA/).selectOption('integrator_consultant')
 
   await page.getByRole('button', { name: 'Créer l’organisation' }).click()
 
@@ -107,11 +107,11 @@ test("un rôle de gouvernance n'accède pas à la gestion des comptes", async ({
 })
 
 test('le rôle vis-à-vis de l’IA se lit sur la fiche et se change en administration', async ({ page }) => {
-  // Sur la fiche, un role de gouvernance le lit ; il ne le change pas.
+  // En pilotage, un role de gouvernance le lit ; il ne le change pas.
   await signIn(page, OFFICER)
-  await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001')
+  await page.goto('/admin/pilotage?organisation=cccccccc-0000-4000-8000-000000000001')
 
-  const carte = page.locator('section').filter({ hasText: 'Rôle vis-à-vis de l’IA' })
+  const carte = page.locator('section').filter({ hasText: 'Rôle de l’organisation vis-à-vis de l’IA' })
   await expect(carte.getByText('Hébergeur / Infrastructure').first()).toBeVisible()
   await expect(carte.getByRole('button', { name: 'Enregistrer le rôle' })).toHaveCount(0)
 
@@ -140,7 +140,7 @@ test('l’administration change le rôle vis-à-vis de l’IA, et ce qui est exi
   await expect(carte.getByText('Développeur / Éditeur d’IA', { exact: false }).first()).toBeVisible()
 
   // Remis dans l'etat du jeu de demonstration.
-  await carte.getByLabel(/Rôle vis-à-vis de l’IA/).selectOption('infrastructure_host')
+  await carte.getByLabel(/Rôle de l’organisation vis-à-vis de l’IA/).selectOption('infrastructure_host')
   await carte.getByRole('button', { name: 'Enregistrer le rôle' }).click()
   await expect(carte.getByText('Hébergeur / Infrastructure', { exact: false }).first()).toBeVisible()
 })

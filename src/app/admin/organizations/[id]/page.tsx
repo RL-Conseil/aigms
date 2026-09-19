@@ -8,13 +8,6 @@ import { SegmentedFilter } from '@/components/governance/segmented-filter'
 import { VendorLabelForm, VendorReviewForm } from '@/components/governance/registry-forms'
 import { attentionFor } from '@/lib/governance/attention'
 import {
-  ACTIVITY_PROFILE_LABELS,
-  CRITICALITY_LABELS,
-  criticalityTone,
-  type ActivityProfile,
-  type EvidenceCriticality,
-} from '@/lib/domain/activity-profile'
-import {
   AUTONOMY_LABELS,
   formatDate,
   VENDOR_REVIEW_LABELS,
@@ -51,7 +44,7 @@ export default async function OrganizationPage({
 
   if (!organization) notFound()
 
-  const [{ data: useCases }, { data: vendors }, { data: units }, { data: typologyRows }] =
+  const [{ data: useCases }, { data: vendors }, { data: units }] =
     await Promise.all([
       supabase
         .from('ai_use_case')
@@ -66,24 +59,9 @@ export default async function OrganizationPage({
         .eq('organization_id', id)
         .order('name'),
       supabase.from('business_unit').select('id, name').eq('organization_id', id).order('name'),
-      supabase.rpc('typology_coverage', { p_organization_id: id }),
     ])
 
   const attention = await attentionFor(id)
-
-  const profile = (organization.ai_activity_profile ?? null) as ActivityProfile | null
-  const typologies = (typologyRows ?? []) as {
-    code: string
-    name: string
-    criticality: EvidenceCriticality | null
-    evidence_total: number
-    evidence_valid: number
-  }[]
-  // Ce que le rôle retenu rend exigeant, tout de suite : le lien entre le choix
-  // et ses conséquences se perd si l'un et l'autre vivent sur deux écrans.
-  const demanding = typologies.filter(
-    (t) => t.criticality === 'critical' || t.criticality === 'high',
-  )
 
   return (
     <Shell
@@ -133,8 +111,13 @@ export default async function OrganizationPage({
         </div>
       ) : null}
 
-      <div className="grid gap-5 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      {/*
+        Le role de l'organisation vis-a-vis de l'IA se lit en pilotage : c'est
+        une lecture de conformite, pas une entree du registre. La liste des
+        usages prend toute la largeur.
+      */}
+      <div className="grid gap-5">
+        <div>
           <Card
             title={tab === 'fournisseurs' ? 'Fournisseurs' : "Cas d'usage IA"}
             subtitle={
@@ -235,87 +218,6 @@ export default async function OrganizationPage({
               <Empty>Aucun cas d&apos;usage déclaré.</Empty>
             )}
           </Card>
-        </div>
-
-        <div className="space-y-5">
-          <Card
-            title="Rôle vis-à-vis de l’IA"
-            subtitle={
-              profile
-                ? ACTIVITY_PROFILE_LABELS[profile]
-                : 'Non renseigné — aucune criticité ne peut être attribuée'
-            }
-          >
-            {/*
-              Lecture seule : changer le role requalifie la criticite de chaque
-              typologie de preuve. Cela se fait en administration, journalise —
-              pas depuis l'ecran ou l'on gouverne.
-            */}
-            <p className="text-sm leading-relaxed text-ink-600">
-              {profile ? (
-                <>
-                  <span className="font-medium text-ink-900">
-                    {ACTIVITY_PROFILE_LABELS[profile]}
-                  </span>{' '}
-                  <span className="text-ink-500">· ISO/IEC 42001</span>
-                </>
-              ) : (
-                'Non renseigné : aucune criticité de preuve ne peut être attribuée. L’administration de la plateforme le renseigne.'
-              )}
-            </p>
-
-            {profile ? (
-              <div className="mt-4 border-t border-ink-100 pt-3">
-                <p className="mb-2 text-xs font-medium text-ink-600">
-                  Ce que ce rôle rend exigeant pour l’organisation
-                </p>
-                {demanding.length ? (
-                  <ul className="flex flex-col gap-1.5">
-                    {demanding.map((typology) => (
-                      <li
-                        key={typology.code}
-                        className="flex items-baseline justify-between gap-2 text-sm"
-                      >
-                        <span className="text-ink-800">
-                          <span className="mr-2 font-mono text-xs text-ink-400">
-                            {typology.code}
-                          </span>
-                          {typology.name}
-                        </span>
-                        <span className="flex shrink-0 items-center gap-2">
-                          <span
-                            className={`text-xs ${
-                              typology.evidence_valid === 0 ? 'text-stop-600' : 'text-ink-500'
-                            }`}
-                          >
-                            {typology.evidence_valid} preuve
-                            {typology.evidence_valid > 1 ? 's' : ''}
-                          </span>
-                          <Badge tone={criticalityTone(typology.criticality)}>
-                            {typology.criticality
-                              ? CRITICALITY_LABELS[typology.criticality]
-                              : '—'}
-                          </Badge>
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <Empty>
-                    Aucune typologie critique ou élevée pour ce rôle. La matrice reste consultable
-                    depuis le registre des preuves.
-                  </Empty>
-                )}
-                <Link
-                  href={`/admin/organizations/${id}/preuves`}
-                  className="mt-3 inline-block text-xs font-medium text-brand-600 hover:underline"
-                >
-                  Voir le registre complet et déposer une preuve
-                </Link>
-              </div>
-            ) : null}
-          </Card>
-
         </div>
       </div>
     </Shell>
