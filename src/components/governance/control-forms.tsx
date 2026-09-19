@@ -11,6 +11,7 @@ import {
 } from '@/lib/actions/controls'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
+import { MEASURE_KIND_LABELS } from '@/lib/domain/governance'
 import { ControlFinder } from '@/components/governance/control-finder'
 import { CONTROL_STATUS_LABELS } from '@/lib/domain/governance'
 
@@ -167,6 +168,20 @@ export function ControlForm({
           <textarea id="ctl-questions" name="assessmentQuestions" rows={3} className={FIELD} placeholder={'La procédure est-elle datée et approuvée ?'} />
         </Field>
       </div>
+
+      <Field
+        label="Nature de la mesure"
+        htmlFor="ctl-kind"
+        hint="Technique : se pose sur un actif et s’y prouve. Organisationnelle : organisation, processus, cas d’usage. Contractuelle : chez un fournisseur."
+      >
+        <select id="ctl-kind" name="measureKind" defaultValue="organizational" className={FIELD}>
+          {Object.entries(MEASURE_KIND_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+      </Field>
 
       <label className="flex items-start gap-2.5 text-sm">
         <input type="checkbox" name="isMandatory" className="mt-0.5 size-4 accent-[oklch(0.45_0.11_245)]" />

@@ -5,6 +5,7 @@ import { Shell } from '@/components/shell'
 import { UseCaseLabelForm } from '@/components/governance/use-case-label-form'
 import { Badge, Card, Empty, Field, Stat, StatStrip } from '@/components/ui'
 import { TransitionModal } from '@/components/governance/transition-modal'
+import { AssetMeasureForm } from '@/components/governance/asset-measure-form'
 import { resolveTab, UseCaseTabs, type TabSignal, type UseCaseTab } from '@/components/governance/use-case-tabs'
 import {
   CLASSIFICATION_FLAG_LABELS,
@@ -54,8 +55,12 @@ import {
 import {
   ACTION_STATUS_LABELS,
   AUTONOMY_LABELS,
+  ASSET_KIND_LABELS,
+  ASSET_MEASURE_STATUS_LABELS,
   CONTROL_STATUS_LABELS,
   controlStatusTone,
+  MEASURE_KIND_HINTS,
+  MEASURE_KIND_LABELS,
   DECISION_STATUS_LABELS,
   INCIDENT_STATUS_LABELS,
   DECISION_TYPE_LABELS,
@@ -75,6 +80,30 @@ function riskTone(level: RiskLevel | null) {
   if (level === 'critical' || level === 'high') return 'stop' as const
   if (level === 'moderate') return 'warn' as const
   return 'neutral' as const
+}
+
+type UseCaseAsset = {
+  link_id: string
+  relation: string
+  asset_id: string
+  business_ref: string
+  name: string
+  kind: string
+  version: string | null
+  hosting_location: string | null
+  contains_personal_data: boolean
+  vendor: string | null
+  measures: {
+    id: string
+    control_id: string
+    code: string
+    name: string
+    measure_kind: string
+    control_status: string
+    status: string
+    note: string | null
+    verified_at: string | null
+  }[]
 }
 
 export default async function UseCasePage({
@@ -167,7 +196,7 @@ export default async function UseCasePage({
       .order('approved_at', { ascending: false, nullsFirst: false }),
     supabase
       .from('control_applicability')
-      .select('id, status, justification, control:control_id (id, code, name, is_mandatory, status)')
+      .select('id, status, justification, control:control_id (id, code, name, is_mandatory, status, measure_kind)')
       .eq('use_case_id', id),
     supabase
       .from('action')
@@ -276,6 +305,14 @@ export default async function UseCasePage({
   const applicableControlIds = applicableControls
     .map((c) => (c.control as unknown as { id: string } | null)?.id)
     .filter((cid): cid is string => Boolean(cid))
+  // Les actifs du cas d'usage, avec leurs mesures : lus sur le fil conducteur
+  // et dans les controles (une mesure technique se pose sur un actif).
+  const { data: assetsData } =
+    tab === 'fil' || tab === 'controles'
+      ? await supabase.rpc('use_case_assets', { p_use_case_id: id })
+      : { data: null }
+  const useCaseAssets = (assetsData ?? []) as UseCaseAsset[]
+
   const { data: evidenceLinks } =
     tab === 'supervision' && applicableControlIds.length
       ? await supabase
@@ -511,6 +548,67 @@ export default async function UseCasePage({
                   <LinkVendorForm useCaseId={id} vendors={vendorChoices} />
                 </span>
               </div>
+
+              {/*
+                Les actifs qu'emploie le cas d'usage — plusieurs, souvent : un
+                modele, un systeme, un jeu de donnees — et, pour chacun, les
+                mesures techniques posees dessus. C'est la que la gouvernance
+                touche la technique.
+              */}
+              <div className="mt-4 border-t border-ink-100 pt-4">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-500">
+                  Actifs d’IA employés
+                  <span className="ml-2 font-normal normal-case tracking-normal text-ink-400">
+                    {useCaseAssets.length ? `${useCaseAssets.length} rattaché${useCaseAssets.length > 1 ? 's' : ''}` : 'aucun'}
+                  </span>
+                </p>
+                {useCaseAssets.length ? (
+                  <ul className="divide-y divide-ink-100">
+                    {useCaseAssets.map((asset) => (
+                      <li key={asset.link_id} className="py-2">
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                          <span className="text-sm text-ink-900">
+                            {asset.name}
+                            <span className="ml-2 text-xs text-ink-400">
+                              {ASSET_KIND_LABELS[asset.kind] ?? asset.kind}
+                              {asset.version ? ` · v${asset.version}` : ''}
+                              {asset.vendor ? ` · ${asset.vendor}` : ''}
+                              {asset.hosting_location ? ` · ${asset.hosting_location}` : ''}
+                            </span>
+                          </span>
+                          <span className="text-xs text-ink-500">
+                            {asset.measures.length
+                              ? `${asset.measures.filter((m) => m.status === 'implemented' || m.status === 'verified').length}/${asset.measures.length} mesure${asset.measures.length > 1 ? 's' : ''} technique${asset.measures.length > 1 ? 's' : ''} en place`
+                              : 'aucune mesure technique posée'}
+                          </span>
+                        </div>
+                        {asset.measures.length ? (
+                          <ul className="mt-1 flex flex-wrap gap-1.5">
+                            {asset.measures.map((m) => (
+                              <li
+                                key={m.id}
+                                className={`rounded-full px-2 py-0.5 text-[11px] ${
+                                  m.status === 'verified' || m.status === 'implemented'
+                                    ? 'bg-ok-600/10 text-ok-600'
+                                    : 'bg-ink-100 text-ink-600'
+                                }`}
+                                title={`${m.name} · ${ASSET_MEASURE_STATUS_LABELS[m.status] ?? m.status}`}
+                              >
+                                {m.code} · {ASSET_MEASURE_STATUS_LABELS[m.status] ?? m.status}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-xs text-ink-500">
+                    Aucun actif rattaché. Les mesures techniques se posent sur un actif : rattacher le modèle,
+                    le système ou le jeu de données employé.
+                  </p>
+                )}
+              </div>
             </div>
 
             <TriagePanel
@@ -626,64 +724,127 @@ export default async function UseCasePage({
             </div>
 
             {controls?.length ? (
-              <ul className="divide-y divide-ink-100">
+              <div className="flex flex-col gap-6">
                 {/*
-                  Le meme code couleur que le panneau d'une activite : l'etat
-                  du controle — propose, mis en place, operant — se lit en
-                  premier, l'applicabilite ensuite. Les controles applicables
-                  et pas encore operants viennent en tete : c'est la qu'on agit.
-                  Un lien `?controle=` depuis l'activite met sa ligne en relief.
+                  Par nature : une mesure technique se pose sur un actif — et
+                  se lit avec les actifs qui la portent ; une organisationnelle
+                  se pose sur l'organisation ou le cas d'usage ; une
+                  contractuelle chez un fournisseur. Meme code couleur que le
+                  panneau d'une activite : l'etat d'abord, l'applicabilite
+                  ensuite ; les applicables non operants en tete.
                 */}
-                {[...controls]
-                  .map((ca) => ({
-                    ca,
-                    control: ca.control as unknown as {
-                      id: string
-                      code: string
-                      name: string
-                      is_mandatory: boolean
-                      status: string
-                    },
-                  }))
-                  .sort((a, b) => {
-                    const rank = (x: typeof a) =>
-                      x.ca.status !== 'applicable' ? 3 : x.control.status === 'operating' ? 2 : x.control.status === 'implemented' ? 1 : 0
-                    return rank(a) - rank(b) || a.control.code.localeCompare(b.control.code)
-                  })
-                  .map(({ ca, control }) => {
-                    const applicable = ca.status === 'applicable'
-                    const highlighted = controle === control.id
-                    return (
-                      <li
-                        key={ca.id}
-                        id={`controle-${control.id}`}
-                        className={`scroll-mt-24 py-2.5 text-sm ${highlighted ? '-mx-3 rounded-md bg-brand-500/10 px-3 ring-1 ring-brand-500/40' : ''}`}
-                      >
-                        <div className="flex flex-wrap items-start justify-between gap-2">
-                          <span className={applicable ? 'text-ink-900' : 'text-ink-500'}>
-                            {control.code} — {control.name}
+                {(['technical', 'organizational', 'contractual'] as const).map((kind) => {
+                  const rows = [...controls]
+                    .map((ca) => ({
+                      ca,
+                      control: ca.control as unknown as {
+                        id: string
+                        code: string
+                        name: string
+                        is_mandatory: boolean
+                        status: string
+                        measure_kind: string
+                      },
+                    }))
+                    .filter(({ control }) => (control.measure_kind ?? 'organizational') === kind)
+                    .sort((a, b) => {
+                      const rank = (x: typeof a) =>
+                        x.ca.status !== 'applicable' ? 3 : x.control.status === 'operating' ? 2 : x.control.status === 'implemented' ? 1 : 0
+                      return rank(a) - rank(b) || a.control.code.localeCompare(b.control.code)
+                    })
+                  if (!rows.length) return null
+                  const applicableRows = rows.filter((r) => r.ca.status === 'applicable')
+                  const unplaced =
+                    kind === 'technical'
+                      ? applicableRows.filter(
+                          (r) => !useCaseAssets.some((a) => a.measures.some((m) => m.control_id === r.control.id)),
+                        ).length
+                      : 0
+                  return (
+                    <section key={kind}>
+                      <header className="mb-2 flex flex-wrap items-baseline justify-between gap-2 border-b border-ink-200 pb-2">
+                        <h3 className="text-sm font-semibold text-ink-900">
+                          {MEASURE_KIND_LABELS[kind]}s
+                          <span className="ml-2 text-xs font-normal text-ink-400">
+                            {applicableRows.length} applicable{applicableRows.length > 1 ? 's' : ''}
                           </span>
-                          <span className="flex shrink-0 items-center gap-1.5">
-                            {applicable ? (
-                              <Badge tone={controlStatusTone(control.status)}>
-                                {CONTROL_STATUS_LABELS[control.status] ?? control.status}
-                              </Badge>
-                            ) : null}
-                            <Badge tone="neutral">
-                              {applicable ? 'Applicable' : 'Non applicable'}
-                            </Badge>
-                          </span>
-                        </div>
-                        {control.is_mandatory ? (
-                          <span className="text-xs text-ink-400">Contrôle obligatoire</span>
-                        ) : null}
-                        {ca.justification ? (
-                          <p className="text-xs text-ink-600">{ca.justification}</p>
-                        ) : null}
-                      </li>
-                    )
-                  })}
-              </ul>
+                        </h3>
+                        <p className={`text-xs ${unplaced ? 'text-warn-600' : 'text-ink-500'}`}>
+                          {kind === 'technical'
+                            ? unplaced
+                              ? `${unplaced} mesure${unplaced > 1 ? 's' : ''} sans actif qui la porte`
+                              : useCaseAssets.length
+                                ? 'Chaque mesure se pose sur un actif du cas d’usage.'
+                                : 'Aucun actif rattaché : ces mesures n’ont pas encore où se poser.'
+                            : MEASURE_KIND_HINTS[kind]}
+                        </p>
+                      </header>
+                      <ul className="divide-y divide-ink-100">
+                        {rows.map(({ ca, control }) => {
+                          const applicable = ca.status === 'applicable'
+                          const highlighted = controle === control.id
+                          const carriers = useCaseAssets.filter((a) => a.measures.some((m) => m.control_id === control.id))
+                          return (
+                            <li
+                              key={ca.id}
+                              id={`controle-${control.id}`}
+                              className={`scroll-mt-24 py-2.5 text-sm ${highlighted ? '-mx-3 rounded-md bg-brand-500/10 px-3 ring-1 ring-brand-500/40' : ''}`}
+                            >
+                              <div className="flex flex-wrap items-start justify-between gap-2">
+                                <span className={applicable ? 'text-ink-900' : 'text-ink-500'}>
+                                  {control.code} — {control.name}
+                                </span>
+                                <span className="flex shrink-0 items-center gap-1.5">
+                                  {applicable ? (
+                                    <Badge tone={controlStatusTone(control.status)}>
+                                      {CONTROL_STATUS_LABELS[control.status] ?? control.status}
+                                    </Badge>
+                                  ) : null}
+                                  <Badge tone="neutral">
+                                    {applicable ? 'Applicable' : 'Non applicable'}
+                                  </Badge>
+                                </span>
+                              </div>
+                              {control.is_mandatory ? (
+                                <span className="text-xs text-ink-400">Contrôle obligatoire</span>
+                              ) : null}
+                              {ca.justification ? (
+                                <p className="text-xs text-ink-600">{ca.justification}</p>
+                              ) : null}
+                              {kind === 'technical' && applicable ? (
+                                <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                                  {carriers.map((a) => {
+                                    const m = a.measures.find((x) => x.control_id === control.id)!
+                                    return (
+                                      <span
+                                        key={a.asset_id}
+                                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] ${
+                                          m.status === 'verified' || m.status === 'implemented'
+                                            ? 'bg-ok-600/10 text-ok-600'
+                                            : 'bg-ink-100 text-ink-600'
+                                        }`}
+                                        title={m.note ?? undefined}
+                                      >
+                                        {a.name} · {ASSET_MEASURE_STATUS_LABELS[m.status] ?? m.status}
+                                      </span>
+                                    )
+                                  })}
+                                  <AssetMeasureForm
+                                    useCaseId={id}
+                                    control={{ id: control.id, code: control.code, name: control.name }}
+                                    assets={useCaseAssets.map((a) => ({ asset_id: a.asset_id, name: a.name, kind: a.kind }))}
+                                    placed={carriers.map((a) => a.asset_id)}
+                                  />
+                                </div>
+                              ) : null}
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    </section>
+                  )
+                })}
+              </div>
             ) : (
               <Empty>Aucun contrôle affecté.</Empty>
             )}
