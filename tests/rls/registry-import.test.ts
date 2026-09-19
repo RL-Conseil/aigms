@@ -37,13 +37,17 @@ describe('Import des actifs et fournisseurs', () => {
     expect(r.asset).toEqual({ version: '2.1', contains_personal_data: true, vendor: 'TalentScreen Analytics' })
   })
 
-  it('un auditeur n’importe pas ; l’officer importe des fournisseurs', async () => {
-    const refused = await asUser(db, DEMO.auditorA, (c) =>
+  it('seule l’administration importe : l’AI Governance Officer est refusé', async () => {
+    const refusedOfficer = await asUser(db, DEMO.officerA, (c) =>
       expectFailure(c, `select public.import_vendors($1, '[{"name":"X"}]'::jsonb)`, [DEMO.orgA]),
     )
-    expect(refused.message).toMatch(/relève de l’administration|relève de l'administration/)
+    expect(refusedOfficer.message).toMatch(/administration de la plateforme/)
+    const refusedAssets = await asUser(db, DEMO.officerA, (c) =>
+      expectFailure(c, `select public.import_ai_assets($1, '[{"name":"X"}]'::jsonb)`, [DEMO.orgA]),
+    )
+    expect(refusedAssets.message).toMatch(/administration/)
 
-    const r = await asUser(db, DEMO.officerA, async (c) => {
+    const r = await asUser(db, DEMO.platformAdmin, async (c) => {
       const { rows } = await c.query<{ r: { created: number; updated: number } }>(
         `select public.import_vendors($1, '[{"name":"OpenAI","is_model_provider":"oui","criticality":"élevée","country_code":"us"}]'::jsonb) as r`,
         [DEMO.orgA],

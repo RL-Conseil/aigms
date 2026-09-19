@@ -3,7 +3,6 @@
 import { useActionState } from 'react'
 import { importAssetsCsv, importVendorsCsv, type ImportState } from '@/lib/actions/registry'
 import { Submit } from '@/components/forms'
-import { Modal } from '@/components/modal'
 
 /**
  * Importer un registre depuis un CSV — actifs d'IA ou fournisseurs.
@@ -77,22 +76,3 @@ export function RegistryImportForm({
   )
 }
 
-/** Le meme import, dans une fenetre : depuis une liste qu'on consulte. */
-export function RegistryImportModal({
-  organizationId,
-  what,
-}: {
-  organizationId: string
-  what: 'actifs' | 'fournisseurs'
-}) {
-  return (
-    <Modal
-      trigger="Importer (CSV)"
-      title={what === 'actifs' ? 'Importer les actifs d’IA' : 'Importer les fournisseurs'}
-      description="Rapprochement par nom : une ligne connue met à jour, une nouvelle crée."
-      closeOnSuccess={false}
-    >
-      {() => <RegistryImportForm organizationId={organizationId} what={what} />}
-    </Modal>
-  )
-}

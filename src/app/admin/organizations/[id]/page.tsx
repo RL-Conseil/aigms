@@ -7,7 +7,6 @@ import { AttentionBar } from '@/components/governance/attention'
 import { SegmentedFilter } from '@/components/governance/segmented-filter'
 import { VendorLabelForm, VendorReviewForm } from '@/components/governance/registry-forms'
 import { attentionFor } from '@/lib/governance/attention'
-import { RegistryImportModal } from '@/components/governance/registry-import'
 import {
   AUTONOMY_LABELS,
   formatDate,
@@ -146,7 +145,6 @@ export default async function OrganizationPage({
                     >
                       Déclarer un fournisseur
                     </Link>
-                    <RegistryImportModal organizationId={id} what="fournisseurs" />
                   </>
                 ) : null}
               </div>

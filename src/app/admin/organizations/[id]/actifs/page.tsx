@@ -3,8 +3,6 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty } from '@/components/ui'
-import { Disclosure } from '@/components/forms'
-import { RegistryImportForm } from '@/components/governance/registry-import'
 import { ASSET_KIND_LABELS, ASSET_MEASURE_STATUS_LABELS, USE_CASE_STATUS_LABELS, type UseCaseStatus } from '@/lib/domain/governance'
 
 /**
@@ -179,21 +177,15 @@ export default async function AssetRegisterPage({
               </ul>
             ) : (
               <Empty>
-                Aucun actif. Inscrire le modèle, le système ou le jeu de données employé — ou importer
-                l’inventaire existant.
+                Aucun actif. Inscrire le modèle, le système ou le jeu de données employé — l’administration
+                peut aussi importer l’inventaire existant.
               </Empty>
             )}
           </Card>
         </div>
 
         <div className="flex flex-col gap-5">
-          <Disclosure
-            title="Importer un inventaire (CSV)"
-            summary="Depuis une CMDB, un registre des traitements, un tableur"
-            defaultOpen={!assets.length}
-          >
-            <RegistryImportForm organizationId={id} what="actifs" />
-          </Disclosure>
+          {/* L'import d'un inventaire releve de l'administration (0062) : voir l'administration de l'organisation. */}
           <Card title="Lire ce registre" subtitle="Ce qu’il dit, et ce qu’il ne dit pas.">
             <p className="text-sm leading-relaxed text-ink-600">
               Un actif n’a de gouvernance que par les cas d’usage qui l’emploient : c’est là que se

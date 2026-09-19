@@ -1,6 +1,6 @@
 # Importer les actifs d'IA et les fournisseurs (CSV, connecteurs)
 
-*20 septembre 2026 — migration 0061.*
+*20 septembre 2026 — migrations 0061 et 0062.*
 
 Un inventaire d'actifs existe presque toujours ailleurs — CMDB de l'ITSM
 (ServiceNow, GLPI, iTop, EasyVista), registre des traitements, tableur — et
@@ -10,12 +10,11 @@ connecteur ensuite (même fonction en base).
 
 ## Où
 
-- **Administration de l'organisation** (compte administrateur) : deux cartes
-  « Importer les actifs d'IA » et « Importer les fournisseurs ». L'import est
-  une *reprise de données*, pas un acte de gouvernance : l'administration y
-  est autorisée, comme pour un référentiel.
-- **Registres › Actifs d'IA** (rôles de gouvernance) : volet « Importer un
-  inventaire (CSV) ». **Cas d'usage › Fournisseurs** : bouton « Importer (CSV) ».
+- **Administration de l'organisation, compte administrateur seulement** :
+  deux cartes « Importer les actifs d'IA » et « Importer les fournisseurs ».
+  L'import est une *reprise de données*, comme l'import d'un référentiel ; les
+  rôles de gouvernance déclarent un à un ce dont ils répondent, ils
+  n'importent pas (migration 0062).
 
 L'organisation doit être opérationnelle (six rôles tenus, migration 0056) :
 l'import écrit des objets de gouvernance, la règle s'applique.
