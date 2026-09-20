@@ -20,8 +20,7 @@ export const USE_CASE_TABS = [
   { key: 'risques', label: 'Risques' },
   { key: 'impact', label: 'Évaluation d’impact' },
   { key: 'supervision', label: 'Supervision humaine' },
-  { key: 'decisions', label: 'Décisions' },
-  { key: 'changements', label: 'Changements' },
+  { key: 'decisions', label: 'Décisions et changements' },
   { key: 'incidents', label: 'Incidents' },
   { key: 'journal', label: 'Journal' },
 ] as const

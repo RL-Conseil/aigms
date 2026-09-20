@@ -58,6 +58,7 @@ import {
   AUTONOMY_LABELS,
   ASSET_KIND_LABELS,
   ASSET_MEASURE_STATUS_LABELS,
+  CHANGE_STATUS_LABELS,
   CONTROL_STATUS_LABELS,
   controlStatusTone,
   MEASURE_KIND_HINTS,
@@ -81,6 +82,29 @@ function riskTone(level: RiskLevel | null) {
   if (level === 'critical' || level === 'high') return 'stop' as const
   if (level === 'moderate') return 'warn' as const
   return 'neutral' as const
+}
+
+type TimelineEntry = {
+  id: string
+  kind: 'decision' | 'change'
+  business_ref: string
+  type: string | null
+  title: string
+  body: string | null
+  conditions: string | null
+  status: string
+  at: string
+  approved_at: string | null
+  effective_from: string | null
+  review_due_at: string | null
+  expected_approver: string | null
+  approver: string | null
+  change_request_id: string | null
+  decision: { id: string; business_ref: string; status: string } | null
+  verdict: string | null
+  scope: string[] | null
+  planned_at: string | null
+  change_types: string[] | null
 }
 
 type UseCaseAsset = {
@@ -314,6 +338,13 @@ export default async function UseCasePage({
       : { data: null }
   const useCaseAssets = (assetsData ?? []) as UseCaseAsset[]
 
+  // Decisions et changements, dans l'ordre : une seule lecture (0063).
+  const { data: timelineData } =
+    tab === 'decisions'
+      ? await supabase.rpc('decisions_and_changes', { p_organization_id: useCase.organization_id, p_use_case_id: id })
+      : { data: null }
+  const timelineEntries = (timelineData ?? []) as TimelineEntry[]
+
   const { data: evidenceLinks } =
     tab === 'supervision' && applicableControlIds.length
       ? await supabase
@@ -357,8 +388,10 @@ export default async function UseCasePage({
     supervision: oversight
       ? { tone: oversight.status === 'approved' ? 'done' : 'todo' }
       : { tone: 'todo' },
-    decisions: { count: pendingDecisions, tone: pendingDecisions ? 'todo' : 'neutral' },
-    changements: { count: pendingReassessments, tone: pendingReassessments ? 'todo' : 'neutral' },
+    decisions: {
+      count: pendingDecisions + pendingReassessments,
+      tone: pendingDecisions + pendingReassessments ? 'todo' : 'neutral',
+    },
     incidents: { count: openIncidents, tone: openIncidents ? 'late' : 'neutral' },
   }
 
@@ -1135,8 +1168,8 @@ export default async function UseCasePage({
       {tab === 'decisions' ? (
         <div className="max-w-4xl">
           <Card
-            title="Décisions de gouvernance"
-            subtitle={`${decisions?.length ?? 0} décision(s)`}
+            title="Décisions et changements"
+            subtitle="Un seul fil : ce qui a été décidé, ce qui a changé, et comment l’un a appelé l’autre."
             action={
               <span className="flex items-center gap-2">
                 {organization ? (
@@ -1144,116 +1177,104 @@ export default async function UseCasePage({
                     href={`/admin/organizations/${organization.id}/decisions/nouvelle?cas-d-usage=${id}`}
                     className="rounded-md border border-ink-200 px-3.5 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-100"
                   >
-                    Soumettre
+                    Soumettre une décision
                   </Link>
                 ) : null}
+                <ChangeRequestForm
+                  organizationId={useCase.organization_id}
+                  useCaseId={id}
+                  currentAutonomy={useCase.autonomy_level}
+                />
                 <DecisionNote />
+                <ChangeNote />
               </span>
             }
           >
-            {decisions?.length ? (
+            {/*
+              Une decision est un acte ; un changement est un fait sur le
+              systeme, que le moteur de reevaluation lit. Ils se repondent :
+              un changement qui appelle une reevaluation ouvre une decision, une
+              decision de changement cree le changement (0063). On les lit
+              ensemble, dans l'ordre, chacun disant a quoi il est lie.
+            */}
+            {timelineEntries.length ? (
               <ul className="divide-y divide-ink-100">
-                {decisions.map((d) => (
-                  <li key={d.id} className="py-3">
+                {timelineEntries.map((e) => (
+                  <li key={`${e.kind}-${e.id}`} className="py-3">
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-ink-900">{d.subject}</p>
+                        <p className="flex flex-wrap items-center gap-2 text-sm font-medium text-ink-900">
+                          <span
+                            className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                              e.kind === 'decision' ? 'bg-night-900 text-white' : 'bg-brand-500/15 text-brand-700'
+                            }`}
+                          >
+                            {e.kind === 'decision' ? 'Décision' : 'Changement'}
+                          </span>
+                          {e.title}
+                        </p>
                         <p className="text-xs text-ink-400">
-                          {d.business_ref} · {DECISION_TYPE_LABELS[d.decision_type] ?? d.decision_type}
+                          {e.business_ref}
+                          {e.kind === 'decision' && e.type ? ` · ${DECISION_TYPE_LABELS[e.type] ?? e.type}` : ''}
+                          {e.kind === 'change' && e.change_types?.length ? ` · ${e.change_types.join(', ')}` : ''}
+                          {` · ${formatDate(e.at)}`}
                         </p>
-                        {d.decision_statement ? (
-                          <p className="mt-1 text-sm text-ink-600">{d.decision_statement}</p>
+                        {e.body ? <p className="mt-1 text-sm text-ink-600">{e.body}</p> : null}
+                        {e.conditions ? (
+                          <p className="mt-1 text-xs text-amber-800">Conditions : {e.conditions}</p>
                         ) : null}
-                        {d.conditions ? (
-                          <p className="mt-1 text-xs text-amber-800">Conditions : {d.conditions}</p>
-                        ) : null}
-                        <p className="mt-1 text-xs text-ink-400">
-                          Effet le {formatDate(d.effective_from)}
-                          {d.review_due_at ? ` · revue le ${formatDate(d.review_due_at)}` : ''}
-                        </p>
+                        {e.kind === 'decision' ? (
+                          <p className="mt-1 text-xs text-ink-400">
+                            {e.effective_from ? `Effet le ${formatDate(e.effective_from)}` : 'Sans date d’effet'}
+                            {e.review_due_at ? ` · revue le ${formatDate(e.review_due_at)}` : ''}
+                            {e.approver ? ` · approuvée par ${e.approver}` : e.expected_approver ? ` · attend ${e.expected_approver}` : ''}
+                            {e.change_request_id ? ' · porte un changement' : ''}
+                          </p>
+                        ) : (
+                          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                            {e.verdict ? (
+                              <Badge tone={e.verdict === 'NO_REASSESSMENT' ? 'neutral' : 'stop'}>
+                                {VERDICT_LABELS[e.verdict as ReassessmentVerdict] ?? e.verdict}
+                              </Badge>
+                            ) : (
+                              <Badge tone="warn">Non qualifié</Badge>
+                            )}
+                            {e.scope?.length ? (
+                              <span className="text-ink-400">Périmètre rouvert : {e.scope.join(', ')}</span>
+                            ) : null}
+                            {e.planned_at ? <span className="text-ink-400">prévu le {formatDate(e.planned_at)}</span> : null}
+                            {e.decision ? (
+                              <span className="text-ink-500">
+                                Décision {e.decision.business_ref} :{' '}
+                                {DECISION_STATUS_LABELS[e.decision.status] ?? e.decision.status}
+                              </span>
+                            ) : e.verdict && e.verdict !== 'NO_REASSESSMENT' ? (
+                              <span className="text-warn-600">Décision à ouvrir</span>
+                            ) : null}
+                          </div>
+                        )}
                       </div>
                       <Badge
                         tone={
-                          d.status === 'approved'
+                          ['approved', 'APPROVED', 'IMPLEMENTED', 'VERIFIED'].includes(e.status)
                             ? 'ok'
-                            : d.status === 'approved_with_conditions'
+                            : e.status === 'approved_with_conditions'
                               ? 'warn'
-                              : d.status === 'rejected'
+                              : ['rejected', 'REJECTED', 'CANCELLED'].includes(e.status)
                                 ? 'stop'
                                 : 'neutral'
                         }
                       >
-                        {DECISION_STATUS_LABELS[d.status] ?? d.status}
+                        {e.kind === 'decision'
+                          ? DECISION_STATUS_LABELS[e.status] ?? e.status
+                          : CHANGE_STATUS_LABELS[e.status] ?? e.status}
                       </Badge>
                     </div>
                   </li>
                 ))}
               </ul>
             ) : (
-              <Empty>Aucune décision enregistrée.</Empty>
-            )}
-          </Card>
-        </div>
-      ) : null}
-
-      {tab === 'changements' ? (
-        <div className="max-w-4xl">
-          <Card
-            title="Changements et réévaluations"
-            subtitle="Ce qui a rouvert l’évaluation, et pourquoi"
-            action={<ChangeNote />}
-          >
-            <div className="mb-4">
-              <ChangeRequestForm
-                organizationId={useCase.organization_id}
-                useCaseId={id}
-                currentAutonomy={useCase.autonomy_level}
-              />
-            </div>
-            {changes?.length ? (
-              <ul className="space-y-4">
-                {changes.map((change) => {
-                  const reassessments = (change.reassessment ?? []) as {
-                    engine_verdict: ReassessmentVerdict
-                    final_verdict: ReassessmentVerdict | null
-                    status: string
-                    scope: string[]
-                  }[]
-                  return (
-                    <li key={change.id}>
-                      <p className="text-sm font-medium text-ink-900">{change.title}</p>
-                      <p className="text-xs text-ink-400">
-                        {change.business_ref} · {(change.change_types as string[]).join(', ')} ·
-                        statut {change.status}
-                      </p>
-                      <p className="mt-1 text-sm text-ink-600">{change.description}</p>
-                      {reassessments.map((r, index) => (
-                        <div key={index} className="mt-2 flex flex-wrap items-center gap-2">
-                          <Badge
-                            tone={r.engine_verdict === 'NO_REASSESSMENT' ? 'neutral' : 'stop'}
-                          >
-                            Moteur : {VERDICT_LABELS[r.engine_verdict]}
-                          </Badge>
-                          {r.final_verdict ? (
-                            <Badge tone="info">
-                              Retenu : {VERDICT_LABELS[r.final_verdict]} ({r.status})
-                            </Badge>
-                          ) : (
-                            <Badge tone="warn">Revue humaine en attente</Badge>
-                          )}
-                          {r.scope?.length ? (
-                            <span className="text-xs text-ink-400">
-                              Périmètre rouvert : {r.scope.join(', ')}
-                            </span>
-                          ) : null}
-                        </div>
-                      ))}
-                    </li>
-                  )
-                })}
-              </ul>
-            ) : (
-              <Empty>Aucun changement enregistré.</Empty>
+              <Empty>Aucune décision ni changement enregistrés.</Empty>
             )}
           </Card>
         </div>

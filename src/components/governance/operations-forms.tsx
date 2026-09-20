@@ -683,7 +683,7 @@ export function CapaCloseForm({
 // -----------------------------------------------------------------------------
 // Demande de changement
 // -----------------------------------------------------------------------------
-const CHANGE_TYPE_LABELS: Record<string, string> = {
+export const CHANGE_TYPE_LABELS: Record<string, string> = {
   MODEL: 'Modèle',
   DATASET: 'Données',
   PURPOSE: 'Finalité',
@@ -695,7 +695,7 @@ const CHANGE_TYPE_LABELS: Record<string, string> = {
   DEPLOYMENT: 'Déploiement',
 }
 
-const FACTS: { name: string; label: string; hint: string }[] = [
+export const CHANGE_FACTS: { name: string; label: string; hint: string }[] = [
   { name: 'changesPurpose', label: 'La finalité change', hint: 'Une autre chose est décidée ou produite.' },
   { name: 'newPopulationAffected', label: 'De nouvelles personnes sont concernées', hint: 'Un public que l’évaluation d’impact n’a pas vu.' },
   { name: 'newTerritory', label: 'Un nouveau territoire', hint: 'Un autre droit peut s’appliquer.' },
@@ -784,7 +784,7 @@ export function ChangeRequestForm({
                   </select>
                 </Field>
               ) : null}
-              {FACTS.map((fact) => (
+              {CHANGE_FACTS.map((fact) => (
                 <label key={fact.name} className="flex items-start gap-2.5 text-sm text-ink-700">
                   <input type="checkbox" name={fact.name} className="mt-0.5" />
                   <span>

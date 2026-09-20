@@ -90,6 +90,17 @@ export type ReassessmentVerdict =
   | 'PARTIAL_REASSESSMENT'
   | 'FULL_REASSESSMENT'
 
+export const CHANGE_STATUS_LABELS: Record<string, string> = {
+  DRAFT: 'Brouillon',
+  IMPACT_SCREENING: 'Qualifié',
+  REVIEW: 'En revue',
+  APPROVED: 'Approuvé',
+  REJECTED: 'Rejeté',
+  IMPLEMENTED: 'Mis en œuvre',
+  VERIFIED: 'Vérifié',
+  CANCELLED: 'Annulé',
+}
+
 export const VERDICT_LABELS: Record<ReassessmentVerdict, string> = {
   NO_REASSESSMENT: 'Aucune réévaluation',
   PARTIAL_REASSESSMENT: 'Réévaluation partielle',

@@ -11,10 +11,13 @@ import {
 } from '@/components/governance/decision-forms'
 import { describePerson, organizationPeople } from '@/lib/governance/people'
 import {
+  CHANGE_STATUS_LABELS,
   DECISION_STATUS_LABELS,
   DECISION_TYPE_LABELS,
   formatDate,
   formatDateTime,
+  VERDICT_LABELS,
+  type ReassessmentVerdict,
 } from '@/lib/domain/governance'
 
 /**
@@ -49,6 +52,7 @@ const STATUS_FILTERS = [
   { key: 'en-vigueur', label: 'En vigueur' },
   { key: 'revue-due', label: 'Revue échue' },
   { key: 'rejected', label: 'Rejetées' },
+  { key: 'changements', label: 'Changements' },
 ] as const
 
 export default async function DecisionsPage({
@@ -117,6 +121,26 @@ export default async function DecisionsPage({
   const unfounded = decisions.filter((d) => !linkCount.has(d.id))
   // Une decision soumise que personne n'attend ne progresse pas.
   const unaddressed = pending.filter((d) => !d.expected_approver_user_id)
+
+  // Les changements se lisent depuis le registre, a cote des decisions — sans
+  // s'y confondre : un changement est un fait, une decision un acte (0063).
+  const { data: mergedData } = await supabase.rpc('decisions_and_changes', { p_organization_id: id })
+  const changes = ((mergedData ?? []) as {
+    id: string
+    kind: string
+    business_ref: string
+    title: string
+    body: string | null
+    status: string
+    at: string
+    use_case_id: string | null
+    use_case: string | null
+    verdict: string | null
+    scope: string[] | null
+    planned_at: string | null
+    change_types: string[] | null
+    decision: { id: string; business_ref: string; status: string } | null
+  }[]).filter((e) => e.kind === 'change')
 
   const shown = decisions.filter((decision) => {
     if (etat === 'a-instruire') return ['draft', 'submitted'].includes(decision.status)
@@ -217,11 +241,77 @@ export default async function DecisionsPage({
                     ? inForce.length
                     : option.key === 'revue-due'
                       ? reviewDue.length
-                      : decisions.filter((d) => d.status === 'rejected').length,
+                      : option.key === 'changements'
+                        ? changes.length
+                        : decisions.filter((d) => d.status === 'rejected').length,
           }))}
         />
       </div>
 
+      {etat === 'changements' ? (
+        <Card
+          title="Changements"
+          subtitle="Ce qui a changé sur les systèmes, le verdict de la réévaluation, et la décision que chacun appelle."
+        >
+          {changes.length ? (
+            <ul className="flex flex-col divide-y divide-ink-100">
+              {changes.map((c) => (
+                <li key={c.id} className="py-4 first:pt-0 last:pb-0">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-ink-900">
+                        <span className="mr-2 font-mono text-xs text-ink-400">{c.business_ref}</span>
+                        {c.title}
+                      </p>
+                      <p className="text-xs text-ink-400">
+                        {c.use_case_id ? (
+                          <Link href={`/admin/use-cases/${c.use_case_id}?onglet=decisions`} className="hover:underline">
+                            {c.use_case}
+                          </Link>
+                        ) : null}
+                        {c.change_types?.length ? ` · ${c.change_types.join(', ')}` : ''}
+                        {` · ${formatDate(c.at)}`}
+                        {c.planned_at ? ` · prévu le ${formatDate(c.planned_at)}` : ''}
+                      </p>
+                      {c.body ? <p className="mt-1 text-sm text-ink-600">{c.body}</p> : null}
+                      <p className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+                        {c.verdict ? (
+                          <Badge tone={c.verdict === 'NO_REASSESSMENT' ? 'neutral' : 'stop'}>
+                            {VERDICT_LABELS[c.verdict as ReassessmentVerdict] ?? c.verdict}
+                          </Badge>
+                        ) : (
+                          <Badge tone="warn">Non qualifié</Badge>
+                        )}
+                        {c.scope?.length ? <span className="text-ink-400">rouvre : {c.scope.join(', ')}</span> : null}
+                        {c.decision ? (
+                          <span className="text-ink-500">
+                            Décision {c.decision.business_ref} : {DECISION_STATUS_LABELS[c.decision.status] ?? c.decision.status}
+                          </span>
+                        ) : c.verdict && c.verdict !== 'NO_REASSESSMENT' ? (
+                          <span className="text-warn-600">Décision à ouvrir</span>
+                        ) : null}
+                      </p>
+                    </div>
+                    <Badge
+                      tone={
+                        ['APPROVED', 'IMPLEMENTED', 'VERIFIED'].includes(c.status)
+                          ? 'ok'
+                          : ['REJECTED', 'CANCELLED'].includes(c.status)
+                            ? 'stop'
+                            : 'neutral'
+                      }
+                    >
+                      {CHANGE_STATUS_LABELS[c.status] ?? c.status}
+                    </Badge>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <Empty>Aucun changement déclaré.</Empty>
+          )}
+        </Card>
+      ) : (
       <Card title="Décisions" subtitle={`${shown.length} décision(s)`}>
         {shown.length ? (
           <ul className="flex flex-col divide-y divide-ink-100">
@@ -346,6 +436,7 @@ export default async function DecisionsPage({
           </Empty>
         )}
       </Card>
+      )}
     </Shell>
   )
 }

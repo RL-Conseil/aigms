@@ -9,6 +9,7 @@ import {
 } from '@/lib/actions/decisions'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
+import { CHANGE_FACTS, CHANGE_TYPE_LABELS } from '@/components/governance/operations-forms'
 
 /**
  * Saisie du registre de decisions.
@@ -35,6 +36,9 @@ const NEEDS_REVIEW = ['go_production', 'risk_acceptance', 'policy_exception']
 
 /** Types sur lesquels l'auteur ne peut pas se prononcer lui-meme. */
 const SEPARATED = ['go_production', 'risk_acceptance', 'policy_exception']
+
+/** Types qui portent un changement sur le systeme. */
+const CHANGE_DECISIONS = ['significant_change', 'suspension', 'retirement']
 
 export function DecisionForm({
   organizationId,
@@ -181,6 +185,63 @@ export function DecisionForm({
           ))}
         </select>
       </Field>
+
+      {/*
+        Une decision de changement significatif, de suspension ou de retrait
+        porte un CHANGEMENT : ce qui change se dit ici, une fois, et le
+        changement est cree et qualifie a la soumission (0063).
+      */}
+      {CHANGE_DECISIONS.includes(type) ? (
+        <fieldset className="rounded-md border border-ink-200 p-4">
+          <legend className="px-1 text-sm font-medium">Ce qui change</legend>
+          <p className="mb-3 text-xs leading-relaxed text-ink-500">
+            {type === 'significant_change'
+              ? 'Le changement est créé et lié à cette décision, puis qualifié par le moteur de réévaluation : la décision ne s’approuve pas sans lui.'
+              : 'Une suspension ou un retrait est un changement de déploiement : il est créé et lié à cette décision, qualifié par le moteur.'}
+          </p>
+          <div className="grid gap-2 sm:grid-cols-3">
+            {Object.entries(CHANGE_TYPE_LABELS).map(([value, label]) => (
+              <label key={value} className="flex items-center gap-2 text-sm text-ink-700">
+                <input
+                  type="checkbox"
+                  name="changeTypes"
+                  value={value}
+                  defaultChecked={type !== 'significant_change' && value === 'DEPLOYMENT'}
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+          {type === 'significant_change' ? (
+            <div className="mt-3 grid gap-2 border-t border-ink-100 pt-3 sm:grid-cols-2">
+              <label className="flex items-start gap-2.5 text-sm text-ink-700">
+                <input type="checkbox" name="increasesAutonomy" className="mt-0.5" />
+                <span>
+                  <span className="font-medium text-ink-900">L’autonomie augmente</span>
+                  <span className="block text-xs text-ink-500">Niveau visé à préciser.</span>
+                </span>
+              </label>
+              <Field label="Niveau visé" htmlFor="dec-autonomy" optional>
+                <select id="dec-autonomy" name="newAutonomyLevel" defaultValue="" className={FIELD}>
+                  <option value="">—</option>
+                  {['L0', 'L1', 'L2', 'L3', 'L4'].map((l) => (
+                    <option key={l} value={l}>{l}</option>
+                  ))}
+                </select>
+              </Field>
+              {CHANGE_FACTS.map((fact) => (
+                <label key={fact.name} className="flex items-start gap-2.5 text-sm text-ink-700">
+                  <input type="checkbox" name={fact.name} className="mt-0.5" />
+                  <span>
+                    <span className="font-medium text-ink-900">{fact.label}</span>
+                    <span className="block text-xs text-ink-500">{fact.hint}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          ) : null}
+        </fieldset>
+      ) : null}
 
       {SEPARATED.includes(type) ? (
         <p className="rounded-md border border-ink-200 bg-ink-50 px-3.5 py-3 text-xs leading-relaxed text-ink-600">
