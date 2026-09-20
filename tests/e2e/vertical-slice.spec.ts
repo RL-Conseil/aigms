@@ -176,7 +176,10 @@ test('la frise marque les jalons obligatoires et porte l’action qui la fait av
   // L'action qui fait avancer se demande depuis l'en-tete, quelle que soit
   // la rubrique ouverte.
   await page.getByRole('button', { name: 'Faire évoluer' }).click()
-  await expect(page.getByRole('dialog', { name: 'Faire évoluer le cas d’usage' })).toBeVisible()
+  const porte = page.getByRole('dialog', { name: 'Faire évoluer le cas d’usage' })
+  await expect(porte.getByRole('button', { name: /^Franchir un jalon/ })).toBeVisible()
+  await expect(porte.getByRole('button', { name: /^Décider/ })).toBeVisible()
+  await expect(porte.getByRole('button', { name: /^Prévoir un changement/ })).toBeVisible()
   await page.keyboard.press('Escape')
 
   // Les controles ont leur rubrique : un constat, a portee d'un clic.
@@ -246,6 +249,8 @@ test('une transition sans motif est refusée', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Faire évoluer' }).click()
   const evolution = page.getByRole('dialog', { name: 'Faire évoluer le cas d’usage' })
+  // Trois intentions, une porte : franchir un jalon simple se demande ici.
+  await evolution.getByRole('button', { name: /^Franchir un jalon/ }).click()
   await expect(evolution.getByText(/C’est la seule phrase qui dira/)).toBeVisible()
 
   // Le navigateur bloque d'abord, sur `required`.
