@@ -906,6 +906,25 @@ values (
   true, 'L3', false, true, false,
   'DRAFT', '22222222-2222-4222-8222-222222222222', current_date + interval '1 month');
 
+-- La décision qui porte ce changement est soumise AVANT la qualification :
+-- liée au changement, elle évite qu'une seconde s'ouvre d'elle-même (0063).
+insert into public.governance_decision (id, tenant_id, organization_id, use_case_id, decision_type,
+  subject, context, options_considered, decision_statement, conditions, rationale,
+  status, submitted_by, submitted_at)
+values ('b9000000-0000-4000-8000-000000000006', 'aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
+  'b1000000-0000-4000-8000-000000000001', 'significant_change',
+  'Suite donnée au changement d''autonomie de l''assistant support',
+  'Le passage en L3 supprime la validation humaine avant envoi, qui constituait la mesure de réduction principale du risque de réponse erronée.',
+  'Refus ; acceptation en l''état ; réévaluation complète préalable.',
+  'Le changement n''est pas autorisé en l''état. Une réévaluation complète est engagée : classification, risques, évaluation d''impact et plan de supervision sont rouverts.',
+  'La montée de version du modèle peut être conduite séparément, à autonomie inchangée. Le retour en L1 reste la configuration en vigueur jusqu''à décision.',
+  'La mesure de réduction du risque le plus significatif reposait sur la validation humaine systématique. La supprimer invalide l''évaluation d''impact approuvée.',
+  'submitted', '11111111-1111-4111-8111-111111111111', now());
+
+insert into public.decision_link (tenant_id, decision_id, target_type, target_id, note) values
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'b9000000-0000-4000-8000-000000000006', 'change_request',
+   'b8000000-0000-4000-8000-000000000001', 'Le changement qui appelle cette décision.');
+
 select app.screen_change_request('b8000000-0000-4000-8000-000000000001');
 
 -- Le responsable confirme le verdict du moteur : la recommandation ne vaut pas décision.
@@ -916,19 +935,11 @@ update public.reassessment
        reviewed_at = now()
  where change_request_id = 'b8000000-0000-4000-8000-000000000001';
 
-insert into public.governance_decision (tenant_id, organization_id, use_case_id, decision_type,
-  subject, context, options_considered, decision_statement, conditions, rationale,
-  status, submitted_by, submitted_at, approver_user_id, approved_at, effective_from, review_due_at)
-values ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
-  'b1000000-0000-4000-8000-000000000001', 'significant_change',
-  'Suite donnée au changement d''autonomie de l''assistant support',
-  'Le passage en L3 supprime la validation humaine avant envoi, qui constituait la mesure de réduction principale du risque de réponse erronée.',
-  'Refus ; acceptation en l''état ; réévaluation complète préalable.',
-  'Le changement n''est pas autorisé en l''état. Une réévaluation complète est engagée : classification, risques, évaluation d''impact et plan de supervision sont rouverts.',
-  'La montée de version du modèle peut être conduite séparément, à autonomie inchangée. Le retour en L1 reste la configuration en vigueur jusqu''à décision.',
-  'La mesure de réduction du risque le plus significatif reposait sur la validation humaine systématique. La supprimer invalide l''évaluation d''impact approuvée.',
-  'approved', '11111111-1111-4111-8111-111111111111', now(),
-  '33333333-3333-4333-8333-333333333333', now(), current_date, current_date + interval '2 months');
+-- Le Comité des risques se prononce.
+update public.governance_decision
+   set status = 'approved', approver_user_id = '33333333-3333-4333-8333-333333333333', approved_at = now(),
+       effective_from = current_date, review_due_at = current_date + interval '2 months'
+ where id = 'b9000000-0000-4000-8000-000000000006';
 
 update public.change_request set status = 'REVIEW' where id = 'b8000000-0000-4000-8000-000000000001';
 

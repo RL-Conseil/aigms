@@ -51,17 +51,19 @@ test('le parcours de gouvernance est consultable de bout en bout', async ({ page
     [/^Risques/, 'Risques'],
     [/Évaluation d’impact/, "Évaluation d'impact"],
     [/Supervision humaine/, 'Supervision humaine'],
-    [/^Décisions/, 'Décisions de gouvernance'],
+    [/^Décisions et changements/, 'Décisions et changements'],
     [/^Journal/, 'Journal d’audit'],
   ] as const) {
     await rubriques.getByRole('link', { name: tab }).click()
     await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible()
   }
 
-  // La reevaluation declenchee par le changement d'autonomie reste accessible.
-  await rubriques.getByRole('link', { name: /^Changements/ }).click()
-  await expect(page).toHaveURL(/onglet=changements/)
-  await expect(page.getByText('Moteur : Réévaluation complète')).toBeVisible()
+  // Decisions et changements se lisent dans un seul fil : le changement
+  // d'autonomie, son verdict, et la decision qu'il a appelee.
+  await rubriques.getByRole('link', { name: /^Décisions et changements/ }).click()
+  await expect(page).toHaveURL(/onglet=decisions/)
+  await expect(page.getByText('Réévaluation complète').first()).toBeVisible()
+  await expect(page.getByText(/Décision DEC-IA-\d{4}-\d{4} : Approuvée/)).toBeVisible()
 })
 
 test('le gate refuse la mise en production et explique ce qui manque', async ({ page }) => {

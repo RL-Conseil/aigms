@@ -74,6 +74,10 @@ const DECISION_TYPES = [
 // =============================================================================
 // Soumettre une décision
 // =============================================================================
+/** Les decisions qui portent un changement sur le systeme. */
+const CHANGE_DECISIONS = ['significant_change', 'suspension', 'retirement'] as const
+const CHANGE_TYPES = ['MODEL', 'DATASET', 'PURPOSE', 'VENDOR', 'AUTONOMY', 'POPULATION', 'TERRITORY', 'SECURITY', 'DEPLOYMENT'] as const
+
 const submitSchema = z.object({
   organizationId: z.string().uuid(),
   useCaseId: z.string().uuid().optional().or(z.literal('')),
@@ -95,6 +99,19 @@ const submitSchema = z.object({
     .max(2000),
   effectiveFrom: z.string().trim().optional().or(z.literal('')),
   reviewDueAt: z.string().trim().optional().or(z.literal('')),
+  // Ce qui change — pour une decision de changement significatif, de
+  // suspension ou de retrait : le changement est cree, lie, et qualifie.
+  changeTypes: z.array(z.enum(CHANGE_TYPES)).optional().default([]),
+  increasesAutonomy: z.boolean().optional().default(false),
+  newAutonomyLevel: z.enum(['L0', 'L1', 'L2', 'L3', 'L4']).optional().or(z.literal('')),
+  changesPurpose: z.boolean().optional().default(false),
+  newPopulationAffected: z.boolean().optional().default(false),
+  newTerritory: z.boolean().optional().default(false),
+  changesPersonalData: z.boolean().optional().default(false),
+  changesVendor: z.boolean().optional().default(false),
+  changesModel: z.boolean().optional().default(false),
+  changesDataset: z.boolean().optional().default(false),
+  securityRelevant: z.boolean().optional().default(false),
 })
 
 export async function submitDecision(
@@ -114,6 +131,17 @@ export async function submitDecision(
     rationale: formData.get('rationale'),
     effectiveFrom: formData.get('effectiveFrom') ?? '',
     reviewDueAt: formData.get('reviewDueAt') ?? '',
+    changeTypes: formData.getAll('changeTypes'),
+    increasesAutonomy: formData.get('increasesAutonomy') === 'on',
+    newAutonomyLevel: formData.get('newAutonomyLevel') ?? '',
+    changesPurpose: formData.get('changesPurpose') === 'on',
+    newPopulationAffected: formData.get('newPopulationAffected') === 'on',
+    newTerritory: formData.get('newTerritory') === 'on',
+    changesPersonalData: formData.get('changesPersonalData') === 'on',
+    changesVendor: formData.get('changesVendor') === 'on',
+    changesModel: formData.get('changesModel') === 'on',
+    changesDataset: formData.get('changesDataset') === 'on',
+    securityRelevant: formData.get('securityRelevant') === 'on',
   })
   if (!parsed.success) return firstIssues(parsed.error)
 
@@ -133,24 +161,28 @@ export async function submitDecision(
 
   // Une decision naît SOUMISE, jamais approuvee : l'approbation est un second
   // acte, porte par quelqu'un d'autre sur les types les plus engageants.
-  const { error } = await supabase.from('governance_decision').insert({
-    tenant_id: organization.tenant_id,
-    organization_id: input.organizationId,
-    use_case_id: input.useCaseId || null,
-    expected_approver_user_id: input.expectedApproverUserId || null,
-    decision_type: input.decisionType,
-    subject: input.subject,
-    context: input.context || null,
-    options_considered: input.optionsConsidered || null,
-    decision_statement: input.decisionStatement,
-    conditions: input.conditions || null,
-    rationale: input.rationale,
-    effective_from: input.effectiveFrom || null,
-    review_due_at: input.reviewDueAt || null,
-    status: 'submitted',
-    submitted_by: user.id,
-    submitted_at: new Date().toISOString(),
-  })
+  const { data: decision, error } = await supabase
+    .from('governance_decision')
+    .insert({
+      tenant_id: organization.tenant_id,
+      organization_id: input.organizationId,
+      use_case_id: input.useCaseId || null,
+      expected_approver_user_id: input.expectedApproverUserId || null,
+      decision_type: input.decisionType,
+      subject: input.subject,
+      context: input.context || null,
+      options_considered: input.optionsConsidered || null,
+      decision_statement: input.decisionStatement,
+      conditions: input.conditions || null,
+      rationale: input.rationale,
+      effective_from: input.effectiveFrom || null,
+      review_due_at: input.reviewDueAt || null,
+      status: 'submitted',
+      submitted_by: user.id,
+      submitted_at: new Date().toISOString(),
+    })
+    .select('id')
+    .single()
 
   if (error) {
     if (error.message.includes('appelée à se prononcer')) {
@@ -164,11 +196,68 @@ export async function submitDecision(
     return { ok: false, message: explain(error) }
   }
 
+  // Une decision de changement significatif, de suspension ou de retrait
+  // porte un CHANGEMENT : il est cree, lie a la decision — pour qu'aucune
+  // seconde decision ne s'ouvre d'elle-meme (0063) — puis qualifie par le
+  // moteur de reevaluation. On declare une fois.
+  let changeNote = ''
+  if ((CHANGE_DECISIONS as readonly string[]).includes(input.decisionType) && input.useCaseId) {
+    const kinds =
+      input.changeTypes.length ? input.changeTypes : (['DEPLOYMENT'] as (typeof CHANGE_TYPES)[number][])
+    const { data: change, error: changeError } = await supabase
+      .from('change_request')
+      .insert({
+        tenant_id: organization.tenant_id,
+        organization_id: input.organizationId,
+        use_case_id: input.useCaseId,
+        title: input.subject,
+        description: input.decisionStatement,
+        change_types: kinds,
+        increases_autonomy: input.increasesAutonomy,
+        new_autonomy_level: input.increasesAutonomy ? input.newAutonomyLevel || null : null,
+        changes_purpose: input.changesPurpose,
+        new_population_affected: input.newPopulationAffected,
+        new_territory: input.newTerritory,
+        changes_personal_data: input.changesPersonalData,
+        changes_vendor: input.changesVendor,
+        changes_model: input.changesModel,
+        changes_dataset: input.changesDataset,
+        security_relevant: input.securityRelevant || input.decisionType !== 'significant_change',
+        status: 'DRAFT',
+        requested_by: user.id,
+        planned_at: input.effectiveFrom || null,
+      })
+      .select('id, business_ref')
+      .single()
+    if (changeError) {
+      changeNote = ` Le changement qu’elle porte n’a pas pu être créé : ${explain(changeError)}`
+    } else {
+      await supabase.from('decision_link').insert({
+        tenant_id: organization.tenant_id,
+        decision_id: decision.id,
+        target_type: 'change_request',
+        target_id: change.id,
+        note: 'Le changement que cette décision porte.',
+      })
+      const { data: screening } = await supabase.rpc('screen_change_request', { p_change_request_id: change.id })
+      const verdict = (screening as { verdict?: string } | null)?.verdict
+      changeNote = ` Le changement ${change.business_ref} est créé et lié${
+        verdict
+          ? ` ; la réévaluation conclut : ${
+              verdict === 'FULL_REASSESSMENT' ? 'complète' : verdict === 'PARTIAL_REASSESSMENT' ? 'partielle' : 'aucune'
+            }.`
+          : '.'
+      }`
+    }
+  }
+
   revalidatePath(`/admin/organizations/${input.organizationId}/decisions`)
   if (input.useCaseId) revalidatePath(`/admin/use-cases/${input.useCaseId}`)
   return {
     ok: true,
-    message: 'Décision soumise. Elle attend une approbation — qui ne peut pas être la vôtre sur les décisions les plus engageantes.',
+    message:
+      'Décision soumise. Elle attend une approbation — qui ne peut pas être la vôtre sur les décisions les plus engageantes.' +
+      changeNote,
   }
 }
 
