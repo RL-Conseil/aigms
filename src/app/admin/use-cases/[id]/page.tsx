@@ -6,6 +6,8 @@ import { UseCaseLabelForm } from '@/components/governance/use-case-label-form'
 import { Badge, Card, Empty, Field, Stat, StatStrip } from '@/components/ui'
 import { TransitionModal } from '@/components/governance/transition-modal'
 import { AssetMeasureForm } from '@/components/governance/asset-measure-form'
+import { DecisionModal } from '@/components/governance/decision-modal'
+import { describePerson, organizationPeople } from '@/lib/governance/people'
 import { unlinkAssetFromUseCase } from '@/lib/actions/registry'
 import { resolveTab, UseCaseTabs, type TabSignal, type UseCaseTab } from '@/components/governance/use-case-tabs'
 import {
@@ -46,7 +48,7 @@ import {
   IncidentForm,
   IncidentProgressForm,
 } from '@/components/governance/operations-forms'
-import { UI_TRANSITIONS } from '@/lib/domain/transitions'
+import { DECISION_TYPES_BY_STATUS, UI_TRANSITIONS } from '@/lib/domain/transitions'
 import {
   AcceptRiskForm,
   ClassificationPanel,
@@ -145,6 +147,10 @@ export default async function UseCasePage({
   const {
     data: { user: viewer },
   } = await supabase.auth.getUser()
+
+  // Une decision approuvee dont la date d'effet est arrivee franchit son
+  // jalon au premier chargement de la fiche (0065) — avant de lire le statut.
+  await supabase.rpc('apply_due_decisions', { p_use_case_id: id })
 
   const { data: useCase } = await supabase
     .from('ai_use_case')
@@ -338,6 +344,17 @@ export default async function UseCasePage({
       : { data: null }
   const useCaseAssets = (assetsData ?? []) as UseCaseAsset[]
 
+  // Les preuves validees de l'organisation : ce sur quoi une decision se fonde.
+  const { data: validatedEvidence } =
+    tab === 'decisions'
+      ? await supabase
+          .from('evidence')
+          .select('id, business_ref, title')
+          .eq('organization_id', useCase.organization_id)
+          .eq('validation_status', 'validated')
+          .order('business_ref')
+      : { data: null }
+
   // Decisions et changements, dans l'ordre : une seule lecture (0063).
   const { data: timelineData } =
     tab === 'decisions'
@@ -408,6 +425,12 @@ export default async function UseCasePage({
   const assetChoices = (orgAssets ?? [])
     .filter((a) => a.organization_id === useCase.organization_id)
     .map((a) => ({ id: a.id, name: a.name, kind: a.kind }))
+
+  // Les personnes qui peuvent se prononcer sur une decision.
+  const reviewers = (await organizationPeople(useCase.organization_id, true)).map((p) => ({
+    userId: p.userId,
+    label: describePerson(p),
+  }))
 
   const people = (memberships ?? [])
     .map((m) => m.user as unknown as { id: string; full_name: string | null; email: string; job_title: string | null } | null)
@@ -1172,13 +1195,14 @@ export default async function UseCasePage({
             subtitle="Un seul fil : ce qui a été décidé, ce qui a changé, et comment l’un a appelé l’autre."
             action={
               <span className="flex items-center gap-2">
-                {organization ? (
-                  <Link
-                    href={`/admin/organizations/${organization.id}/decisions/nouvelle?cas-d-usage=${id}`}
-                    className="rounded-md border border-ink-200 px-3.5 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-100"
-                  >
-                    Soumettre une décision
-                  </Link>
+                {DECISION_TYPES_BY_STATUS[status].length ? (
+                  <DecisionModal
+                    organizationId={useCase.organization_id}
+                    useCaseId={id}
+                    allowedTypes={DECISION_TYPES_BY_STATUS[status]}
+                    people={reviewers}
+                    evidence={validatedEvidence ?? []}
+                  />
                 ) : null}
                 <ChangeRequestForm
                   organizationId={useCase.organization_id}

@@ -62,6 +62,12 @@ describe('RACI — arbitrage critique', () => {
         [DEMO.tenantA, DEMO.orgA, DEMO.useCasePilot, DEMO.officerA, REVIEWER_A],
       )
       const id = rows[0]!.id
+      // Une mise en production s'appuie sur une preuve validee (0065).
+      await c.query(
+        `insert into public.decision_link (tenant_id, decision_id, target_type, target_id)
+         select $1, $2, 'evidence', e.id from public.evidence e where e.organization_id = $3 and e.validation_status = 'validated' limit 1`,
+        [DEMO.tenantA, id, DEMO.orgA],
+      )
       // L'Expert metier se prononce : refuse, ce n'est pas son arbitrage.
       await becomeUser(c, REVIEWER_A)
       const byExpert = await expectFailure(
@@ -109,6 +115,11 @@ describe('RACI — arbitrage critique', () => {
          values ($1, $2, $3, 'go_production', 'Mise en production de l’assistant', 'Mise en service.', 'Préconditions réunies.',
                  'submitted', $4, now()) returning id`,
         [DEMO.tenantA, DEMO.orgA, DEMO.useCaseProduction, DEMO.officerA],
+      )
+      await c.query(
+        `insert into public.decision_link (tenant_id, decision_id, target_type, target_id)
+         select $1, $2, 'evidence', e.id from public.evidence e where e.organization_id = $3 and e.validation_status = 'validated' limit 1`,
+        [DEMO.tenantA, rows[0]!.id, DEMO.orgA],
       )
       await becomeUser(c, REVIEWER_A)
       const { rowCount } = await c.query(

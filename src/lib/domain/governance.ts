@@ -18,6 +18,7 @@ export const USE_CASE_STATUSES = [
   'PILOT',
   'PRODUCTION',
   'MONITORING',
+  'SUSPENDED',
   'RETIRED',
 ] as const
 
@@ -34,6 +35,7 @@ export const USE_CASE_STATUS_LABELS: Record<UseCaseStatus, string> = {
   PILOT: 'Pilote',
   PRODUCTION: 'Production',
   MONITORING: 'Surveillance',
+  SUSPENDED: 'Suspendu',
   RETIRED: 'Retiré',
 }
 

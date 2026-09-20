@@ -84,7 +84,8 @@ const submitSchema = z.object({
   expectedApproverUserId: z.string().uuid().optional().or(z.literal('')),
   decisionType: z.enum(DECISION_TYPES),
   subject: z.string().trim().min(5, 'Objet trop court.').max(200),
-  context: z.string().trim().max(2000).optional().or(z.literal('')),
+  // Le contexte est exige : une decision sans contexte ne se relit pas.
+  context: z.string().trim().min(20, 'Le contexte est exigé : ce qui amène à décider, en une ou deux phrases.').max(2000),
   optionsConsidered: z.string().trim().max(2000).optional().or(z.literal('')),
   decisionStatement: z
     .string()
@@ -101,6 +102,8 @@ const submitSchema = z.object({
   reviewDueAt: z.string().trim().optional().or(z.literal('')),
   // Ce qui change — pour une decision de changement significatif, de
   // suspension ou de retrait : le changement est cree, lie, et qualifie.
+  // Les pieces sur lesquelles la decision se fonde, des la soumission.
+  evidenceIds: z.array(z.string().uuid()).optional().default([]),
   changeTypes: z.array(z.enum(CHANGE_TYPES)).optional().default([]),
   increasesAutonomy: z.boolean().optional().default(false),
   newAutonomyLevel: z.enum(['L0', 'L1', 'L2', 'L3', 'L4']).optional().or(z.literal('')),
@@ -131,6 +134,7 @@ export async function submitDecision(
     rationale: formData.get('rationale'),
     effectiveFrom: formData.get('effectiveFrom') ?? '',
     reviewDueAt: formData.get('reviewDueAt') ?? '',
+    evidenceIds: formData.getAll('evidenceIds'),
     changeTypes: formData.getAll('changeTypes'),
     increasesAutonomy: formData.get('increasesAutonomy') === 'on',
     newAutonomyLevel: formData.get('newAutonomyLevel') ?? '',
@@ -158,6 +162,37 @@ export async function submitDecision(
     .eq('id', input.organizationId)
     .maybeSingle()
   if (!organization) return { ok: false, message: 'Organisation introuvable.' }
+
+  // Une decision de jalon ne se soumet pas sur un jalon ferme : on ne fait pas
+  // voter sur ce qui sera refuse. Le gate dit ce qui manque, precondition par
+  // precondition (0065).
+  const MILESTONES: Record<string, string> = {
+    use_case_authorization: 'APPROVED',
+    pilot_approval: 'PILOT',
+    go_production: 'PRODUCTION',
+    suspension: 'SUSPENDED',
+    retirement: 'RETIRED',
+  }
+  const milestone = MILESTONES[input.decisionType]
+  if (milestone && input.useCaseId) {
+    const { data: gate } = await supabase.rpc('evaluate_gate', { p_use_case_id: input.useCaseId, p_target: milestone })
+    const g = gate as { satisfied: boolean; checks: { label: string; satisfied: boolean }[] } | null
+    if (g && !g.satisfied) {
+      const missing = g.checks.filter((c) => !c.satisfied).map((c) => c.label)
+      return {
+        ok: false,
+        message: `Le jalon n’est pas prêt : ${missing.join(' ; ')}. La décision se soumettra quand les préconditions seront réunies.`,
+      }
+    }
+  }
+  // Une mise en production s'appuie sur au moins une preuve validee.
+  if (input.decisionType === 'go_production' && !input.evidenceIds.length) {
+    return {
+      ok: false,
+      message: 'Une mise en production s’appuie sur au moins une preuve validée : rattachez-la à la décision.',
+      fieldErrors: { evidenceIds: 'Au moins une preuve validée.' },
+    }
+  }
 
   // Une decision naît SOUMISE, jamais approuvee : l'approbation est un second
   // acte, porte par quelqu'un d'autre sur les types les plus engageants.
@@ -194,6 +229,20 @@ export async function submitDecision(
       }
     }
     return { ok: false, message: explain(error) }
+  }
+
+  // Les pieces rattachees des la soumission : c'est sur elles qu'on se
+  // prononcera, et c'est ce qu'un auditeur lira.
+  if (input.evidenceIds.length) {
+    await supabase.from('decision_link').insert(
+      input.evidenceIds.map((evidenceId) => ({
+        tenant_id: organization.tenant_id,
+        decision_id: decision.id,
+        target_type: 'evidence' as const,
+        target_id: evidenceId,
+        note: 'Rattachée à la soumission.',
+      })),
+    )
   }
 
   // Une decision de changement significatif, de suspension ou de retrait
@@ -256,7 +305,9 @@ export async function submitDecision(
   return {
     ok: true,
     message:
-      'Décision soumise. Elle attend une approbation — qui ne peut pas être la vôtre sur les décisions les plus engageantes.' +
+      (milestone
+        ? 'Décision soumise. Approuvée, elle franchira le jalon qu’elle porte — à sa date d’effet.'
+        : 'Décision soumise. Elle attend une approbation — qui ne peut pas être la vôtre sur les décisions les plus engageantes.') +
       changeNote,
   }
 }
