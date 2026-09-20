@@ -948,6 +948,14 @@ update public.governance_decision
 
 update public.change_request set status = 'REVIEW' where id = 'b8000000-0000-4000-8000-000000000001';
 
+-- La réévaluation a rouvert la supervision humaine (0066) : le plan est revu
+-- et réapprouvé — le retour en L1 est la configuration en vigueur.
+update public.human_oversight_plan
+   set status = 'approved',
+       approved_by = '11111111-1111-4111-8111-111111111111',
+       approved_at = now()
+ where use_case_id = 'b1000000-0000-4000-8000-000000000001';
+
 commit;
 
 -- =============================================================================

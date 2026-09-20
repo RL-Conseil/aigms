@@ -372,6 +372,7 @@ test('la mise en service avertit des risques non soldés', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Faire évoluer' }).click()
   const evolution = page.getByRole('dialog', { name: 'Faire évoluer le cas d’usage' })
+  await evolution.getByRole('button', { name: /^Franchir un jalon/ }).click()
   const cible = evolution.getByLabel('Transition demandée')
 
   // Sur une transition qui n'est pas une mise en service, aucun avertissement.

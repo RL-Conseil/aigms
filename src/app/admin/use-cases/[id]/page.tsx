@@ -345,15 +345,12 @@ export default async function UseCasePage({
   const useCaseAssets = (assetsData ?? []) as UseCaseAsset[]
 
   // Les preuves validees de l'organisation : ce sur quoi une decision se fonde.
-  const { data: validatedEvidence } =
-    tab === 'decisions'
-      ? await supabase
-          .from('evidence')
-          .select('id, business_ref, title')
-          .eq('organization_id', useCase.organization_id)
-          .eq('validation_status', 'validated')
-          .order('business_ref')
-      : { data: null }
+  const { data: validatedEvidence } = await supabase
+    .from('evidence')
+    .select('id, business_ref, title')
+    .eq('organization_id', useCase.organization_id)
+    .eq('validation_status', 'validated')
+    .order('business_ref')
 
   // Decisions et changements, dans l'ordre : une seule lecture (0063).
   const { data: timelineData } =
@@ -515,9 +512,15 @@ export default async function UseCasePage({
           */}
           <TransitionModal
             useCaseId={id}
+            organizationId={useCase.organization_id}
+            status={status}
             targets={UI_TRANSITIONS[status]}
             unsettledRisks={unsettledRisks}
             unassessedRisks={unassessedRisks}
+            currentAutonomy={useCase.autonomy_level}
+            decisionTypes={DECISION_TYPES_BY_STATUS[status]}
+            people={reviewers}
+            evidence={validatedEvidence ?? []}
           />
         </div>
       }

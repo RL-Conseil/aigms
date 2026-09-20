@@ -706,7 +706,8 @@ export const CHANGE_FACTS: { name: string; label: string; hint: string }[] = [
   { name: 'securityRelevant', label: 'Incidence sur la sécurité', hint: 'Surface d’attaque, secrets, accès.' },
 ]
 
-export function ChangeRequestForm({
+/** Le formulaire seul : il vit dans sa fenetre, ou dans celle de « Faire evoluer ». */
+export function ChangeRequestFields({
   organizationId,
   useCaseId,
   currentAutonomy,
@@ -723,86 +724,102 @@ export function ChangeRequestForm({
   const errors = errorsOf(state)
 
   return (
+    <form action={formAction} className="flex flex-col gap-4">
+      <input type="hidden" name="organizationId" value={organizationId} />
+      <input type="hidden" name="useCaseId" value={useCaseId} />
+
+      <Field label="Titre" htmlFor="chg-title" error={errors.title}>
+        <input id="chg-title" name="title" type="text" required className={FIELD} />
+      </Field>
+
+      <Field label="Ce qui change" htmlFor="chg-desc" error={errors.description}>
+        <textarea id="chg-desc" name="description" rows={3} required className={FIELD} />
+      </Field>
+
+      <fieldset>
+        <legend className="mb-1.5 text-sm font-medium text-ink-900">Nature du changement</legend>
+        {errors.changeTypes ? <p className="mb-1 text-xs text-stop-600">{errors.changeTypes}</p> : null}
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 sm:grid-cols-3">
+          {Object.entries(CHANGE_TYPE_LABELS).map(([value, label]) => (
+            <label key={value} className="flex items-center gap-2 text-sm text-ink-700">
+              <input type="checkbox" name="changeTypes" value={value} />
+              {label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend className="mb-1.5 text-sm font-medium text-ink-900">Ce que le moteur lit</legend>
+        <div className="flex flex-col gap-2">
+          <label className="flex items-start gap-2.5 text-sm text-ink-700">
+            <input
+              type="checkbox"
+              name="increasesAutonomy"
+              checked={increasesAutonomy}
+              onChange={(e) => setIncreasesAutonomy(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>
+              <span className="font-medium text-ink-900">L’autonomie augmente</span>
+              <span className="block text-xs text-ink-500">
+                Aujourd’hui {currentAutonomy}. Au-delà de L2, la supervision humaine est réévaluée.
+              </span>
+            </span>
+          </label>
+          {increasesAutonomy ? (
+            <Field label="Niveau visé" htmlFor="chg-autonomy" error={errors.newAutonomyLevel}>
+              <select id="chg-autonomy" name="newAutonomyLevel" defaultValue="" className={FIELD}>
+                <option value="">— Choisir</option>
+                {['L1', 'L2', 'L3', 'L4'].map((l) => (
+                  <option key={l} value={l}>
+                    {l}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          ) : null}
+          {CHANGE_FACTS.map((fact) => (
+            <label key={fact.name} className="flex items-start gap-2.5 text-sm text-ink-700">
+              <input type="checkbox" name={fact.name} className="mt-0.5" />
+              <span>
+                <span className="font-medium text-ink-900">{fact.label}</span>
+                <span className="block text-xs text-ink-500">{fact.hint}</span>
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <Field label="Prévu le" htmlFor="chg-planned" optional>
+        <input id="chg-planned" name="plannedAt" type="date" className={FIELD} />
+      </Field>
+
+      <FormFeedback state={state} />
+      <Submit pending={pending} idle="Soumettre et qualifier" />
+    </form>
+  )
+}
+
+export function ChangeRequestForm({
+  organizationId,
+  useCaseId,
+  currentAutonomy,
+  trigger = 'Prévoir un changement',
+}: {
+  organizationId: string
+  useCaseId: string
+  currentAutonomy: string
+  trigger?: string
+}) {
+  return (
     <Modal
-      trigger="Demander un changement"
-      title="Demander un changement"
-      description="Les faits déclarés ici sont ce que le moteur de réévaluation lit. Il dit ensuite ce qui doit être réévalué."
+      trigger={trigger}
+      title="Prévoir un changement du système"
+      description="Ce qui va changer, à quelle date. Les faits déclarés sont ce que le moteur de réévaluation lit ; il dit ce qui doit être réévalué, et si une décision s’impose."
     >
       {() => (
-        <form action={formAction} className="flex flex-col gap-4">
-          <input type="hidden" name="organizationId" value={organizationId} />
-          <input type="hidden" name="useCaseId" value={useCaseId} />
-
-          <Field label="Titre" htmlFor="chg-title" error={errors.title}>
-            <input id="chg-title" name="title" type="text" required className={FIELD} />
-          </Field>
-
-          <Field label="Ce qui change" htmlFor="chg-desc" error={errors.description}>
-            <textarea id="chg-desc" name="description" rows={3} required className={FIELD} />
-          </Field>
-
-          <fieldset>
-            <legend className="mb-1.5 text-sm font-medium text-ink-900">Nature du changement</legend>
-            {errors.changeTypes ? <p className="mb-1 text-xs text-stop-600">{errors.changeTypes}</p> : null}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 sm:grid-cols-3">
-              {Object.entries(CHANGE_TYPE_LABELS).map(([value, label]) => (
-                <label key={value} className="flex items-center gap-2 text-sm text-ink-700">
-                  <input type="checkbox" name="changeTypes" value={value} />
-                  {label}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-
-          <fieldset>
-            <legend className="mb-1.5 text-sm font-medium text-ink-900">Ce que le moteur lit</legend>
-            <div className="flex flex-col gap-2">
-              <label className="flex items-start gap-2.5 text-sm text-ink-700">
-                <input
-                  type="checkbox"
-                  name="increasesAutonomy"
-                  checked={increasesAutonomy}
-                  onChange={(e) => setIncreasesAutonomy(e.target.checked)}
-                  className="mt-0.5"
-                />
-                <span>
-                  <span className="font-medium text-ink-900">L’autonomie augmente</span>
-                  <span className="block text-xs text-ink-500">
-                    Aujourd’hui {currentAutonomy}. Au-delà de L2, la supervision humaine est réévaluée.
-                  </span>
-                </span>
-              </label>
-              {increasesAutonomy ? (
-                <Field label="Niveau visé" htmlFor="chg-autonomy" error={errors.newAutonomyLevel}>
-                  <select id="chg-autonomy" name="newAutonomyLevel" defaultValue="" className={FIELD}>
-                    <option value="">— Choisir</option>
-                    {['L1', 'L2', 'L3', 'L4'].map((l) => (
-                      <option key={l} value={l}>
-                        {l}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-              ) : null}
-              {CHANGE_FACTS.map((fact) => (
-                <label key={fact.name} className="flex items-start gap-2.5 text-sm text-ink-700">
-                  <input type="checkbox" name={fact.name} className="mt-0.5" />
-                  <span>
-                    <span className="font-medium text-ink-900">{fact.label}</span>
-                    <span className="block text-xs text-ink-500">{fact.hint}</span>
-                  </span>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-
-          <Field label="Prévu le" htmlFor="chg-planned" optional>
-            <input id="chg-planned" name="plannedAt" type="date" className={FIELD} />
-          </Field>
-
-          <FormFeedback state={state} />
-          <Submit pending={pending} idle="Soumettre et qualifier" />
-        </form>
+        <ChangeRequestFields organizationId={organizationId} useCaseId={useCaseId} currentAutonomy={currentAutonomy} />
       )}
     </Modal>
   )
