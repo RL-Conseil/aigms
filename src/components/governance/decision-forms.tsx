@@ -40,23 +40,44 @@ const SEPARATED = ['go_production', 'risk_acceptance', 'policy_exception']
 /** Types qui portent un changement sur le systeme. */
 const CHANGE_DECISIONS = ['significant_change', 'suspension', 'retirement']
 
+/** Le jalon que porte chaque type de decision, et ce qu'il signifie. */
+const MILESTONE_HINTS: Record<string, string> = {
+  use_case_authorization: 'Approuvée, elle fait passer le cas d’usage « Approuvé » (ou « sous conditions », ou « Refusé »).',
+  pilot_approval: 'Approuvée, elle ouvre le pilote.',
+  go_production: 'Approuvée, elle met en production — à sa date d’effet. Le gate doit être prêt, et une preuve validée rattachée.',
+  suspension: 'Approuvée, elle suspend le cas d’usage jusqu’à reprise ou retrait.',
+  retirement: 'Approuvée, elle retire le cas d’usage — définitivement.',
+}
+
 export function DecisionForm({
   organizationId,
   useCases,
   people,
   defaultUseCaseId,
+  fixedUseCaseId,
+  allowedTypes,
+  evidence = [],
 }: {
   organizationId: string
   useCases: { id: string; name: string; business_ref: string }[]
   /** Personnes declarees sur l'organisation qui peuvent se prononcer. */
   people: { userId: string; label: string }[]
   defaultUseCaseId?: string
+  /** Depuis la fiche : le cas d'usage est celui-la, sans choix. */
+  fixedUseCaseId?: string
+  /** Depuis la fiche : les types qui ont un sens au jalon courant. */
+  allowedTypes?: string[]
+  /** Les preuves validees de l'organisation, a rattacher a la decision. */
+  evidence?: { id: string; business_ref: string; title: string }[]
 }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(
     submitDecision,
     null,
   )
-  const [type, setType] = useState<string>('use_case_authorization')
+  const types = allowedTypes?.length
+    ? DECISION_TYPES.filter(([value]) => allowedTypes.includes(value))
+    : DECISION_TYPES
+  const [type, setType] = useState<string>(types[0]?.[0] ?? 'use_case_authorization')
   const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
 
   return (
@@ -64,7 +85,7 @@ export function DecisionForm({
       <input type="hidden" name="organizationId" value={organizationId} />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Type de décision" htmlFor="dec-type">
+        <Field label="Type de décision" htmlFor="dec-type" hint={MILESTONE_HINTS[type]}>
           <select
             id="dec-type"
             name="decisionType"
@@ -72,7 +93,7 @@ export function DecisionForm({
             onChange={(event) => setType(event.target.value)}
             className={FIELD}
           >
-            {DECISION_TYPES.map(([value, label]) => (
+            {types.map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
               </option>
@@ -80,26 +101,30 @@ export function DecisionForm({
           </select>
         </Field>
 
-        <Field
-          label="Cas d’usage concerné"
-          htmlFor="dec-use-case"
-          optional
-          hint="Une exception de politique peut porter sur l’organisation entière."
-        >
-          <select
-            id="dec-use-case"
-            name="useCaseId"
-            defaultValue={defaultUseCaseId ?? ''}
-            className={FIELD}
+        {fixedUseCaseId ? (
+          <input type="hidden" name="useCaseId" value={fixedUseCaseId} />
+        ) : (
+          <Field
+            label="Cas d’usage concerné"
+            htmlFor="dec-use-case"
+            optional
+            hint="Une exception de politique peut porter sur l’organisation entière."
           >
-            <option value="">— Décision transverse</option>
-            {useCases.map((useCase) => (
-              <option key={useCase.id} value={useCase.id}>
-                {useCase.business_ref} — {useCase.name}
-              </option>
-            ))}
-          </select>
-        </Field>
+            <select
+              id="dec-use-case"
+              name="useCaseId"
+              defaultValue={defaultUseCaseId ?? ''}
+              className={FIELD}
+            >
+              <option value="">— Décision transverse</option>
+              {useCases.map((useCase) => (
+                <option key={useCase.id} value={useCase.id}>
+                  {useCase.business_ref} — {useCase.name}
+                </option>
+              ))}
+            </select>
+          </Field>
+        )}
       </div>
 
       <Field label="Objet" htmlFor="dec-subject" error={errors.subject}>
@@ -124,8 +149,13 @@ export function DecisionForm({
         <textarea id="dec-rationale" name="rationale" rows={3} required className={FIELD} />
       </Field>
 
-      <Field label="Contexte" htmlFor="dec-context" optional>
-        <textarea id="dec-context" name="context" rows={2} className={FIELD} />
+      <Field
+        label="Contexte"
+        htmlFor="dec-context"
+        error={errors.context}
+        hint="Ce qui amène à décider : la situation, ce qui a changé, ce qui presse. Exigé."
+      >
+        <textarea id="dec-context" name="context" rows={2} required className={FIELD} />
       </Field>
 
       <Field
@@ -158,6 +188,35 @@ export function DecisionForm({
           <input id="dec-review" name="reviewDueAt" type="date" className={FIELD} />
         </Field>
       </div>
+
+      <fieldset>
+        <legend className="mb-1 text-sm font-medium">
+          Preuves sur lesquelles la décision se fonde
+          {type === 'go_production' ? '' : <span className="ml-1 font-normal text-ink-500">(facultatif)</span>}
+        </legend>
+        <p className="mb-2 text-xs text-ink-500">
+          {type === 'go_production'
+            ? 'Une mise en production s’appuie sur au moins une preuve validée.'
+            : 'Les pièces validées du registre ; c’est ce qu’un auditeur lira avec la décision.'}
+        </p>
+        {evidence.length ? (
+          <div className="grid max-h-40 gap-1.5 overflow-y-auto rounded-md border border-ink-200 p-2.5 sm:grid-cols-2">
+            {evidence.map((e) => (
+              <label key={e.id} className="flex items-start gap-2 text-sm text-ink-700">
+                <input type="checkbox" name="evidenceIds" value={e.id} className="mt-0.5" />
+                <span>
+                  <span className="font-mono text-xs text-ink-400">{e.business_ref}</span> {e.title}
+                </span>
+              </label>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-ink-400">Aucune preuve validée au registre pour l’instant.</p>
+        )}
+        {errors.evidenceIds ? (
+          <p role="alert" className="mt-1.5 text-[13px] text-stop-600">{errors.evidenceIds}</p>
+        ) : null}
+      </fieldset>
 
       <Field
         label="Personne appelée à se prononcer"

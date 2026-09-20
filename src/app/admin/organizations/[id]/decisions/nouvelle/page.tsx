@@ -24,7 +24,7 @@ export default async function NewDecisionPage({
   const search = await searchParams
   const supabase = await createClient()
 
-  const [{ data: organization }, { data: useCases }, people] = await Promise.all([
+  const [{ data: organization }, { data: useCases }, people, { data: evidence }] = await Promise.all([
     supabase.from('organization').select('id, name').eq('id', id).maybeSingle(),
     supabase
       .from('ai_use_case')
@@ -32,6 +32,12 @@ export default async function NewDecisionPage({
       .eq('organization_id', id)
       .order('business_ref'),
     organizationPeople(id, true),
+    supabase
+      .from('evidence')
+      .select('id, business_ref, title')
+      .eq('organization_id', id)
+      .eq('validation_status', 'validated')
+      .order('business_ref'),
   ])
 
   if (!organization) notFound()
@@ -63,6 +69,7 @@ export default async function NewDecisionPage({
           <DecisionForm
             organizationId={id}
             useCases={useCases ?? []}
+            evidence={evidence ?? []}
             people={people.map((person) => ({
               userId: person.userId,
               label: describePerson(person),

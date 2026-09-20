@@ -51,12 +51,17 @@ test('l’auteur d’une mise en production ne peut pas l’approuver', async ({
   await expect(page.getByText(/vous ne pourrez\s+pas l’approuver vous-même/)).toBeVisible()
 
   await page.getByLabel('Objet').fill(objet)
+  // Une decision transverse : sans cas d'usage, pas de jalon a verifier.
+  await page.getByLabel('Cas d’usage concerné').selectOption('')
+  await page.getByLabel('Contexte').fill('Le pilote est terminé et le comité demande la mise en service.')
   await page
     .getByLabel('Ce qui est décidé')
     .fill('Mise en service de l’assistant sur le périmètre du support niveau 1.')
   await page
     .getByLabel('Justification')
     .fill('Préconditions réunies, revue d’échantillon prévue pendant trois mois.')
+  // Une mise en production s'appuie sur une preuve validee : la premiere.
+  await page.getByRole('checkbox', { name: /EVD-/ }).first().check()
   await page.getByRole('button', { name: 'Soumettre la décision' }).click()
   await expect(page.getByRole('status')).toContainText('Décision soumise')
 
@@ -83,6 +88,7 @@ test('une autre personne peut se prononcer', async ({ page }) => {
   await page.goto(`/admin/organizations/${ORG}/decisions/nouvelle`)
   await page.getByLabel('Type de décision').selectOption('risk_acceptance')
   await page.getByLabel('Objet').fill(objet)
+  await page.getByLabel('Contexte').fill('Le fournisseur de modèle ne peut pas être remplacé à court terme.')
   await page
     .getByLabel('Ce qui est décidé')
     .fill('Le risque de dépendance au fournisseur est accepté pour douze mois.')

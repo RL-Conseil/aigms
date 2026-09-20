@@ -247,6 +247,7 @@ commit;
 begin;
 
 set local role authenticated;
+set local aigms.seed = 'on';
 set local request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","role":"authenticated"}';
 
 -- --- Cartographie des processus -----------------------------------------------
@@ -433,6 +434,7 @@ commit;
 -- =============================================================================
 begin;
 set local role authenticated;
+set local aigms.seed = 'on';
 set local request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","role":"authenticated"}';
 
 insert into public.ai_use_case (
@@ -695,6 +697,7 @@ commit;
 -- =============================================================================
 begin;
 set local role authenticated;
+set local aigms.seed = 'on';
 set local request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","role":"authenticated"}';
 
 insert into public.ai_use_case (
@@ -856,6 +859,7 @@ commit;
 -- =============================================================================
 begin;
 set local role authenticated;
+set local aigms.seed = 'on';
 set local request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","role":"authenticated"}';
 
 insert into public.ai_use_case (
@@ -891,6 +895,7 @@ commit;
 -- =============================================================================
 begin;
 set local role authenticated;
+set local aigms.seed = 'on';
 set local request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","role":"authenticated"}';
 
 insert into public.change_request (
@@ -950,6 +955,7 @@ commit;
 -- =============================================================================
 begin;
 set local role authenticated;
+set local aigms.seed = 'on';
 set local request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","role":"authenticated"}';
 
 insert into public.incident (id, tenant_id, organization_id, use_case_id, title, description,
@@ -1093,6 +1099,7 @@ on conflict do nothing;
 -- réel d'un dossier en cours, et c'est ce qu'un auditeur regarde en premier.
 begin;
 set local role authenticated;
+set local aigms.seed = 'on';
 set local request.jwt.claims = '{"sub":"11111111-1111-4111-8111-111111111111","role":"authenticated"}';
 
 insert into public.soa_decision (tenant_id, organization_id, requirement_id, status, justification, decided_by)

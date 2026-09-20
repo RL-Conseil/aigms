@@ -41,6 +41,7 @@ type Decision = {
   effective_from: string | null
   review_due_at: string | null
   approved_at: string | null
+  applied_at: string | null
   submitted_at: string | null
   use_case_id: string | null
   expected_approver_user_id: string | null
@@ -82,7 +83,7 @@ export default async function DecisionsPage({
     supabase
       .from('governance_decision')
       .select(
-        'id, business_ref, decision_type, subject, decision_statement, conditions, rationale, status, effective_from, review_due_at, approved_at, submitted_at, use_case_id, expected_approver_user_id',
+        'id, business_ref, decision_type, subject, decision_statement, conditions, rationale, status, effective_from, review_due_at, approved_at, applied_at, submitted_at, use_case_id, expected_approver_user_id',
       )
       .eq('organization_id', id)
       .order('submitted_at', { ascending: false, nullsFirst: false }),
@@ -380,6 +381,13 @@ export default async function DecisionsPage({
                         ? ` · approuvée le ${formatDateTime(decision.approved_at)}`
                         : decision.submitted_at
                           ? ` · soumise le ${formatDateTime(decision.submitted_at)}`
+                          : ''}
+                      {decision.applied_at
+                        ? ` · jalon franchi le ${formatDate(decision.applied_at)}`
+                        : ['use_case_authorization', 'pilot_approval', 'go_production', 'suspension', 'retirement'].includes(decision.decision_type) &&
+                            ['approved', 'approved_with_conditions'].includes(decision.status) &&
+                            decision.use_case_id
+                          ? ' · jalon en attente'
                           : ''}
                     </p>
                   </div>
