@@ -61,6 +61,7 @@ export function EvidenceUploadForm({
   closesActionId,
   defaultTypologyId,
   replaces,
+  useCaseId,
 }: {
   organizationId: string
   controls: ControlChoice[]
@@ -69,6 +70,8 @@ export function EvidenceUploadForm({
   defaultControlId?: string
   /** Une action que ce depot solde : « Déposer la preuve de… ». */
   closesActionId?: string
+  /** Depuis la fiche d'un cas d'usage : elle se rafraichit apres le depot. */
+  useCaseId?: string
   defaultTypologyId?: string
   /** Renouvellement : la piece remplacee pre-remplit le formulaire. */
   replaces?: {
@@ -95,6 +98,7 @@ export function EvidenceUploadForm({
     <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="organizationId" value={organizationId} />
       {closesActionId ? <input type="hidden" name="closesActionId" value={closesActionId} /> : null}
+      {useCaseId ? <input type="hidden" name="useCaseId" value={useCaseId} /> : null}
       {replaces ? (
         <>
           <input type="hidden" name="replacesId" value={replaces.id} />

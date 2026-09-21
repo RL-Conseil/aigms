@@ -8,6 +8,8 @@ import { TransitionModal } from '@/components/governance/transition-modal'
 import { AssetMeasureForm } from '@/components/governance/asset-measure-form'
 import { DecisionModal } from '@/components/governance/decision-modal'
 import { IncidentTicket } from '@/components/governance/incident-ticket'
+import { EvidenceDepositModal } from '@/components/governance/evidence-deposit-modal'
+import type { ControlChoice, TypologyChoice } from '@/components/governance/evidence-forms'
 import { describePerson, organizationPeople } from '@/lib/governance/people'
 import { unlinkAssetFromUseCase } from '@/lib/actions/registry'
 import { resolveTab, UseCaseTabs, type TabSignal, type UseCaseTab } from '@/components/governance/use-case-tabs'
@@ -224,7 +226,8 @@ export default async function UseCasePage({
       .select(
         `id, business_ref, autonomy_level, status, intervention_triggers, override_procedure, stop_procedure, monitoring_cadence, expected_evidence, approved_at, not_applicable_rationale,
          accountable_user_id, stop_authority_user_id, required_competence,
-         trigger_control_id, override_control_id, stop_control_id, competence_control_id,
+         trigger_control_id, override_control_id, stop_control_id, competence_control_id, level_control_id, approval_evidence_id,
+         level_control:level_control_id (id, code, name, status),
          trigger_control:trigger_control_id (id, code, name, status), override_control:override_control_id (id, code, name, status),
          stop_control:stop_control_id (id, code, name, status), competence_control:competence_control_id (id, code, name, status)`,
       )
@@ -352,6 +355,20 @@ export default async function UseCasePage({
     ((c.reassessment ?? []) as { final_verdict: string | null }[]).some((r) => r.final_verdict === null),
   ).length
 
+  // Deposer sans quitter la fiche : les controles qui attendent une preuve,
+  // restreints a ceux du cas d'usage, et les typologies de la matrice.
+  const [{ data: awaitingData }, { data: typologyData }] =
+    tab === 'supervision'
+      ? await Promise.all([
+          supabase.rpc('controls_awaiting_evidence', { p_organization_id: useCase.organization_id }),
+          supabase.rpc('evidence_typologies', { p_organization_id: useCase.organization_id }),
+        ])
+      : [{ data: null }, { data: null }]
+  const depositControls: ControlChoice[] = ((awaitingData ?? []) as { id: string; code: string; name: string; status: string; is_evidenced: boolean }[])
+    .filter((c) => applicableControlIds.includes(c.id))
+    .map((c) => ({ id: c.id, code: c.code, name: c.name, status: c.status, is_evidenced: c.is_evidenced }))
+  const depositTypologies = (typologyData ?? []) as TypologyChoice[]
+
   // Le plan s'adosse aux controles HUM : les controles-types publies, a
   // retenir d'un clic, et les controles organisationnels deja au registre.
   const { data: oversightCatalog } =
@@ -365,6 +382,7 @@ export default async function UseCasePage({
   const planControls: { rubric: string; control: NonNullable<PlanControl> }[] = oversight
     ? (
         [
+          { rubric: 'Niveau de supervision — le plan approuvé', control: oversight.level_control as unknown as PlanControl },
           { rubric: 'Déclencheurs d’intervention', control: oversight.trigger_control as unknown as PlanControl },
           { rubric: 'Reprise en main', control: oversight.override_control as unknown as PlanControl },
           { rubric: 'Arrêt et escalade', control: oversight.stop_control as unknown as PlanControl },
@@ -1191,14 +1209,12 @@ export default async function UseCasePage({
             subtitle="Par contrôle que le plan désigne : ce qui le démontre, ou ce qui manque."
             tone={planControls.some((p) => !(evidenceByControl.get(p.control.id) ?? []).some((e) => e.validation_status === 'validated')) ? 'warn' : 'neutral'}
             action={
-              organization ? (
-                <Link
-                  href={`/admin/organizations/${organization.id}/preuves/deposer?cas-d-usage=${id}`}
-                  className="rounded-md border border-ink-200 px-3.5 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-100"
-                >
-                  Déposer une preuve
-                </Link>
-              ) : null
+              <EvidenceDepositModal
+                organizationId={useCase.organization_id}
+                controls={depositControls}
+                typologies={depositTypologies}
+                useCaseId={id}
+              />
             }
           >
             {oversight?.expected_evidence ? (
@@ -1236,14 +1252,18 @@ export default async function UseCasePage({
                             </Link>
                           ))
                         ) : (
-                          <>
-                            Rien ne le démontre encore.{' '}
-                            {organization ? (
-                              <Link href={`/admin/organizations/${organization.id}/preuves/deposer?cas-d-usage=${id}&controle=${control.id}`} className="font-medium text-brand-600 hover:underline">
-                                Déposer
-                              </Link>
-                            ) : null}
-                          </>
+                          <span className="inline-flex items-center gap-2">
+                            Rien ne le démontre encore.
+                            <EvidenceDepositModal
+                              organizationId={useCase.organization_id}
+                              controls={depositControls.some((c) => c.id === control.id) ? depositControls : [...depositControls, { id: control.id, code: control.code, name: control.name, status: control.status, is_evidenced: false }]}
+                              typologies={depositTypologies}
+                              defaultControlId={control.id}
+                              useCaseId={id}
+                              trigger="Déposer"
+                              triggerClassName="text-xs font-medium text-brand-600 hover:underline"
+                            />
+                          </span>
                         )}
                       </p>
                     </li>

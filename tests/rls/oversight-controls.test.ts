@@ -61,3 +61,31 @@ describe('Plan de supervision et contrôles HUM', () => {
     expect(r.after.satisfied).toBe(true)
   })
 })
+
+describe('HUM-001, matérialisé par le plan approuvé', () => {
+  it('approuver le plan met HUM-001 au registre, applicable, avec le plan pour preuve', async () => {
+    const r = await asUser(db, DEMO.officerA, async (c) => {
+      await c.query(`update public.human_oversight_plan set status = 'draft', approved_by = null, approved_at = null where use_case_id = $1`, [DEMO.useCasePilot])
+      const { rows } = await c.query<{ level_control_id: string | null; approval_evidence_id: string | null }>(
+        `update public.human_oversight_plan
+            set status = 'approved', approved_by = $2, approved_at = now(), accountable_user_id = $3, stop_authority_user_id = $3,
+                intervention_triggers = 'Taux de sélection anormal.'
+          where use_case_id = $1 returning level_control_id, approval_evidence_id`,
+        [DEMO.useCasePilot, DEMO.officerA, DEMO.systemOwnerA],
+      )
+      const { rows: ap } = await c.query<{ code: string; status: string }>(
+        `select c.code, ca.status from public.control_applicability ca join public.control c on c.id = ca.control_id
+          where ca.use_case_id = $1 and c.code = 'AIGMS-HUM-001'`, [DEMO.useCasePilot],
+      )
+      const { rows: ev } = await c.query<{ n: string }>(
+        `select count(*)::text as n from public.control_evidence ce where ce.control_id = $1 and ce.evidence_id = $2`,
+        [rows[0]!.level_control_id, rows[0]!.approval_evidence_id],
+      )
+      return { plan: rows[0]!, applicability: ap[0], linked: Number(ev[0]!.n) }
+    })
+    expect(r.plan.level_control_id).not.toBeNull()
+    expect(r.plan.approval_evidence_id).not.toBeNull()
+    expect(r.applicability).toEqual({ code: 'AIGMS-HUM-001', status: 'applicable' })
+    expect(r.linked).toBe(1)
+  })
+})
