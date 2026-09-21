@@ -16,7 +16,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
     supabase.from('organization').select('id, name').eq('id', id).maybeSingle(),
     supabase
       .from('governance_review')
-      .select('id, business_ref, kind, scheduled_on, held_at, status, attendees, period_from, agenda, minutes, decisions_taken, next_review_on, evidence_id, chair:chaired_by (full_name, email)')
+      .select('id, business_ref, kind, scheduled_on, held_at, status, attendees, expected_attendees, period_from, agenda, minutes, decisions_taken, next_review_on, evidence_id, cancellation_reason, cancelled_at, canceller:cancelled_by (full_name, email), chair:chaired_by (full_name, email)')
       .eq('id', reviewId)
       .eq('organization_id', id)
       .maybeSingle(),
@@ -30,6 +30,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
       : { data: null }
   const agenda = ((liveAgenda ?? review.agenda) as Agenda & { cadence?: Cadence }) ?? null
   const chair = review.chair as unknown as { full_name: string | null; email: string } | null
+  const canceller = review.canceller as unknown as { full_name: string | null; email: string } | null
   const cadence = agenda?.cadence
   const suggestedNext = (() => {
     const d = new Date()
@@ -72,10 +73,21 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
           </Card>
         </div>
         <div className="space-y-5">
+          {review.status === 'cancelled' ? (
+            <Card title="Revue annulée" subtitle={review.cancelled_at ? `Le ${formatDateTime(review.cancelled_at)}${canceller ? ` par ${canceller.full_name ?? canceller.email}` : ''}` : undefined} tone="warn">
+              <p className="text-sm text-ink-700">{review.cancellation_reason}</p>
+              {review.expected_attendees?.length ? (
+                <p className="mt-2 text-xs text-ink-500">Participants attendus : {(review.expected_attendees as string[]).join(', ')}</p>
+              ) : null}
+            </Card>
+          ) : null}
           {review.status === 'held' ? (
             <>
               <Card title="Compte rendu" subtitle={`Tenue le ${formatDateTime(review.held_at!)}`} tone="neutral">
                 <dl className="space-y-3">
+                  {review.expected_attendees?.length ? (
+                    <Field label="Participants attendus">{(review.expected_attendees as string[]).join(', ')}</Field>
+                  ) : null}
                   <Field label="Présents">{review.attendees?.length ? review.attendees.join(', ') : '—'}</Field>
                   <Field label="Compte rendu">
                     <span className="whitespace-pre-line">{review.minutes}</span>
@@ -97,7 +109,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
                 ) : null}
               </Card>
             </>
-          ) : (
+          ) : review.status === 'planned' ? (
             <Card title="Participants attendus">
               {review.attendees?.length ? (
                 <ul className="text-sm text-ink-700">{(review.attendees as string[]).map((a) => <li key={a}>{a}</li>)}</ul>
@@ -105,7 +117,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ id: str
                 <Empty>À préciser à la tenue.</Empty>
               )}
             </Card>
-          )}
+          ) : null}
         </div>
       </div>
     </Shell>

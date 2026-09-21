@@ -3,9 +3,8 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty } from '@/components/ui'
-import { PlanReviewForm } from '@/components/governance/review-forms'
+import { CancelReviewForm, PlanReviewForm } from '@/components/governance/review-forms'
 import { ReviewCalendarCard } from '@/components/governance/review-calendar-card'
-import { cancelReview } from '@/lib/actions/reviews'
 import { formatDate, formatDateTime } from '@/lib/domain/governance'
 import { FREQUENCY_MONTHS, REVIEW_KIND_LABELS, REVIEW_STATUS_LABELS, type ReviewCalendar } from '@/lib/domain/reviews'
 
@@ -21,7 +20,7 @@ export default async function ReviewsPage({ params }: { params: Promise<{ id: st
     supabase.rpc('review_calendar', { p_organization_id: id }),
     supabase
       .from('governance_review')
-      .select('id, business_ref, kind, scheduled_on, held_at, status, attendees, next_review_on, evidence_id, chair:chaired_by (full_name, email)')
+      .select('id, business_ref, kind, scheduled_on, held_at, status, attendees, expected_attendees, next_review_on, evidence_id, cancellation_reason, chair:chaired_by (full_name, email)')
       .eq('organization_id', id)
       .order('scheduled_on', { ascending: false }),
     supabase.from('membership').select('user:user_id (id, full_name, email, job_title)').eq('status', 'active'),
@@ -81,11 +80,7 @@ export default async function ReviewsPage({ params }: { params: Promise<{ id: st
                       </div>
                       <span className="flex items-center gap-2">
                         {late ? <Badge tone="stop">Date dépassée</Badge> : <Badge tone="info">Planifiée</Badge>}
-                        <form action={cancelReview}>
-                          <input type="hidden" name="organizationId" value={id} />
-                          <input type="hidden" name="reviewId" value={r.id} />
-                          <button type="submit" className="text-xs text-ink-400 hover:text-stop-600 hover:underline">Annuler</button>
-                        </form>
+                        <CancelReviewForm organizationId={id} reviewId={r.id} />
                       </span>
                     </li>
                   )
@@ -96,7 +91,7 @@ export default async function ReviewsPage({ params }: { params: Promise<{ id: st
             )}
           </Card>
 
-          <Card title="Tenues" subtitle={`${held.filter((r) => r.status === 'held').length} revue(s) tenue(s)`}>
+          <Card title="Tenues et annulées" subtitle={`${held.filter((r) => r.status === 'held').length} tenue(s) · ${held.filter((r) => r.status === 'cancelled').length} annulée(s)`}>
             {held.length ? (
               <ul className="divide-y divide-ink-100">
                 {held.map((r) => {
@@ -114,6 +109,9 @@ export default async function ReviewsPage({ params }: { params: Promise<{ id: st
                           {r.next_review_on ? ` · prochaine le ${formatDate(r.next_review_on)}` : ''}
                           {r.evidence_id ? ' · compte rendu déposé' : ''}
                         </p>
+                        {r.status === 'cancelled' && r.cancellation_reason ? (
+                          <p className="mt-0.5 text-xs text-ink-500">Annulée : {r.cancellation_reason}</p>
+                        ) : null}
                       </div>
                       <Badge tone={r.status === 'held' ? 'ok' : 'neutral'}>{REVIEW_STATUS_LABELS[r.status]}</Badge>
                     </li>

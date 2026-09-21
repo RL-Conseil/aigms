@@ -1398,7 +1398,7 @@ export default async function UseCasePage({
                       <IncidentTicket
                         organizationId={useCase.organization_id}
                         people={people}
-                        lateQualification={!incident.qualified_at && Date.now() - new Date(incident.detected_at).getTime() > 24 * 36e5}
+                        lateQualification={!incident.qualified_at && new Date(today).getTime() - new Date(incident.detected_at).getTime() > 24 * 36e5}
                         ticket={{
                           id: incident.id,
                           business_ref: incident.business_ref,
