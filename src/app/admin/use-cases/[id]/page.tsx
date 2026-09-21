@@ -25,7 +25,6 @@ import { ApplicabilityForm, RiskTreatmentForm } from '@/components/governance/co
 import { ControlProposals, type Suggestions } from '@/components/governance/control-proposals'
 import { ActionProposals, type ActionSuggestions } from '@/components/governance/action-proposals'
 import {
-  ImpactForm,
   LinkAssetForm,
   LinkVendorForm,
   OversightForm,
@@ -37,7 +36,6 @@ import {
   ClassificationNote,
   ControlNote,
   DecisionNote,
-  ImpactNote,
   IncidentNote,
   OversightNote,
   RiskNote,
@@ -66,6 +64,7 @@ import {
   type GridAnswers,
 } from '@/lib/domain/criticality'
 import { TriageNote } from '@/components/governance/rubric-notes'
+import { IMPACT_STATUS_LABELS } from '@/lib/domain/impact'
 import {
   ACTION_STATUS_LABELS,
   AUTONOMY_LABELS,
@@ -189,6 +188,10 @@ export default async function UseCasePage({
   const { data: signalData } =
     tab === 'avancement' ? await supabase.rpc('criticality_signal', { p_use_case_id: id }) : { data: null }
   const criticalitySignal = (signalData ?? null) as CriticalitySignal | null
+  // L'etude d'impact est exigee par les faits (0011) : la meme regle que le gate.
+  const { data: impactRequiredData } =
+    tab === 'avancement' ? await supabase.rpc('impact_assessment_required', { p_use_case_id: id }) : { data: null }
+  const impactRequired = Boolean(impactRequiredData)
 
   const status = useCase.status as UseCaseStatus
 
@@ -230,8 +233,10 @@ export default async function UseCasePage({
       .order('business_ref'),
     supabase
       .from('impact_assessment')
-      .select('id, business_ref, status, methodology, dpia_required, dpia_reference, conclusion, completed_at, next_review_at, reopened_reason')
-      .eq('use_case_id', id),
+      .select('id, business_ref, status, methodology, dpia_required, dpia_reference, conclusion, completed_at, next_review_at, reopened_reason, created_at')
+      .eq('use_case_id', id)
+      .neq('status', 'superseded')
+      .order('created_at', { ascending: false }),
     supabase
       .from('human_oversight_plan')
       .select(
@@ -460,6 +465,8 @@ export default async function UseCasePage({
     ).values(),
   ]
 
+  const latestImpact = impacts?.[0] ?? null
+
   const signals: Partial<Record<UseCaseTab, TabSignal>> = {
     avancement: !useCase.criticality || !classification ? { tone: 'todo' } : criticalitySignal?.exceeds ? { tone: 'late' } : { tone: 'done' },
     suivi: {
@@ -474,7 +481,6 @@ export default async function UseCasePage({
       count: unsettledRisks,
       tone: openHighRisks ? 'late' : unsettledRisks ? 'todo' : 'neutral',
     },
-    impact: { count: impacts?.length ?? 0, tone: impacts?.length ? 'done' : 'todo' },
     supervision: oversight
       ? { tone: oversight.status === 'approved' ? 'done' : 'todo' }
       : { tone: 'todo' },
@@ -847,6 +853,49 @@ export default async function UseCasePage({
             >
               {qualificationSummary}
             </Card>
+            {/*
+              L'etude d'impact se conduit sur sa propre page, au format du
+              modele de l'organisation. Ici : est-elle exigee, ou en est-elle.
+            */}
+            <Card
+              title="Étude d’impact IA"
+              subtitle="Effets sur les personnes, les groupes et la société — ISO/IEC 42005."
+              tone={impactRequired && latestImpact?.status !== 'completed' ? 'warn' : 'neutral'}
+              action={
+                <Link
+                  href={
+                    latestImpact
+                      ? `/admin/organizations/${useCase.organization_id}/etudes-impact/${latestImpact.id}`
+                      : `/admin/organizations/${useCase.organization_id}/etudes-impact?cas=${id}`
+                  }
+                  className="rounded-md border border-ink-200 px-3 py-1.5 text-xs text-ink-700 hover:bg-ink-100"
+                >
+                  {latestImpact ? (latestImpact.status === 'completed' ? 'Lire l’étude' : 'Poursuivre l’étude') : 'Conduire l’étude'}
+                </Link>
+              }
+            >
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                <Badge tone={impactRequired ? 'stop' : 'neutral'}>{impactRequired ? 'Exigée par les faits' : 'Non exigée'}</Badge>
+                {latestImpact ? (
+                  <Badge tone={latestImpact.status === 'completed' ? 'ok' : 'warn'}>
+                    {IMPACT_STATUS_LABELS[latestImpact.status] ?? latestImpact.status}
+                  </Badge>
+                ) : (
+                  <Badge tone={impactRequired ? 'stop' : 'neutral'}>Aucune étude</Badge>
+                )}
+                {latestImpact?.dpia_required ? <Badge tone="warn">AIPD {latestImpact.dpia_reference ?? 'à référencer'}</Badge> : null}
+              </div>
+              {latestImpact?.conclusion ? (
+                <p className="mt-2 text-xs leading-relaxed text-ink-600">{latestImpact.conclusion}</p>
+              ) : null}
+              <p className="mt-2 text-xs text-ink-500">
+                {latestImpact?.completed_at
+                  ? `Achevée le ${formatDate(latestImpact.completed_at)}${latestImpact.next_review_at ? ` · revue le ${formatDate(latestImpact.next_review_at)}` : ''}`
+                  : impactRequired
+                    ? 'Le jalon Production la demande achevée.'
+                    : 'Données personnelles, personnes vulnérables, autonomie L3+, criticité élevée ou haut risque la rendraient exigée.'}
+              </p>
+            </Card>
           </div>
         </div>
       ) : null}
@@ -1167,51 +1216,6 @@ export default async function UseCasePage({
               <Empty>Aucun risque identifié.</Empty>
             )}
           </Card>
-        </div>
-      ) : null}
-
-      {tab === 'impact' ? (
-        <div className="max-w-4xl space-y-3">
-          <Card
-            title="Évaluation d'impact"
-            subtitle="Effets sur les personnes, les groupes et la société (ISO/IEC 42005)."
-            action={
-              <span className="flex items-center gap-2">
-                <ImpactForm useCaseId={id} />
-                <ImpactNote />
-              </span>
-            }
-          >
-            {impacts?.length ? (
-              <ul className="space-y-4">
-                {impacts.map((aiia) => (
-                  <li key={aiia.id}>
-                    <div className="flex items-center gap-2">
-                      <Badge tone={aiia.status === 'completed' ? 'ok' : 'warn'}>{aiia.status}</Badge>
-                      <span className="text-xs text-ink-400">{aiia.business_ref}</span>
-                      {aiia.dpia_required ? (
-                        <Badge tone="warn">AIPD requise : {aiia.dpia_reference ?? 'référence à fournir'}</Badge>
-                      ) : null}
-                    </div>
-                    {aiia.conclusion ? (
-                      <p className="mt-2 text-sm text-ink-600">{aiia.conclusion}</p>
-                    ) : null}
-                    {aiia.reopened_reason ? (
-                      <p className="mt-1 text-xs text-rose-700">Rouverte : {aiia.reopened_reason}</p>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <Empty>Aucune évaluation d&apos;impact.</Empty>
-            )}
-          </Card>
-          <p className="text-xs leading-relaxed text-ink-500">
-            Une évaluation <strong className="font-medium text-ink-700">achevée</strong> ouvre
-            d’elle-même une action « Déposer la preuve de l’évaluation d’impact » — et l’AIPD
-            lorsqu’elle est requise — confiée à la personne qui l’a conduite. Le dépôt de la pièce
-            au registre des preuves clôt cette action.
-          </p>
         </div>
       ) : null}
 

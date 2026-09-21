@@ -50,7 +50,6 @@ test('le parcours de gouvernance est consultable de bout en bout', async ({ page
   for (const [tab, heading] of [
     [/^Risques/, 'Risques'],
     [/^Actions et incidents/, 'Actions'],
-    [/Évaluation d’impact/, "Évaluation d'impact"],
     [/Supervision humaine/, 'Supervision humaine'],
     [/^Décisions et changements/, 'Décisions et changements'],
   ] as const) {
