@@ -14,6 +14,7 @@ import {
 } from '@/lib/actions/registry'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
+import { adoptCatalogControl } from '@/lib/actions/controls'
 
 /**
  * Saisie du registre.
@@ -365,30 +366,146 @@ export function LinkVendorForm({
 // -----------------------------------------------------------------------------
 // Supervision humaine
 // -----------------------------------------------------------------------------
+/** Un controle de l'organisation, ou un controle-type HUM a retenir d'un clic. */
+export type OversightControlOption = { id: string; code: string; name: string }
+export type OversightCatalogControl = {
+  catalog_control_id: string
+  code: string
+  title: string
+  objective: string | null
+  expected_evidence: string[] | null
+  control_id: string | null
+}
+
+/** Quel controle-type porte quelle rubrique du plan, au referentiel de l'editeur. */
+const RUBRIC_CATALOG: Record<'trigger' | 'override' | 'stop' | 'competence', string> = {
+  trigger: 'AIGMS-HUM-002',
+  override: 'AIGMS-HUM-004',
+  stop: 'AIGMS-HUM-005',
+  competence: 'AIGMS-HUM-003',
+}
+
+/**
+ * Le controle qui porte une rubrique : un select sur les controles de
+ * l'organisation, et — si le controle-type HUM correspondant n'y est pas
+ * encore — un bouton qui l'ajoute au registre et le retient.
+ */
+function RubricControl({
+  rubric,
+  label,
+  organizationId,
+  options,
+  catalog,
+  value,
+  onChange,
+  onAdopted,
+}: {
+  rubric: 'trigger' | 'override' | 'stop' | 'competence'
+  label: string
+  organizationId: string
+  options: OversightControlOption[]
+  catalog: OversightCatalogControl[]
+  value: string
+  onChange: (id: string) => void
+  onAdopted: (option: OversightControlOption) => void
+}) {
+  const [busy, setBusy] = useState(false)
+  const [note, setNote] = useState<string | null>(null)
+  const suggested = catalog.find((c) => c.code === RUBRIC_CATALOG[rubric])
+  const alreadyThere = suggested?.control_id || options.find((o) => o.code === suggested?.code)?.id
+  return (
+    <div className="rounded-md border border-dashed border-ink-200 bg-ink-50/60 px-3 py-2.5">
+      <label htmlFor={`ov-ctl-${rubric}`} className="block text-xs font-medium text-ink-700">{label}</label>
+      <div className="mt-1 flex flex-wrap items-center gap-2">
+        <select
+          id={`ov-ctl-${rubric}`}
+          name={`${rubric}ControlId`}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="min-w-[16rem] flex-1 rounded-md border border-ink-200 bg-white px-2.5 py-1.5 text-sm"
+        >
+          <option value="">— Aucun contrôle désigné</option>
+          {options.map((o) => (
+            <option key={o.id} value={o.id}>{o.code} — {o.name}</option>
+          ))}
+        </select>
+        {suggested && !alreadyThere ? (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true)
+              setNote(null)
+              const result = await adoptCatalogControl({ organizationId, catalogControlId: suggested.catalog_control_id })
+              setBusy(false)
+              if (!result.ok) { setNote(result.message); return }
+              onAdopted({ id: result.controlId, code: result.code, name: result.name })
+              onChange(result.controlId)
+              setNote(`${result.code} ajouté au registre et retenu.`)
+            }}
+            className="rounded-md bg-night-900 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-night-800 disabled:opacity-60"
+          >
+            {busy ? 'Ajout…' : `Retenir ${suggested.code} du référentiel`}
+          </button>
+        ) : suggested && alreadyThere && value !== alreadyThere ? (
+          <button type="button" onClick={() => onChange(alreadyThere)} className="text-xs font-medium text-brand-600 hover:underline">
+            Retenir {suggested.code}
+          </button>
+        ) : null}
+      </div>
+      {suggested ? <p className="mt-1 text-[11px] text-ink-500">{suggested.code} — {suggested.title}{suggested.objective ? ` : ${suggested.objective}` : ''}</p> : null}
+      {note ? <p className="mt-1 text-[11px] text-ink-600">{note}</p> : null}
+    </div>
+  )
+}
+
 export function OversightForm({
   useCaseId,
+  organizationId,
   people,
   current,
+  controls = [],
+  catalog = [],
 }: {
   useCaseId: string
+  organizationId: string
   people: { id: string; label: string }[]
   current: {
     status: string
     accountable_user_id?: string | null
     stop_authority_user_id?: string | null
+    required_competence?: string | null
     intervention_triggers: string | null
     override_procedure: string | null
     stop_procedure: string | null
     monitoring_cadence: string | null
     expected_evidence: string | null
     not_applicable_rationale: string | null
+    trigger_control_id?: string | null
+    override_control_id?: string | null
+    stop_control_id?: string | null
+    competence_control_id?: string | null
   } | null
+  /** Les controles de l'organisation (organisationnels) parmi lesquels designer. */
+  controls?: OversightControlOption[]
+  /** Les controles-types HUM publies, a retenir d'un clic. */
+  catalog?: OversightCatalogControl[]
 }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(
     saveOversightPlan,
     null,
   )
   const [status, setStatus] = useState(current?.status ?? 'draft')
+  const [options, setOptions] = useState<OversightControlOption[]>(controls)
+  const [designated, setDesignated] = useState({
+    trigger: current?.trigger_control_id ?? '',
+    override: current?.override_control_id ?? '',
+    stop: current?.stop_control_id ?? '',
+    competence: current?.competence_control_id ?? '',
+  })
+  const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
+  const adopt = (o: OversightControlOption) => setOptions((cur) => (cur.some((c) => c.id === o.id) ? cur : [...cur, o]))
+  const pick = (rubric: keyof typeof designated) => (id: string) => setDesignated((d) => ({ ...d, [rubric]: id }))
 
   return (
     <Modal
@@ -469,19 +586,29 @@ export function OversightForm({
                 </Field>
               </div>
 
+              <p className="rounded-md bg-ink-100 px-3.5 py-2.5 text-[13px] leading-relaxed text-ink-600">
+                Chaque rubrique du plan est la mise en œuvre d’un contrôle du référentiel (domaine HUM — supervision
+                humaine). Le désigner rend le contrôle applicable à ce cas d’usage : il rejoint la Déclaration
+                d’Applicabilité, et c’est sur lui que se déposent les preuves. Au-delà de L2 d’autonomie ou avec un
+                risque élevé ouvert, le gate Production exige les contrôles de reprise et d’arrêt opérants et prouvés.
+              </p>
+
               <Field
                 label="Déclencheurs d’intervention"
                 htmlFor={`ov-trig-${useCaseId}`}
+                error={errors.interventionTriggers}
                 hint="À quels signaux un humain reprend la main. Sans eux, la supervision ne se démontre pas."
               >
                 <textarea
                   id={`ov-trig-${useCaseId}`}
                   name="interventionTriggers"
                   rows={3}
+                  required
                   defaultValue={current?.intervention_triggers ?? ''}
                   className={FIELD}
                 />
               </Field>
+              <RubricControl rubric="trigger" label="Contrôle qui porte les déclencheurs (validation humaine)" organizationId={organizationId} options={options} catalog={catalog} value={designated.trigger} onChange={pick('trigger')} onAdopted={adopt} />
 
               <Field label="Procédure de reprise en main" htmlFor={`ov-over-${useCaseId}`} optional>
                 <textarea
@@ -491,6 +618,10 @@ export function OversightForm({
                   defaultValue={current?.override_procedure ?? ''}
                   className={FIELD}
                 />
+              </Field>
+              <RubricControl rubric="override" label="Contrôle qui porte la reprise en main" organizationId={organizationId} options={options} catalog={catalog} value={designated.override} onChange={pick('override')} onAdopted={adopt} />
+              <Field label="Document de la procédure de reprise" htmlFor={`ov-over-file-${useCaseId}`} optional hint="Déposé au registre des preuves, rattaché au contrôle désigné, à valider (25 Mo max).">
+                <input id={`ov-over-file-${useCaseId}`} name="overrideFile" type="file" className="text-sm text-ink-700 file:mr-3 file:rounded-md file:border file:border-ink-200 file:bg-white file:px-3 file:py-1.5 file:text-sm file:text-ink-700 hover:file:bg-ink-100" />
               </Field>
 
               <Field label="Procédure d’arrêt" htmlFor={`ov-stopp-${useCaseId}`} optional>
@@ -502,6 +633,15 @@ export function OversightForm({
                   className={FIELD}
                 />
               </Field>
+              <RubricControl rubric="stop" label="Contrôle qui porte l’arrêt et l’escalade" organizationId={organizationId} options={options} catalog={catalog} value={designated.stop} onChange={pick('stop')} onAdopted={adopt} />
+              <Field label="Document de la procédure d’arrêt" htmlFor={`ov-stop-file-${useCaseId}`} optional hint="Déposé au registre des preuves, rattaché au contrôle désigné, à valider.">
+                <input id={`ov-stop-file-${useCaseId}`} name="stopFile" type="file" className="text-sm text-ink-700 file:mr-3 file:rounded-md file:border file:border-ink-200 file:bg-white file:px-3 file:py-1.5 file:text-sm file:text-ink-700 hover:file:bg-ink-100" />
+              </Field>
+
+              <Field label="Compétence des superviseurs" htmlFor={`ov-comp-${useCaseId}`} optional hint="Ce que doit savoir la personne qui valide ou reprend la main.">
+                <input id={`ov-comp-${useCaseId}`} name="requiredCompetence" type="text" defaultValue={current?.required_competence ?? ''} className={FIELD} />
+              </Field>
+              <RubricControl rubric="competence" label="Contrôle qui porte la compétence du validateur" organizationId={organizationId} options={options} catalog={catalog} value={designated.competence} onChange={pick('competence')} onAdopted={adopt} />
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Cadence de surveillance" htmlFor={`ov-cad-${useCaseId}`} optional>
@@ -518,11 +658,17 @@ export function OversightForm({
                 </Field>
               </div>
 
-              <Field label="Preuves attendues" htmlFor={`ov-evi-${useCaseId}`} optional>
+              <Field
+                label="Preuves attendues"
+                htmlFor={`ov-evi-${useCaseId}`}
+                error={errors.expectedEvidence}
+                hint="Ce qui démontrera la supervision : journal des interventions, échantillons revus, tableau de bord. Exigé."
+              >
                 <textarea
                   id={`ov-evi-${useCaseId}`}
                   name="expectedEvidence"
                   rows={2}
+                  required
                   defaultValue={current?.expected_evidence ?? ''}
                   className={FIELD}
                 />
