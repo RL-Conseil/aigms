@@ -90,12 +90,16 @@ export async function holdReview(_previous: FormState | null, formData: FormData
   })
   if (!parsed.success) return firstIssues(parsed.error)
   const input = parsed.data
+  const heldAt = input.heldAt ? new Date(input.heldAt) : new Date()
+  if (Number.isNaN(heldAt.getTime())) {
+    return { ok: false, message: 'La date de tenue est illisible.', fieldErrors: { heldAt: 'Date invalide.' } }
+  }
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('governance_review')
     .update({
       status: 'held',
-      held_at: input.heldAt ? new Date(input.heldAt).toISOString() : new Date().toISOString(),
+      held_at: heldAt.toISOString(),
       attendees: lines(input.attendees),
       minutes: input.minutes,
       decisions_taken: input.decisionsTaken || null,
