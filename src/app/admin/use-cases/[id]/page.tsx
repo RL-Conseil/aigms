@@ -12,7 +12,7 @@ import { EvidenceDepositModal } from '@/components/governance/evidence-deposit-m
 import type { ControlChoice, TypologyChoice } from '@/components/governance/evidence-forms'
 import { describePerson, organizationPeople } from '@/lib/governance/people'
 import { unlinkAssetFromUseCase } from '@/lib/actions/registry'
-import { resolveTab, UseCaseTabs, type TabSignal, type UseCaseTab } from '@/components/governance/use-case-tabs'
+import { resolveTab, SuiviSwitch, UseCaseTabs, type TabSignal, type UseCaseTab } from '@/components/governance/use-case-tabs'
 import {
   CLASSIFICATION_FLAG_LABELS,
   FRAMEWORK_LABELS,
@@ -156,11 +156,11 @@ export default async function UseCasePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ onglet?: string; controle?: string }>
+  searchParams: Promise<{ onglet?: string; vue?: string; controle?: string }>
 }) {
   const { id } = await params
-  const { onglet, controle } = await searchParams
-  const tab = resolveTab(onglet)
+  const { onglet, vue, controle } = await searchParams
+  const { tab, vue: suiviView } = resolveTab(onglet, vue)
   const supabase = await createClient()
   const {
     data: { user: viewer },
@@ -188,7 +188,7 @@ export default async function UseCasePage({
 
   // La criticite face aux faits (0075) : lue sur le fil, la ou elle se revise.
   const { data: signalData } =
-    tab === 'fil' ? await supabase.rpc('criticality_signal', { p_use_case_id: id }) : { data: null }
+    tab === 'avancement' ? await supabase.rpc('criticality_signal', { p_use_case_id: id }) : { data: null }
   const criticalitySignal = (signalData ?? null) as CriticalitySignal | null
 
   const status = useCase.status as UseCaseStatus
@@ -289,7 +289,7 @@ export default async function UseCasePage({
     tab === 'controles'
       ? supabase.rpc('suggest_controls', { p_use_case_id: id })
       : Promise.resolve({ data: null }),
-    tab === 'actions'
+    tab === 'suivi' && suiviView === 'actions'
       ? supabase.rpc('suggest_actions', { p_use_case_id: id })
       : Promise.resolve({ data: null }),
     supabase
@@ -412,7 +412,7 @@ export default async function UseCasePage({
   // Les actifs du cas d'usage, avec leurs mesures : lus sur le fil conducteur
   // et dans les controles (une mesure technique se pose sur un actif).
   const { data: assetsData } =
-    tab === 'fil' || tab === 'controles' || tab === 'incidents'
+    tab === 'avancement' || tab === 'controles' || tab === 'suivi'
       ? await supabase.rpc('use_case_assets', { p_use_case_id: id })
       : { data: null }
   const useCaseAssets = (assetsData ?? []) as UseCaseAsset[]
@@ -469,10 +469,10 @@ export default async function UseCasePage({
   ]
 
   const signals: Partial<Record<UseCaseTab, TabSignal>> = {
-    fil: !useCase.criticality || !classification ? { tone: 'todo' } : criticalitySignal?.exceeds ? { tone: 'late' } : { tone: 'done' },
-    actions: {
-      count: openActions.length,
-      tone: overdueActions ? 'late' : openActions.length ? 'todo' : 'neutral',
+    avancement: !useCase.criticality || !classification ? { tone: 'todo' } : criticalitySignal?.exceeds ? { tone: 'late' } : { tone: 'done' },
+    suivi: {
+      count: openActions.length + openIncidents,
+      tone: overdueActions || openIncidents ? 'late' : openActions.length ? 'todo' : 'neutral',
     },
     controles: {
       count: applicableControls.length,
@@ -490,7 +490,6 @@ export default async function UseCasePage({
       count: pendingDecisions + pendingReassessments,
       tone: pendingDecisions + pendingReassessments ? 'todo' : 'neutral',
     },
-    incidents: { count: openIncidents, tone: openIncidents ? 'late' : 'neutral' },
   }
 
   const controlChoices = (orgControls ?? [])
@@ -647,7 +646,7 @@ export default async function UseCasePage({
 
       <UseCaseTabs useCaseId={id} active={tab} signals={signals} />
 
-      {tab === 'fil' ? (
+      {tab === 'avancement' ? (
         <div className="grid gap-5 lg:grid-cols-3">
           <div className="space-y-5 lg:col-span-2">
             <div className="rounded-lg border border-ink-200 bg-white p-5">
@@ -848,7 +847,11 @@ export default async function UseCasePage({
         </div>
       ) : null}
 
-      {tab === 'actions' ? (
+      {tab === 'suivi' ? (
+        <SuiviSwitch useCaseId={id} active={suiviView} actions={openActions.length} incidents={openIncidents} />
+      ) : null}
+
+      {tab === 'suivi' && suiviView === 'actions' ? (
         <div className="max-w-4xl">
           <Card
             title="Actions"
@@ -1507,7 +1510,7 @@ export default async function UseCasePage({
         </div>
       ) : null}
 
-      {tab === 'incidents' ? (
+      {tab === 'suivi' && suiviView === 'incidents' ? (
         <div className="max-w-4xl">
           <Card
             title="Incidents"

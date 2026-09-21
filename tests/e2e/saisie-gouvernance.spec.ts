@@ -77,11 +77,8 @@ test('un processus et une activité se créent depuis la carte', async ({ page }
 })
 
 test('un cas d’usage se déclare, se trie, se classifie et reçoit un risque', async ({ page }) => {
-  // Plusieurs volets portent des champs de même nom — « Justification »
-  // notamment. Chaque interaction est donc bornée à son volet.
-  const panel = (name: RegExp) =>
-    page.locator('section').filter({ has: page.getByRole('button', { name }) })
-
+  // Plusieurs fenetres portent des champs de meme nom — « Justification »
+  // notamment. Chaque interaction est donc bornee a sa fenetre.
   // Un cas d'usage se declare depuis la vue d'ensemble — pas depuis la carte.
   await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001')
   await page.getByRole('link', { name: 'Déclarer un cas d’usage', exact: true }).click()
@@ -102,10 +99,11 @@ test('un cas d’usage se déclare, se trie, se classifie et reçoit un risque',
   await expect(page.getByRole('heading', { name })).toBeVisible({ timeout: 15_000 })
   await expect(page.getByText(/Servir le client › Gestion des réclamations/)).toBeVisible()
 
-  // --- Criticité : sur le fil conducteur, ouverte d'emblée ------------------
+  // --- Criticité : une fenetre, depuis la carte de droite ---------------------
   const rubriques = page.getByRole('navigation', { name: 'Rubriques du cas d’usage' })
-  const triage = panel(/Criticité du cas d’usage/)
-  await triage.getByLabel('Criticité').selectOption('moderate')
+  await page.getByRole('button', { name: 'Fixer la criticité' }).click()
+  const triage = page.getByRole('dialog', { name: 'Criticité du cas d’usage' })
+  await triage.getByLabel('Criticité retenue').selectOption('moderate')
   await triage
     .getByLabel('Justification')
     .fill('Usage interne d’analyse, sans décision automatisée affectant un client.')
@@ -438,7 +436,7 @@ test('le suivi liste actions, incidents et revues, et l’incident significatif 
 })
 
 test('sur la fiche, une action s’ouvre et se clôt avec son motif', async ({ page }) => {
-  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000002?onglet=actions')
+  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000002?onglet=suivi&vue=actions')
   const volet = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Actions', exact: true }) })
   await volet.getByRole('button', { name: 'Ouvrir une action' }).click()
 
@@ -461,7 +459,7 @@ test('sur la fiche, une action s’ouvre et se clôt avec son motif', async ({ p
 })
 
 test('le ticket d’un incident se lit au format du kit, s’imprime et s’exporte', async ({ page }) => {
-  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000001?onglet=incidents')
+  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000001?onglet=suivi&vue=incidents')
   // L'incident de demonstration porte son ticket : qualification, arret, signatures.
   const ticket = page.locator('div').filter({ hasText: /^Ticket INC-/ }).first()
   await expect(page.getByText(/^Ticket INC-/).first()).toBeVisible()

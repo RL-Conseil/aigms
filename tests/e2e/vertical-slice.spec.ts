@@ -49,6 +49,7 @@ test('le parcours de gouvernance est consultable de bout en bout', async ({ page
 
   for (const [tab, heading] of [
     [/^Risques/, 'Risques'],
+    [/^Actions et incidents/, 'Actions'],
     [/Évaluation d’impact/, "Évaluation d'impact"],
     [/Supervision humaine/, 'Supervision humaine'],
     [/^Décisions et changements/, 'Décisions et changements'],
@@ -164,7 +165,7 @@ test('la frise marque les jalons obligatoires et porte l’action qui la fait av
   await page.getByRole('link', { name: 'Assistant support client' }).click()
 
   // La frise porte un libelle, et nomme ce qu'elle signale.
-  await expect(page.getByText('Fil conducteur du cas d’usage')).toBeVisible()
+  await expect(page.getByText('Avancement du cas d’usage')).toBeVisible()
   await expect(page.getByText(/Jalon obligatoire — le passage est refusé côté serveur/)).toBeVisible()
 
   // Revue et Production sont marquees, les autres non.
@@ -231,8 +232,8 @@ test('chaque rubrique du dossier s’explique sur place', async ({ page }) => {
 
   // Les autres rubriques en portent une aussi, chacune dans son onglet.
   for (const [tab, label] of [
-    [/^Fil conducteur/, 'À quoi sert la criticité'],
-    [/^Fil conducteur/, 'Préconditions du jalon Production'],
+    [/^Avancement/, 'À quoi sert la criticité'],
+    [/^Avancement/, 'Préconditions du jalon Production'],
     [/^Risques/, 'À quoi sert le registre des risques'],
     [/^Journal/, 'À quoi sert le journal'],
   ] as const) {

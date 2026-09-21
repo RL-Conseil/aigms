@@ -8,7 +8,7 @@ import {
 } from '@/lib/domain/governance'
 
 /**
- * Fil conducteur du cas d'usage.
+ * Avancement du cas d'usage : la barre des jalons.
  *
  * La frise disait ou l'on en est ; elle ne disait pas ou l'on sera arrete. Deux
  * etapes portent un point de passage substantiel — REVUE et PRODUCTION — et le
@@ -37,7 +37,7 @@ export function Lifecycle({
   return (
     <div>
       <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-500">
-        Fil conducteur du cas d’usage
+        Avancement du cas d’usage
       </p>
 
       <ol className="flex flex-wrap items-center gap-1.5">

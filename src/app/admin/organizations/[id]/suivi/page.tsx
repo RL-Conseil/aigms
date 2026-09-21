@@ -59,11 +59,13 @@ export default async function FollowUpPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ vue?: string; etat?: string }>
+  searchParams: Promise<{ vue?: string; etat?: string; action?: string; incident?: string }>
 }) {
   const { id } = await params
-  const { vue, etat } = await searchParams
-  const view: ViewKey = VIEWS.some((v) => v.key === vue) ? (vue as ViewKey) : 'actions'
+  const { vue, etat: etatParam, action: actionParam, incident: incidentParam } = await searchParams
+  // Une alerte conduit a SON action ou SON incident : la bonne liste s'ouvre,
+  // la ligne est surlignee — meme close, le filtre s'ecarte pour la montrer.
+  const view: ViewKey = VIEWS.some((v) => v.key === vue) ? (vue as ViewKey) : actionParam ? 'actions' : incidentParam ? 'incidents' : 'actions'
   const supabase = await createClient()
   const today = new Date().toISOString().slice(0, 10)
 
@@ -104,6 +106,10 @@ export default async function FollowUpPage({
   const openActions = allActions.filter((a) => !['done', 'cancelled'].includes(a.status))
   const overdue = openActions.filter((a) => a.due_date !== null && a.due_date < today)
   const blocking = openActions.filter((a) => a.is_blocking)
+  const targetAction = allActions.find((a) => a.id === actionParam)
+  const etat =
+    etatParam ??
+    (targetAction && ['done', 'cancelled'].includes(targetAction.status) ? 'closes' : undefined)
   const shownActions =
     etat === 'echues'
       ? overdue
@@ -118,10 +124,12 @@ export default async function FollowUpPage({
   const isSignificant = (i: (typeof allIncidents)[number]) =>
     ['S1', 'S2'].includes(i.severity) || i.kind === 'non_conformity' || i.is_recurrence
   const openIncidents = allIncidents.filter((i) => i.status !== 'CLOSED')
+  const targetIncident = allIncidents.find((i) => i.id === incidentParam)
+  const etatIncidents = etatParam ?? (targetIncident?.status === 'CLOSED' ? 'clos' : undefined)
   const shownIncidents =
-    etat === 'significatifs'
+    etatIncidents === 'significatifs'
       ? openIncidents.filter(isSignificant)
-      : etat === 'clos'
+      : etatIncidents === 'clos'
         ? allIncidents.filter((i) => i.status === 'CLOSED')
         : openIncidents
 
@@ -139,7 +147,7 @@ export default async function FollowUpPage({
         { href: `/admin/organizations/${id}`, label: organization.name },
       ]}
       organization={{ id, section: 'suivi' }}
-      title="Suivi d’actions"
+      title="Suivi d’actions et d’incidents"
       subtitle="Ce qui reste à faire, ce qui s’est passé, ce qui doit être revu."
       actions={
         <div className="flex flex-wrap items-center gap-3">
@@ -221,7 +229,13 @@ export default async function FollowUpPage({
                 {shownActions.map((a) => {
                   const late = !['done', 'cancelled'].includes(a.status) && a.due_date !== null && a.due_date < today
                   return (
-                    <li key={a.id} className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                    <li
+                      key={a.id}
+                      id={`action-${a.id}`}
+                      className={`flex scroll-mt-24 items-start justify-between gap-3 py-3 first:pt-0 last:pb-0 ${
+                        actionParam === a.id ? '-mx-3 rounded-md bg-brand-500/10 px-3 ring-1 ring-brand-500/40' : ''
+                      }`}
+                    >
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="text-sm font-medium text-ink-900">{a.title}</span>
@@ -280,7 +294,13 @@ export default async function FollowUpPage({
                   const significant = isSignificant(incident)
                   const capas = (incident.capa ?? []) as { status: string }[]
                   return (
-                    <li key={incident.id} className="flex items-start justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                    <li
+                      key={incident.id}
+                      id={`incident-${incident.id}`}
+                      className={`flex scroll-mt-24 items-start justify-between gap-3 py-3 first:pt-0 last:pb-0 ${
+                        incidentParam === incident.id ? '-mx-3 rounded-md bg-brand-500/10 px-3 ring-1 ring-brand-500/40' : ''
+                      }`}
+                    >
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
                           <Badge tone={['S1', 'S2'].includes(incident.severity) ? 'stop' : 'warn'}>
