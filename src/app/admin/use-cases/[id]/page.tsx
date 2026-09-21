@@ -57,8 +57,16 @@ import {
   AcceptRiskForm,
   ClassificationPanel,
   RiskPanel,
-  TriagePanel,
+  CriticalityPanel,
 } from '@/components/governance/use-case-panels'
+import {
+  CRITICALITY_LABELS,
+  prefillGrid,
+  type Criticality,
+  type CriticalitySignal,
+  type GridAnswers,
+} from '@/lib/domain/criticality'
+import { TriageNote } from '@/components/governance/rubric-notes'
 import {
   ACTION_STATUS_LABELS,
   AUTONOMY_LABELS,
@@ -166,7 +174,7 @@ export default async function UseCasePage({
     .from('ai_use_case')
     .select(
       `id, business_ref, name, purpose, business_process, expected_benefit, status,
-       autonomy_level, criticality, decision_impact, users_description, affected_persons,
+       autonomy_level, criticality, criticality_rationale, criticality_grid, criticality_set_at, decision_impact, users_description, affected_persons,
        owner_user_id, accountable_user_id,
        data_description, involves_personal_data, involves_vulnerable_persons,
        next_review_at, status_changed_at, organization_id, activity_id,
@@ -177,6 +185,11 @@ export default async function UseCasePage({
     .maybeSingle()
 
   if (!useCase) notFound()
+
+  // La criticite face aux faits (0075) : lue sur le fil, la ou elle se revise.
+  const { data: signalData } =
+    tab === 'fil' ? await supabase.rpc('criticality_signal', { p_use_case_id: id }) : { data: null }
+  const criticalitySignal = (signalData ?? null) as CriticalitySignal | null
 
   const status = useCase.status as UseCaseStatus
 
@@ -456,7 +469,7 @@ export default async function UseCasePage({
   ]
 
   const signals: Partial<Record<UseCaseTab, TabSignal>> = {
-    fil: useCase.criticality && classification ? { tone: 'done' } : { tone: 'todo' },
+    fil: !useCase.criticality || !classification ? { tone: 'todo' } : criticalitySignal?.exceeds ? { tone: 'late' } : { tone: 'done' },
     actions: {
       count: openActions.length,
       tone: overdueActions ? 'late' : openActions.length ? 'todo' : 'neutral',
@@ -653,7 +666,9 @@ export default async function UseCasePage({
                   {AUTONOMY_LABELS[useCase.autonomy_level] ?? useCase.autonomy_level}
                 </Field>
                 <Field label="Criticité">
-                  {useCase.criticality ?? 'Non déterminée'}
+                  {useCase.criticality
+                    ? CRITICALITY_LABELS[useCase.criticality as Criticality]
+                    : 'Non déterminée — à fixer ci-contre'}
                 </Field>
                 <Field label="Utilisateurs">{useCase.users_description ?? '—'}</Field>
                 <Field label="Personnes affectées">{useCase.affected_persons ?? '—'}</Field>
@@ -756,15 +771,66 @@ export default async function UseCasePage({
                 )}
               </div>
             </div>
-
-            <TriagePanel
-              useCaseId={id}
-              criticality={useCase.criticality}
-              nextReviewAt={useCase.next_review_at}
-            />
           </div>
 
           <div className="space-y-5">
+            {/*
+              Dans l'ordre du cycle : la criticite (triage) puis la qualification
+              (regle). Les deux se posent en fenetre et se relisent ici.
+            */}
+            <Card
+              title="Criticité"
+              subtitle="Combien d’effort de gouvernance ce cas d’usage appelle. Se fixe au triage, se révise ici."
+              tone={!useCase.criticality || criticalitySignal?.exceeds ? 'warn' : 'neutral'}
+              action={
+                <span className="flex items-center gap-2">
+                  <CriticalityPanel
+                    useCaseId={id}
+                    current={{
+                      criticality: useCase.criticality,
+                      rationale: useCase.criticality_rationale,
+                      grid: (useCase.criticality_grid as GridAnswers | null) ?? null,
+                      decision_impact: useCase.decision_impact,
+                      next_review_at: useCase.next_review_at,
+                    }}
+                    prefill={prefillGrid(useCase)}
+                    signal={criticalitySignal}
+                  />
+                  <TriageNote />
+                </span>
+              }
+            >
+              {useCase.criticality ? (
+                <div className="space-y-3 text-sm">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge tone={useCase.criticality === 'critical' || useCase.criticality === 'high' ? 'stop' : useCase.criticality === 'moderate' ? 'warn' : 'ok'}>
+                      {CRITICALITY_LABELS[useCase.criticality as Criticality]}
+                    </Badge>
+                    {criticalitySignal?.exceeds ? <Badge tone="warn">À réviser</Badge> : null}
+                    {useCase.criticality_set_at ? (
+                      <span className="text-xs text-ink-400">fixée le {formatDate(useCase.criticality_set_at)}</span>
+                    ) : null}
+                  </div>
+                  {criticalitySignal?.exceeds && criticalitySignal.observed ? (
+                    <div className="rounded-md border border-warn-600/40 bg-amber-50 px-3.5 py-2.5 text-xs leading-relaxed text-warn-600">
+                      Les faits imposent au moins{' '}
+                      <strong className="font-semibold">{CRITICALITY_LABELS[criticalitySignal.observed]}</strong>.{' '}
+                      {criticalitySignal.reasons.join(' ')}
+                    </div>
+                  ) : null}
+                  <p className="leading-relaxed text-ink-600">
+                    {useCase.criticality_rationale ?? 'Justification non conservée : réviser la criticité pour la poser.'}
+                  </p>
+                  {useCase.next_review_at ? (
+                    <p className="text-xs text-ink-400">Prochaine revue le {formatDate(useCase.next_review_at)}</p>
+                  ) : (
+                    <p className="text-xs text-warn-600">Aucune date de revue : rien ne fera remonter le dossier.</p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-warn-600">À fixer — le passage en évaluation l’exige.</p>
+              )}
+            </Card>
             <Card
               title="Qualification réglementaire"
               subtitle="Règlement (UE) 2024/1689 — AI Act. Se pose et se révise ici, d’un clic."

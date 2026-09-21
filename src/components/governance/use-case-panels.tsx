@@ -8,11 +8,20 @@ import {
   saveTriage,
   type FormState,
 } from '@/lib/actions/governance'
-import { Disclosure, Field, FIELD, FormFeedback, Submit } from '@/components/forms'
+import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
 import { ControlFinder } from '@/components/governance/control-finder'
-import { TriageNote } from '@/components/governance/rubric-notes'
 import { CLASSIFICATION_FLAG_LABELS, ORGANIZATION_ROLE_LABELS } from '@/lib/domain/classification'
+import {
+  CRITICALITY_CONSEQUENCES,
+  CRITICALITY_GRID,
+  CRITICALITY_LABELS,
+  CRITICALITY_ORDER,
+  criticalityRank,
+  suggestCriticality,
+  type CriticalitySignal,
+  type GridAnswers,
+} from '@/lib/domain/criticality'
 
 /**
  * Etapes de gouvernance saisies depuis la fiche du cas d'usage.
@@ -23,89 +32,157 @@ import { CLASSIFICATION_FLAG_LABELS, ORGANIZATION_ROLE_LABELS } from '@/lib/doma
  * sans changer de page.
  */
 
-const CRITICALITY = [
-  { value: 'low', label: 'Faible', hint: 'Effet limité, réversible' },
-  { value: 'moderate', label: 'Modérée', hint: 'Effet notable, maîtrisable' },
-  { value: 'high', label: 'Élevée', hint: 'Effet important sur des personnes ou l’activité' },
-  { value: 'critical', label: 'Critique', hint: 'Effet grave, difficilement réversible' },
-] as const
-
-export function TriagePanel({
+export function CriticalityPanel({
   useCaseId,
-  criticality,
-  nextReviewAt,
+  current,
+  prefill,
+  signal,
 }: {
   useCaseId: string
-  criticality: string | null
-  nextReviewAt: string | null
+  current: {
+    criticality: string | null
+    rationale: string | null
+    grid: GridAnswers | null
+    decision_impact: string | null
+    next_review_at: string | null
+  }
+  /** Ce que la fiche sait deja : autonomie, donnees, personnes vulnerables. */
+  prefill: GridAnswers
+  signal: CriticalitySignal | null
 }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(saveTriage, null)
   const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
-  const done = Boolean(criticality)
+  const done = Boolean(current.criticality)
+  const [answers, setAnswers] = useState<GridAnswers>({ ...prefill, ...(current.grid ?? {}) })
+  const suggested = suggestCriticality(answers)
+  const [chosen, setChosen] = useState<string>(current.criticality ?? suggested ?? 'moderate')
+  // Tant qu'on n'a pas choisi soi-meme, le niveau suit la grille.
+  const [touched, setTouched] = useState(Boolean(current.criticality))
+  const level = touched ? chosen : (suggested ?? chosen)
+  const below = suggested !== null && criticalityRank(level) < criticalityRank(suggested)
+  const belowFacts = signal?.observed && criticalityRank(level) < criticalityRank(signal.observed)
 
+  /*
+    La criticite se choisit dans une fenetre, comme la qualification : un acte
+    court, qui se relit ensuite a droite du fil conducteur. La grille dit ce
+    que le niveau engage, pas un adjectif ; l'officer retient le sien.
+  */
   return (
-    <Disclosure
+    <Modal
+      trigger={done ? 'Réviser la criticité' : 'Fixer la criticité'}
       title="Criticité du cas d’usage"
-      aside={<TriageNote />}
-      summary={
-        done
-          ? `Criticité retenue : ${CRITICALITY.find((c) => c.value === criticality)?.label ?? criticality}`
-          : 'À fixer — le passage en évaluation l’exige'
-      }
-      tone={done ? 'done' : 'todo'}
-      defaultOpen={!done}
-      stayOpen={Boolean(state)}
+      description="Combien d’effort de gouvernance ce cas d’usage appelle. Un acte humain, tracé."
     >
-      <form action={formAction} className="flex flex-col gap-4">
-        <input type="hidden" name="useCaseId" value={useCaseId} />
+      {() => (
+        <form action={formAction} className="flex flex-col gap-4">
+          <input type="hidden" name="useCaseId" value={useCaseId} />
 
-        <Field
-          label="Criticité"
-          htmlFor="triage-criticality"
-          hint="Elle dose l’effort de gouvernance. Elle ne dit rien du règlement : c’est la qualification qui s’en charge."
-        >
-          <select
-            id="triage-criticality"
-            name="criticality"
-            defaultValue={criticality ?? 'moderate'}
-            className={FIELD}
-          >
-            {CRITICALITY.map((c) => (
-              <option key={c.value} value={c.value}>
-                {c.label} — {c.hint}
-              </option>
+          <div className="rounded-md bg-ink-100 px-4 py-3 text-[13px] leading-relaxed text-ink-600">
+            Quatre questions proposent un niveau ; vous retenez le vôtre. La criticité ne dit rien du
+            règlement — c’est la qualification qui s’en charge — mais elle commande l’évaluation
+            d’impact, l’arbitrage du Comité de direction et la cadence de revue.
+          </div>
+
+          <fieldset className="grid gap-3 sm:grid-cols-2">
+            {CRITICALITY_GRID.map((q) => (
+              <Field key={q.key} label={q.label} htmlFor={`grid-${q.key}`}>
+                <select
+                  id={`grid-${q.key}`}
+                  name={`grid.${q.key}`}
+                  value={answers[q.key] ?? ''}
+                  onChange={(e) => setAnswers((a) => ({ ...a, [q.key]: e.target.value || undefined }))}
+                  className={FIELD}
+                >
+                  <option value="">—</option>
+                  {q.options.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </Field>
             ))}
-          </select>
-        </Field>
+          </fieldset>
 
-        <Field
-          label="Justification"
-          htmlFor="triage-rationale"
-          error={errors.rationale}
-          hint="Pourquoi ce niveau, en une ou deux phrases. Relu à la revue."
-        >
-          <textarea id="triage-rationale" name="rationale" rows={3} required className={FIELD} />
-        </Field>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Portée de la décision" htmlFor="triage-impact" optional>
-            <input id="triage-impact" name="decisionImpact" type="text" className={FIELD} />
+          <Field
+            label="Criticité retenue"
+            htmlFor="triage-criticality"
+            hint={
+              suggested
+                ? `La grille propose : ${CRITICALITY_LABELS[suggested]}.`
+                : 'Répondez à la grille pour obtenir une proposition, ou choisissez directement.'
+            }
+          >
+            <select
+              id="triage-criticality"
+              name="criticality"
+              value={level}
+              onChange={(e) => {
+                setChosen(e.target.value)
+                setTouched(true)
+              }}
+              className={FIELD}
+            >
+              {CRITICALITY_ORDER.map((c) => (
+                <option key={c} value={c}>
+                  {CRITICALITY_LABELS[c]} — {CRITICALITY_CONSEQUENCES[c]}
+                </option>
+              ))}
+            </select>
           </Field>
-          <Field label="Prochaine revue" htmlFor="triage-review" optional>
-            <input
-              id="triage-review"
-              name="nextReviewAt"
-              type="date"
-              defaultValue={nextReviewAt ?? ''}
+          {signal?.exceeds || belowFacts ? (
+            <p className="rounded-md border border-warn-600/40 bg-amber-50 px-3.5 py-2.5 text-xs leading-relaxed text-warn-600">
+              Les faits imposent au moins <strong className="font-semibold">{CRITICALITY_LABELS[signal!.observed!]}</strong> :{' '}
+              {signal!.reasons.join(' ')}
+            </p>
+          ) : null}
+
+          <Field
+            label="Justification"
+            htmlFor="triage-rationale"
+            error={errors.rationale}
+            hint={
+              below
+                ? 'Vous retenez moins que la grille ne propose : dites pourquoi. Relu à la revue.'
+                : 'Pourquoi ce niveau, en une ou deux phrases. Relu à la revue.'
+            }
+          >
+            <textarea
+              id="triage-rationale"
+              name="rationale"
+              rows={3}
+              required
+              defaultValue={current.rationale ?? ''}
               className={FIELD}
             />
           </Field>
-        </div>
 
-        <FormFeedback state={state} />
-        <Submit pending={pending} idle={done ? 'Mettre à jour la criticité' : 'Enregistrer la criticité'} />
-      </form>
-    </Disclosure>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Portée de la décision" htmlFor="triage-impact" optional hint="Ce que le système décide ou influence, en une phrase.">
+              <input
+                id="triage-impact"
+                name="decisionImpact"
+                type="text"
+                defaultValue={current.decision_impact ?? ''}
+                className={FIELD}
+              />
+            </Field>
+            <Field label="Prochaine revue" htmlFor="triage-review" optional>
+              <input
+                id="triage-review"
+                name="nextReviewAt"
+                type="date"
+                defaultValue={current.next_review_at ?? ''}
+                className={FIELD}
+              />
+            </Field>
+          </div>
+
+          <FormFeedback state={state} />
+          <Submit pending={pending} idle={done ? 'Réviser la criticité' : 'Enregistrer la criticité'} />
+        </form>
+      )}
+    </Modal>
   )
 }
 
