@@ -355,20 +355,6 @@ export default async function UseCasePage({
     ((c.reassessment ?? []) as { final_verdict: string | null }[]).some((r) => r.final_verdict === null),
   ).length
 
-  // Deposer sans quitter la fiche : les controles qui attendent une preuve,
-  // restreints a ceux du cas d'usage, et les typologies de la matrice.
-  const [{ data: awaitingData }, { data: typologyData }] =
-    tab === 'supervision'
-      ? await Promise.all([
-          supabase.rpc('controls_awaiting_evidence', { p_organization_id: useCase.organization_id }),
-          supabase.rpc('evidence_typologies', { p_organization_id: useCase.organization_id }),
-        ])
-      : [{ data: null }, { data: null }]
-  const depositControls: ControlChoice[] = ((awaitingData ?? []) as { id: string; code: string; name: string; status: string; is_evidenced: boolean }[])
-    .filter((c) => applicableControlIds.includes(c.id))
-    .map((c) => ({ id: c.id, code: c.code, name: c.name, status: c.status, is_evidenced: c.is_evidenced }))
-  const depositTypologies = (typologyData ?? []) as TypologyChoice[]
-
   // Le plan s'adosse aux controles HUM : les controles-types publies, a
   // retenir d'un clic, et les controles organisationnels deja au registre.
   const { data: oversightCatalog } =
@@ -396,6 +382,20 @@ export default async function UseCasePage({
   const applicableControlIds = applicableControls
     .map((c) => (c.control as unknown as { id: string } | null)?.id)
     .filter((cid): cid is string => Boolean(cid))
+
+  // Deposer sans quitter la fiche : les controles qui attendent une preuve,
+  // restreints a ceux du cas d'usage, et les typologies de la matrice.
+  const [{ data: awaitingData }, { data: typologyData }] =
+    tab === 'supervision'
+      ? await Promise.all([
+          supabase.rpc('controls_awaiting_evidence', { p_organization_id: useCase.organization_id }),
+          supabase.rpc('evidence_typologies', { p_organization_id: useCase.organization_id }),
+        ])
+      : [{ data: null }, { data: null }]
+  const depositControls: ControlChoice[] = ((awaitingData ?? []) as { id: string; code: string; name: string; status: string; is_evidenced: boolean }[])
+    .filter((c) => applicableControlIds.includes(c.id))
+    .map((c) => ({ id: c.id, code: c.code, name: c.name, status: c.status, is_evidenced: c.is_evidenced }))
+  const depositTypologies = (typologyData ?? []) as TypologyChoice[]
   // Les actifs du cas d'usage, avec leurs mesures : lus sur le fil conducteur
   // et dans les controles (une mesure technique se pose sur un actif).
   const { data: assetsData } =
