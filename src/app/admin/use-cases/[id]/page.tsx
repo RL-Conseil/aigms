@@ -7,6 +7,7 @@ import { Badge, Card, Empty, Field, Stat, StatStrip } from '@/components/ui'
 import { TransitionModal } from '@/components/governance/transition-modal'
 import { AssetMeasureForm } from '@/components/governance/asset-measure-form'
 import { DecisionModal } from '@/components/governance/decision-modal'
+import { IncidentTicket } from '@/components/governance/incident-ticket'
 import { describePerson, organizationPeople } from '@/lib/governance/people'
 import { unlinkAssetFromUseCase } from '@/lib/actions/registry'
 import { resolveTab, UseCaseTabs, type TabSignal, type UseCaseTab } from '@/components/governance/use-case-tabs'
@@ -79,6 +80,12 @@ import {
   type RiskLevel,
   type UseCaseStatus,
 } from '@/lib/domain/governance'
+
+/** « Camille Rousset », ou l'adresse, ou rien. */
+function personLabel(value: unknown): string | null {
+  const p = value as { full_name: string | null; email: string } | null
+  return p ? (p.full_name?.trim() || p.email) : null
+}
 
 function riskTone(level: RiskLevel | null) {
   if (level === 'critical' || level === 'high') return 'stop' as const
@@ -243,7 +250,16 @@ export default async function UseCasePage({
     supabase
       .from('incident')
       .select(
-        'id, business_ref, title, kind, severity, status, detected_at, containment_action, root_cause, is_recurrence, capa:capa (id, business_ref, correction, cause_analysis, corrective_action, preventive_action, owner_user_id, due_date, status)',
+        `id, business_ref, title, kind, severity, status, detected_at, containment_action, root_cause, is_recurrence,
+         trigger_source, fundamental_rights_impacted, fundamental_rights_detail,
+         qualified_at, stop_recommended_at, stop_validated_at, stop_executed_at, stop_note,
+         closure_officer_at, closure_owner_at,
+         asset:asset_id (name),
+         officer:officer_user_id (full_name, email), owner:owner_user_id (full_name, email),
+         qualifier:qualified_by (full_name, email),
+         stop_recommender:stop_recommended_by (full_name, email), stop_validator:stop_validated_by (full_name, email), stop_executor:stop_executed_by (full_name, email),
+         closure_officer:closure_officer_by (full_name, email), closure_owner:closure_owner_by (full_name, email),
+         capa:capa (id, business_ref, correction, cause_analysis, corrective_action, preventive_action, owner_user_id, due_date, status)`,
       )
       .eq('use_case_id', id)
       .order('detected_at', { ascending: false }),
@@ -339,7 +355,7 @@ export default async function UseCasePage({
   // Les actifs du cas d'usage, avec leurs mesures : lus sur le fil conducteur
   // et dans les controles (une mesure technique se pose sur un actif).
   const { data: assetsData } =
-    tab === 'fil' || tab === 'controles'
+    tab === 'fil' || tab === 'controles' || tab === 'incidents'
       ? await supabase.rpc('use_case_assets', { p_use_case_id: id })
       : { data: null }
   const useCaseAssets = (assetsData ?? []) as UseCaseAsset[]
@@ -1320,7 +1336,12 @@ export default async function UseCasePage({
             action={<IncidentNote />}
           >
             <div className="mb-4">
-              <IncidentForm organizationId={useCase.organization_id} useCaseId={id} people={people} />
+              <IncidentForm
+                organizationId={useCase.organization_id}
+                useCaseId={id}
+                people={people}
+                assets={useCaseAssets.map((a) => ({ id: a.asset_id, name: a.name, kind: a.kind }))}
+              />
             </div>
             {incidents?.length ? (
               <ul className="space-y-4">
@@ -1372,6 +1393,41 @@ export default async function UseCasePage({
                           }}
                         />
                       </div>
+
+                      {/* Le ticket au format du kit : qualification, arret d'urgence, deux signatures. */}
+                      <IncidentTicket
+                        organizationId={useCase.organization_id}
+                        people={people}
+                        lateQualification={!incident.qualified_at && Date.now() - new Date(incident.detected_at).getTime() > 24 * 36e5}
+                        ticket={{
+                          id: incident.id,
+                          business_ref: incident.business_ref,
+                          title: incident.title,
+                          status: incident.status,
+                          kind: incident.kind,
+                          severity: incident.severity,
+                          detected_at: incident.detected_at,
+                          trigger_source: incident.trigger_source,
+                          asset: incident.asset as unknown as { name: string } | null,
+                          fundamental_rights_impacted: incident.fundamental_rights_impacted,
+                          fundamental_rights_detail: incident.fundamental_rights_detail,
+                          officer: personLabel(incident.officer),
+                          owner: personLabel(incident.owner),
+                          qualified_at: incident.qualified_at,
+                          qualified_by: personLabel(incident.qualifier),
+                          stop_recommended_at: incident.stop_recommended_at,
+                          stop_recommended_by: personLabel(incident.stop_recommender),
+                          stop_validated_at: incident.stop_validated_at,
+                          stop_validated_by: personLabel(incident.stop_validator),
+                          stop_executed_at: incident.stop_executed_at,
+                          stop_executed_by: personLabel(incident.stop_executor),
+                          stop_note: incident.stop_note,
+                          closure_officer_at: incident.closure_officer_at,
+                          closure_officer_by: personLabel(incident.closure_officer),
+                          closure_owner_at: incident.closure_owner_at,
+                          closure_owner_by: personLabel(incident.closure_owner),
+                        }}
+                      />
 
                       {/* La CAPA vit sous son incident : c'est lui qu'elle corrige. */}
                       <div className="mt-3 border-t border-ink-100 pt-3">

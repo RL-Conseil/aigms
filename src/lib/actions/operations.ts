@@ -209,6 +209,11 @@ const incidentSchema = z.object({
   severity: z.enum(['S1', 'S2', 'S3', 'S4']),
   detectedAt: z.string().trim().optional().or(z.literal('')),
   ownerUserId: z.string().uuid().optional().or(z.literal('')),
+  // Le ticket du kit : declencheur, actif impacte, droits fondamentaux.
+  triggerSource: z.enum(['monitoring_alert', 'user_complaint', 'internal_audit', 'vendor_alert', 'other']).optional().default('other'),
+  assetId: z.string().uuid().optional().or(z.literal('')),
+  fundamentalRightsImpacted: z.boolean().optional().default(false),
+  fundamentalRightsDetail: z.string().trim().max(1000).optional().or(z.literal('')),
   isRecurrence: z.boolean(),
 })
 
@@ -225,6 +230,10 @@ export async function declareIncident(
     severity: formData.get('severity'),
     detectedAt: formData.get('detectedAt') ?? '',
     ownerUserId: formData.get('ownerUserId') ?? '',
+    triggerSource: formData.get('triggerSource') ?? 'other',
+    assetId: formData.get('assetId') ?? '',
+    fundamentalRightsImpacted: formData.get('fundamentalRightsImpacted') === 'on',
+    fundamentalRightsDetail: formData.get('fundamentalRightsDetail') ?? '',
     isRecurrence: formData.get('isRecurrence') === 'on',
   })
   if (!parsed.success) return firstIssues(parsed.error)
@@ -247,6 +256,10 @@ export async function declareIncident(
     detected_at: input.detectedAt ? new Date(input.detectedAt).toISOString() : new Date().toISOString(),
     reported_by: userId,
     owner_user_id: input.ownerUserId || null,
+    trigger_source: input.triggerSource,
+    asset_id: input.assetId || null,
+    fundamental_rights_impacted: input.fundamentalRightsImpacted,
+    fundamental_rights_detail: input.fundamentalRightsDetail || null,
     is_recurrence: input.isRecurrence,
     status: 'OPEN',
   })
@@ -655,4 +668,104 @@ export async function retainSuggestedActions(
     ok: true,
     message: `${count ?? rows.length} action(s) ouverte(s)${rows.some((r) => r.is_blocking) ? ', dont des bloquantes que le gate PRODUCTION attendra' : ''}.`,
   }
+}
+
+// =============================================================================
+// Le ticket d'incident : qualifier, arrêter, signer
+// =============================================================================
+// Trois actes nominatifs et dates, que la base signe au nom de qui les pose
+// (0069) : la qualification sous 24 h, l'arret d'urgence — recommande par
+// l'officer, valide par le Porteur, execute —, la double signature de cloture.
+const qualifySchema = z.object({
+  organizationId: z.string().uuid(),
+  incidentId: z.string().uuid(),
+  kind: z.enum(INCIDENT_KINDS),
+  severity: z.enum(['S1', 'S2', 'S3', 'S4']),
+  fundamentalRightsImpacted: z.boolean(),
+  fundamentalRightsDetail: z.string().trim().max(1000).optional().or(z.literal('')),
+  officerUserId: z.string().uuid().optional().or(z.literal('')),
+})
+
+export async function qualifyIncident(_previous: FormState | null, formData: FormData): Promise<FormState> {
+  const parsed = qualifySchema.safeParse({
+    organizationId: formData.get('organizationId'),
+    incidentId: formData.get('incidentId'),
+    kind: formData.get('kind'),
+    severity: formData.get('severity'),
+    fundamentalRightsImpacted: formData.get('fundamentalRightsImpacted') === 'on',
+    fundamentalRightsDetail: formData.get('fundamentalRightsDetail') ?? '',
+    officerUserId: formData.get('officerUserId') ?? '',
+  })
+  if (!parsed.success) return firstIssues(parsed.error)
+  const input = parsed.data
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('incident')
+    .update({
+      kind: input.kind,
+      severity: input.severity,
+      fundamental_rights_impacted: input.fundamentalRightsImpacted,
+      fundamental_rights_detail: input.fundamentalRightsDetail || null,
+      qualified_at: new Date().toISOString(),
+      ...(input.officerUserId ? { officer_user_id: input.officerUserId } : {}),
+    })
+    .eq('id', input.incidentId)
+    .select('id, use_case_id')
+    .maybeSingle()
+  if (error) return { ok: false, message: explain(error) }
+  if (!data) return { ok: false, message: 'Votre rôle ne permet pas cette écriture.' }
+  revalidate(input.organizationId, data.use_case_id)
+  return { ok: true, message: 'Incident qualifié, en votre nom et daté.' }
+}
+
+const stepSchema = z.object({
+  organizationId: z.string().uuid(),
+  incidentId: z.string().uuid(),
+  step: z.enum(['recommend', 'validate', 'execute', 'officer_sign', 'owner_sign']),
+  note: z.string().trim().max(1000).optional().or(z.literal('')),
+})
+
+export async function incidentStep(_previous: FormState | null, formData: FormData): Promise<FormState> {
+  const parsed = stepSchema.safeParse({
+    organizationId: formData.get('organizationId'),
+    incidentId: formData.get('incidentId'),
+    step: formData.get('step'),
+    note: formData.get('note') ?? '',
+  })
+  if (!parsed.success) return firstIssues(parsed.error)
+  const input = parsed.data
+  const now = new Date().toISOString()
+  const patch: Record<string, unknown> =
+    input.step === 'recommend'
+      ? { stop_recommended_at: now, stop_note: input.note || null }
+      : input.step === 'validate'
+        ? { stop_validated_at: now }
+        : input.step === 'execute'
+          ? { stop_executed_at: now, status: 'CONTAINED', contained_at: now, containment_action: input.note || 'Arrêt d’urgence exécuté (kill-switch).' }
+          : input.step === 'officer_sign'
+            ? { closure_officer_at: now }
+            : { closure_owner_at: now }
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('incident')
+    .update(patch)
+    .eq('id', input.incidentId)
+    .select('id, use_case_id, closure_officer_at, closure_owner_at')
+    .maybeSingle()
+  if (error) return { ok: false, message: explain(error) }
+  if (!data) return { ok: false, message: 'Votre rôle ne permet pas cette écriture.' }
+  revalidate(input.organizationId, data.use_case_id)
+  const messages: Record<typeof input.step, string> = {
+    recommend: 'Arrêt d’urgence recommandé, en votre nom. Le Porteur est averti : il valide.',
+    validate: 'Arrêt validé. Une décision de suspension est soumise si le cas d’usage est en service ; l’exécution technique reste à tracer.',
+    execute: 'Arrêt exécuté et tracé : l’incident est contenu.',
+    officer_sign: data.closure_owner_at ? 'Validation posée. Les deux signatures sont là : l’incident peut être clos.' : 'Validation posée. Le Porteur est averti : son approbation clôt le ticket.',
+    owner_sign: data.closure_officer_at ? 'Approbation posée. Les deux signatures sont là : l’incident peut être clos.' : 'Approbation posée. L’AI Governance Officer est averti : sa validation clôt le ticket.',
+  }
+  return { ok: true, message: messages[input.step] }
+}
+
+function revalidate(organizationId: string, useCaseId: string | null) {
+  revalidatePath(`/admin/organizations/${organizationId}/suivi`)
+  if (useCaseId) revalidatePath(`/admin/use-cases/${useCaseId}`)
 }

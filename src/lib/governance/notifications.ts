@@ -53,6 +53,11 @@ export const NOTIFICATION_KIND_LABELS: Record<string, string> = {
   impact_completed: 'Évaluation',
   treatment_owner: 'Traitement',
   treatment_due: 'Échéance',
+  decision_blocked: 'Jalon en attente',
+  incident_new: 'Incident',
+  incident_qualify: 'À qualifier',
+  incident_stop: 'Arrêt d’urgence',
+  incident_closure: 'Clôture',
 }
 
 /** Ce qui est un rappel date — a distinguer d'une simple information. */
@@ -62,4 +67,5 @@ export const REMINDER_KINDS = new Set([
   'decision_effective',
   'change_due',
   'treatment_due',
+  'incident_qualify',
 ])
