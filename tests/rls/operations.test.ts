@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { Client } from 'pg'
-import { asUser, connect, DEMO, expectFailure } from '../helpers/db'
+import { asUser, becomeUser, connect, DEMO, expectFailure } from '../helpers/db'
 
 /**
  * Suivi operationnel : actions, incidents, CAPA, demandes de changement.
@@ -67,6 +67,14 @@ describe('Actions', () => {
   })
 })
 
+/** Les deux signatures de cloture : l'officer valide, le Porteur approuve (0069). */
+async function signClosure(c: Client, incidentId: string) {
+  await c.query(`update public.incident set closure_officer_at = now() where id = $1`, [incidentId])
+  await becomeUser(c, DEMO.systemOwnerA)
+  await c.query(`update public.incident set closure_owner_at = now() where id = $1`, [incidentId])
+  await becomeUser(c, DEMO.officerA)
+}
+
 describe('Incidents et CAPA', () => {
   it('un incident S2 ne se clôt pas sans CAPA close, même avec une cause racine', async () => {
     const failure = await asUser(db, DEMO.officerA, async (c) => {
@@ -118,6 +126,8 @@ describe('Incidents et CAPA', () => {
           where id = $1`,
         [rows[0]!.id, DEMO.officerA],
       )
+      // La cloture porte deux signatures, de deux personnes (0069).
+      await signClosure(c, incidentId)
       const { rows: closed } = await c.query<{ status: string }>(
         `update public.incident
             set status = 'CLOSED', closed_at = now(), contained_at = now(),
@@ -133,6 +143,7 @@ describe('Incidents et CAPA', () => {
   it('un incident S4 isolé se clôt sur sa seule cause racine', async () => {
     const status = await asUser(db, DEMO.officerA, async (c) => {
       const id = await declareIncident(c, 'S4')
+      await signClosure(c, id)
       const { rows } = await c.query<{ status: string }>(
         `update public.incident
             set status = 'CLOSED', closed_at = now(), contained_at = now(),

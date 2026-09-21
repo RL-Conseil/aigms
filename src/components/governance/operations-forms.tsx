@@ -231,16 +231,27 @@ const SEVERITY_LABELS: Record<string, string> = {
   S4: 'S4 — Mineur',
 }
 
+export const INCIDENT_TRIGGER_LABELS: Record<string, string> = {
+  monitoring_alert: 'Alerte automatique de monitoring',
+  user_complaint: 'Plainte ou signalement d’un utilisateur',
+  internal_audit: 'Audit interne',
+  vendor_alert: 'Alerte du fournisseur',
+  other: 'Autre',
+}
+
 export function IncidentForm({
   organizationId,
   useCaseId,
   useCases,
   people,
+  assets = [],
 }: {
   organizationId: string
   useCaseId?: string
   useCases?: UseCaseChoice[]
   people: Person[]
+  /** Les actifs d'IA de l'organisation : le systeme impacte, au sens de l'inventaire. */
+  assets?: { id: string; name: string; kind: string }[]
 }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(
     declareIncident,
@@ -318,7 +329,36 @@ export function IncidentForm({
             </Field>
           </div>
 
-          <Field label="Responsable du traitement" htmlFor="inc-owner" optional>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Déclencheur" htmlFor="inc-trigger" hint="Ce qui a fait remonter l’incident.">
+              <select id="inc-trigger" name="triggerSource" defaultValue="other" className={FIELD}>
+                {Object.entries(INCIDENT_TRIGGER_LABELS).map(([v, l]) => (
+                  <option key={v} value={v}>{l}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Actif d’IA impacté" htmlFor="inc-asset" optional hint="Le modèle, le système, le jeu de données — au sens de l’inventaire.">
+              <select id="inc-asset" name="assetId" defaultValue="" className={FIELD}>
+                <option value="">— Non précisé</option>
+                {assets.map((a) => (
+                  <option key={a.id} value={a.id}>{a.name}</option>
+                ))}
+              </select>
+            </Field>
+          </div>
+
+          <label className="flex items-start gap-2.5 text-sm text-ink-700">
+            <input type="checkbox" name="fundamentalRightsImpacted" className="mt-0.5" />
+            <span>
+              <span className="font-medium text-ink-900">Des droits fondamentaux sont touchés</span>
+              <span className="block text-xs text-ink-500">Discrimination, vie privée, transparence… — préciser dessous.</span>
+            </span>
+          </label>
+          <Field label="Droits fondamentaux : lesquels, comment" htmlFor="inc-rights" optional>
+            <input id="inc-rights" name="fundamentalRightsDetail" type="text" className={FIELD} />
+          </Field>
+
+          <Field label="Responsable du traitement (Porteur)" htmlFor="inc-owner" optional hint="Il valide l’arrêt d’urgence et approuve la clôture.">
             <PeopleSelect id="inc-owner" name="ownerUserId" people={people} />
           </Field>
 

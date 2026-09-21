@@ -459,3 +459,14 @@ test('sur la fiche, une action s’ouvre et se clôt avec son motif', async ({ p
   await page.getByRole('button', { name: 'Enregistrer' }).click()
   await expect(page.getByText('Action close, datée et journalisée.')).toBeVisible()
 })
+
+test('le ticket d’un incident se lit au format du kit, s’imprime et s’exporte', async ({ page }) => {
+  await page.goto('/admin/use-cases/b1000000-0000-4000-8000-000000000001?onglet=incidents')
+  // L'incident de demonstration porte son ticket : qualification, arret, signatures.
+  const ticket = page.locator('div').filter({ hasText: /^Ticket INC-/ }).first()
+  await expect(page.getByText(/^Ticket INC-/).first()).toBeVisible()
+  await expect(page.getByText('Arrêt d’urgence (kill-switch)').first()).toBeVisible()
+  await expect(page.getByText('Clôture — deux signatures').first()).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Exporter (JSON)' }).first()).toHaveAttribute('href', /\/suivi\/incidents\/.*\/export/)
+  void ticket
+})
