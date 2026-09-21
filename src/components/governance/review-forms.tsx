@@ -1,7 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
-import { holdReview, planReview, type FormState } from '@/lib/actions/reviews'
+import { cancelReview, holdReview, planReview, type FormState } from '@/lib/actions/reviews'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
 import { REVIEW_KIND_LABELS } from '@/lib/domain/reviews'
@@ -107,8 +107,37 @@ export function HoldReviewForm({
           <Field label="Décisions prises" htmlFor="hold-decisions" optional hint="Les décisions engageantes se soumettent ensuite sur les fiches ; ici, le relevé.">
             <textarea id="hold-decisions" name="decisionsTaken" rows={3} className={FIELD} />
           </Field>
+          <Field label="Pièce jointe" htmlFor="hold-file" optional hint="Le compte rendu signé, la présentation, l’enregistrement des votes — rattaché à la preuve (25 Mo max).">
+            <input id="hold-file" name="file" type="file" className="text-sm text-ink-700 file:mr-3 file:rounded-md file:border file:border-ink-200 file:bg-white file:px-3 file:py-1.5 file:text-sm file:text-ink-700 hover:file:bg-ink-100" />
+          </Field>
           <FormFeedback state={state} />
           <Submit pending={pending} idle="Enregistrer la revue tenue" />
+        </form>
+      )}
+    </Modal>
+  )
+}
+
+/** Annuler une revue : pour une raison, qui se lit sur la fiche et s'imprime. */
+export function CancelReviewForm({ organizationId, reviewId }: { organizationId: string; reviewId: string }) {
+  const [state, formAction, pending] = useActionState<FormState | null, FormData>(cancelReview, null)
+  const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
+  return (
+    <Modal
+      trigger="Annuler"
+      triggerClassName="text-xs text-ink-400 hover:text-stop-600 hover:underline"
+      title="Annuler la revue"
+      description="Une revue s’annule pour une raison. Elle reste au registre, avec son motif."
+    >
+      {() => (
+        <form action={formAction} className="flex flex-col gap-4">
+          <input type="hidden" name="organizationId" value={organizationId} />
+          <input type="hidden" name="reviewId" value={reviewId} />
+          <Field label="Motif" htmlFor={`cancel-${reviewId}`} error={errors.reason}>
+            <textarea id={`cancel-${reviewId}`} name="reason" rows={3} required className={FIELD} />
+          </Field>
+          <FormFeedback state={state} />
+          <Submit pending={pending} idle="Annuler la revue" />
         </form>
       )}
     </Modal>

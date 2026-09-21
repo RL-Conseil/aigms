@@ -13,6 +13,30 @@ afterAll(async () => {
 })
 
 describe('Cadence et revue de gouvernance', () => {
+  it('une revue ne s’annule pas sans motif ; annulée, elle garde son motif, son auteur et sa trace', async () => {
+    const r = await asUser(db, DEMO.officerA, async (c) => {
+      const { rows } = await c.query<{ id: string }>(
+        `insert into public.governance_review (tenant_id, organization_id, kind, scheduled_on, expected_attendees)
+         values ($1, $2, 'committee', current_date + 7, array['Camille', 'Élodie']) returning id`,
+        [DEMO.tenantA, DEMO.orgA],
+      )
+      const noReason = await expectFailure(c, `update public.governance_review set status = 'cancelled' where id = $1`, [rows[0]!.id])
+      await c.query(`update public.governance_review set status = 'cancelled', cancellation_reason = 'Quorum non atteint.' where id = $1`, [rows[0]!.id])
+      const { rows: after } = await c.query<{ cancelled_by: string; cancelled_at: string | null; expected_attendees: string[] }>(
+        'select cancelled_by, cancelled_at, expected_attendees from public.governance_review where id = $1', [rows[0]!.id],
+      )
+      const { rows: audit } = await c.query<{ n: string }>(
+        `select count(*)::text as n from public.audit_log where entity_type = 'governance_review' and entity_id = $1`, [rows[0]!.id],
+      )
+      return { noReason, after: after[0]!, audit: Number(audit[0]!.n) }
+    })
+    expect(r.noReason.message).toMatch(/pour une raison/)
+    expect(r.after.cancelled_by).toBe(DEMO.officerA)
+    expect(r.after.cancelled_at).not.toBeNull()
+    expect(r.after.expected_attendees).toEqual(['Camille', 'Élodie'])
+    expect(r.audit).toBeGreaterThanOrEqual(2)
+  })
+
   it('la démo est en classe 1 : haut risque, comité trimestriel, direction annuelle', async () => {
     const r = await asUser(db, DEMO.officerA, async (c) => {
       const { rows } = await c.query<{ r: { class: number; committee: string; direction: string; incidents: string } }>(

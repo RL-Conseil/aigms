@@ -58,6 +58,7 @@ export async function planReview(_previous: FormState | null, formData: FormData
       scheduled_on: input.scheduledOn,
       chaired_by: input.chairedBy || null,
       attendees: lines(input.attendees),
+      expected_attendees: lines(input.attendees),
     })
     .select('id, business_ref')
     .single()
@@ -105,25 +106,92 @@ export async function holdReview(_previous: FormState | null, formData: FormData
     .maybeSingle()
   if (error) return { ok: false, message: explain(error) }
   if (!data) return { ok: false, message: 'Votre rôle ne permet pas cette écriture.' }
+
+  // Une piece jointe — le compte rendu signe — rejoint la preuve ouverte.
+  const file = formData.get('file')
+  let fileNote = ''
+  if (file instanceof File && file.size > 0 && data.evidence_id) {
+    const problem = await attachMinutesFile(supabase, data.evidence_id, input.organizationId, file)
+    fileNote = problem ? ` La pièce jointe n’a pas été retenue : ${problem}` : ' La pièce jointe est rattachée à la preuve.'
+  }
+
   revalidatePath(`/admin/organizations/${input.organizationId}/revues`)
   revalidatePath(`/admin/organizations/${input.organizationId}/revues/${input.reviewId}`)
   revalidatePath(`/admin/organizations/${input.organizationId}/preuves`)
   revalidatePath('/admin/pilotage')
   return {
     ok: true,
-    message: `Revue tenue. Le compte rendu est déposé au registre des preuves, à valider${data.next_review_on ? ` ; prochaine revue proposée le ${data.next_review_on}` : ''}.`,
+    message: `Revue tenue. Le compte rendu est déposé au registre des preuves, à valider${data.next_review_on ? ` ; prochaine revue proposée le ${data.next_review_on}` : ''}.${fileNote}`,
   }
 }
 
-export async function cancelReview(formData: FormData): Promise<void> {
-  const parsed = z.object({ organizationId: z.string().uuid(), reviewId: z.string().uuid() }).safeParse({
+const cancelSchema = z.object({
+  organizationId: z.string().uuid(),
+  reviewId: z.string().uuid(),
+  reason: z.string().trim().min(10, 'Une revue s’annule pour une raison : dire laquelle.').max(1000),
+})
+
+export async function cancelReview(_previous: FormState | null, formData: FormData): Promise<FormState> {
+  const parsed = cancelSchema.safeParse({
     organizationId: formData.get('organizationId'),
     reviewId: formData.get('reviewId'),
+    reason: formData.get('reason'),
   })
-  if (!parsed.success) return
+  if (!parsed.success) return firstIssues(parsed.error)
   const supabase = await createClient()
-  await supabase.from('governance_review').update({ status: 'cancelled' }).eq('id', parsed.data.reviewId).eq('status', 'planned')
+  const { data, error } = await supabase
+    .from('governance_review')
+    .update({ status: 'cancelled', cancellation_reason: parsed.data.reason })
+    .eq('id', parsed.data.reviewId)
+    .eq('status', 'planned')
+    .select('id')
+    .maybeSingle()
+  if (error) return { ok: false, message: explain(error) }
+  if (!data) return { ok: false, message: 'Cette revue n’est plus planifiée.' }
   revalidatePath(`/admin/organizations/${parsed.data.organizationId}/revues`)
+  revalidatePath(`/admin/organizations/${parsed.data.organizationId}/revues/${parsed.data.reviewId}`)
+  return { ok: true, message: 'Revue annulée, avec son motif — il se lit sur la fiche et s’imprime.' }
+}
+
+// Le compte rendu peut etre une piece : le document signe, le PDF de la
+// reunion. Elle se depose avec la revue et rejoint la preuve que la base a
+// ouverte — le fichier, son empreinte, son nom.
+async function attachMinutesFile(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  evidenceId: string,
+  organizationId: string,
+  file: File,
+): Promise<string | null> {
+  const { EVIDENCE_BUCKET, MAX_EVIDENCE_BYTES } = await import('@/lib/storage/evidence')
+  if (file.size > MAX_EVIDENCE_BYTES) return 'Fichier trop volumineux (25 Mo maximum).'
+  const { createHash } = await import('node:crypto')
+  const { data: organization } = await supabase.from('organization').select('tenant_id').eq('id', organizationId).maybeSingle()
+  if (!organization) return 'Organisation introuvable.'
+  const bytes = Buffer.from(await file.arrayBuffer())
+  const contentHash = `sha256:${createHash('sha256').update(bytes).digest('hex')}`
+  const safeName = file.name.normalize('NFKD').replace(/[^\w.-]+/g, '_').slice(0, 120) || 'compte-rendu'
+  const storagePath = `${organization.tenant_id}/${organizationId}/${evidenceId}/${safeName}`
+  const { error: uploadError } = await supabase.storage
+    .from(EVIDENCE_BUCKET)
+    .upload(storagePath, bytes, { contentType: file.type || 'application/octet-stream', upsert: false })
+  if (uploadError) return `Dépôt du fichier refusé : ${uploadError.message}`
+  const { error } = await supabase
+    .from('evidence')
+    .update({
+      evidence_type: 'document',
+      storage_bucket: EVIDENCE_BUCKET,
+      storage_path: storagePath,
+      content_hash: contentHash,
+      file_name: file.name,
+      file_size_bytes: file.size,
+      mime_type: file.type || 'application/octet-stream',
+    })
+    .eq('id', evidenceId)
+  if (error) {
+    await supabase.storage.from(EVIDENCE_BUCKET).remove([storagePath])
+    return explain(error)
+  }
+  return null
 }
 
 function lines(value: string | undefined): string[] | null {

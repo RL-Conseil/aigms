@@ -16,7 +16,7 @@ export default async function PrintableReviewPage({ params }: { params: Promise<
   const [{ data: review }, identity] = await Promise.all([
     supabase
       .from('governance_review')
-      .select('business_ref, kind, scheduled_on, held_at, status, attendees, period_from, agenda, minutes, decisions_taken, next_review_on, chair:chaired_by (full_name, email)')
+      .select('business_ref, kind, scheduled_on, held_at, status, attendees, expected_attendees, period_from, agenda, minutes, decisions_taken, next_review_on, cancellation_reason, cancelled_at, canceller:cancelled_by (full_name, email), chair:chaired_by (full_name, email)')
       .eq('id', reviewId)
       .eq('organization_id', id)
       .maybeSingle(),
@@ -29,13 +29,26 @@ export default async function PrintableReviewPage({ params }: { params: Promise<
     <PrintDocument
       identity={identity}
       title={`${REVIEW_KIND_LABELS[review.kind]} — ${review.held_at ? formatDate(review.held_at) : formatDate(review.scheduled_on)}`}
-      subtitle={`${review.business_ref}${chair ? ` · présidée par ${chair.full_name ?? chair.email}` : ''}${review.held_at ? ` · tenue le ${formatDateTime(review.held_at)}` : ' · planifiée'}`}
+      subtitle={`${review.business_ref}${chair ? ` · présidée par ${chair.full_name ?? chair.email}` : ''}${review.status === 'held' && review.held_at ? ` · tenue le ${formatDateTime(review.held_at)}` : review.status === 'cancelled' ? ' · annulée' : ' · planifiée'}`}
       backHref={`/admin/organizations/${id}/revues/${reviewId}`}
       backLabel="Retour à la revue"
     >
+      {review.status === 'cancelled' ? (
+        <section className="doc-keep mb-7 rounded-md border border-ink-200 bg-ink-50 p-4 text-[12px]">
+          <p><strong className="font-medium">Revue annulée</strong>{review.cancelled_at ? ` le ${formatDateTime(review.cancelled_at)}` : ''}{(() => { const c = review.canceller as unknown as { full_name: string | null; email: string } | null; return c ? ` par ${c.full_name ?? c.email}` : '' })()}.</p>
+          <p className="mt-1 text-ink-700">Motif : {review.cancellation_reason}</p>
+          {review.expected_attendees?.length ? <p className="mt-1 text-ink-600">Participants attendus : {(review.expected_attendees as string[]).join(', ')}</p> : null}
+        </section>
+      ) : null}
+      {review.status === 'planned' && review.expected_attendees?.length ? (
+        <p className="mb-5 text-[12px] text-ink-600"><strong className="font-medium">Participants attendus :</strong> {(review.expected_attendees as string[]).join(', ')}</p>
+      ) : null}
       {review.status === 'held' ? (
         <section className="doc-keep mb-7">
           <h2 className="mb-2 border-b border-ink-200 pb-1.5 font-serif text-base font-semibold text-ink-900">Compte rendu</h2>
+          {review.expected_attendees?.length ? (
+            <p className="mb-1 text-[12px] text-ink-600"><strong className="font-medium">Participants attendus :</strong> {(review.expected_attendees as string[]).join(', ')}</p>
+          ) : null}
           <p className="mb-2 text-[12px] text-ink-600"><strong className="font-medium">Présents :</strong> {review.attendees?.join(', ') ?? '—'}</p>
           <p className="whitespace-pre-line text-[12px] leading-relaxed text-ink-800">{review.minutes}</p>
           {review.decisions_taken ? (
