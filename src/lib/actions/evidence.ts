@@ -81,6 +81,7 @@ const uploadSchema = z.object({
    *  l'ecart n'a lieu qu'a la validation de la nouvelle. */
   replacesId: z.string().uuid().optional().or(z.literal('')),
   closesActionId: z.string().uuid().optional().or(z.literal('')),
+  useCaseId: z.string().uuid().optional().or(z.literal('')),
 })
 
 export async function uploadEvidence(
@@ -99,6 +100,7 @@ export async function uploadEvidence(
     typologyId: formData.get('typologyId') ?? '',
     replacesId: formData.get('replacesId') ?? '',
     closesActionId: formData.get('closesActionId') ?? '',
+    useCaseId: formData.get('useCaseId') ?? '',
   })
   if (!parsed.success) return firstIssues(parsed.error)
 
@@ -239,6 +241,7 @@ export async function uploadEvidence(
 
   revalidatePath(`/admin/organizations/${input.organizationId}/preuves`)
   revalidatePath(`/admin/organizations/${input.organizationId}/declaration-applicabilite`)
+  if (input.useCaseId) revalidatePath(`/admin/use-cases/${input.useCaseId}`)
   return {
     ok: true,
     message: closed
