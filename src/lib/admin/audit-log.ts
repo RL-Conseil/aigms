@@ -15,6 +15,10 @@ export type AuditFilters = {
   entityType?: string
   actor?: string
   search?: string
+  /** Restreint a une organisation, a un cas d'usage, a une famille d'actions. */
+  organizationId?: string
+  useCaseId?: string
+  actions?: string[]
 }
 
 export type AuditRow = {
@@ -30,6 +34,8 @@ export type AuditRow = {
   before_state: Record<string, unknown> | null
   after_state: Record<string, unknown> | null
   metadata: Record<string, unknown>
+  organization_id?: string | null
+  use_case_id?: string | null
 }
 
 export function parseFilters(params: Record<string, string | undefined>): AuditFilters {
@@ -62,6 +68,9 @@ export async function auditLogPage(filters: AuditFilters, limit: number, offset 
     p_search: filters.search,
     p_limit: limit,
     p_offset: offset,
+    p_organization_id: filters.organizationId,
+    p_use_case_id: filters.useCaseId,
+    p_actions: filters.actions,
   })
   if (error) throw new Error(`Journal illisible : ${error.message}`)
   return (data ?? []) as unknown as AuditRow[]

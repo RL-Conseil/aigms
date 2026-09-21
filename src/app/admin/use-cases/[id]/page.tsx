@@ -33,7 +33,6 @@ import {
 } from '@/components/governance/registry-forms'
 import {
   ActionNote,
-  AuditNote,
   ChangeNote,
   ClassificationNote,
   ControlNote,
@@ -207,7 +206,6 @@ export default async function UseCasePage({
     { data: incidents },
     { data: suggestionsData },
     { data: actionSuggestionsData },
-    { data: timeline },
     { data: gateData },
     { data: reviewGateData },
     { data: memberships },
@@ -292,12 +290,6 @@ export default async function UseCasePage({
     tab === 'suivi' && suiviView === 'actions'
       ? supabase.rpc('suggest_actions', { p_use_case_id: id })
       : Promise.resolve({ data: null }),
-    supabase
-      .from('audit_log')
-      .select('id, occurred_at, action, summary, actor_email')
-      .eq('entity_id', id)
-      .order('occurred_at', { ascending: false })
-      .limit(30),
     supabase.rpc('evaluate_gate', { p_use_case_id: id, p_target: 'PRODUCTION' }),
     supabase.rpc('evaluate_gate', { p_use_case_id: id, p_target: 'REVIEW' }),
     supabase
@@ -589,6 +581,18 @@ export default async function UseCasePage({
       actions={
         <div className="flex items-center gap-3">
           <Badge tone="info">{USE_CASE_STATUS_LABELS[status]}</Badge>
+          {/*
+            Le journal se lit par organisation, filtre sur ce cas d'usage :
+            une lecture d'audit, a un clic, sans occuper une rubrique.
+          */}
+          {organization ? (
+            <Link
+              href={`/admin/organizations/${organization.id}/journal?cas=${id}`}
+              className="text-sm text-ink-500 hover:text-ink-900 hover:underline"
+            >
+              Journal
+            </Link>
+          ) : null}
           {/*
             Faire evoluer se demande depuis n'importe quelle rubrique : c'est
             l'acte central de la fiche, il ne vit pas dans un onglet.
@@ -1683,31 +1687,6 @@ export default async function UseCasePage({
         </div>
       ) : null}
 
-      {tab === 'journal' ? (
-        <div className="max-w-4xl">
-          <Card
-            title="Journal d’audit"
-            subtitle="Trace immuable des opérations sensibles"
-            action={<AuditNote />}
-          >
-            {timeline?.length ? (
-              <ol className="space-y-3">
-                {timeline.map((entry) => (
-                  <li key={entry.id} className="border-l-2 border-ink-200 pl-3">
-                    <p className="text-sm text-ink-900">{entry.summary ?? entry.action}</p>
-                    <p className="text-xs text-ink-400">
-                      {formatDateTime(entry.occurred_at)} · {entry.actor_email ?? 'système'} ·{' '}
-                      {entry.action}
-                    </p>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <Empty>Aucune entrée de journal accessible depuis ce compte.</Empty>
-            )}
-          </Card>
-        </div>
-      ) : null}
     </Shell>
   )
 }
