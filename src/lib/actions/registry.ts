@@ -338,7 +338,21 @@ const oversightSchema = z.object({
   expectedEvidence: z.string().trim().max(2000).optional().or(z.literal('')),
   notApplicableRationale: z.string().trim().max(2000).optional().or(z.literal('')),
   nextReviewAt: z.string().trim().optional().or(z.literal('')),
+  // Les controles qui portent chaque rubrique (0072).
+  triggerControlId: z.string().uuid().optional().or(z.literal('')),
+  overrideControlId: z.string().uuid().optional().or(z.literal('')),
+  stopControlId: z.string().uuid().optional().or(z.literal('')),
+  competenceControlId: z.string().uuid().optional().or(z.literal('')),
 })
+  // Un plan qui s'applique nomme ses declencheurs et ce qui le prouvera.
+  .refine((d) => d.status === 'not_applicable' || (d.interventionTriggers ?? '').length >= 10, {
+    path: ['interventionTriggers'],
+    message: 'À quels signaux un humain reprend la main : sans eux, la supervision ne se démontre pas.',
+  })
+  .refine((d) => d.status === 'not_applicable' || (d.expectedEvidence ?? '').length >= 10, {
+    path: ['expectedEvidence'],
+    message: 'Dire ce qui prouvera la supervision : journal des interventions, échantillons revus, tableau de bord…',
+  })
 
 export async function saveOversightPlan(
   _previous: FormState | null,
@@ -357,6 +371,10 @@ export async function saveOversightPlan(
     expectedEvidence: formData.get('expectedEvidence') ?? '',
     notApplicableRationale: formData.get('notApplicableRationale') ?? '',
     nextReviewAt: formData.get('nextReviewAt') ?? '',
+    triggerControlId: formData.get('triggerControlId') ?? '',
+    overrideControlId: formData.get('overrideControlId') ?? '',
+    stopControlId: formData.get('stopControlId') ?? '',
+    competenceControlId: formData.get('competenceControlId') ?? '',
   })
   if (!parsed.success) return firstIssues(parsed.error)
 
@@ -397,18 +415,42 @@ export async function saveOversightPlan(
       next_review_at: input.nextReviewAt || null,
       approved_by: approving ? user.id : null,
       approved_at: approving ? new Date().toISOString() : null,
+      trigger_control_id: input.triggerControlId || null,
+      override_control_id: input.overrideControlId || null,
+      stop_control_id: input.stopControlId || null,
+      competence_control_id: input.competenceControlId || null,
     },
     { onConflict: 'use_case_id' },
   )
 
   if (error) return { ok: false, message: explain(error) }
 
+  // Les procedures s'attachent : un document par procedure, depose au registre
+  // des preuves et rattache au controle qui la porte — a valider.
+  const notes: string[] = []
+  for (const [field, controlId, label] of [
+    ['overrideFile', input.overrideControlId, 'Procédure de reprise en main'],
+    ['stopFile', input.stopControlId, 'Procédure d’arrêt'],
+  ] as const) {
+    const file = formData.get(field)
+    if (!(file instanceof File) || file.size === 0) continue
+    if (!controlId) {
+      notes.push(`${label} : le document n’a pas été retenu — désigner d’abord le contrôle qui porte la procédure.`)
+      continue
+    }
+    const problem = await depositProcedureFile(supabase, useCase.organization_id, useCase.tenant_id, user.id, controlId, file, label, input.useCaseId)
+    notes.push(problem ? `${label} : ${problem}` : `${label} : document déposé au registre des preuves, rattaché au contrôle, à valider.`)
+  }
+
   revalidatePath(`/admin/use-cases/${input.useCaseId}`)
+  revalidatePath(`/admin/organizations/${useCase.organization_id}/preuves`)
+  const designated = [input.triggerControlId, input.overrideControlId, input.stopControlId, input.competenceControlId].filter(Boolean).length
   return {
     ok: true,
-    message: approving
-      ? 'Plan de supervision approuvé, en votre nom et daté.'
-      : 'Plan de supervision enregistré.',
+    message:
+      (approving ? 'Plan de supervision approuvé, en votre nom et daté.' : 'Plan de supervision enregistré.') +
+      (designated ? ` ${designated} contrôle(s) désigné(s), rendus applicables au cas d’usage.` : '') +
+      (notes.length ? ' ' + notes.join(' ') : ''),
   }
 }
 
@@ -665,4 +707,57 @@ export async function importAssetsCsv(_previous: ImportState | null, formData: F
 
 export async function importVendorsCsv(_previous: ImportState | null, formData: FormData): Promise<ImportState> {
   return importRegistryCsv(formData, 'fournisseurs')
+}
+
+// Un document de procedure : une preuve, rattachee au controle qui la porte.
+async function depositProcedureFile(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  organizationId: string,
+  tenantId: string,
+  ownerId: string,
+  controlId: string,
+  file: File,
+  label: string,
+  useCaseId: string,
+): Promise<string | null> {
+  const { EVIDENCE_BUCKET, MAX_EVIDENCE_BYTES } = await import('@/lib/storage/evidence')
+  if (file.size > MAX_EVIDENCE_BYTES) return 'fichier trop volumineux (25 Mo maximum).'
+  const { createHash } = await import('node:crypto')
+  const { data: useCase } = await supabase.from('ai_use_case').select('name').eq('id', useCaseId).maybeSingle()
+  const evidenceId = crypto.randomUUID()
+  const bytes = Buffer.from(await file.arrayBuffer())
+  const contentHash = `sha256:${createHash('sha256').update(bytes).digest('hex')}`
+  const safeName = file.name.normalize('NFKD').replace(/[^\w.-]+/g, '_').slice(0, 120) || 'procedure'
+  const storagePath = `${tenantId}/${organizationId}/${evidenceId}/${safeName}`
+  const { error: uploadError } = await supabase.storage
+    .from(EVIDENCE_BUCKET)
+    .upload(storagePath, bytes, { contentType: file.type || 'application/octet-stream', upsert: false })
+  if (uploadError) return `dépôt refusé : ${uploadError.message}`
+  const { error } = await supabase.from('evidence').insert({
+    id: evidenceId,
+    tenant_id: tenantId,
+    organization_id: organizationId,
+    title: `${label} — ${useCase?.name ?? 'cas d’usage'}`,
+    evidence_type: 'document',
+    source: 'Plan de supervision humaine (AIGMS)',
+    storage_bucket: EVIDENCE_BUCKET,
+    storage_path: storagePath,
+    content_hash: contentHash,
+    file_name: file.name,
+    file_size_bytes: file.size,
+    mime_type: file.type || 'application/octet-stream',
+    owner_user_id: ownerId,
+    validation_status: 'pending',
+  })
+  if (error) {
+    await supabase.storage.from(EVIDENCE_BUCKET).remove([storagePath])
+    return explain(error)
+  }
+  const { error: linkError } = await supabase.from('control_evidence').insert({
+    tenant_id: tenantId,
+    control_id: controlId,
+    evidence_id: evidenceId,
+    linked_by: ownerId,
+  })
+  return linkError ? `déposé, mais non rattaché au contrôle : ${explain(linkError)}` : null
 }

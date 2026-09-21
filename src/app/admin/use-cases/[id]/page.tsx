@@ -27,6 +27,7 @@ import {
   LinkAssetForm,
   LinkVendorForm,
   OversightForm,
+  type OversightCatalogControl,
 } from '@/components/governance/registry-forms'
 import {
   ActionNote,
@@ -221,7 +222,11 @@ export default async function UseCasePage({
     supabase
       .from('human_oversight_plan')
       .select(
-        'id, business_ref, autonomy_level, status, intervention_triggers, override_procedure, stop_procedure, monitoring_cadence, expected_evidence, approved_at, not_applicable_rationale',
+        `id, business_ref, autonomy_level, status, intervention_triggers, override_procedure, stop_procedure, monitoring_cadence, expected_evidence, approved_at, not_applicable_rationale,
+         accountable_user_id, stop_authority_user_id, required_competence,
+         trigger_control_id, override_control_id, stop_control_id, competence_control_id,
+         trigger_control:trigger_control_id (id, code, name, status), override_control:override_control_id (id, code, name, status),
+         stop_control:stop_control_id (id, code, name, status), competence_control:competence_control_id (id, code, name, status)`,
       )
       .eq('use_case_id', id)
       .maybeSingle(),
@@ -347,6 +352,27 @@ export default async function UseCasePage({
     ((c.reassessment ?? []) as { final_verdict: string | null }[]).some((r) => r.final_verdict === null),
   ).length
 
+  // Le plan s'adosse aux controles HUM : les controles-types publies, a
+  // retenir d'un clic, et les controles organisationnels deja au registre.
+  const { data: oversightCatalog } =
+    tab === 'supervision'
+      ? await supabase.rpc('oversight_catalog_controls', { p_organization_id: useCase.organization_id })
+      : { data: null }
+  const oversightControlChoices = (orgControls ?? [])
+    .filter((c) => c.organization_id === useCase.organization_id && c.status !== 'retired')
+    .map((c) => ({ id: c.id, code: c.code, name: c.name }))
+  type PlanControl = { id: string; code: string; name: string; status: string } | null
+  const planControls: { rubric: string; control: NonNullable<PlanControl> }[] = oversight
+    ? (
+        [
+          { rubric: 'Déclencheurs d’intervention', control: oversight.trigger_control as unknown as PlanControl },
+          { rubric: 'Reprise en main', control: oversight.override_control as unknown as PlanControl },
+          { rubric: 'Arrêt et escalade', control: oversight.stop_control as unknown as PlanControl },
+          { rubric: 'Compétence des superviseurs', control: oversight.competence_control as unknown as PlanControl },
+        ] as { rubric: string; control: PlanControl }[]
+      ).filter((e): e is { rubric: string; control: NonNullable<PlanControl> } => Boolean(e.control))
+    : []
+
   // Les preuves de ce cas d'usage : celles rattachees aux controles qui s'y
   // appliquent. Elles ne se lisent que dans la rubrique Supervision.
   const applicableControlIds = applicableControls
@@ -375,15 +401,26 @@ export default async function UseCasePage({
       : { data: null }
   const timelineEntries = (timelineData ?? []) as TimelineEntry[]
 
+  const planControlIds = planControls.map((p) => p.control.id)
+  const evidenceControlIds = [...new Set([...applicableControlIds, ...planControlIds])]
   const { data: evidenceLinks } =
-    tab === 'supervision' && applicableControlIds.length
+    tab === 'supervision' && evidenceControlIds.length
       ? await supabase
           .from('control_evidence')
           .select(
             'control_id, evidence:evidence_id (id, business_ref, title, validation_status, valid_until, typology:typology_id (name))',
           )
-          .in('control_id', applicableControlIds)
+          .in('control_id', evidenceControlIds)
       : { data: null }
+  // Par controle du plan : ce qui le demontre, ou rien.
+  const evidenceByControl = new Map<string, { id: string; business_ref: string; title: string; validation_status: string }[]>()
+  for (const l of evidenceLinks ?? []) {
+    const e = l.evidence as unknown as { id: string; business_ref: string; title: string; validation_status: string } | null
+    if (!e) continue
+    const list = evidenceByControl.get(l.control_id) ?? []
+    list.push(e)
+    evidenceByControl.set(l.control_id, list)
+  }
   const useCaseEvidence = [
     ...new Map(
       (evidenceLinks ?? [])
@@ -1097,17 +1134,27 @@ export default async function UseCasePage({
               <span className="flex items-center gap-2">
                 <OversightForm
                   useCaseId={id}
+                  organizationId={useCase.organization_id}
                   people={people}
+                  controls={oversightControlChoices}
+                  catalog={(oversightCatalog ?? []) as OversightCatalogControl[]}
                   current={
                     oversight
                       ? {
                           status: oversight.status,
+                          accountable_user_id: oversight.accountable_user_id,
+                          stop_authority_user_id: oversight.stop_authority_user_id,
+                          required_competence: oversight.required_competence,
                           intervention_triggers: oversight.intervention_triggers,
                           override_procedure: oversight.override_procedure,
                           stop_procedure: oversight.stop_procedure,
                           monitoring_cadence: oversight.monitoring_cadence,
                           expected_evidence: oversight.expected_evidence,
                           not_applicable_rationale: oversight.not_applicable_rationale,
+                          trigger_control_id: oversight.trigger_control_id,
+                          override_control_id: oversight.override_control_id,
+                          stop_control_id: oversight.stop_control_id,
+                          competence_control_id: oversight.competence_control_id,
                         }
                       : null
                   }
@@ -1140,8 +1187,9 @@ export default async function UseCasePage({
           </Card>
           </div>
           <Card
-            title="Preuves de ce cas d’usage"
-            subtitle="Rattachées aux contrôles qui s’y appliquent."
+            title="Preuves de la supervision"
+            subtitle="Par contrôle que le plan désigne : ce qui le démontre, ou ce qui manque."
+            tone={planControls.some((p) => !(evidenceByControl.get(p.control.id) ?? []).some((e) => e.validation_status === 'validated')) ? 'warn' : 'neutral'}
             action={
               organization ? (
                 <Link
@@ -1158,6 +1206,56 @@ export default async function UseCasePage({
                 Attendu par le plan : {oversight.expected_evidence}
               </p>
             ) : null}
+            {/*
+              Le plan s'adosse a des controles : c'est sur eux que les preuves
+              se deposent, et c'est par eux que le gate juge. Chaque rubrique
+              dit ce qui la demontre — ou renvoie au depot, pre-rempli.
+            */}
+            {planControls.length ? (
+              <ul className="mb-4 divide-y divide-ink-100">
+                {planControls.map(({ rubric, control }) => {
+                  const proofs = evidenceByControl.get(control.id) ?? []
+                  const held = control.status === 'operating' && proofs.some((e) => e.validation_status === 'validated')
+                  return (
+                    <li key={control.id} className="py-2 text-sm">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <span>
+                          <span className="block text-xs uppercase tracking-wide text-ink-400">{rubric}</span>
+                          <span className="text-ink-900">{control.code} — {control.name}</span>
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <Badge tone={controlStatusTone(control.status)}>{CONTROL_STATUS_LABELS[control.status] ?? control.status}</Badge>
+                          <Badge tone={held ? 'ok' : 'warn'}>{held ? 'Tenu' : proofs.length ? 'Preuve à valider' : 'Sans preuve'}</Badge>
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-ink-500">
+                        {proofs.length ? (
+                          proofs.map((e) => (
+                            <Link key={e.id} href={`/admin/organizations/${organization?.id}/preuves?preuve=${e.id}`} className={`mr-2 hover:underline ${e.validation_status === 'validated' ? 'text-ok-600' : 'text-ink-500'}`}>
+                              {e.business_ref} {e.title}
+                            </Link>
+                          ))
+                        ) : (
+                          <>
+                            Rien ne le démontre encore.{' '}
+                            {organization ? (
+                              <Link href={`/admin/organizations/${organization.id}/preuves/deposer?cas-d-usage=${id}&controle=${control.id}`} className="font-medium text-brand-600 hover:underline">
+                                Déposer
+                              </Link>
+                            ) : null}
+                          </>
+                        )}
+                      </p>
+                    </li>
+                  )
+                })}
+              </ul>
+            ) : oversight ? (
+              <p className="mb-4 text-xs text-warn-600">
+                Le plan ne désigne aucun contrôle : ses procédures restent du texte. « Modifier le plan » propose les contrôles HUM du référentiel.
+              </p>
+            ) : null}
+            <p className="mb-2 text-xs font-medium text-ink-600">Toutes les preuves du cas d’usage</p>
             {useCaseEvidence.length ? (
               <ul className="divide-y divide-ink-100">
                 {useCaseEvidence.map((e) => (
