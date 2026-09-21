@@ -20,7 +20,6 @@ export const USE_CASE_TABS = [
   { key: 'suivi', label: 'Actions et incidents' },
   { key: 'supervision', label: 'Supervision humaine' },
   { key: 'decisions', label: 'Décisions et changements' },
-  { key: 'impact', label: 'Évaluation d’impact' },
 ] as const
 
 export type UseCaseTab = (typeof USE_CASE_TABS)[number]['key']
@@ -39,6 +38,7 @@ const TAB_ALIASES: Record<string, { tab: UseCaseTab; vue?: SuiviView }> = {
   incidents: { tab: 'suivi', vue: 'incidents' },
   changements: { tab: 'decisions' },
   journal: { tab: 'avancement' },
+  impact: { tab: 'avancement' },
 }
 
 export function resolveTab(value: string | undefined, vue?: string): { tab: UseCaseTab; vue: SuiviView } {

@@ -103,6 +103,12 @@ export default async function OrganizationPage({
             Journal d’audit
           </Link>
           <Link
+            href={`/admin/organizations/${id}/etudes-impact`}
+            className="rounded-md bg-night-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-night-800"
+          >
+            Conduire une étude d’impact IA
+          </Link>
+          <Link
             href={`/admin/organizations/${id}/cas-d-usage/nouveau`}
             className="rounded-md bg-night-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-night-800"
           >

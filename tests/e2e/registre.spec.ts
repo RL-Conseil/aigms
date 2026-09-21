@@ -76,17 +76,32 @@ test('une supervision non applicable exige sa justification', async ({ page }) =
   await expect(plan.getByLabel(/Pourquoi la supervision ne s’applique pas/)).toBeVisible()
 })
 
-test('une évaluation d’impact se conduit depuis la fiche', async ({ page }) => {
-  await page.goto(`/admin/use-cases/${USE_CASE}?onglet=impact`)
+test('une étude d’impact se conduit sur sa page, au format du modèle', async ({ page }) => {
+  // Depuis la page des cas d'usage : un bouton, la page des etudes.
+  await page.goto('/admin/organizations/cccccccc-0000-4000-8000-000000000001')
+  await page.getByRole('link', { name: 'Conduire une étude d’impact IA' }).click()
+  await expect(page.getByRole('heading', { name: 'Études d’impact IA' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Qu’est-ce qu’une étude d’impact IA' })).toBeVisible()
 
-  await page.getByRole('button', { name: 'Conduire une évaluation' }).click()
-  const fenetre = page.getByRole('dialog', { name: 'Évaluation d’impact' })
+  // L'etude en cours du scoring se poursuit : ses quatre sections.
+  await page
+    .locator('li')
+    .filter({ hasText: 'Scoring de candidatures' })
+    .getByRole('link', { name: 'Poursuivre' })
+    .click()
+  await expect(page.getByRole('heading', { name: /^Étude d’impact — Scoring de candidatures/ })).toBeVisible()
+  for (const heading of ['1. Cadrage et contexte', '1.1 Parties prenantes', '2. Analyse croisée des impacts', '3. Plan de gouvernance et remédiation']) {
+    await expect(page.getByRole('heading', { name: heading })).toBeVisible()
+  }
 
-  // Un périmètre trop court est refusé : c'est lui qui délimite ce que
-  // l'évaluation couvre, et ce qu'elle ne couvre pas.
-  await fenetre.getByLabel('Périmètre examiné').fill('Trop court.')
-  await fenetre.getByRole('button', { name: 'Enregistrer l’évaluation' }).click()
-  await expect(fenetre.getByText(/sur qui, et sous quel angle/i)).toBeVisible()
+  // Un prejudice grave sans mesure est refuse : il en porte une.
+  await page.getByRole('button', { name: 'Ajouter un constat' }).click()
+  const fenetre = page.getByRole('dialog', { name: '2. Constat : bénéfice ou préjudice' })
+  await fenetre.getByLabel('Domaine').selectOption('equality_non_discrimination')
+  await fenetre.getByLabel('Description').fill('Écart de taux de présélection entre groupes de candidats.')
+  await fenetre.getByLabel('Gravité').selectOption('severe')
+  await fenetre.getByRole('button', { name: 'Ajouter le constat' }).click()
+  await expect(fenetre.getByText(/porte une mesure de réduction/)).toBeVisible()
 })
 
 test('le registre des actifs se lit, s’imprime, et chaque actif a sa fiche', async ({ page }) => {
