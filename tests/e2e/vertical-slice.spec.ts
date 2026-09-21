@@ -53,11 +53,18 @@ test('le parcours de gouvernance est consultable de bout en bout', async ({ page
     [/Évaluation d’impact/, "Évaluation d'impact"],
     [/Supervision humaine/, 'Supervision humaine'],
     [/^Décisions et changements/, 'Décisions et changements'],
-    [/^Journal/, 'Journal d’audit'],
   ] as const) {
     await rubriques.getByRole('link', { name: tab }).click()
     await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible()
   }
+
+  // Le journal a quitte la fiche : il se lit par organisation, filtre sur ce
+  // cas d'usage, depuis un lien de l'en-tete.
+  await page.getByRole('link', { name: 'Journal', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Journal d’audit' })).toBeVisible()
+  await expect(page).toHaveURL(/\/journal\?cas=/)
+  await expect(page.getByRole('button', { name: 'À quoi sert le journal' })).toBeVisible()
+  await page.goBack()
 
   // Decisions et changements se lisent dans un seul fil : le changement
   // d'autonomie, son verdict, et la decision qu'il a appelee.
@@ -235,7 +242,6 @@ test('chaque rubrique du dossier s’explique sur place', async ({ page }) => {
     [/^Avancement/, 'À quoi sert la criticité'],
     [/^Avancement/, 'Préconditions du jalon Production'],
     [/^Risques/, 'À quoi sert le registre des risques'],
-    [/^Journal/, 'À quoi sert le journal'],
   ] as const) {
     await rubriques.getByRole('link', { name: tab }).click()
     await expect(page.getByRole('button', { name: label })).toBeVisible()
