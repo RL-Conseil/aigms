@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Badge, Card, Empty, ScrollTable } from '@/components/ui'
-import { RISK_LEVEL_LABELS, formatDate, type RiskLevel } from '@/lib/domain/governance'
+import { RISK_LEVEL_LABELS, RISK_STATUS_LABELS, formatDate, type RiskLevel } from '@/lib/domain/governance'
 
 /**
  * Lectures alternatives du meme modele.
@@ -28,12 +28,18 @@ export type CoverageRow = {
   days_since_test: number | null
 }
 
-/** Activites porteuses de risques eleves ouverts, pour descendre sous le niveau. */
-export type RiskyActivity = {
-  process_id: string
-  activity_id: string
-  activity_name: string
-  open_high_risks: number
+/** Un risque ouvert, eleve ou critique, avec le chemin qui y mene. */
+export type SevereRisk = {
+  id: string
+  business_ref: string
+  title: string
+  level: RiskLevel
+  status: string
+  use_case_id: string
+  use_case_name: string
+  process_name: string | null
+  activity_id: string | null
+  activity_name: string | null
 }
 
 export type HeatmapRow = {
@@ -182,76 +188,63 @@ export function UncoveredActivities({
 // Carte thermique des risques
 // -----------------------------------------------------------------------------
 export function SevereRisksCard({
-  rows,
-  activities = [],
+  risks,
   organizationId,
 }: {
-  rows: HeatmapRow[]
-  activities?: RiskyActivity[]
+  risks: SevereRisk[]
   organizationId: string
 }) {
   // Regroupe par niveau, le critique d'abord : c'est l'ordre dans lequel on
   // traite, pas l'ordre alphabetique.
   const severe = (['critical', 'high'] as RiskLevel[])
-    .map(
-      (level) =>
-        [level, rows.filter((r) => r.risk_level === level && r.open_count > 0)] as const,
-    )
-    .filter(([, processRows]) => processRows.length)
+    .map((level) => [level, risks.filter((r) => r.level === level)] as const)
+    .filter(([, list]) => list.length)
 
   /*
-    La barre dit COMBIEN et OU, par niveau. Elle ne dit pas ou aller : un
-    processus n'est pas une destination, une activite l'est. On descend donc
-    d'un cran — niveau, puis processus, puis activites cliquables.
+    La barre dit COMBIEN et OU, par niveau. Elle ne dit pas QUOI : ici chaque
+    risque se lit par son nom, avec le cas d'usage qui le porte et l'activite
+    ou aller. Un compte par processus ferait apparaitre la meme activite sous
+    chaque niveau, comme s'il s'agissait de risques distincts.
   */
   return (
       <Card title="Risques ouverts les plus élevés" tone={severe.length ? 'stop' : 'neutral'}>
         {severe.length ? (
           <div className="flex flex-col gap-5">
-            {severe.map(([level, processRows]) => (
+            {severe.map(([level, list]) => (
               <div key={level}>
                 <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-stop-600">
-                  {RISK_LEVEL_LABELS[level as RiskLevel]}
+                  {RISK_LEVEL_LABELS[level as RiskLevel]} · {list.length} ouvert{list.length > 1 ? 's' : ''}
                 </p>
-                <ul className="flex flex-col gap-3">
-                  {processRows.map((row) => {
-                    const carriers = activities.filter(
-                      (a) => a.process_id === row.process_id && a.open_high_risks > 0,
-                    )
-                    return (
-                      <li key={`${row.process_id}-${level}`}>
-                        <div className="flex items-baseline justify-between gap-3">
-                          <span className="text-sm font-medium text-ink-900">
-                            {row.process_name}
-                          </span>
-                          <Badge tone="stop">
-                            {row.open_count} ouvert{row.open_count > 1 ? 's' : ''}
-                          </Badge>
-                        </div>
-                        {carriers.length ? (
-                          <ul className="mt-1 flex flex-wrap gap-2">
-                            {carriers.map((activity) => (
-                              <li key={activity.activity_id}>
-                                <Link
-                                  href={`/admin/organizations/${organizationId}/processus?activite=${activity.activity_id}`}
-                                  className="inline-flex items-baseline gap-1.5 rounded-md border border-ink-200 px-2.5 py-1 text-xs text-brand-600 hover:bg-ink-50"
-                                >
-                                  {activity.activity_name}
-                                  <span className="tabular-nums text-ink-400">
-                                    {activity.open_high_risks}
-                                  </span>
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
+                <ul className="divide-y divide-ink-100">
+                  {list.map((risk) => (
+                    <li key={risk.id} className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1 py-2">
+                      <div className="min-w-0">
+                        <Link
+                          href={`/admin/use-cases/${risk.use_case_id}?onglet=risques`}
+                          className="text-sm font-medium text-ink-900 hover:underline"
+                        >
+                          {risk.title}
+                        </Link>
+                        <p className="text-xs text-ink-500">
+                          {risk.business_ref} · {risk.use_case_name}
+                          {risk.process_name ? ` · ${risk.process_name}` : ''}
+                        </p>
+                      </div>
+                      <span className="flex items-center gap-2">
+                        <Badge tone="stop">{RISK_STATUS_LABELS[risk.status] ?? risk.status}</Badge>
+                        {risk.activity_id ? (
+                          <Link
+                            href={`/admin/organizations/${organizationId}/processus?activite=${risk.activity_id}`}
+                            className="inline-flex rounded-md border border-ink-200 px-2.5 py-1 text-xs text-brand-600 hover:bg-ink-50"
+                          >
+                            {risk.activity_name}
+                          </Link>
                         ) : (
-                          <p className="mt-1 text-xs text-ink-400">
-                            Aucune activité porteuse identifiée : le cas d’usage n’est pas rattaché.
-                          </p>
+                          <span className="text-xs text-ink-400">Cas d’usage non rattaché à une activité</span>
                         )}
-                      </li>
-                    )
-                  })}
+                      </span>
+                    </li>
+                  ))}
                 </ul>
               </div>
             ))}

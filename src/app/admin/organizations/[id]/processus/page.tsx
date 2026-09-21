@@ -13,6 +13,7 @@ import {
   UncoveredActivities,
   type CoverageRow,
   type HeatmapRow,
+  type SevereRisk,
 } from '@/components/governance/map-views'
 import {
   ChartCard,
@@ -124,6 +125,41 @@ export default async function ProcessMapPage({
         ? supabase.rpc('risk_path', { p_risk_id: risque })
         : Promise.resolve({ data: null }),
     ])
+
+  // Les risques ouverts eleves ou critiques, nommes : ce que la barre compte,
+  // lu risque par risque, avec le cas d'usage et l'activite qui les portent.
+  const { data: severeData } =
+    view === 'risques'
+      ? await supabase
+          .from('risk')
+          .select(
+            'id, business_ref, title, inherent_level, residual_level, status, use_case:use_case_id (id, name, activity:activity_id (id, name, process:process_id (name)))',
+          )
+          .eq('organization_id', id)
+          .not('status', 'in', '("accepted","mitigated","closed")')
+          .order('business_ref')
+      : { data: null }
+  const severeRisks: SevereRisk[] = (severeData ?? [])
+    .map((r) => {
+      const uc = r.use_case as unknown as {
+        id: string
+        name: string
+        activity: { id: string; name: string; process: { name: string } | null } | null
+      } | null
+      return {
+        id: r.id,
+        business_ref: r.business_ref,
+        title: r.title,
+        level: (r.residual_level ?? r.inherent_level) as SevereRisk['level'],
+        status: r.status,
+        use_case_id: uc?.id ?? '',
+        use_case_name: uc?.name ?? '—',
+        process_name: uc?.activity?.process?.name ?? null,
+        activity_id: uc?.activity?.id ?? null,
+        activity_name: uc?.activity?.name ?? null,
+      }
+    })
+    .filter((r) => r.level === 'high' || r.level === 'critical')
 
   const graph = (graphData ?? { available: false }) as Graph
   const riskPath = pathData as RiskPath | null
@@ -357,18 +393,7 @@ export default async function ProcessMapPage({
               organizationId={id}
             />
           </ChartCard>
-          <SevereRisksCard
-            rows={(heatmapData ?? []) as HeatmapRow[]}
-            activities={rows
-              .filter((r) => r.activity_id && r.open_high_risks > 0)
-              .map((r) => ({
-                process_id: r.process_id,
-                activity_id: r.activity_id!,
-                activity_name: r.activity_name ?? '—',
-                open_high_risks: r.open_high_risks,
-              }))}
-            organizationId={id}
-          />
+          <SevereRisksCard risks={severeRisks} organizationId={id} />
         </div>
       ) : view === 'graphe' ? (
         <div className="grid gap-5 lg:grid-cols-5">
