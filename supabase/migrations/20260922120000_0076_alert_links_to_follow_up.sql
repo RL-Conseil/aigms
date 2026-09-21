@@ -35,7 +35,9 @@ begin
   execute v;
 end $$;
 
--- Les alertes déjà posées suivent.
+-- Les alertes déjà posées suivent. Le garde interdit toute modification hors
+-- lecture : on l'écarte le temps de cette seule correction de liens.
+alter table public.notification disable trigger notification_guard_update;
 update public.notification n
    set href = format('/admin/organizations/%s/suivi?vue=actions&action=%s#action-%s', n.organization_id, n.entity_id, n.entity_id)
  where n.kind in ('action_owner', 'action_due') and n.entity_id is not null and n.organization_id is not null;
@@ -47,3 +49,5 @@ update public.notification n
 update public.notification
    set href = replace(href, '?onglet=changements', '?onglet=decisions')
  where href like '%?onglet=changements%';
+
+alter table public.notification enable trigger notification_guard_update;
