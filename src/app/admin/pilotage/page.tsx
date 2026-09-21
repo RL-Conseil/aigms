@@ -5,6 +5,8 @@ import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import { attentionByOrganization } from '@/lib/governance/attention'
 import { AttentionByOrganization, AttentionChart } from '@/components/governance/attention-chart'
 import { OrganizationRoleCard } from '@/components/governance/organization-role-card'
+import { ReviewCalendarCard } from '@/components/governance/review-calendar-card'
+import type { ReviewCalendar } from '@/lib/domain/reviews'
 import { GovernanceHealth, type Health } from '@/components/governance/governance-health'
 import { formatDate } from '@/lib/domain/governance'
 import { OrganizationFilter } from '@/components/governance/organization-filter'
@@ -74,6 +76,11 @@ export default async function DashboardPage({
     ? await supabase.rpc('governance_health', { p_organization_id: scoped, p_activity_id: null })
     : { data: null }
   const health = healthData as Health | null
+  // Le calendrier de gouvernance : attendu au regard du profil, et tenu.
+  const { data: calendarData } = scoped
+    ? await supabase.rpc('review_calendar', { p_organization_id: scoped })
+    : { data: null }
+  const calendar = calendarData as ReviewCalendar | null
 
   return (
     <Shell
@@ -137,7 +144,10 @@ export default async function DashboardPage({
             <AttentionByOrganization rows={attention} />
           </Card>
         ) : (
-          <OrganizationRoleCard organizationId={scoped} />
+          <div className="flex flex-col gap-5">
+            {calendar ? <ReviewCalendarCard organizationId={scoped} calendar={calendar} compact /> : null}
+            <OrganizationRoleCard organizationId={scoped} />
+          </div>
         )}
 
         <Card

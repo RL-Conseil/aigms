@@ -57,6 +57,7 @@ export const ORGANIZATION_SECTIONS = [
   { key: 'soa', label: 'Déclaration d’Applicabilité', href: '/declaration-applicabilite' },
   { key: 'preuves', label: 'Preuves', href: '/preuves' },
   { key: 'suivi', label: 'Suivi d’actions', href: '/suivi' },
+  { key: 'revues', label: 'Revues de gouvernance', href: '/revues' },
 ] as const
 
 /**
@@ -65,7 +66,7 @@ export const ORGANIZATION_SECTIONS = [
  * « Registres » sur les pages du menu, pour que l'endroit se nomme.
  */
 export const PRIMARY_SECTIONS = ['apercu', 'processus'] as const
-export const REGISTER_SECTIONS = ['controles', 'actifs', 'decisions', 'soa', 'preuves', 'suivi'] as const
+export const REGISTER_SECTIONS = ['controles', 'actifs', 'decisions', 'soa', 'preuves', 'suivi', 'revues'] as const
 
 export type OrganizationSection = (typeof ORGANIZATION_SECTIONS)[number]['key']
 
