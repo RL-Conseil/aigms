@@ -83,7 +83,7 @@ export const RACI_LETTERS: Record<Exclude<RaciLetter, null>, string> = {
 export const ROLE_RACI: { step: string; where: string; cells: Record<RaciRole, RaciLetter> }[] = [
   {
     step: '1. Déclaration et inventaire',
-    where: 'Cas d’usage, fiche › Fil conducteur',
+    where: 'Cas d’usage, fiche › Avancement',
     cells: { system_owner: 'A', governance_officer: 'R', reviewer: 'C', risk_owner: null, executive_viewer: null, auditor: 'I' },
   },
   {

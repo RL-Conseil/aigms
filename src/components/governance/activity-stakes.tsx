@@ -404,7 +404,7 @@ export function ActivityStakes({
               render={(i) => (
                 <Item
                   key={i.id}
-                  href={`/admin/use-cases/${i.use_case_id}?onglet=incidents`}
+                  href={`/admin/use-cases/${i.use_case_id}?onglet=suivi&vue=incidents`}
                   tone="stop"
                   primary={`${i.severity} — ${i.title}`}
                   secondary={`${i.ref} · ${INCIDENT_STATUS_LABELS[i.status] ?? i.status}`}
@@ -429,7 +429,7 @@ export function ActivityStakes({
               render={(a) => (
                 <Item
                   key={a.id}
-                  href={`/admin/use-cases/${a.use_case_id}?onglet=actions`}
+                  href={`/admin/use-cases/${a.use_case_id}?onglet=suivi&vue=actions`}
                   tone="stop"
                   primary={a.title}
                   secondary={`${a.ref} · échue le ${formatDate(a.due_date)} · ${
@@ -454,7 +454,7 @@ export function ActivityStakes({
               {stakes.reviews_due.map((u) => (
                 <Item
                   key={u.use_case_id}
-                  href={`/admin/use-cases/${u.use_case_id}?onglet=fil`}
+                  href={`/admin/use-cases/${u.use_case_id}?onglet=avancement`}
                   tone="warn"
                   primary={u.use_case}
                   secondary={`${u.ref} · revue attendue le ${formatDate(u.next_review_at)}`}

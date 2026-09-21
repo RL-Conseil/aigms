@@ -56,7 +56,7 @@ export const ORGANIZATION_SECTIONS = [
   { key: 'decisions', label: 'Décisions', href: '/decisions' },
   { key: 'soa', label: 'Déclaration d’Applicabilité', href: '/declaration-applicabilite' },
   { key: 'preuves', label: 'Preuves', href: '/preuves' },
-  { key: 'suivi', label: 'Suivi d’actions', href: '/suivi' },
+  { key: 'suivi', label: 'Suivi d’actions et d’incidents', href: '/suivi' },
   { key: 'revues', label: 'Revues de gouvernance', href: '/revues' },
 ] as const
 
