@@ -208,15 +208,22 @@ const triageSchema = z.object({
   decisionImpact: z.string().trim().max(1000).optional().or(z.literal('')),
   nextReviewAt: z.string().trim().optional().or(z.literal('')),
   rationale: z.string().trim().min(10, 'Justifiez la criticité retenue.').max(2000),
+  grid: z.record(z.string(), z.string()),
 })
 
 export async function saveTriage(_previous: FormState | null, formData: FormData): Promise<FormState> {
+  // La grille : quatre reponses, chacune un champ `grid.<question>`.
+  const grid: Record<string, string> = {}
+  for (const [key, value] of formData.entries()) {
+    if (key.startsWith('grid.') && typeof value === 'string' && value) grid[key.slice(5)] = value
+  }
   const parsed = triageSchema.safeParse({
     useCaseId: formData.get('useCaseId'),
     criticality: formData.get('criticality'),
     decisionImpact: formData.get('decisionImpact') ?? '',
     nextReviewAt: formData.get('nextReviewAt') ?? '',
     rationale: formData.get('rationale'),
+    grid,
   })
   if (!parsed.success) return firstIssues(parsed.error)
 
@@ -225,15 +232,23 @@ export async function saveTriage(_previous: FormState | null, formData: FormData
 
   const { data: useCase } = await supabase
     .from('ai_use_case')
-    .select('tenant_id, organization_id')
+    .select('tenant_id, organization_id, criticality')
     .eq('id', d.useCaseId)
     .maybeSingle()
   if (!useCase) return { ok: false, message: 'Cas d’usage introuvable.' }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   const { error } = await supabase
     .from('ai_use_case')
     .update({
       criticality: d.criticality,
+      criticality_rationale: d.rationale,
+      criticality_grid: d.grid,
+      criticality_set_at: new Date().toISOString(),
+      criticality_set_by: user?.id ?? null,
       decision_impact: d.decisionImpact || null,
       next_review_at: d.nextReviewAt || null,
     })
@@ -254,7 +269,12 @@ export async function saveTriage(_previous: FormState | null, formData: FormData
   if (assessmentError) return { ok: false, message: explain(assessmentError) }
 
   revalidatePath(`/admin/use-cases/${d.useCaseId}`)
-  return { ok: true, message: 'Criticité enregistrée. Le cas d’usage peut passer en évaluation.' }
+  return {
+    ok: true,
+    message: useCase.criticality
+      ? 'Criticité révisée.'
+      : 'Criticité enregistrée. Le cas d’usage peut passer en évaluation.',
+  }
 }
 
 // =============================================================================

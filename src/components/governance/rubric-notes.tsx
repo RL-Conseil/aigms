@@ -19,15 +19,30 @@ function Note({ label, title, children }: { label: string; title: string; childr
 
 export function TriageNote() {
   return (
-    <Note label="À quoi sert la criticité" title="Doser l’effort">
+    <Note label="À quoi sert la criticité" title="Doser l’effort de gouvernance">
       <p>
         La criticité dit <strong className="font-medium text-ink-800">combien ce cas d’usage
         mérite d’attention</strong> : un correcteur orthographique et un scoring de candidatures
-        n’appellent pas la même instruction.
+        n’appellent pas la même instruction. Elle se pose au triage, avant les risques et
+        l’évaluation d’impact — c’est un jugement a priori, tracé et justifié.
       </p>
+      <p>Ce qu’elle commande, côté serveur :</p>
+      <ul className="list-disc space-y-1 pl-5">
+        <li>
+          <strong className="font-medium text-ink-800">Élevée ou critique</strong> : l’évaluation
+          d’impact devient une précondition de production ; le GO production est arbitré par le
+          Comité de direction ; des contrôles supplémentaires sont proposés.
+        </li>
+        <li>
+          La <strong className="font-medium text-ink-800">cadence de revue</strong> de
+          l’organisation se déduit de la criticité la plus haute de ses cas d’usage.
+        </li>
+        <li>Le passage en évaluation l’exige.</li>
+      </ul>
       <p>
-        Elle fixe aussi la <strong className="font-medium text-ink-800">date de prochaine revue</strong>.
-        Sans date, rien ne fait remonter le dossier.
+        Les faits la <strong className="font-medium text-ink-800">rattrapent</strong> : un risque
+        ouvert d’un niveau supérieur, des personnes vulnérables, une autonomie L3+, une AIPD requise
+        signalent « à réviser » et alertent l’AI Governance Officer. Rien ne change sans une main.
       </p>
     </Note>
   )
