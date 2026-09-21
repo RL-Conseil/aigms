@@ -104,3 +104,26 @@ test('le registre des actifs se lit, s’imprime, et chaque actif a sa fiche', a
   await expect(page.getByRole('heading', { name: 'Cas d’usage qui l’emploient' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Modifier la fiche' })).toBeVisible()
 })
+
+test('les revues de gouvernance se planifient à la cadence attendue, et se tiennent avec un compte rendu', async ({ page }) => {
+  await page.goto(`/admin/organizations/cccccccc-0000-4000-8000-000000000001/revues`)
+  await expect(page.getByRole('heading', { name: 'Revues de gouvernance' })).toBeVisible()
+  // La cadence se constate : classe 1, comite trimestriel.
+  await expect(page.getByText(/Classe 1 —/)).toBeVisible()
+  await expect(page.getByText(/attendue : trimestrielle/)).toBeVisible()
+
+  await page.getByRole('button', { name: 'Planifier une revue' }).click()
+  const plan = page.getByRole('dialog', { name: 'Planifier une revue de gouvernance' })
+  await plan.getByLabel('Présidée par').selectOption({ index: 1 })
+  await plan.getByRole('button', { name: 'Planifier' }).click()
+  await expect(plan.getByRole('status')).toContainText('planifiée')
+
+  await page.locator('section').filter({ has: page.getByRole('heading', { name: 'Planifiées' }) }).getByRole('link').first().click()
+  await expect(page.getByRole('heading', { name: 'Ordre du jour' })).toBeVisible()
+  await page.getByRole('button', { name: 'Tenir la revue' }).click()
+  const hold = page.getByRole('dialog', { name: 'Tenir la revue' })
+  await hold.getByLabel('Présents').fill('Camille Rousset\nSacha Belarbi')
+  await hold.getByLabel('Compte rendu').fill('Revue des décisions du trimestre, des CAPA en cours et des risques élevés ouverts. Le scoring reste en revue jusqu’au test de biais.')
+  await hold.getByRole('button', { name: 'Enregistrer la revue tenue' }).click()
+  await expect(hold.getByRole('status')).toContainText('compte rendu est déposé')
+})
