@@ -195,9 +195,11 @@ export function UseCaseLabelForm({
           </Field>
 
           <p className="rounded-md border border-ink-200 bg-ink-50 px-3.5 py-3 text-xs leading-relaxed text-ink-600">
-            La criticité, le niveau d’autonomie, la classification réglementaire, les données
-            personnelles, les personnes vulnérables et le statut ne se corrigent pas ici : chacun
-            se prononce dans son écran, daté et justifié.
+            La criticité, le niveau d’autonomie, la classification réglementaire et le statut ne se
+            corrigent pas ici : chacun se prononce dans son écran, daté et justifié. Les données
+            personnelles ou sensibles et les personnes vulnérables se prononcent dans la grille de
+            criticité — ses réponses les inscrivent sur la fiche, et les retirent si elles les
+            démentent.
           </p>
 
           <FormFeedback state={state} />

@@ -24,6 +24,22 @@ export const CLASSIFICATION_FLAG_LABELS: Record<string, string> = {
   security_impact: 'Impact sur la sécurité',
 }
 
+/**
+ * Ce que chaque qualification ENGAGE. Une case qu'on coche sans savoir ce
+ * qu'elle declenche est une case qu'on coche mal : la regle vit en base, la
+ * phrase la rend lisible a l'endroit du geste.
+ */
+export const CLASSIFICATION_FLAG_EFFECTS: Record<string, string> = {
+  out_of_scope: 'Ne lève aucune exigence : la gouvernance interne — risques, supervision, preuves — reste due.',
+  to_confirm: 'Bloque les jalons Revue et Production tant qu’elle est cochée.',
+  prohibited_practice_suspected: 'Bloque les jalons et porte la criticité observée à « critique ».',
+  high_risk_potential: 'Rend l’évaluation d’impact exigée, resserre la cadence de revue, propose 8 contrôles.',
+  transparency_obligations: 'Propose l’information des personnes (article 50) et le recensement des parties prenantes.',
+  gpai_dependency: 'Propose 4 contrôles, dont les injections de requêtes.',
+  privacy_impact: 'Inscrit « données personnelles » sur la fiche : l’évaluation d’impact devient exigée, les contrôles de catégories particulières se proposent.',
+  security_impact: 'Propose 3 contrôles de sécurité : moindre privilège, validation des entrées, tests avant mise en service.',
+}
+
 export const LEGAL_REVIEW_LABELS: Record<string, string> = {
   none: 'Non nécessaire',
   internal_review: 'Revue interne',
