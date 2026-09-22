@@ -500,7 +500,11 @@ export function RiskPanel({
           label="Contrôle qui le traitera"
           htmlFor="risk-control"
           optional
-          hint="Parmi les contrôles applicables à ce cas d’usage, ou trouvé par l’assistant. Un traitement « réduire » s’ouvre alors, porté par le responsable du risque, et le contrôle devient applicable."
+          hint={
+            options.length
+              ? 'Parmi les contrôles affectés à ce cas d’usage, ou trouvé par l’assistant. Un traitement « réduire » s’ouvre alors, porté par le responsable du risque, et le contrôle devient applicable.'
+              : 'Aucun contrôle n’est encore affecté à ce cas d’usage : la liste est vide. « Proposer des contrôles » (onglet Contrôles affectés) en calcule depuis les faits ; l’assistant ci-dessous cherche par les mots.'
+          }
         >
           <select
             id="risk-control"

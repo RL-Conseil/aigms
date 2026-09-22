@@ -136,6 +136,7 @@ type UseCaseAsset = {
   hosting_location: string | null
   contains_personal_data: boolean
   vendor: string | null
+  vendor_review_status: string | null
   measures: {
     id: string
     control_id: string
@@ -730,6 +731,11 @@ export default async function UseCasePage({
                               {asset.vendor ? ` · ${asset.vendor}` : ''}
                               {asset.hosting_location ? ` · ${asset.hosting_location}` : ''}
                             </span>
+                            {/* Ce que l'actif apporte au cas d'usage (0080) : les faits dont il herite. */}
+                            {asset.contains_personal_data ? <Badge tone="warn">Données personnelles</Badge> : null}
+                            {asset.vendor && asset.vendor_review_status && !['approved', 'approved_with_conditions'].includes(asset.vendor_review_status) ? (
+                              <Badge tone="stop">Tiers non revu</Badge>
+                            ) : null}
                           </span>
                           <span className="flex items-center gap-2 text-xs text-ink-500">
                             {asset.measures.length

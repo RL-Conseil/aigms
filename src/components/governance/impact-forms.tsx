@@ -97,10 +97,15 @@ export function ScopeForm({ study }: { study: ImpactStudy }) {
             </Field>
           </div>
           <label className="flex items-start gap-2 text-sm text-ink-700">
-            <input type="checkbox" name="dpiaRequired" defaultChecked={study.dpia_required} className="mt-0.5 size-4 accent-[oklch(0.45_0.11_245)]" />
+            <input type="checkbox" name="dpiaRequired" defaultChecked={study.dpia_required || Boolean(study.use_case.personal_data)} className="mt-0.5 size-4 accent-[oklch(0.45_0.11_245)]" />
             <span>
               Une AIPD (analyse d’impact relative à la protection des données, RGPD art. 35) est requise.
-              <span className="block text-xs text-ink-500">L’étude d’impact IA ne s’y substitue pas : elle la référence.</span>
+              <span className="block text-xs text-ink-500">
+                L’étude d’impact IA ne s’y substitue pas : elle la référence.
+                {study.use_case.personal_data && !study.dpia_required
+                  ? ' Pré-cochée : des données personnelles sont en jeu (fiche ou actif rattaché).'
+                  : ''}
+              </span>
             </span>
           </label>
           <div className="grid gap-4 sm:grid-cols-2">
