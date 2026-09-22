@@ -466,6 +466,27 @@ export function AccountForm({
         </p>
       </div>
 
+      {/*
+        Comment cette personne sera prevenue. Reglable ensuite par elle-meme
+        dans ses parametres, et par l'administration depuis la liste.
+      */}
+      <label className="flex items-start gap-2.5 text-sm text-ink-700">
+        <input
+          type="checkbox"
+          name="emailNotifications"
+          defaultChecked
+          className="mt-0.5 size-4 accent-[oklch(0.45_0.11_245)]"
+        />
+        <span>
+          Notification par courriel
+          <span className="block text-xs text-ink-500">
+            Ce qui lui sera adressé nommément : une synthèse quotidienne de ce qui reste à faire
+            avancer, et tout de suite ce qui ne peut pas attendre. Décochée, les alertes restent
+            lisibles dans « Mes alertes ».
+          </span>
+        </span>
+      </label>
+
       <Feedback state={state} />
 
       <button

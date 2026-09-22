@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty } from '@/components/ui'
 import { AccountForm, RoleForm } from '@/components/admin/forms'
+import { NotificationModal } from '@/components/admin/notification-modal'
+import type { NotificationPreference } from '@/components/admin/notification-form'
 import { RoleMatrix } from '@/components/admin/role-matrix'
 import { RaciTable } from '@/components/admin/raci-table'
 import { roleCapabilities } from '@/lib/admin/role-capabilities'
@@ -38,7 +40,7 @@ export default async function AccountsPage() {
 
   const supabase = await createClient()
 
-  const [{ data: memberships }, { data: organizations }, { data: assignments }, capabilities] =
+  const [{ data: memberships }, { data: organizations }, { data: assignments }, { data: preferences }, capabilities] =
     await Promise.all([
     supabase
       .from('membership')
@@ -49,8 +51,17 @@ export default async function AccountsPage() {
     supabase
       .from('role_assignment')
       .select('user_id, role, organization_id, valid_until, organization:organization_id (name)'),
+    supabase.from('notification_preference').select('user_id, email_enabled, immediate_enabled, digest'),
     roleCapabilities(),
   ])
+
+  // Comment chacun est prevenu. Sans ligne, la regle par defaut s'applique.
+  const preferenceOf = (userId: string): NotificationPreference =>
+    (preferences ?? []).find((p) => p.user_id === userId) ?? {
+      email_enabled: true,
+      immediate_enabled: true,
+      digest: 'daily',
+    }
 
   type Account = {
     membershipId: string
@@ -77,16 +88,17 @@ export default async function AccountsPage() {
   // base (organization_roles) : ce qu'on voit ici est ce qu'elle applique.
   const active = (assignments ?? []).filter((a) => !a.valid_until || a.valid_until > new Date().toISOString())
   const assignedUserIds = new Set(active.map((a) => a.user_id))
-  const byOrganization = new Map<string, { account: Account; role: AppRole; scoped: boolean }[]>()
+  type Row = { account: Account; role: AppRole; scoped: boolean; preference: NotificationPreference }
+  const byOrganization = new Map<string, Row[]>()
   for (const o of organizations ?? []) {
-    const rows: { account: Account; role: AppRole; scoped: boolean }[] = []
+    const rows: Row[] = []
     for (const a of active.filter((a) => a.organization_id === o.id)) {
       const account = accounts.find((acc) => acc.userId === a.user_id)
-      if (account) rows.push({ account, role: a.role as AppRole, scoped: true })
+      if (account) rows.push({ account, role: a.role as AppRole, scoped: true, preference: preferenceOf(account.userId) })
     }
     for (const account of accounts) {
       if (account.tenantId === o.tenant_id && account.role !== 'platform_admin' && !assignedUserIds.has(account.userId)) {
-        rows.push({ account, role: account.role, scoped: false })
+        rows.push({ account, role: account.role, scoped: false, preference: preferenceOf(account.userId) })
       }
     }
     byOrganization.set(o.id, rows)
@@ -143,7 +155,7 @@ export default async function AccountsPage() {
                     summary={`${unassigned.length} compte${unassigned.length > 1 ? 's' : ''} dont le tenant n’a aucune organisation active`}
                     tone="neutral"
                   >
-                    <AccountRows rows={unassigned.sort(byRole).map((account) => ({ account, role: account.role, scoped: false }))} />
+                    <AccountRows rows={unassigned.sort(byRole).map((account) => ({ account, role: account.role, scoped: false, preference: preferenceOf(account.userId) }))} />
                   </Disclosure>
                 ) : null}
 
@@ -153,7 +165,7 @@ export default async function AccountsPage() {
                     summary={`${admins.length} compte${admins.length > 1 ? 's' : ''} · ouvre les accès, ne gouverne pas`}
                     tone="neutral"
                   >
-                    <AccountRows rows={admins.map((account) => ({ account, role: account.role, scoped: false }))} />
+                    <AccountRows rows={admins.map((account) => ({ account, role: account.role, scoped: false, preference: preferenceOf(account.userId) }))} />
                   </Disclosure>
                 ) : null}
               </div>
@@ -303,13 +315,14 @@ function AccountRows({
     role: AppRole
     /** Vrai quand le role vient d'une affectation a l'organisation ; sinon de l'appartenance. */
     scoped: boolean
+    preference: NotificationPreference
   }[]
   empty?: string
 }) {
   if (!rows.length) return <p className="text-sm text-ink-400">{empty}</p>
   return (
     <ul className="divide-y divide-ink-100">
-      {rows.map(({ account, role, scoped }) => (
+      {rows.map(({ account, role, scoped, preference }) => (
         <li key={`${account.membershipId}-${role}`} className="flex flex-wrap items-center gap-3 py-2.5">
           <span
             aria-hidden
@@ -334,6 +347,12 @@ function AccountRows({
           ) : (
             <RoleForm userId={account.userId} currentRole={account.role} />
           )}
+          {/* Comment cette personne est prevenue : reglable ici, et par elle-meme. */}
+          <NotificationModal
+            userId={account.userId}
+            name={account.fullName ?? account.email}
+            preference={preference}
+          />
         </li>
       ))}
     </ul>
