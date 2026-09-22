@@ -106,7 +106,9 @@ test('une étude d’impact se conduit sur sa page, au format du modèle', async
 
 test('le registre des actifs se lit, s’imprime, et chaque actif a sa fiche', async ({ page }) => {
   await page.goto(`/admin/organizations/cccccccc-0000-4000-8000-000000000001/actifs`)
-  await expect(page.getByRole('heading', { name: 'Registre des actifs d’IA' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Actifs d’IA et fournisseurs' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Déclarer un actif d’IA' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Fournisseurs' })).toBeVisible()
   await expect(page.getByRole('navigation', { name: 'Filtrer par nature' })).toBeVisible()
   // La barre des registres le porte.
   await page.getByRole('navigation', { name: 'Navigation principale' }).getByRole('button', { name: /^Registres/ }).click()

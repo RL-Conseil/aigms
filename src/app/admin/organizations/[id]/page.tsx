@@ -6,6 +6,7 @@ import { Badge, Card, Empty } from '@/components/ui'
 import { AttentionBar } from '@/components/governance/attention'
 import { SegmentedFilter } from '@/components/governance/segmented-filter'
 import { VendorLabelForm, VendorReviewForm } from '@/components/governance/registry-forms'
+import { DeclareVendorModal } from '@/components/governance/registry-declare'
 import { attentionFor } from '@/lib/governance/attention'
 import {
   AUTONOMY_LABELS,
@@ -102,6 +103,13 @@ export default async function OrganizationPage({
           >
             Journal d’audit
           </Link>
+          {/* Les actifs et les fournisseurs : ce que l'organisation emploie, et de qui elle depend. */}
+          <Link
+            href={`/admin/organizations/${id}/actifs`}
+            className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
+          >
+            Actifs d’IA
+          </Link>
           <Link
             href={`/admin/organizations/${id}/etudes-impact`}
             className="rounded-md bg-night-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-night-800"
@@ -156,12 +164,10 @@ export default async function OrganizationPage({
                 />
                 {tab === 'fournisseurs' ? (
                   <>
-                    <Link
-                      href={`/admin/organizations/${id}/registre/nouveau`}
-                      className="rounded-md border border-ink-200 px-3.5 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-100"
-                    >
-                      Déclarer un fournisseur
-                    </Link>
+                    <DeclareVendorModal
+                      organizationId={id}
+                      triggerClassName="rounded-md border border-ink-200 px-3.5 py-1.5 text-xs font-medium text-ink-700 hover:bg-ink-100"
+                    />
                   </>
                 ) : null}
               </div>
