@@ -58,6 +58,13 @@ export const NOTIFICATION_KIND_LABELS: Record<string, string> = {
   incident_qualify: 'À qualifier',
   incident_stop: 'Arrêt d’urgence',
   incident_closure: 'Clôture',
+  criticality_review: 'Criticité',
+  evidence_to_validate: 'Preuve à valider',
+  evidence_expiring: 'Preuve bientôt échue',
+  evidence_expired: 'Preuve échue',
+  use_case_review_due: 'Revue du cas d’usage',
+  vendor_review_due: 'Revue fournisseur',
+  impact_review_due: 'Étude d’impact',
 }
 
 /** Ce qui est un rappel date — a distinguer d'une simple information. */
@@ -68,4 +75,9 @@ export const REMINDER_KINDS = new Set([
   'change_due',
   'treatment_due',
   'incident_qualify',
+  'evidence_expiring',
+  'evidence_expired',
+  'use_case_review_due',
+  'vendor_review_due',
+  'impact_review_due',
 ])
