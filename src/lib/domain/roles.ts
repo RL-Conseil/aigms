@@ -102,7 +102,17 @@ export const ROLE_RACI: { step: string; where: string; cells: Record<RaciRole, R
     cells: { system_owner: 'I', governance_officer: 'C', reviewer: 'C', risk_owner: 'C', executive_viewer: 'A', auditor: 'I' },
   },
   {
-    step: '5. Audit de conformité',
+    step: '5. Outillage des contrôles',
+    where: 'Registre des contrôles › Outillage',
+    cells: { system_owner: 'I', governance_officer: 'R', reviewer: 'C', risk_owner: 'I', executive_viewer: null, auditor: 'I' },
+  },
+  {
+    step: '6. Référentiel — contrôles-types et familles d’outillage',
+    where: 'Administration › Référentiels',
+    cells: { system_owner: null, governance_officer: 'I', reviewer: null, risk_owner: null, executive_viewer: null, auditor: 'I' },
+  },
+  {
+    step: '7. Audit de conformité',
     where: 'Journal d’audit, registres, impressions',
     cells: { system_owner: 'I', governance_officer: 'I', reviewer: 'I', risk_owner: 'I', executive_viewer: 'I', auditor: 'A' },
   },

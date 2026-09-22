@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty, Stat, StatStrip } from '@/components/ui'
 import { InfoTip } from '@/components/info-tip'
+import { ControlToolingModal } from '@/components/governance/control-tooling-modal'
 import { ControlProposals, type Suggestions } from '@/components/governance/control-proposals'
 import { SegmentedFilter } from '@/components/governance/segmented-filter'
 import {
@@ -91,6 +92,19 @@ export default async function ControlsPage({
     title: r.title,
   }))
 
+  // Avec quoi chaque controle se tient, chez cette organisation (0088).
+  const { data: toolingRows } = await supabase
+    .from('control_tooling')
+    .select('control_id, tooling:tooling_id (id, tool_code, product)')
+  const toolingBy = new Map<string, { id: string; product: string }[]>()
+  for (const row of toolingRows ?? []) {
+    const tool = row.tooling as unknown as { id: string; product: string } | null
+    if (!tool) continue
+    const list = toolingBy.get(row.control_id) ?? []
+    list.push(tool)
+    toolingBy.set(row.control_id, list)
+  }
+
   const mappedBy = new Map<string, string[]>()
   for (const link of links ?? []) {
     const requirement = link.requirement as unknown as { requirement_reference: string } | null
@@ -126,6 +140,12 @@ export default async function ControlsPage({
             organizationId={id}
             suggestions={(orgSuggestions ?? { available: false }) as Suggestions}
           />
+          <Link
+            href={`/admin/organizations/${id}/outillage`}
+            className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
+          >
+            Outillage
+          </Link>
           <InfoTip label="Comment lire cette liste" title="Contrôles opérationnels et contrôles-types">
             <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
               <p>
@@ -222,6 +242,21 @@ export default async function ControlsPage({
                       {mappedBy.get(control.id)?.length
                         ? `Exigences : ${mappedBy.get(control.id)!.join(', ')}`
                         : 'Aucune exigence rattachée — ce contrôle ne compte dans aucune Déclaration.'}
+                    </p>
+                    {/*
+                      Avec quoi il se tient : le produit employe ici, pas la
+                      famille du referentiel. C'est la qu'on prend sa preuve.
+                    */}
+                    <p className="mt-1.5 text-xs text-ink-500">
+                      {toolingBy.get(control.id)?.length
+                        ? `Se tient avec : ${toolingBy.get(control.id)!.map((t) => t.product).join(', ')}`
+                        : 'Se tient à la main — aucun outil retenu.'}
+                      {' · '}
+                      <ControlToolingModal
+                        organizationId={id}
+                        controlId={control.id}
+                        controlCode={control.code}
+                      />
                     </p>
                     {/*
                       Le registre se lit pareil quelle que soit l'origine du
