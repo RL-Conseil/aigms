@@ -659,6 +659,7 @@ export async function updateAssetLabels(_previous: FormState | null, formData: F
     .select('id')
   if (error) return { ok: false, message: explain(error) }
   if (!data?.length) return { ok: false, message: 'Votre rôle ne permet pas cette écriture.' }
+  revalidatePath(`/admin/organizations/${input.organizationId}`)
   revalidatePath(`/admin/organizations/${input.organizationId}/actifs`)
   revalidatePath(`/admin/organizations/${input.organizationId}/actifs/${input.assetId}`)
   revalidatePath('/admin/actifs-fournisseurs')
