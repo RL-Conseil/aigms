@@ -42,7 +42,7 @@ export const ROLE_DESCRIPTIONS: Record<AppRole, string> = {
   governance_officer:
     'Pilote global de la conformité IA : registre, qualification, risques, impacts, contrôles, décisions et transitions.',
   client_admin:
-    "Mêmes prérogatives de gouvernance que l'AI Governance Officer, du côté du client.",
+    "L'AI Governance Officer chez le client, quand le cabinet tient le rôle en prestation : mêmes prérogatives de gouvernance, plus le réglage des comptes de son espace. Il double l'officer, il ne le remplace pas — la règle des six rôles ne le compte pas.",
   system_owner:
     'Le métier ou chef de projet qui déploie l’outil : déclare ses usages, répond aux évaluations et dépose les preuves attendues.',
   risk_owner:
@@ -63,6 +63,7 @@ export const ROLE_DESCRIPTIONS: Record<AppRole, string> = {
 export const RACI_ROLES = [
   'system_owner',
   'governance_officer',
+  'client_admin',
   'reviewer',
   'risk_owner',
   'executive_viewer',
@@ -84,37 +85,37 @@ export const ROLE_RACI: { step: string; where: string; cells: Record<RaciRole, R
   {
     step: '1. Déclaration et inventaire',
     where: 'Cas d’usage, fiche › Avancement',
-    cells: { system_owner: 'A', governance_officer: 'R', reviewer: 'C', risk_owner: null, executive_viewer: null, auditor: 'I' },
+    cells: { system_owner: 'A', governance_officer: 'R', client_admin: 'R', reviewer: 'C', risk_owner: null, executive_viewer: null, auditor: 'I' },
   },
   {
     step: '2. Évaluation des risques',
     where: 'Fiche › Risques, Évaluation d’impact',
-    cells: { system_owner: 'R', governance_officer: 'A', reviewer: 'C', risk_owner: 'C', executive_viewer: null, auditor: 'I' },
+    cells: { system_owner: 'R', governance_officer: 'A', client_admin: 'A', reviewer: 'C', risk_owner: 'C', executive_viewer: null, auditor: 'I' },
   },
   {
     step: '3. Validation des contrôles',
     where: 'Fiche › Contrôles affectés, registre des preuves',
-    cells: { system_owner: 'I', governance_officer: 'R', reviewer: 'A', risk_owner: 'A', executive_viewer: null, auditor: 'I' },
+    cells: { system_owner: 'I', governance_officer: 'R', client_admin: 'R', reviewer: 'A', risk_owner: 'A', executive_viewer: null, auditor: 'I' },
   },
   {
     step: '4. Arbitrage IA critique',
     where: 'Fiche › Décisions, passage en production',
-    cells: { system_owner: 'I', governance_officer: 'C', reviewer: 'C', risk_owner: 'C', executive_viewer: 'A', auditor: 'I' },
+    cells: { system_owner: 'I', governance_officer: 'C', client_admin: 'C', reviewer: 'C', risk_owner: 'C', executive_viewer: 'A', auditor: 'I' },
   },
   {
     step: '5. Outillage des contrôles',
     where: 'Registre des contrôles › Outillage',
-    cells: { system_owner: 'I', governance_officer: 'R', reviewer: 'C', risk_owner: 'I', executive_viewer: null, auditor: 'I' },
+    cells: { system_owner: 'I', governance_officer: 'R', client_admin: 'R', reviewer: 'C', risk_owner: 'I', executive_viewer: null, auditor: 'I' },
   },
   {
     step: '6. Référentiel — contrôles-types et familles d’outillage',
     where: 'Administration › Référentiels',
-    cells: { system_owner: null, governance_officer: 'I', reviewer: null, risk_owner: null, executive_viewer: null, auditor: 'I' },
+    cells: { system_owner: null, governance_officer: 'I', client_admin: 'I', reviewer: null, risk_owner: null, executive_viewer: null, auditor: 'I' },
   },
   {
     step: '7. Audit de conformité',
     where: 'Journal d’audit, registres, impressions',
-    cells: { system_owner: 'I', governance_officer: 'I', reviewer: 'I', risk_owner: 'I', executive_viewer: 'I', auditor: 'A' },
+    cells: { system_owner: 'I', governance_officer: 'I', client_admin: 'I', reviewer: 'I', risk_owner: 'I', executive_viewer: 'I', auditor: 'A' },
   },
 ]
 
@@ -124,6 +125,7 @@ export const ROLE_RACI: { step: string; where: string; cells: Record<RaciRole, R
  */
 export const ASSIGNABLE_ROLES: AppRole[] = [
   'governance_officer',
+  'client_admin',
   'system_owner',
   'risk_owner',
   'reviewer',

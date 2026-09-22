@@ -169,7 +169,34 @@ export async function buildImpactStudyDocx(study: ImpactStudy, organizationName:
     para(study.conclusion ?? 'Conclusion à rédiger à l’achèvement de l’étude.', { italics: !study.conclusion, color: study.conclusion ? undefined : '7F7F7F' }),
     para(`AIPD (analyse d'impact relative à la protection des données) : ${study.dpia_required ? `requise${study.dpia_reference ? ` — référence ${study.dpia_reference}` : ' — référence à fournir'}` : 'non requise'}.`),
     para(`Achevée le : ${study.completed_at ? formatDate(study.completed_at) : '—'} · Prochaine revue : ${study.next_review_at ? formatDate(study.next_review_at) : '—'}`),
-    para(`Conduite par ${person(study.performed_by)}${study.approved_by ? ` · approuvée par ${study.approved_by}` : ''}. Généré par AIGMS le ${formatDate(new Date().toISOString())}.`, { size: 16, color: '7F7F7F' }),
+    heading('5. Signatures', HeadingLevel.HEADING_2),
+    para("Une étude d'impact se signe à deux : la méthode d'un côté, ce qui reste de l'autre.", { size: 18, color: '595959' }),
+    table([
+      new TableRow({ children: [cell('Acte', { header: true, width: 30 }), cell('Signataire', { header: true, width: 30 }), cell('Date', { header: true, width: 18 }), cell('Portée', { header: true, width: 22 })] }),
+      new TableRow({
+        children: [
+          cell('Visa de méthode'),
+          cell(study.method_signed_by ?? 'Non signé'),
+          cell(study.method_signed_at ? formatDate(study.method_signed_at) : '—'),
+          cell("L'étude est conduite correctement : périmètre, parties prenantes, domaines examinés, mesures proportionnées."),
+        ],
+      }),
+      new TableRow({
+        children: [
+          cell('Acceptation des risques résiduels'),
+          cell(study.residual_accepted_by ?? 'Non signée'),
+          cell(study.residual_accepted_at ? formatDate(study.residual_accepted_at) : '—'),
+          cell("Le Porteur de l'IA assume ce qui demeure après les mesures."),
+        ],
+      }),
+    ]),
+    ...(study.residual_statement
+      ? [para(`Ce que le Porteur assume : ${study.residual_statement}`, { size: 18 })]
+      : []),
+    ...(study.returned_at
+      ? [para(`Renvoyée à l'étude le ${formatDate(study.returned_at)} : ${study.returned_reason ?? ''}`, { size: 18, color: 'C00000' })]
+      : []),
+    para(`Conduite par ${person(study.performed_by)}. Généré par AIGMS le ${formatDate(new Date().toISOString())}.`, { size: 16, color: '7F7F7F' }),
   ]
 
   const doc = new Document({

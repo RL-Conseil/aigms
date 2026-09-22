@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { Client } from 'pg'
-import { asUser, connect, DEMO, expectFailure } from '../helpers/db'
+import { asUser, becomeUser, connect, DEMO, expectFailure } from '../helpers/db'
 
 /** 0082 : les faits déclarés — grille, qualification, fiche — atteignent les règles. */
 
@@ -52,24 +52,36 @@ describe('Faits déclarés et règles', () => {
     await asUser(db, DEMO.officerA, async (c) => {
       const { rows: uc } = await c.query<{ id: string }>(
         `insert into public.ai_use_case (tenant_id, organization_id, name, purpose, owner_user_id, accountable_user_id, involves_sensitive_data)
-         values ($1, $2, 'Cas AIPD', 'Test AIPD.', $3, $3, true) returning id`,
-        [DEMO.tenantA, DEMO.orgA, DEMO.officerA],
+         values ($1, $2, 'Cas AIPD', 'Test AIPD.', $3, $4, true) returning id`,
+        [DEMO.tenantA, DEMO.orgA, DEMO.systemOwnerA, DEMO.officerA],
       )
       const { rows: ia } = await c.query<{ id: string }>(
         `insert into public.impact_assessment (tenant_id, organization_id, use_case_id, scope_description, status)
          values ($1, $2, $3, 'Périmètre de test de l’étude d’impact.', 'in_progress') returning id`,
         [DEMO.tenantA, DEMO.orgA, uc[0]!.id],
       )
+      // Le visa de methode ne suffit pas : sans reference d'AIPD, l'achevement
+      // est refuse — et il faut les deux signatures (0091).
+      await c.query(
+        `update public.impact_assessment set status = 'awaiting_signature', conclusion = 'Effets acceptables.', method_signed_at = now() where id = $1`,
+        [ia[0]!.id],
+      )
+      // L'acceptation revient au Porteur : une meme personne ne signe pas deux fois.
+      await becomeUser(c, DEMO.systemOwnerA)
       const refused = await expectFailure(
         c,
-        `update public.impact_assessment set status = 'completed', completed_at = now(), conclusion = 'Effets acceptables.' where id = $1`,
+        `select public.accept_residual_risks($1, 'J''assume ce qui reste.')`,
         [ia[0]!.id],
       )
       expect(refused.message).toMatch(/données sensibles/)
+      await becomeUser(c, DEMO.officerA)
       await c.query(
-        `update public.impact_assessment set status = 'completed', completed_at = now(), conclusion = 'Effets acceptables.', dpia_required = true, dpia_reference = 'AIPD-2026-01' where id = $1`,
+        `update public.impact_assessment set dpia_required = true, dpia_reference = 'AIPD-2026-01' where id = $1`,
         [ia[0]!.id],
       )
+      await becomeUser(c, DEMO.systemOwnerA)
+      await c.query(`select public.accept_residual_risks($1, 'J''assume ce qui reste, sous AIPD.')`, [ia[0]!.id])
+      await becomeUser(c, DEMO.officerA)
       const { rows } = await c.query<{ status: string }>('select status from public.impact_assessment where id = $1', [ia[0]!.id])
       expect(rows[0]!.status).toBe('completed')
     })

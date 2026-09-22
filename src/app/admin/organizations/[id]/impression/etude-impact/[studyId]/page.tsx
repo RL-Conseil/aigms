@@ -130,7 +130,32 @@ export default async function PrintableImpactStudyPage({ params }: { params: Pro
       <p className="mb-2 text-[12px] leading-relaxed text-ink-800">{study.conclusion ?? <em className="text-ink-500">Conclusion à rédiger à l’achèvement de l’étude.</em>}</p>
       <p className="text-[12px] text-ink-700">AIPD : {study.dpia_required ? `requise${study.dpia_reference ? ` — référence ${study.dpia_reference}` : ' — référence à fournir'}` : 'non requise'}.</p>
       <p className="text-[12px] text-ink-700">Achevée le : {study.completed_at ? formatDate(study.completed_at) : '—'} · Prochaine revue : {study.next_review_at ? formatDate(study.next_review_at) : '—'}</p>
-      <p className="mt-2 text-[11px] text-ink-500">Conduite par {study.performed_by ?? '—'}{study.approved_by ? ` · approuvée par ${study.approved_by}` : ''}.</p>
+      <h2 className="mb-2 mt-6 text-[15px] font-semibold text-ink-900">5. Signatures</h2>
+      <p className="mb-2 text-[11px] text-ink-500">Une étude d’impact se signe à deux : la méthode d’un côté, ce qui reste de l’autre.</p>
+      <table className="doc-keep mb-3 w-full border-collapse text-[11px]">
+        <thead><tr className="border-b border-ink-300 text-left text-ink-500"><th className="py-1 pr-3 font-medium">Acte</th><th className="py-1 pr-3 font-medium">Signataire</th><th className="py-1 pr-3 font-medium">Date</th><th className="py-1 font-medium">Portée</th></tr></thead>
+        <tbody>
+          <tr className="border-b border-ink-100 align-top">
+            <td className="py-1.5 pr-3 text-ink-900">Visa de méthode</td>
+            <td className="py-1.5 pr-3 text-ink-800">{study.method_signed_by ?? 'Non signé'}</td>
+            <td className="py-1.5 pr-3 text-ink-800">{study.method_signed_at ? formatDate(study.method_signed_at) : '—'}</td>
+            <td className="py-1.5 text-ink-700">L’étude est conduite correctement : périmètre, parties prenantes, domaines examinés, mesures proportionnées.</td>
+          </tr>
+          <tr className="border-b border-ink-100 align-top">
+            <td className="py-1.5 pr-3 text-ink-900">Acceptation des risques résiduels</td>
+            <td className="py-1.5 pr-3 text-ink-800">{study.residual_accepted_by ?? 'Non signée'}</td>
+            <td className="py-1.5 pr-3 text-ink-800">{study.residual_accepted_at ? formatDate(study.residual_accepted_at) : '—'}</td>
+            <td className="py-1.5 text-ink-700">Le Porteur de l’IA assume ce qui demeure après les mesures.</td>
+          </tr>
+        </tbody>
+      </table>
+      {study.residual_statement ? (
+        <p className="mb-2 text-[12px] leading-relaxed text-ink-800">Ce que le Porteur assume : « {study.residual_statement} »</p>
+      ) : null}
+      {study.returned_at ? (
+        <p className="mb-2 text-[12px] text-ink-700">Renvoyée à l’étude le {formatDate(study.returned_at)} : {study.returned_reason}</p>
+      ) : null}
+      <p className="mt-2 text-[11px] text-ink-500">Conduite par {study.performed_by ?? '—'}.</p>
     </PrintDocument>
   )
 }

@@ -65,6 +65,9 @@ export const NOTIFICATION_KIND_LABELS: Record<string, string> = {
   use_case_review_due: 'Revue du cas d’usage',
   vendor_review_due: 'Revue fournisseur',
   impact_review_due: 'Étude d’impact',
+  impact_signature: 'Signature attendue',
+  impact_signature_late: 'Signature en retard',
+  impact_returned: 'Étude renvoyée',
 }
 
 /** Ce qui est un rappel date — a distinguer d'une simple information. */
@@ -80,4 +83,5 @@ export const REMINDER_KINDS = new Set([
   'use_case_review_due',
   'vendor_review_due',
   'impact_review_due',
+  'impact_signature_late',
 ])
