@@ -1140,6 +1140,8 @@ export default async function UseCasePage({
                   riskCount={risks?.length ?? 0}
                   people={people}
                   controls={treatmentChoices}
+                  defaultOwnerUserId={useCase.accountable_user_id ?? useCase.owner_user_id}
+                  criticality={useCase.criticality}
                 />
                 <RiskNote />
               </span>
@@ -1208,7 +1210,7 @@ export default async function UseCasePage({
                           <p className="text-xs text-ink-500">
                             L’acceptation de ce risque revient à{' '}
                             <strong className="font-medium text-ink-700">
-                              {people.find((p) => p.id === risk.owner_user_id)?.label ?? 'son responsable désigné'}
+                              {people.find((p) => p.id === risk.owner_user_id)?.label ?? 'qui en répond'}
                             </strong>
                             , en son nom.
                           </p>

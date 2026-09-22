@@ -65,3 +65,14 @@ case « obligations de transparence », jusque-là décorative, propose HUM-006
 Le jalon Production ne gagne aucune précondition : celles qui existent
 suffisent dès que les faits remontent. Son détail dit désormais **pourquoi**
 l'évaluation d'impact est exigée.
+
+## Complément — 25 septembre 2026 (migration 0087)
+
+« Responsable du risque » se confondait avec le responsable du traitement.
+Deux rôles distincts : **qui répond du risque** — désigné à l'identification,
+seul à pouvoir l'accepter (`app.guard_risk_acceptance`), au sens du *risk
+owner* d'ISO 31000 — et **qui exécute la mesure**, désigné au traitement, que
+l'action suit. Le champ est renommé « Qui répond de ce risque », pré-rempli
+avec le responsable redevable du cas d'usage, et dit ce qu'il engage : sur un
+risque élevé ou critique, l'acceptation exige en plus une décision approuvée
+par le Comité de direction. Aucune règle ne change.
