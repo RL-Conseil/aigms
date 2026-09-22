@@ -102,3 +102,63 @@ export async function setCurrentOrganization(
   revalidatePath('/admin', 'layout')
   return { ok: true, message: 'Organisation courante enregistrée.' }
 }
+
+// -----------------------------------------------------------------------------
+// Comment je veux etre prevenu
+// -----------------------------------------------------------------------------
+/**
+ * La preference vit par personne : l'administration peut la poser a la
+ * declaration du compte et la retirer ensuite, chacun la regle pour soi. La
+ * politique RLS decide qui peut ecrire quelle ligne ; l'action ne la double
+ * pas.
+ */
+const notificationSchema = z.object({
+  userId: z.string().uuid(),
+  emailEnabled: z.coerce.boolean(),
+  immediateEnabled: z.coerce.boolean(),
+  digest: z.enum(['none', 'daily', 'weekly']),
+})
+
+export async function saveNotificationPreference(
+  _previous: ProfileState | null,
+  formData: FormData,
+): Promise<ProfileState> {
+  const parsed = notificationSchema.safeParse({
+    userId: formData.get('userId'),
+    emailEnabled: formData.get('emailEnabled') === 'on',
+    immediateEnabled: formData.get('immediateEnabled') === 'on',
+    digest: formData.get('digest') ?? 'daily',
+  })
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0]?.message ?? 'Formulaire incomplet.' }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.from('notification_preference').upsert(
+    {
+      user_id: parsed.data.userId,
+      email_enabled: parsed.data.emailEnabled,
+      immediate_enabled: parsed.data.immediateEnabled,
+      digest: parsed.data.digest,
+    },
+    { onConflict: 'user_id' },
+  )
+
+  if (error) {
+    return {
+      ok: false,
+      message: error.message.includes('row-level security')
+        ? 'Votre rôle ne permet pas de régler les notifications de cette personne.'
+        : `Enregistrement refusé : ${error.message}`,
+    }
+  }
+
+  revalidatePath('/admin/parametres')
+  revalidatePath('/admin/comptes')
+  return {
+    ok: true,
+    message: parsed.data.emailEnabled
+      ? 'Notifications enregistrées.'
+      : 'Notifications par courriel désactivées. Les alertes restent lisibles dans « Mes alertes ».',
+  }
+}

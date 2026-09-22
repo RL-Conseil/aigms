@@ -225,6 +225,7 @@ const accountSchema = z.object({
   jobTitle: z.string().trim().max(120).optional().or(z.literal('')),
   role: z.enum(ASSIGNABLE_ROLES as [AppRole, ...AppRole[]]),
   organizationId: z.string().uuid().optional().or(z.literal('')),
+  emailNotifications: z.coerce.boolean(),
   password: z
     .string()
     .min(12, 'Le mot de passe provisoire doit compter au moins douze caractères.')
@@ -243,6 +244,7 @@ export async function createAccount(_previous: Result | null, formData: FormData
     jobTitle: formData.get('jobTitle') ?? '',
     role: formData.get('role'),
     organizationId: formData.get('organizationId') ?? '',
+    emailNotifications: formData.get('emailNotifications') === 'on',
     password: formData.get('password'),
   })
 
@@ -250,7 +252,7 @@ export async function createAccount(_previous: Result | null, formData: FormData
     return { ok: false, message: parsed.error.issues[0]?.message ?? 'Formulaire incomplet.' }
   }
 
-  const { email, fullName, jobTitle, role, organizationId, password } = parsed.data
+  const { email, fullName, jobTitle, role, organizationId, emailNotifications, password } = parsed.data
 
   // Seul usage de la cle service_role : la creation du compte d'authentification.
   // Sans la cle sur cet environnement, l'action le dit — plutot que de laisser
@@ -287,6 +289,15 @@ export async function createAccount(_previous: Result | null, formData: FormData
 
   if (jobTitle) {
     await supabase.from('user_profile').update({ job_title: jobTitle }).eq('id', created.user.id)
+  }
+
+  // Comment cette personne sera prevenue. Sans ligne, la regle par defaut
+  // s'applique : courriel active, synthese quotidienne.
+  if (!emailNotifications) {
+    await supabase.from('notification_preference').upsert(
+      { user_id: created.user.id, email_enabled: false, immediate_enabled: false, digest: 'none' },
+      { onConflict: 'user_id' },
+    )
   }
 
   const { error: membershipError } = await supabase.from('membership').insert({
