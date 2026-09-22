@@ -15,6 +15,11 @@ connecteur ensuite (même fonction en base).
   L'import est une *reprise de données*, comme l'import d'un référentiel ; les
   rôles de gouvernance déclarent un à un ce dont ils répondent, ils
   n'importent pas (migration 0062).
+- **Administration › Actifs et fournisseurs** (`/admin/actifs-fournisseurs`,
+  22 septembre 2026) : l'endroit central. Toutes les organisations, filtre par
+  organisation, nature et texte ; la fiche d'un actif ou d'un fournisseur se
+  corrige d'un crayon avec le même formulaire que sur le registre ; l'ajout et
+  l'import se font dans l'organisation choisie dans le filtre.
 
 L'organisation doit être opérationnelle (six rôles tenus, migration 0056) :
 l'import écrit des objets de gouvernance, la règle s'applique.
