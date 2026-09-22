@@ -14,13 +14,13 @@ Version 1.0 — 7 septembre 2026
 | 5 — AI Impact Assessment | parties prenantes, constats, mesures, revue | **Terminé** |
 | 6 — Human Oversight | autonomie, responsable, déclencheurs, autorité d'arrêt | **Terminé** |
 | 7 — Controls / Requirements / Mapping | référentiels, exigences, contrôles, mapping N:N, applicabilité | **Terminé** |
-| 8 — Evidence | dépôt, propriétaire, fraîcheur, validation, rattachement | **Partiel** — le stockage de fichiers Supabase Storage n'est pas câblé |
+| 8 — Evidence | dépôt, propriétaire, fraîcheur, validation, rattachement | **Terminé** — dépôt de fichier dans le bucket `evidence`, empreinte SHA-256, téléchargement contrôlé, renouvellement et remplacement (0028, 0029) |
 | 9 — Decision Register + gates | décisions, conditions, liens, contrôles serveur de transition | **Terminé** |
 | 10 — Vendor Governance | criticité, contrats, sécurité, réversibilité, revue | **Terminé** (côté données) |
 | 11 — Change + Reassessment Engine | demande, screening, verdict, réouverture | **Terminé** |
 | 12 — Incident / CAPA | incident, confinement, cause, CAPA, efficacité | **Terminé** (côté données) |
 | 13 — OPERATE Dashboard | revues dues, risques, décisions, preuves, actions, incidents | **Terminé** |
-| 14 — Audit / Management Review | constats, revue de direction, export | **Non commencé** |
+| 14 — Audit / Management Review | constats, revue de direction, export | **Terminé** : revues de gouvernance (comité, direction) à la cadence calculée, ordre du jour généré, présents attendus, compte rendu déposé comme preuve, annulation motivée, impression (0067, 0070) ; journal d'audit par organisation, filtrable et imprimable (0077) |
 | 15 — Connector Framework | contrat abstrait, lecture seule, fraîcheur | **Partiel** : `governance_connector` porte le contrat d'intégration — source, capacités, habilitations, fréquence, fraîcheur, erreurs — et l'écran d'administration le configure. Aucune intégration réelle n'est encore branchée ([ADR-0009](../adr/ADR-0009-connector-secrets.md)) |
 | — Référentiels de contrôles | import, validation, publication d'une bibliothèque de contrôles-types | **Terminé** : flux complet de `IMPORT_SPEC.md`, éprouvé sur le paquet AIGMS Control Framework v0.1 — 12 domaines, 120 contrôles |
 
