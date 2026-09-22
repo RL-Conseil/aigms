@@ -37,12 +37,10 @@ export function ToolingForm({
   organizationId,
   family,
   vendors,
-  connectors,
 }: {
   organizationId: string
   family: ToolFamily
   vendors: { id: string; name: string }[]
-  connectors: { id: string; name: string }[]
 }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(saveTooling, null)
   const errors = errorsOf(state)
@@ -84,24 +82,20 @@ export function ToolingForm({
             />
           </Field>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Fournisseur" htmlFor={`vendor-${family.code}`} optional hint="S’il figure au registre des tiers : sa revue conditionne la production.">
-              <select id={`vendor-${family.code}`} name="vendorId" defaultValue={declared?.vendor?.id ?? ''} className={FIELD}>
-                <option value="">—</option>
-                {vendors.map((v) => (
-                  <option key={v.id} value={v.id}>{v.name}</option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Connecteur" htmlFor={`connector-${family.code}`} optional hint="Celui qui lira les preuves chez ce produit, quand il existe.">
-              <select id={`connector-${family.code}`} name="connectorId" defaultValue={declared?.connector?.id ?? ''} className={FIELD}>
-                <option value="">—</option>
-                {connectors.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </Field>
-          </div>
+          {/*
+            Le connecteur ne se choisit pas ici : brancher une source releve
+            de l'administration de la plateforme, et la maniere dont un
+            fournisseur ouvrira son API pour tirer les preuves reste a poser.
+            La colonne existe en base, l'ecran ne la propose pas encore.
+          */}
+          <Field label="Fournisseur" htmlFor={`vendor-${family.code}`} optional hint="S’il figure au registre des tiers : sa revue conditionne la production.">
+            <select id={`vendor-${family.code}`} name="vendorId" defaultValue={declared?.vendor?.id ?? ''} className={FIELD}>
+              <option value="">—</option>
+              {vendors.map((v) => (
+                <option key={v.id} value={v.id}>{v.name}</option>
+              ))}
+            </select>
+          </Field>
 
           <Field label="Note" htmlFor={`note-${family.code}`} optional hint="Version, périmètre, ce qu’il couvre et ce qu’il ne couvre pas.">
             <textarea id={`note-${family.code}`} name="note" rows={2} defaultValue={declared?.note ?? ''} className={FIELD} />
@@ -187,7 +181,7 @@ export function ControlToolingForm({
       trigger={view.retained.length ? `Se tient avec ${view.retained.length}` : 'Avec quoi il se tient'}
       triggerClassName="text-xs text-brand-600 hover:underline"
       title={`Avec quoi ${controlCode} se tient`}
-      description="Le référentiel suggère une famille d’outillage ; vous retenez le produit employé chez vous. Le contrôle-type n’est pas modifié."
+      description="Le référentiel AIGMS suggère une famille d’outillage ; vous retenez le produit employé chez vous. Le contrôle-type n’est pas modifié."
     >
       {() => (
         <form action={formAction} className="flex flex-col gap-4">
@@ -196,18 +190,12 @@ export function ControlToolingForm({
 
           {view.suggested.length ? (
             <div className="rounded-md bg-ink-100 px-3.5 py-2.5 text-xs leading-relaxed text-ink-600">
-              Le référentiel suggère :{' '}
+              Le référentiel AIGMS suggère :{' '}
               {view.suggested.map((s) => s.acronym ?? s.name).join(', ')}.
-              {view.suggested.some((s) => !s.declared) ? (
-                <span className="mt-1 block text-warn-600">
-                  Certaines de ces familles ne portent pas encore de produit : les déclarer depuis
-                  « Outillage » les rendra disponibles ici.
-                </span>
-              ) : null}
             </div>
           ) : (
             <p className="rounded-md bg-ink-100 px-3.5 py-2.5 text-xs text-ink-600">
-              Le référentiel ne suggère aucune famille pour ce contrôle — ou ce contrôle est libre,
+              Le référentiel AIGMS ne suggère aucune famille pour ce contrôle — ou ce contrôle est libre,
               sans lien vers un contrôle-type. Retenez ce qui vaut chez vous.
             </p>
           )}
@@ -237,8 +225,8 @@ export function ControlToolingForm({
             </fieldset>
           ) : (
             <p className="text-sm text-warn-600">
-              Aucun outil déclaré pour cette organisation. La carte d’outillage se tient depuis
-              « Outillage », au registre.
+              Aucun outil déclaré pour cette organisation. La carte d’outillage est gérée depuis
+              « Outillage », au registre des contrôles.
             </p>
           )}
 
