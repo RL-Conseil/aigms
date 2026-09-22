@@ -29,20 +29,17 @@ export default async function ToolingPage({
   const { vue } = await searchParams
   const supabase = await createClient()
 
-  const [{ data: organization }, { data: mapData }, { data: vendors }, { data: connectors }] =
-    await Promise.all([
-      supabase.from('organization').select('id, name').eq('id', id).maybeSingle(),
-      supabase.rpc('organization_tooling_map', { p_organization_id: id }),
-      supabase.from('vendor').select('id, name').eq('organization_id', id).order('name'),
-      supabase.from('governance_connector').select('id, display_name').order('display_name'),
-    ])
+  const [{ data: organization }, { data: mapData }, { data: vendors }] = await Promise.all([
+    supabase.from('organization').select('id, name').eq('id', id).maybeSingle(),
+    supabase.rpc('organization_tooling_map', { p_organization_id: id }),
+    supabase.from('vendor').select('id, name').eq('organization_id', id).order('name'),
+  ])
   if (!organization) notFound()
 
   const families = ((mapData ?? { families: [] }) as { families: ToolFamily[] }).families
   const declared = families.filter((f) => f.declared)
   const expected = families.filter((f) => f.controls > 0)
   const missing = expected.filter((f) => !f.declared)
-  const connected = declared.filter((f) => f.declared?.connector)
 
   const view = vue === 'toutes' ? 'toutes' : vue === 'declarees' ? 'declarees' : 'attendues'
   const shown =
@@ -79,8 +76,12 @@ export default async function ToolingPage({
               refaire.
             </p>
             <p>
-              Chaque produit déclaré est un <strong className="font-medium text-ink-800">connecteur
-              candidat</strong> : c’est le chemin vers la collecte automatique des preuves.
+              <strong className="font-medium text-ink-800">Qui déclare quoi.</strong> L’outillage se
+              déclare ici par l’AI Governance Officer, avec l’Expert (DSI, RSSI) qui le connaît —
+              c’est le RACI. En revanche, <strong className="font-medium text-ink-800">configurer un
+              connecteur</strong> chez un fournisseur, pour en tirer les preuves, est une tâche
+              d’administration de la plateforme : chaque produit déclaré ici en est un candidat, et
+              ce branchement reste à venir.
             </p>
           </div>
         </InfoTip>
@@ -90,7 +91,7 @@ export default async function ToolingPage({
         <Stat label="Familles attendues par vos contrôles" value={expected.length} total={families.length} />
         <Stat label="Produits déclarés" value={declared.length} tone={declared.length ? 'ok' : 'warn'} />
         <Stat label="Attendues sans produit" value={missing.length} tone={missing.length ? 'warn' : 'ok'} />
-        <Stat label="Reliés à un connecteur" value={connected.length} total={declared.length} tone={connected.length ? 'ok' : 'neutral'} />
+        <Stat label="Retenus par au moins un contrôle" value={declared.filter((f) => (f.declared?.used_by ?? 0) > 0).length} total={declared.length} tone="neutral" />
       </StatStrip>
 
       <div className="mt-5 mb-5 flex flex-wrap items-center gap-3">
@@ -131,7 +132,6 @@ export default async function ToolingPage({
                             {family.controls} contrôle(s) attendent cette famille
                           </Badge>
                         ) : null}
-                        {d?.connector ? <Badge tone="info">Connecteur</Badge> : null}
                       </div>
                       <p className="text-xs text-ink-500">
                         {family.domain ?? family.code}
@@ -141,7 +141,6 @@ export default async function ToolingPage({
                             {' · '}
                             <strong className="font-medium text-ink-800">{d.product}</strong>
                             {d.vendor ? ` · ${d.vendor.name}` : ''}
-                            {d.connector ? ` · ${d.connector.name}` : ''}
                             {d.used_by ? ` · retenu par ${d.used_by} contrôle(s)` : ' · retenu par aucun contrôle'}
                           </>
                         ) : (
@@ -159,12 +158,7 @@ export default async function ToolingPage({
                       ) : null}
                     </div>
                     <span className="flex shrink-0 items-center gap-3">
-                      <ToolingForm
-                        organizationId={id}
-                        family={family}
-                        vendors={vendors ?? []}
-                        connectors={(connectors ?? []).map((c) => ({ id: c.id, name: c.display_name }))}
-                      />
+                      <ToolingForm organizationId={id} family={family} vendors={vendors ?? []} />
                       {d ? (
                         <RemoveToolingButton organizationId={id} toolingId={d.id} product={d.product} usedBy={d.used_by} />
                       ) : null}

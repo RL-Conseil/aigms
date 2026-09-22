@@ -38,7 +38,6 @@ const toolingSchema = z.object({
   toolCode: z.string().trim().min(2).max(64),
   product: z.string().trim().min(2, 'Nommer le produit employé.').max(160),
   vendorId: z.string().uuid().optional().or(z.literal('')),
-  connectorId: z.string().uuid().optional().or(z.literal('')),
   note: z.string().trim().max(1000).optional().or(z.literal('')),
 })
 
@@ -54,7 +53,6 @@ export async function saveTooling(_previous: FormState | null, formData: FormDat
     toolCode: formData.get('toolCode'),
     product: formData.get('product'),
     vendorId: formData.get('vendorId') ?? '',
-    connectorId: formData.get('connectorId') ?? '',
     note: formData.get('note') ?? '',
   })
   if (!parsed.success) return firstIssues(parsed.error)
@@ -74,7 +72,6 @@ export async function saveTooling(_previous: FormState | null, formData: FormDat
     tool_code: d.toolCode,
     product: d.product,
     vendor_id: d.vendorId || null,
-    connector_id: d.connectorId || null,
     note: d.note || null,
   }
 
@@ -84,12 +81,10 @@ export async function saveTooling(_previous: FormState | null, formData: FormDat
   if (error) return { ok: false, message: explain(error) }
 
   paths(d.organizationId)
-  return {
-    ok: true,
-    message: d.connectorId
-      ? `${d.product} enregistré. Son connecteur pourra en lire les preuves.`
-      : `${d.product} enregistré. Aucun connecteur : les preuves s’y déposent à la main pour l’instant.`,
-  }
+  // Brancher une source pour en tirer les preuves reste a venir, et relevera
+  // de l'administration de la plateforme : la colonne existe, l'ecran ne la
+  // propose pas.
+  return { ok: true, message: `${d.product} enregistré. Les contrôles peuvent le retenir.` }
 }
 
 export async function removeTooling(organizationId: string, toolingId: string): Promise<FormState> {

@@ -36,6 +36,12 @@ ne sait pas où prendre sa preuve.
    l'éditeur.
 4. **Deux lignes de RACI** : *Outillage des contrôles* (R officer, C Expert —
    DSI/RSSI, qui le connaît), *Référentiel* (donnée d'éditeur, I pour tous).
+5. **Le connecteur ne se choisit pas ici.** Déclarer l'outillage relève des
+   rôles de gouvernance ; **configurer un connecteur** chez un fournisseur,
+   pour en tirer les preuves par son API, est une tâche d'administration de la
+   plateforme — et la manière dont cela s'articulera avec le mode hébergé
+   reste à poser. La colonne `connector_id` existe en base ; l'écran ne la
+   propose pas.
 
 ## Conséquences
 
