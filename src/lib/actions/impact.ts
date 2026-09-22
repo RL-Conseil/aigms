@@ -75,12 +75,17 @@ export async function openImpactStudy(_previous: FormState | null, formData: For
     .maybeSingle()
   if (existing) redirect(`/admin/organizations/${useCase.organization_id}/etudes-impact/${existing.id}`)
 
+  // Des donnees personnelles en jeu — fiche ou actif rattache (0080) : l'AIPD
+  // se pre-coche, l'officer la confirme ou la decoche en le disant.
+  const { data: personalData } = await supabase.rpc('use_case_personal_data', { p_use_case_id: parsed.data.useCaseId })
+
   const { data: created, error } = await supabase
     .from('impact_assessment')
     .insert({
       tenant_id: useCase.tenant_id,
       organization_id: useCase.organization_id,
       use_case_id: parsed.data.useCaseId,
+      dpia_required: Boolean(personalData),
       scope_description: useCase.purpose?.trim() || `Étude d’impact de « ${useCase.name} » : effets sur les personnes, les groupes et la société.`,
       methodology: 'ISO/IEC 42005',
       status: 'in_progress',

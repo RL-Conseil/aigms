@@ -143,6 +143,8 @@ export type ImpactStudy = {
     affected_persons: string | null
     data_description: string | null
     involves_personal_data: boolean
+    /** Fiche ou actif rattache (0080). */
+    personal_data?: boolean
     involves_vulnerable_persons: boolean
     owner: string | null
     accountable: string | null

@@ -288,8 +288,35 @@ export async function linkAssetToUseCase(
     return { ok: false, message: explain(error) }
   }
 
+  // Ce que l'actif apporte au cas d'usage (0080) : le dire au moment du geste.
+  const { data: effectsData } = await supabase.rpc('asset_link_effects', {
+    p_use_case_id: parsed.data.useCaseId,
+    p_asset_id: parsed.data.targetId,
+  })
+  const effects = (effectsData ?? null) as {
+    personal_data: boolean
+    vendor: { name: string; review_status: string; already_linked: boolean } | null
+    impact_required_now: boolean
+  } | null
+  const brought: string[] = []
+  if (effects?.personal_data) {
+    brought.push(
+      effects.impact_required_now
+        ? 'il contient des données personnelles — l’évaluation d’impact est exigée, l’AIPD se pré-coche, les contrôles « données » se proposent'
+        : 'il contient des données personnelles',
+    )
+  }
+  if (effects?.vendor && !['approved', 'approved_with_conditions'].includes(effects.vendor.review_status)) {
+    brought.push(`son fournisseur ${effects.vendor.name} n’a pas de revue approuvée — précondition de production`)
+  } else if (effects?.vendor && !effects.vendor.already_linked) {
+    brought.push(`son fournisseur ${effects.vendor.name} compte désormais parmi les tiers impliqués`)
+  }
+
   revalidatePath(`/admin/use-cases/${parsed.data.useCaseId}`)
-  return { ok: true, message: 'Actif rattaché au cas d’usage.' }
+  return {
+    ok: true,
+    message: brought.length ? `Actif rattaché. Ce qu’il apporte : ${brought.join(' ; ')}.` : 'Actif rattaché au cas d’usage.',
+  }
 }
 
 export async function linkVendorToUseCase(
