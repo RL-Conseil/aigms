@@ -400,11 +400,17 @@ export function RiskPanel({
   riskCount,
   people,
   controls = [],
+  defaultOwnerUserId,
+  criticality,
 }: {
   useCaseId: string
   organizationId: string
   riskCount: number
   people: { id: string; label: string }[]
+  /** Qui repond du cas d'usage : le responsable redevable, a defaut le porteur. */
+  defaultOwnerUserId?: string | null
+  /** Eleve ou critique : l'acceptation exigera en plus une decision du Comite. */
+  criticality?: string | null
   /** Les controles applicables a ce cas d'usage : l'un d'eux peut traiter le risque des l'identification. */
   controls?: { id: string; code: string; name: string; status: string }[]
 }) {
@@ -458,14 +464,35 @@ export function RiskPanel({
             </select>
           </Field>
 
-          <Field label="Responsable du risque" htmlFor="risk-owner" error={errors.ownerUserId}>
-            <select id="risk-owner" name="ownerUserId" required defaultValue="" className={FIELD}>
+          {/*
+            Ce n'est pas la personne qui exécute — le traitement designe son
+            propre responsable. C'est celle qui REPOND du risque : elle seule
+            pourra l'accepter, et la base le lui reserve.
+          */}
+          <Field
+            label="Qui répond de ce risque"
+            htmlFor="risk-owner"
+            error={errors.ownerUserId}
+            hint={
+              criticality === 'high' || criticality === 'critical'
+                ? 'Cette personne seule pourra l’accepter — et, ce cas d’usage étant de criticité élevée, une décision approuvée par le Comité de direction sera exigée en plus. Qui exécute la mesure se désigne au traitement.'
+                : 'Cette personne seule pourra l’accepter. Qui exécute la mesure se désigne au traitement, pas ici.'
+            }
+          >
+            <select
+              id="risk-owner"
+              name="ownerUserId"
+              required
+              defaultValue={defaultOwnerUserId ?? ''}
+              className={FIELD}
+            >
               <option value="" disabled>
                 Choisir…
               </option>
               {people.map((person) => (
                 <option key={person.id} value={person.id}>
                   {person.label}
+                  {person.id === defaultOwnerUserId ? ' — répond du cas d’usage' : ''}
                 </option>
               ))}
             </select>

@@ -136,6 +136,16 @@ export function RiskNote() {
         d’autre approuve.
       </p>
       <p>
+        <strong className="font-medium text-ink-800">Deux responsables, deux rôles.</strong>{' '}
+        Celui qui <em>répond du risque</em> est désigné à l’identification : lui seul pourra
+        l’accepter, et il est proposé par défaut comme le responsable redevable du cas d’usage —
+        c’est la personne qui a l’autorité de le gérer, au sens d’ISO 31000. Celui qui{' '}
+        <em>exécute la mesure</em> se désigne au traitement, et c’est lui que l’action suit. Sur
+        un risque élevé ou critique, l’acceptation exige en plus une décision approuvée par le
+        Comité de direction : la direction tranche là où cela l’engage, sans porter les quarante
+        risques du registre.
+      </p>
+      <p>
         Un risque ni traité ni accepté bloque le passage en production s’il est élevé ou
         critique — et passe inaperçu s’il ne l’est pas : ne jamais laisser un risque sans
         décision. L’évaluation d’impact, elle, ne dépend pas des risques mais des faits du cas

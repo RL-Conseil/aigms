@@ -139,7 +139,7 @@ test('un cas d’usage se déclare, se trie, se classifie et reçoit un risque',
       'Le regroupement fusionne deux motifs distincts, une cause réelle passe inaperçue et l’action corrective se trompe de cible.',
     )
   await risk.getByLabel('Catégorie').selectOption('accuracy_robustness')
-  await risk.getByLabel('Responsable du risque').selectOption({ index: 1 })
+  await risk.getByLabel('Qui répond de ce risque').selectOption({ index: 1 })
   await risk.getByRole('button', { name: 'Enregistrer le risque' }).click()
   await expect(risk.getByRole('status')).toContainText('Risque enregistré et coté')
 
