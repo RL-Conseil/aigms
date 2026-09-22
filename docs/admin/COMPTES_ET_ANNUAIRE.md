@@ -36,6 +36,17 @@ vercel env add SUPABASE_SERVICE_ROLE_KEY development  # idem
 vercel env add SUPABASE_SERVICE_ROLE_KEY production   # colle la clé production
 ```
 
+**Ou, sans manipuler la clé** — elle est prise à sa source et posée sans
+jamais s'afficher, avec les deux jetons de `.env.local` :
+
+```
+npm run secrets:vercel                # préprod → preview et development
+npm run secrets:vercel -- --production # y ajoute la production
+```
+
+Le script pose aussi `CRON_SECRET`, que la tâche planifiée des alertes exige
+(`/api/alertes/envoi`). Voir `scripts/poser-secrets-vercel.mjs`.
+
 Puis redéployer (`npm run deploy:preview`). **Sans la clé**, « Déclarer le
 compte » répond : *Déclaration impossible : la clé de service n'est pas
 configurée sur cet environnement.* C'est l'erreur rencontrée sur la Preview le
