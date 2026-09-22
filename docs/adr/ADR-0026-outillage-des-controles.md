@@ -51,4 +51,9 @@ ne sait pas où prendre sa preuve.
   l'organisation** et encore sans produit — c'est la liste à remplir.
 - Un produit rattaché à un fournisseur sans revue approuvée le dit : la revue
   tiers reste une précondition de production.
-- La couche « outillage » du graphe de gouvernance reste à faire.
+- Le graphe de gouvernance porte deux couches de plus (0089) : **actif d'IA**
+  (entre le cas d'usage et le risque) et **outillage** (après le contrôle),
+  avec les liens « emploie », « mesure technique posée sur » et « se tient
+  avec ». Huit couches, masquables une à une : le graphe montre ce qui se
+  partage — un actif employé par deux usages, un produit qui tient cinq
+  contrôles.

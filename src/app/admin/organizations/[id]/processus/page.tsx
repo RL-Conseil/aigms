@@ -400,7 +400,7 @@ export default async function ProcessMapPage({
           <div className="lg:col-span-3">
             <Card
               title="Graphe de gouvernance"
-              subtitle="Ce que l’arbre ne montre pas : un contrôle partagé, une preuve mutualisée, un risque dont rien ne redescend vers une preuve."
+              subtitle="Ce que l’arbre ne montre pas : un contrôle partagé, un actif employé par deux usages, un produit qui tient cinq contrôles, un risque dont rien ne redescend vers une preuve."
             >
               <ControlGraph
                 graph={graph}

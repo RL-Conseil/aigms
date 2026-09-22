@@ -21,12 +21,21 @@ import '@xyflow/react/dist/style.css'
  * unique adossee a plusieurs controles, un risque dont rien ne redescend vers
  * une preuve. C'est la seule raison d'etre de ce graphe — pas la decoration.
  *
- * Les six couches se lisent de gauche a droite, dans l'ordre ou la gouvernance
- * se construit : ce que fait l'organisation, puis ce qu'elle y met d'IA, puis ce
- * que cela expose, puis ce qui le tient, puis ce qui le demontre.
+ * Les huit couches se lisent de gauche a droite, dans l'ordre ou la
+ * gouvernance se construit : ce que fait l'organisation, ce qu'elle y met
+ * d'IA, ce que cela EMPLOIE, ce que cela expose, ce qui le tient, AVEC QUOI
+ * cela se tient, et ce qui le demontre.
  */
 
-export type GraphLayer = 'process' | 'activity' | 'use_case' | 'risk' | 'control' | 'evidence'
+export type GraphLayer =
+  | 'process'
+  | 'activity'
+  | 'use_case'
+  | 'asset'
+  | 'risk'
+  | 'control'
+  | 'tooling'
+  | 'evidence'
 
 export type GraphNode = {
   id: string
@@ -42,7 +51,7 @@ export type GraphEdge = {
   id: string
   source: string
   target: string
-  kind: 'structure' | 'exposure' | 'applicability' | 'mitigation' | 'evidence'
+  kind: 'structure' | 'exposure' | 'applicability' | 'mitigation' | 'evidence' | 'employment' | 'measure' | 'tooling'
   meta?: Record<string, unknown>
 }
 
@@ -52,8 +61,10 @@ const LAYER_ORDER: GraphLayer[] = [
   'process',
   'activity',
   'use_case',
+  'asset',
   'risk',
   'control',
+  'tooling',
   'evidence',
 ]
 
@@ -61,8 +72,10 @@ const LAYER_LABELS: Record<GraphLayer, string> = {
   process: 'Processus',
   activity: 'Activité',
   use_case: 'Cas d’usage',
+  asset: 'Actif d’IA',
   risk: 'Risque',
   control: 'Contrôle',
+  tooling: 'Outillage',
   evidence: 'Preuve',
 }
 
@@ -72,6 +85,9 @@ const EDGE_LABELS: Record<GraphEdge['kind'], string> = {
   applicability: 'Applicable à',
   mitigation: 'Désigné pour traiter',
   evidence: 'Démontré par',
+  employment: 'Emploie',
+  measure: 'Mesure technique posée sur',
+  tooling: 'Se tient avec',
 }
 
 // Le ton d'un noeud dit ce qu'il faut en penser, jamais ce qu'il est.
@@ -89,6 +105,11 @@ const EDGE_STYLE: Record<GraphEdge['kind'], { stroke: string; dash?: string; wid
   applicability: { stroke: 'oklch(0.84 0.02 250)', dash: '4 4', width: 1.5 },
   mitigation: { stroke: 'oklch(0.52 0.09 200)', width: 2.5 },
   evidence: { stroke: 'oklch(0.52 0.13 155)', width: 1.5 },
+  // Ce que l'IA emploie, et ce qui tient le controle : deux liens techniques,
+  // traces plus discrets que les liens de gouvernance.
+  employment: { stroke: 'oklch(0.68 0.115 195)', width: 1.5 },
+  measure: { stroke: 'oklch(0.52 0.09 200)', dash: '3 3', width: 1.5 },
+  tooling: { stroke: 'oklch(0.62 0.14 75)', dash: '2 3', width: 1.5 },
 }
 
 const NODE_WIDTH = 210
@@ -96,8 +117,10 @@ const COLUMN_GAP = 264
 const ROW_GAP = 74
 
 type Toggles = {
+  asset: boolean
   risk: boolean
   control: boolean
+  tooling: boolean
   evidence: boolean
   emptyActivities: boolean
 }
@@ -112,8 +135,10 @@ export function ControlGraph({
   highlightEdges?: string[]
 }) {
   const [toggles, setToggles] = useState<Toggles>({
+    asset: true,
     risk: true,
     control: true,
+    tooling: true,
     evidence: true,
     emptyActivities: false,
   })
@@ -127,8 +152,10 @@ export function ControlGraph({
 
     // --- Filtrage des couches ------------------------------------------------
     const hiddenLayers = new Set<GraphLayer>()
+    if (!toggles.asset) hiddenLayers.add('asset')
     if (!toggles.risk) hiddenLayers.add('risk')
     if (!toggles.control) hiddenLayers.add('control')
+    if (!toggles.tooling) hiddenLayers.add('tooling')
     if (!toggles.evidence) hiddenLayers.add('evidence')
 
     let kept = allNodes.filter((n) => !hiddenLayers.has(n.layer))
@@ -260,6 +287,11 @@ export function ControlGraph({
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <span className="text-xs font-medium text-ink-500">Couches</span>
         <Toggle
+          label={`Actifs${counts.asset ? ` (${counts.asset})` : ''}`}
+          checked={toggles.asset}
+          onChange={(v) => setToggles((t) => ({ ...t, asset: v }))}
+        />
+        <Toggle
           label={`Risques${counts.risk ? ` (${counts.risk})` : ''}`}
           checked={toggles.risk}
           onChange={(v) => setToggles((t) => ({ ...t, risk: v }))}
@@ -268,6 +300,11 @@ export function ControlGraph({
           label={`Contrôles${counts.control ? ` (${counts.control})` : ''}`}
           checked={toggles.control}
           onChange={(v) => setToggles((t) => ({ ...t, control: v }))}
+        />
+        <Toggle
+          label={`Outillage${counts.tooling ? ` (${counts.tooling})` : ''}`}
+          checked={toggles.tooling}
+          onChange={(v) => setToggles((t) => ({ ...t, tooling: v }))}
         />
         <Toggle
           label={`Preuves${counts.evidence ? ` (${counts.evidence})` : ''}`}
