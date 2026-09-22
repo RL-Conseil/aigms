@@ -119,6 +119,7 @@ export async function createVendor(
 
   if (error) return { ok: false, message: explain(error) }
 
+  revalidatePath('/admin/actifs-fournisseurs')
   revalidatePath(`/admin/organizations/${input.organizationId}`)
   return {
     ok: true,
@@ -236,6 +237,7 @@ export async function createAsset(
   if (error) return { ok: false, message: explain(error) }
 
   revalidatePath(`/admin/organizations/${input.organizationId}`)
+  revalidatePath('/admin/actifs-fournisseurs')
   return { ok: true, message: `${input.name} inscrit au registre des actifs.` }
 }
 
@@ -589,6 +591,7 @@ export async function updateVendorLabels(
   if (!data?.length) return { ok: false, message: 'Votre rôle ne permet pas cette écriture.' }
 
   revalidatePath(`/admin/organizations/${input.organizationId}`)
+  revalidatePath('/admin/actifs-fournisseurs')
   return { ok: true, message: 'Fiche corrigée. La revue tiers, elle, reste ce qu’elle était.' }
 }
 
@@ -653,6 +656,7 @@ export async function updateAssetLabels(_previous: FormState | null, formData: F
   if (!data?.length) return { ok: false, message: 'Votre rôle ne permet pas cette écriture.' }
   revalidatePath(`/admin/organizations/${input.organizationId}/actifs`)
   revalidatePath(`/admin/organizations/${input.organizationId}/actifs/${input.assetId}`)
+  revalidatePath('/admin/actifs-fournisseurs')
   return { ok: true, message: 'Fiche de l’actif corrigée.' }
 }
 
@@ -691,6 +695,7 @@ async function importRegistryCsv(
   revalidatePath(`/admin/organizations/${organizationId.data}`)
   revalidatePath(`/admin/organizations/${organizationId.data}/actifs`)
   revalidatePath(`/admin/organizations/${organizationId.data}/administration`)
+  revalidatePath('/admin/actifs-fournisseurs')
   return {
     ok: true,
     message: `${result.created} créé(s), ${result.updated} mis à jour${result.issues.length ? `, ${result.issues.length} ligne(s) refusée(s)` : ''}.`,

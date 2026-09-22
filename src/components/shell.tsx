@@ -41,6 +41,7 @@ const GOVERNANCE_NAV: NavLink[] = [{ href: '/admin/pilotage', label: 'Pilotage' 
 const ADMIN_NAV: NavLink[] = [
   { href: '/admin/organizations', label: 'Organisations' },
   { href: '/admin/comptes', label: 'Comptes et rôles' },
+  { href: '/admin/actifs-fournisseurs', label: 'Actifs et fournisseurs' },
   { href: '/admin/connecteurs', label: 'Connecteurs' },
   { href: '/admin/referentiels', label: 'Référentiels' },
   { href: '/admin/journal', label: 'Journal' },
