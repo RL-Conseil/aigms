@@ -71,7 +71,7 @@ enveloppes `public`), l'application ne les redouble pas. Déploiement Vercel
 | Héritage des faits de l'actif vers le cas d'usage | **Implémenté** | 0080 (`use_case_personal_data`, `use_case_vendor_all`) |
 | Fournisseurs : criticité, DPA, sécurité, réversibilité, revue | **Implémenté** | `vendor` ; revue datée, précondition de production |
 | Import CSV actifs / fournisseurs (admin) | **Implémenté** | 0061/0062 ; `/admin/actifs-fournisseurs`, modèles dans `public/modeles/` |
-| **Import CSV des cas d'usage** | **Absent** | — |
+| Import CSV des cas d'usage | **Implémenté** | 0092 ; `/administration`, `/admin/actifs-fournisseurs`, modèle `public/modeles/cas-d-usage.csv` |
 | **Shadow AI (détection, registre d'outils grand public)** | **Absent** | — |
 
 ### 2.3 Risques, impact, supervision
@@ -145,8 +145,6 @@ enveloppes `public`), l'application ne les redouble pas. Déploiement Vercel
 3. **Pas de questionnaire de maturité.** `assessment_answer` existe (3 lignes
    de démonstration) sans aucun écran : ni grille, ni score, ni tendance.
 4. **Pas de Shadow AI.** Ni registre des usages autorisés, ni détection.
-5. **Pas d'import de cas d'usage.** Actifs et fournisseurs s'importent ; le
-   registre des usages se saisit un par un.
 6. **Pas de rapport annuel unique.** Huit documents imprimables séparés.
 7. **Exigences réglementaires squelettiques** hors ISO 42001 : l'AI Act n'a
    que 2 exigences en base, le RGPD 1. La SoA ne vaut donc réellement que pour

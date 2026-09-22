@@ -202,7 +202,7 @@ relance manuelle — c'est 15 % du forfait.
 1. **Bascule de la production** (75 migrations) + purge du jeu de démonstration.
 2. **Secrets** : rotation, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`,
    `RESEND_API_KEY`, captcha Turnstile.
-3. **Import CSV des cas d'usage** (Discovery et onboarding).
+3. ~~Import CSV des cas d'usage~~ — **livré le 29 septembre 2026** (0092).
 4. **Exécuter la suite E2E** au moins une fois sur la Preview : 10 fichiers
    maintenus qui ne protègent rien aujourd'hui.
 
