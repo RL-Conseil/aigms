@@ -41,6 +41,10 @@ export type Suggestions = {
   facts?: string[]
   profile?: string | null
   proposals?: Proposal[]
+  /** La population d'ou les propositions sont tirees (0079). */
+  population?: { use_case?: number; baseline?: number; organization?: number }
+  /** Les conditionnels qu'aucun fait ne declenche, et ce qui les declencherait. */
+  not_proposed?: { code: string; title: string; domain_name: string; triggers: string[] }[]
 }
 
 const TIER_LABELS: Record<Proposal['tier'], { title: string; hint: string }> = {
@@ -158,6 +162,30 @@ export function ControlProposals({
                 {proposals.length} proposition(s), {selectable.length} à retenir,{' '}
                 {proposals.length - selectable.length} {organizationMode ? 'déjà dans la liste' : 'déjà affectée(s)'}.
               </p>
+              {/*
+                D'ou viennent-elles, et sur combien : les deux fenetres ne
+                puisent pas dans la meme population du referentiel. Le dire
+                evite de chercher les 51 parmi les 59.
+              */}
+              {suggestions.population ? (
+                <p className="rounded-md bg-ink-100 px-3.5 py-2.5 text-xs leading-relaxed text-ink-600">
+                  {organizationMode ? (
+                    <>
+                      <strong className="font-medium text-ink-800">{suggestions.population.organization ?? proposals.length} sur {suggestions.population.organization ?? proposals.length}</strong>{' '}
+                      contrôles de portée organisation du référentiel : tous se tiennent, l’ordre suit le rôle. Les contrôles
+                      de portée cas d’usage se proposent depuis chaque fiche, selon ses faits.
+                    </>
+                  ) : (
+                    <>
+                      <strong className="font-medium text-ink-800">{proposals.length} sur {suggestions.population.use_case ?? '—'}</strong>{' '}
+                      contrôles de portée cas d’usage du référentiel : {suggestions.population.baseline ?? '—'} de socle, toujours
+                      proposés, et ceux qu’un fait de la fiche déclenche. Les {suggestions.population.organization ?? '—'} contrôles
+                      du système de management se retiennent une fois, depuis le registre des contrôles. Un contrôle écrit
+                      librement n’est pas rattaché au référentiel : il n’apparaît pas ici, même affecté.
+                    </>
+                  )}
+                </p>
+              ) : null}
 
               {tiers.map(({ tier, items }) => {
                 const ids = items.filter((p) => p.state !== 'already_affected').map((p) => p.catalog_control_id)
@@ -239,6 +267,24 @@ export function ControlProposals({
                   </section>
                 )
               })}
+              {!organizationMode && suggestions.not_proposed?.length ? (
+                <details className="rounded-md border border-dashed border-ink-200 px-3.5 py-2.5">
+                  <summary className="cursor-pointer text-sm text-ink-600">
+                    Non proposés · {suggestions.not_proposed.length}
+                    <span className="block text-xs text-ink-400">Conditionnels qu’aucun fait de la fiche ne déclenche — et ce qui les déclencherait.</span>
+                  </summary>
+                  <ul className="mt-2 divide-y divide-ink-100">
+                    {suggestions.not_proposed.map((n) => (
+                      <li key={n.code} className="py-1.5 text-xs">
+                        <span className="text-ink-800">{n.code} — {n.title}</span>
+                        <span className="block text-ink-400">
+                          {n.domain_name} · se déclencherait par : {n.triggers.length ? n.triggers.map((t) => FACT_LABELS[t] ?? t).join(', ') : 'aucune règle'}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              ) : null}
             </>
           )}
 

@@ -50,6 +50,18 @@ export function ControlForm({
     <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="organizationId" value={organizationId} />
 
+      {/*
+        Un controle ecrit ici n'a pas de controle-type derriere lui : les
+        propositions calculees depuis le referentiel ne le reconnaitront
+        jamais comme « deja affecte ». Le dire avant d'ecrire.
+      */}
+      <p className="rounded-md bg-ink-100 px-3.5 py-2.5 text-xs leading-relaxed text-ink-600">
+        Un contrôle écrit librement n’est <strong className="font-medium text-ink-800">pas rattaché au référentiel</strong> :
+        il compte dans la couverture et se prouve comme les autres, mais les propositions de contrôles — calculées depuis
+        les contrôles-types — ne le reconnaîtront pas comme déjà affecté. Si le référentiel porte l’équivalent, le retenir
+        depuis « Proposer » garde le lien et ses correspondances.
+      </p>
+
       <div className="grid gap-4 sm:grid-cols-[140px_1fr]">
         <Field label="Code" htmlFor="ctl-code" error={errors.code} hint="Unique, ex. CTL-10">
           <input
