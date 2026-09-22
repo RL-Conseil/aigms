@@ -32,12 +32,19 @@ expertise obligatoire · I reçoit l'information sans bloquer le flux.
 | 2. Évaluation des risques | R | A | C | C | — | I |
 | 3. Validation des contrôles | I | R | A | A | — | I |
 | 4. Arbitrage IA critique | I | C | C | C | A | I |
-| 5. Audit de conformité | I | I | I | I | I | A |
+| 5. Outillage des contrôles | I | R | C | I | — | I |
+| 6. Référentiel — contrôles-types et familles d'outillage | — | I | — | — | — | I |
+| 7. Audit de conformité | I | I | I | I | I | A |
 
-Où cela se joue dans l'application : 1 → fiche du cas d'usage, fil
-conducteur ; 2 → rubriques Risques et Évaluation d'impact ; 3 → Contrôles
-affectés et registre des preuves ; 4 → Décisions et passage en production ;
-5 → journal d'audit, registres, impressions.
+Où cela se joue dans l'application : 1 → fiche du cas d'usage, Avancement ;
+2 → rubriques Risques et Étude d'impact ; 3 → Contrôles affectés et registre
+des preuves ; 4 → Décisions et passage en production ; 5 → registre des
+contrôles › Outillage (l'officer déclare le produit employé, l'Expert — DSI,
+RSSI — le connaît et le dit) ; 6 → Administration › Référentiels : le
+contrôle-type et sa correspondance d'outillage sont une donnée d'éditeur,
+versionnée, que personne ne modifie chez un client — un cabinet ajoute les
+siennes sans toucher à celles de l'éditeur ; 7 → journal d'audit, registres,
+impressions.
 
 ## Ce que la base applique (migration 0055)
 
