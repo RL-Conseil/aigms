@@ -26,6 +26,22 @@ const TOKEN = process.env.VERCEL_TOKEN
 const TEAM = process.env.VERCEL_TEAM_ID ?? 'team_EpSGhRhqme39AX6zVEfe57Y4'
 const PROJECT = 'aigms'
 
+/**
+ * Le domaine de demonstration, pose EN PLUS de l'alias de branche quand on
+ * deploie depuis `dev`.
+ *
+ * Pourquoi il faut le poser a chaque fois : le projet n'est pas relie par
+ * branche a un depot Git, donc Vercel ne sait pas qu'un domaine doit suivre
+ * `dev`. On l'attache au deploiement qu'on vient de faire.
+ *
+ * Pourquoi un domaine personnalise : la protection SSO de l'equipe couvre
+ * `*.vercel.app` mais pas les domaines personnalises. C'est ce qui rend la
+ * demonstration accessible a un partenaire sans l'inviter dans l'equipe
+ * Vercel — et c'est aussi ce qui expose la mire de connexion a l'internet.
+ */
+const DEMO_DOMAIN = process.env.VERCEL_DEMO_DOMAIN ?? 'demo.aigms.eu'
+const DEMO_BRANCH = 'dev'
+
 if (!TOKEN) {
   console.error('VERCEL_TOKEN absente. La renseigner dans .env.local, ignore par Git.')
   process.exit(1)
@@ -159,5 +175,28 @@ if (target) {
   } else {
     console.log(`Alias non pose (${aliasRes.status}) : ${await aliasRes.text()}`)
     console.log(`https://${deployment.url}`)
+  }
+
+  // La demonstration suit toujours `dev` : une seule URL a transmettre, qui
+  // ne change pas d'un deploiement a l'autre. Si le domaine n'est pas encore
+  // ajoute au projet, on le dit sans faire echouer le deploiement.
+  if (branch === DEMO_BRANCH && DEMO_DOMAIN) {
+    const demoRes = await fetch(
+      `https://api.vercel.com/v2/deployments/${deployment.id}/aliases?teamId=${TEAM}`,
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ alias: DEMO_DOMAIN }),
+      },
+    )
+    if (demoRes.ok) {
+      console.log(`https://${DEMO_DOMAIN}`)
+    } else {
+      const detail = await demoRes.text()
+      console.log(
+        `Demonstration non alias\u00e9e (${demoRes.status}) : ajouter ${DEMO_DOMAIN} au projet dans Vercel > Settings > Domains, puis relancer.`,
+      )
+      if (process.env.VERCEL_VERBOSE) console.log(detail)
+    }
   }
 }
