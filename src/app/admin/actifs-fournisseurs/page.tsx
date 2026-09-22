@@ -299,6 +299,17 @@ export default async function AdminAssetsVendorsPage({
               <p className="text-xs text-ink-500">Choisir une organisation dans le filtre pour importer.</p>
             )}
           </Card>
+          {/*
+            Les usages s'importent aussi : c'est la sortie d'un atelier de
+            decouverte, et le registre qui commande tout le reste.
+          */}
+          <Card title="Importer les cas d’usage" subtitle="La feuille d’un atelier de découverte. Les actifs et les fournisseurs nommés s’y rattachent, s’ils existent déjà.">
+            {selectedOrg ? (
+              <RegistryImportForm organizationId={selectedOrg.id} what="cas d’usage" />
+            ) : (
+              <p className="text-xs text-ink-500">Choisir une organisation dans le filtre pour importer.</p>
+            )}
+          </Card>
         </div>
       </div>
     </Shell>

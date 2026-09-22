@@ -27,6 +27,24 @@ const SYNONYMS: Record<string, string> = {
   réversibilité: 'reversibility_documented', reversibilite: 'reversibility_documented',
   'sous-traitants': 'subprocessors', 'sous traitants': 'subprocessors',
   commentaires: 'notes', remarques: 'notes',
+  // Cas d'usage
+  'cas d’usage': 'name', "cas d'usage": 'name', usage: 'name', 'nom de l’usage': 'name',
+  finalité: 'purpose', finalite: 'purpose', objectif: 'purpose', but: 'purpose', description: 'purpose',
+  processus: 'business_process', 'processus métier': 'business_process', 'processus metier': 'business_process',
+  activité: 'activity', activite: 'activity',
+  bénéfice: 'expected_benefit', benefice: 'expected_benefit', 'bénéfice attendu': 'expected_benefit', 'benefice attendu': 'expected_benefit',
+  utilisateurs: 'users_description', 'personnes affectées': 'affected_persons', 'personnes affectees': 'affected_persons',
+  données: 'data_description', donnees: 'data_description', 'données traitées': 'data_description', 'donnees traitees': 'data_description',
+  'données sensibles': 'involves_sensitive_data', 'donnees sensibles': 'involves_sensitive_data',
+  'personnes vulnérables': 'involves_vulnerable_persons', 'personnes vulnerables': 'involves_vulnerable_persons',
+  autonomie: 'autonomy_level', "niveau d’autonomie": 'autonomy_level', "niveau d'autonomie": 'autonomy_level',
+  justification: 'criticality_rationale', 'justification de la criticité': 'criticality_rationale',
+  'portée de la décision': 'decision_impact', 'portee de la decision': 'decision_impact',
+  'porteur': 'owner_email', 'porteur de l’ia': 'owner_email', "porteur de l'ia": 'owner_email',
+  redevable: 'accountable_email', 'responsable redevable': 'accountable_email',
+  'prochaine revue': 'next_review_at', revue: 'next_review_at',
+  actifs: 'assets', 'actifs employés': 'assets', 'actifs employes': 'assets',
+  fournisseurs: 'vendors', tiers: 'vendors',
 }
 
 export function readRegistryCsv(raw: string, known: readonly string[]): CsvRows {
@@ -52,6 +70,13 @@ export function readRegistryCsv(raw: string, known: readonly string[]): CsvRows 
 
 export const ASSET_COLUMNS = [
   'name', 'kind', 'description', 'version', 'vendor', 'hosting_location', 'contains_personal_data', 'owner_email',
+] as const
+
+export const USE_CASE_COLUMNS = [
+  'name', 'purpose', 'business_process', 'activity', 'expected_benefit', 'users_description',
+  'affected_persons', 'data_description', 'involves_personal_data', 'involves_sensitive_data',
+  'involves_vulnerable_persons', 'autonomy_level', 'criticality', 'criticality_rationale',
+  'decision_impact', 'owner_email', 'accountable_email', 'next_review_at', 'assets', 'vendors',
 ] as const
 
 export const VENDOR_COLUMNS = [

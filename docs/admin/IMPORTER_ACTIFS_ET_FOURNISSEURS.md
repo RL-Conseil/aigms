@@ -1,6 +1,7 @@
-# Importer les actifs d'IA et les fournisseurs (CSV, connecteurs)
+# Importer les cas d'usage, les actifs d'IA et les fournisseurs (CSV, connecteurs)
 
-*20 septembre 2026 — migrations 0061 et 0062.*
+*20 septembre 2026 — migrations 0061 et 0062. Cas d'usage : 29 septembre
+2026 — migration 0092.*
 
 Un inventaire d'actifs existe presque toujours ailleurs — CMDB de l'ITSM
 (ServiceNow, GLPI, iTop, EasyVista), registre des traitements, tableur — et
@@ -87,3 +88,46 @@ appellent la **même fonction** `import_ai_assets(organisation, lignes)` avec
 des lignes de même forme : brancher un connecteur, c'est écrire la lecture de
 sa source vers ces colonnes. Voir `docs/admin/COMPTES_ET_ANNUAIRE.md` (niveau
 C) pour le modèle de synchronisation proposé.
+
+
+## Les cas d'usage (migration 0092)
+
+Un atelier de découverte recense dix à trente usages en deux heures. Les
+ressaisir un par un coûte cinq à dix minutes chacun : c'est ce qui fait
+déborder l'atelier, et ce qui laisse un registre vide.
+
+### Colonnes
+
+`name`\*, `purpose`\*, `business_process`, `activity`, `expected_benefit`,
+`users_description`, `affected_persons`, `data_description`,
+`involves_personal_data`, `involves_sensitive_data`,
+`involves_vulnerable_persons`, `autonomy_level`, `criticality`,
+`criticality_rationale`, `decision_impact`, `owner_email`,
+`accountable_email`, `next_review_at`, `assets`, `vendors`.
+
+Modèle : `public/modeles/cas-d-usage.csv`. Les synonymes français usuels sont
+reconnus (nom, finalité, processus, activité, autonomie, porteur, données
+sensibles, personnes vulnérables, actifs, fournisseurs…).
+
+### Ce que l'import fait, et ce qu'il ne fait pas
+
+- **Rapprochement par nom**, dans l'organisation : une ligne connue complète
+  ce qu'elle apporte, une ligne nouvelle crée. Rien ne se supprime, rien ne
+  s'efface.
+- **Le statut ne s'importe jamais.** Chaque usage entre en `DRAFT` et franchit
+  ses jalons par `app.transition_use_case`, qui seul évalue les préconditions.
+- **La criticité ne s'importe pas sans sa justification** : elle commande
+  l'évaluation d'impact et l'arbitrage du Comité de direction. Sans colonne
+  `criticality_rationale`, la ligne est acceptée et la criticité signalée
+  comme non reprise.
+- **La qualification au regard du règlement ne s'importe pas** : c'est un acte
+  de jugement, posé depuis la fiche.
+- **Activité, actifs et fournisseurs se rattachent par leur nom**, s'ils
+  existent déjà dans l'organisation ; sinon la ligne le dit, sans échouer.
+
+### Où
+
+Administration de l'organisation, et *Administration › Actifs et
+fournisseurs* une fois l'organisation choisie. Comme les autres imports, il
+est **réservé à l'administration de la plateforme** (0062) : c'est une reprise
+de données, pas un acte de gouvernance.

@@ -699,12 +699,12 @@ export async function updateAssetLabels(_previous: FormState | null, formData: F
 // L'application lit le fichier et nomme les colonnes ; la base rapproche par
 // nom, cree ou met a jour, et rend compte ligne par ligne.
 export type ImportState =
-  | { ok: true; message: string; created: number; updated: number; issues: { line: number; message: string }[]; ignored: string[] }
+  | { ok: true; message: string; created: number; updated: number; linked?: number; issues: { line: number; message: string }[]; ignored: string[] }
   | { ok: false; message: string }
 
 async function importRegistryCsv(
   formData: FormData,
-  what: 'actifs' | 'fournisseurs',
+  what: 'actifs' | 'fournisseurs' | 'cas d’usage',
 ): Promise<ImportState> {
   const organizationId = z.string().uuid().safeParse(formData.get('organizationId'))
   if (!organizationId.success) return { ok: false, message: 'Organisation inconnue.' }
@@ -712,18 +712,27 @@ async function importRegistryCsv(
   if (!(file instanceof File) || file.size === 0) return { ok: false, message: 'Choisir un fichier CSV.' }
   if (file.size > 2_000_000) return { ok: false, message: 'Fichier trop volumineux (2 Mo maximum).' }
 
-  const { readRegistryCsv, ASSET_COLUMNS, VENDOR_COLUMNS } = await import('@/lib/registry/csv')
-  const parsed = readRegistryCsv(await file.text(), what === 'actifs' ? ASSET_COLUMNS : VENDOR_COLUMNS)
+  const { readRegistryCsv, ASSET_COLUMNS, USE_CASE_COLUMNS, VENDOR_COLUMNS } = await import('@/lib/registry/csv')
+  const columns =
+    what === 'actifs' ? ASSET_COLUMNS : what === 'fournisseurs' ? VENDOR_COLUMNS : USE_CASE_COLUMNS
+  const parsed = readRegistryCsv(await file.text(), columns)
   if (!parsed.rows.length) return { ok: false, message: 'Aucune ligne lue : vérifier l’en-tête et le séparateur.' }
   if (parsed.rows.length > 2000) return { ok: false, message: 'Au plus 2 000 lignes par import.' }
 
   const supabase = await createClient()
-  const { data, error } = await supabase.rpc(what === 'actifs' ? 'import_ai_assets' : 'import_vendors', {
+  const rpc =
+    what === 'actifs' ? 'import_ai_assets' : what === 'fournisseurs' ? 'import_vendors' : 'import_use_cases'
+  const { data, error } = await supabase.rpc(rpc, {
     p_organization_id: organizationId.data,
     p_rows: parsed.rows,
   })
   if (error) return { ok: false, message: explain(error) }
-  const result = data as { created: number; updated: number; issues: { line: number; message: string }[] }
+  const result = data as {
+    created: number
+    updated: number
+    linked?: number
+    issues: { line: number; message: string }[]
+  }
 
   revalidatePath(`/admin/organizations/${organizationId.data}`)
   revalidatePath(`/admin/organizations/${organizationId.data}/actifs`)
@@ -731,9 +740,12 @@ async function importRegistryCsv(
   revalidatePath('/admin/actifs-fournisseurs')
   return {
     ok: true,
-    message: `${result.created} créé(s), ${result.updated} mis à jour${result.issues.length ? `, ${result.issues.length} ligne(s) refusée(s)` : ''}.`,
+    message: `${result.created} créé(s), ${result.updated} mis à jour${
+      result.linked ? `, ${result.linked} rattachement(s)` : ''
+    }${result.issues.length ? `, ${result.issues.length} signalement(s)` : ''}.`,
     created: result.created,
     updated: result.updated,
+    linked: result.linked,
     issues: result.issues,
     ignored: parsed.ignored,
   }
@@ -745,6 +757,15 @@ export async function importAssetsCsv(_previous: ImportState | null, formData: F
 
 export async function importVendorsCsv(_previous: ImportState | null, formData: FormData): Promise<ImportState> {
   return importRegistryCsv(formData, 'fournisseurs')
+}
+
+/**
+ * Les usages d'IA d'un atelier de decouverte : dix a trente lignes que
+ * personne ne ressaisira une a une. Le statut ne s'importe jamais — chaque
+ * usage entre en brouillon et franchit ses jalons par la transition (0092).
+ */
+export async function importUseCasesCsv(_previous: ImportState | null, formData: FormData): Promise<ImportState> {
+  return importRegistryCsv(formData, 'cas d’usage')
 }
 
 // Un document de procedure : une preuve, rattachee au controle qui la porte.

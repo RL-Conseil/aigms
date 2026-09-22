@@ -129,6 +129,16 @@ export default async function OrganizationAdministrationPage({
             traitements, tableur). L'administration peut les verser — c'est une
             reprise, pas un acte de gouvernance. Voir docs/admin/IMPORTER_ACTIFS_ET_FOURNISSEURS.md.
           */}
+          {/*
+            Un atelier de decouverte recense dix a trente usages en deux
+            heures : les ressaisir un a un est ce qui fait deborder l'atelier.
+          */}
+          <Card
+            title="Importer les cas d’usage"
+            subtitle="Depuis la feuille d’un atelier de découverte ou un tableur. Le statut ne s’importe jamais : chaque usage entre en brouillon et franchit ses jalons par la transition."
+          >
+            <RegistryImportForm organizationId={id} what="cas d’usage" />
+          </Card>
           <Card
             title="Importer les actifs d’IA"
             subtitle="Depuis une CMDB, un registre des traitements ou un tableur. Rapprochement par nom : une ligne connue met à jour, une nouvelle crée."
