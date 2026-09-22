@@ -7,6 +7,7 @@ import { SegmentedFilter } from '@/components/governance/segmented-filter'
 import { AssetLabelForm } from '@/components/governance/asset-label-form'
 import { VendorLabelForm } from '@/components/governance/registry-forms'
 import { RegistryImportForm } from '@/components/governance/registry-import'
+import { DeclareAssetModal, DeclareVendorModal } from '@/components/governance/registry-declare'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import { organizationPeople } from '@/lib/governance/people'
 import { ROLE_LABELS } from '@/lib/domain/roles'
@@ -96,6 +97,12 @@ export default async function AdminAssetsVendorsPage({
     list.push({ id: v.id, name: v.name })
     vendorsByOrg.set(v.organization_id, list)
   }
+
+  // Declarer dans l'organisation choisie : ses personnes, meme sans actif encore.
+  const selectedPeople = selectedOrg
+    ? (peopleByOrg.get(selectedOrg.id) ??
+      (await organizationPeople(selectedOrg.id)).map((p) => ({ id: p.userId, label: p.jobTitle ? `${p.name} — ${p.jobTitle}` : p.name })))
+    : []
 
   const base = '/admin/actifs-fournisseurs'
   const current = { vue: view, org: selectedOrg?.id, nature: nature || undefined, q: q || undefined }
@@ -270,12 +277,16 @@ export default async function AdminAssetsVendorsPage({
           <Card title="Ajouter" subtitle={selectedOrg ? `Dans ${selectedOrg.name}.` : 'Choisir une organisation dans le filtre.'}>
             {selectedOrg ? (
               <div className="flex flex-col gap-2">
-                <Link href={`/admin/organizations/${selectedOrg.id}/registre/nouveau?kind=actif`} className="rounded-md bg-night-900 px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-night-800">
-                  Ajouter un actif d’IA
-                </Link>
-                <Link href={`/admin/organizations/${selectedOrg.id}/registre/nouveau?kind=fournisseur`} className="rounded-md border border-ink-200 px-4 py-2.5 text-center text-sm text-ink-700 hover:bg-ink-100">
-                  Ajouter un fournisseur
-                </Link>
+                <DeclareAssetModal
+                  organizationId={selectedOrg.id}
+                  vendors={vendorsByOrg.get(selectedOrg.id) ?? []}
+                  people={selectedPeople}
+                  triggerClassName="rounded-md bg-night-900 px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-night-800"
+                />
+                <DeclareVendorModal
+                  organizationId={selectedOrg.id}
+                  triggerClassName="rounded-md border border-ink-200 px-4 py-2.5 text-center text-sm text-ink-700 hover:bg-ink-100"
+                />
               </div>
             ) : (
               <p className="text-xs text-ink-500">Un actif ou un fournisseur appartient à une organisation : elle se choisit d’abord.</p>

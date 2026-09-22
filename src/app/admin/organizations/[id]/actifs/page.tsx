@@ -3,7 +3,11 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty } from '@/components/ui'
-import { ASSET_KIND_LABELS, ASSET_MEASURE_STATUS_LABELS, USE_CASE_STATUS_LABELS, type UseCaseStatus } from '@/lib/domain/governance'
+import { ASSET_KIND_LABELS, ASSET_MEASURE_STATUS_LABELS, USE_CASE_STATUS_LABELS, VENDOR_REVIEW_LABELS, formatDate, type UseCaseStatus } from '@/lib/domain/governance'
+import { CRITICALITY_LABELS, type Criticality } from '@/lib/domain/criticality'
+import { VendorLabelForm, VendorReviewForm } from '@/components/governance/registry-forms'
+import { DeclareAssetModal, DeclareVendorModal } from '@/components/governance/registry-declare'
+import { organizationPeople } from '@/lib/governance/people'
 
 /**
  * Le registre des actifs d'IA.
@@ -40,11 +44,20 @@ export default async function AssetRegisterPage({
   const { id } = await params
   const { nature } = await searchParams
   const supabase = await createClient()
-  const [{ data: organization }, { data: registerData }] = await Promise.all([
+  const [{ data: organization }, { data: registerData }, { data: vendors }, people] = await Promise.all([
     supabase.from('organization').select('id, name').eq('id', id).maybeSingle(),
     supabase.rpc('asset_register', { p_organization_id: id }),
+    supabase
+      .from('vendor')
+      .select('id, business_ref, name, is_model_provider, criticality, country_code, review_status, next_review_at, subprocessors, notes')
+      .eq('organization_id', id)
+      .order('name'),
+    organizationPeople(id),
   ])
   if (!organization) notFound()
+  const vendorChoices = (vendors ?? []).map((v) => ({ id: v.id, name: v.name }))
+  const peopleChoices = people.map((p) => ({ id: p.userId, label: p.jobTitle ? `${p.name} — ${p.jobTitle}` : p.name }))
+  const vendorsToReview = (vendors ?? []).filter((v) => !['approved', 'approved_with_conditions'].includes(v.review_status)).length
 
   const assets = ((registerData ?? []) as RegisterAsset[]).sort(
     (a, b) => KIND_ORDER.indexOf(a.kind) - KIND_ORDER.indexOf(b.kind) || a.name.localeCompare(b.name),
@@ -62,16 +75,20 @@ export default async function AssetRegisterPage({
         { label: 'Actifs d’IA' },
       ]}
       organization={{ id, section: 'actifs' }}
-      title="Registre des actifs d’IA"
-      subtitle="Systèmes, modèles, agents et jeux de données que l’organisation emploie — et les mesures techniques posées dessus."
+      title="Actifs d’IA et fournisseurs"
+      subtitle="Ce que l’organisation emploie — systèmes, modèles, agents, jeux de données, leurs mesures techniques — et les tiers dont elle dépend."
       actions={
         <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href={`/admin/organizations/${id}/registre/nouveau?kind=actif`}
-            className="rounded-md bg-night-900 px-3.5 py-2 text-sm font-medium text-white hover:bg-night-800"
-          >
-            Inscrire un actif
-          </Link>
+          <DeclareAssetModal
+            organizationId={id}
+            vendors={vendorChoices}
+            people={peopleChoices}
+            triggerClassName="rounded-md bg-night-900 px-3.5 py-2 text-sm font-medium text-white hover:bg-night-800"
+          />
+          <DeclareVendorModal
+            organizationId={id}
+            triggerClassName="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
+          />
           <Link
             href={`/admin/organizations/${id}/impression/actifs`}
             className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100"
@@ -185,6 +202,45 @@ export default async function AssetRegisterPage({
         </div>
 
         <div className="flex flex-col gap-5">
+          {/*
+            Les fournisseurs vivent ici avec les actifs : un actif vient
+            souvent d'un tiers, et la revue de ce tiers conditionne la
+            production. La fiche se corrige d'un crayon, la revue se tient.
+          */}
+          <Card
+            title="Fournisseurs"
+            subtitle={vendors?.length ? `${vendors.length} tiers${vendorsToReview ? ` · ${vendorsToReview} sans revue approuvée` : ''}` : 'Aucun tiers déclaré'}
+            tone={vendorsToReview ? 'warn' : 'neutral'}
+          >
+            {vendors?.length ? (
+              <ul className="divide-y divide-ink-100">
+                {vendors.map((v) => (
+                  <li key={v.id} className="py-2.5 text-sm">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <span className="text-ink-900">{v.name}</span>
+                        {v.is_model_provider ? <Badge tone="info">Modèle</Badge> : null}
+                        <p className="text-xs text-ink-400">
+                          {v.business_ref} · criticité {CRITICALITY_LABELS[v.criticality as Criticality]?.toLowerCase() ?? v.criticality}
+                          {v.country_code ? ` · ${v.country_code}` : ''}
+                          {v.next_review_at ? ` · revue le ${formatDate(v.next_review_at)}` : ''}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <Badge tone={['approved', 'approved_with_conditions'].includes(v.review_status) ? 'ok' : 'warn'}>
+                          {VENDOR_REVIEW_LABELS[v.review_status] ?? v.review_status}
+                        </Badge>
+                        <VendorLabelForm organizationId={id} vendor={v} />
+                        <VendorReviewForm organizationId={id} vendorId={v.id} name={v.name} reviewStatus={v.review_status} nextReviewAt={v.next_review_at} />
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <Empty>Aucun fournisseur. Tant qu’un tiers impliqué n’est pas déclaré, sa revue ne peut pas être close — et le gate PRODUCTION l’exige.</Empty>
+            )}
+          </Card>
           {/* L'import d'un inventaire releve de l'administration (0062) : voir l'administration de l'organisation. */}
           <Card title="Lire ce registre" subtitle="Ce qu’il dit, et ce qu’il ne dit pas.">
             <p className="text-sm leading-relaxed text-ink-600">

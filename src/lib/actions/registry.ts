@@ -121,6 +121,7 @@ export async function createVendor(
 
   revalidatePath('/admin/actifs-fournisseurs')
   revalidatePath(`/admin/organizations/${input.organizationId}`)
+  revalidatePath(`/admin/organizations/${input.organizationId}/actifs`)
   return {
     ok: true,
     message: `${input.name} enregistré. La revue tiers reste à conduire : le gate PRODUCTION l’exige.`,
@@ -181,6 +182,8 @@ export async function reviewVendor(
   if (!data?.length) return { ok: false, message: 'Votre rôle ne permet pas cette écriture.' }
 
   revalidatePath(`/admin/organizations/${parsed.data.organizationId}`)
+  revalidatePath(`/admin/organizations/${parsed.data.organizationId}/actifs`)
+  revalidatePath('/admin/actifs-fournisseurs')
   return { ok: true, message: 'Revue tiers enregistrée.' }
 }
 
@@ -237,6 +240,7 @@ export async function createAsset(
   if (error) return { ok: false, message: explain(error) }
 
   revalidatePath(`/admin/organizations/${input.organizationId}`)
+  revalidatePath(`/admin/organizations/${input.organizationId}/actifs`)
   revalidatePath('/admin/actifs-fournisseurs')
   return { ok: true, message: `${input.name} inscrit au registre des actifs.` }
 }
@@ -591,6 +595,7 @@ export async function updateVendorLabels(
   if (!data?.length) return { ok: false, message: 'Votre rôle ne permet pas cette écriture.' }
 
   revalidatePath(`/admin/organizations/${input.organizationId}`)
+  revalidatePath(`/admin/organizations/${input.organizationId}/actifs`)
   revalidatePath('/admin/actifs-fournisseurs')
   return { ok: true, message: 'Fiche corrigée. La revue tiers, elle, reste ce qu’elle était.' }
 }
