@@ -73,6 +73,18 @@ export function ClassificationNote() {
         avec la qualification : quand le texte change, on sait sur quelle version celle-ci a été
         posée.
       </p>
+      <p>
+        <strong className="font-medium text-ink-800">Ce que chaque case déclenche</strong> — les
+        règles vivent côté serveur, aucune n’est décorative :
+      </p>
+      <ul className="list-disc space-y-1 pl-5">
+        <li><em>Pratique interdite suspectée</em> et <em>À confirmer</em> bloquent les jalons Revue et Production.</li>
+        <li><em>Haut risque potentiel</em> : évaluation d’impact exigée, cadence de revue resserrée, 8 contrôles proposés.</li>
+        <li><em>Impact sur la vie privée</em> : inscrit « données personnelles » sur la fiche, donc évaluation d’impact exigée, et propose les contrôles de catégories particulières.</li>
+        <li><em>Impact sur la sécurité</em> : 3 contrôles. <em>Modèle à usage général</em> : 4 contrôles.</li>
+        <li><em>Obligations de transparence</em> (article 50) : information des personnes, recensement des parties prenantes.</li>
+        <li><em>Hors périmètre</em> ne lève aucune exigence : la gouvernance interne reste due. C’est une lecture, pas une dispense.</li>
+      </ul>
     </Note>
   )
 }

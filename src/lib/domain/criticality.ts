@@ -85,7 +85,44 @@ export const CRITICALITY_GRID: GridQuestion[] = [
   },
 ]
 
+/**
+ * Ce qu'une reponse de la grille ENGAGE, quand elle constate un fait que les
+ * regles lisent. Cle : « question:reponse ».
+ */
+export const GRID_EFFECTS: Record<string, string> = {
+  'affected:vulnerable':
+    'Inscrit « personnes vulnérables » sur la fiche : l’évaluation d’impact devient exigée et la supervision humaine se renforce.',
+  'data:personal':
+    'Inscrit « données personnelles » sur la fiche : l’évaluation d’impact devient exigée, l’AIPD se pré-coche, les contrôles « données » se proposent.',
+  'data:sensitive':
+    'Inscrit « données sensibles » (article 9 du RGPD) : l’évaluation d’impact est exigée et ne s’achève pas sans référence d’AIPD ; la criticité observée passe au moins à « élevée ».',
+  'scope:automatic':
+    'Une décision sans validation humaine : la supervision humaine et ses contrôles deviennent le cœur du dossier.',
+}
+
 export type GridAnswers = Partial<Record<GridQuestion['key'], string>>
+
+/**
+ * Ce que la grille CONSTATE, et qui doit atteindre les regles : la fiche le
+ * porte, l'AIIA et les controles en decoulent. Une question sans reponse ne
+ * dit rien ; une reponse qui dement un fait le retire — acte justifie et
+ * journalise, comme le reste du triage.
+ */
+export function factsFromGrid(answers: GridAnswers): {
+  personalData?: boolean
+  sensitiveData?: boolean
+  vulnerablePersons?: boolean
+} {
+  return {
+    ...(answers.data
+      ? {
+          personalData: answers.data === 'personal' || answers.data === 'sensitive',
+          sensitiveData: answers.data === 'sensitive',
+        }
+      : {}),
+    ...(answers.affected ? { vulnerablePersons: answers.affected === 'vulnerable' } : {}),
+  }
+}
 
 export function suggestCriticality(answers: GridAnswers): Criticality | null {
   let best = 0

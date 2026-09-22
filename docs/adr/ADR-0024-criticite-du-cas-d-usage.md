@@ -46,3 +46,22 @@ sous une criticité « modérée » ne disait rien.
 - Les règles de gate, de RACI et de cadence ne changent pas.
 - Les cas existants n'ont pas de justification conservée : la carte le dit et
   invite à réviser.
+
+## Complément — 23 septembre 2026 (migrations 0081–0082)
+
+La grille de triage était enregistrée et relue nulle part : répondre « des
+données sensibles » ne changeait rien. Elle **prononce** désormais les faits
+qu'elle constate — données personnelles ou sensibles, personnes vulnérables —
+et les inscrit sur la fiche ; une réponse qui dément un fait le retire, acte
+justifié et journalisé comme le reste du triage. La qualification fait de même
+pour « impact sur la vie privée ».
+
+`involves_sensitive_data` (article 9 du RGPD) existe : il exige l'évaluation
+d'impact, interdit de l'achever sans référence d'AIPD, porte la criticité
+observée à « élevée » au minimum et propose DAT-005, DAT-006 et DAT-009. La
+case « obligations de transparence », jusque-là décorative, propose HUM-006
+(information des personnes, article 50) et USE-004.
+
+Le jalon Production ne gagne aucune précondition : celles qui existent
+suffisent dès que les faits remontent. Son détail dit désormais **pourquoi**
+l'évaluation d'impact est exigée.

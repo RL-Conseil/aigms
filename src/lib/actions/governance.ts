@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { factsFromGrid } from '@/lib/domain/criticality'
 
 /**
  * Saisie des objets de gouvernance.
@@ -232,10 +233,24 @@ export async function saveTriage(_previous: FormState | null, formData: FormData
 
   const { data: useCase } = await supabase
     .from('ai_use_case')
-    .select('tenant_id, organization_id, criticality')
+    .select('tenant_id, organization_id, criticality, involves_personal_data, involves_sensitive_data, involves_vulnerable_persons')
     .eq('id', d.useCaseId)
     .maybeSingle()
   if (!useCase) return { ok: false, message: 'Cas d’usage introuvable.' }
+
+  // La grille CONSTATE des faits : la fiche les porte, et les regles les
+  // lisent (0082). On ne decoche jamais — une case peut etre vraie pour
+  // d'autres raisons ; « Modifier la fiche » sert a cela.
+  const facts = factsFromGrid(d.grid)
+  const raised: string[] = []
+  const lowered: string[] = []
+  const note = (label: string, next: boolean | undefined, current: boolean) => {
+    if (next === undefined || next === current) return
+    ;(next ? raised : lowered).push(label)
+  }
+  note('données sensibles', facts.sensitiveData, useCase.involves_sensitive_data)
+  note('données personnelles', facts.personalData, useCase.involves_personal_data)
+  note('personnes vulnérables', facts.vulnerablePersons, useCase.involves_vulnerable_persons)
 
   const {
     data: { user },
@@ -245,6 +260,9 @@ export async function saveTriage(_previous: FormState | null, formData: FormData
     .from('ai_use_case')
     .update({
       criticality: d.criticality,
+      involves_personal_data: facts.personalData ?? useCase.involves_personal_data,
+      involves_sensitive_data: facts.sensitiveData ?? useCase.involves_sensitive_data,
+      involves_vulnerable_persons: facts.vulnerablePersons ?? useCase.involves_vulnerable_persons,
       criticality_rationale: d.rationale,
       criticality_grid: d.grid,
       criticality_set_at: new Date().toISOString(),
@@ -269,11 +287,21 @@ export async function saveTriage(_previous: FormState | null, formData: FormData
   if (assessmentError) return { ok: false, message: explain(assessmentError) }
 
   revalidatePath(`/admin/use-cases/${d.useCaseId}`)
+  const base = useCase.criticality
+    ? 'Criticité révisée.'
+    : 'Criticité enregistrée. Le cas d’usage peut passer en évaluation.'
+  const said = [
+    raised.length
+      ? `inscrit ${raised.join(', ')} — l’évaluation d’impact devient exigée${
+          facts.sensitiveData ? ', avec l’AIPD (article 9 du RGPD)' : ''
+        }, et les contrôles correspondants se proposent`
+      : null,
+    lowered.length ? `retire ${lowered.join(', ')} — ce qui en découlait cesse de s’appliquer` : null,
+  ].filter(Boolean)
+
   return {
     ok: true,
-    message: useCase.criticality
-      ? 'Criticité révisée.'
-      : 'Criticité enregistrée. Le cas d’usage peut passer en évaluation.',
+    message: said.length ? `${base} La grille ${said.join(' ; elle ')}.` : base,
   }
 }
 
@@ -327,7 +355,7 @@ export async function saveClassification(
 
   const { data: useCase } = await supabase
     .from('ai_use_case')
-    .select('tenant_id, organization_id')
+    .select('tenant_id, organization_id, involves_personal_data, involves_sensitive_data')
     .eq('id', d.useCaseId)
     .maybeSingle()
   if (!useCase) return { ok: false, message: 'Cas d’usage introuvable.' }
@@ -362,11 +390,31 @@ export async function saveClassification(
 
   if (error) return { ok: false, message: explain(error) }
 
+  // « Impact sur la vie privée » constate des données personnelles : la fiche
+  // le porte, et l'évaluation d'impact en découle (0082). On ne décoche pas.
+  const privacy = d.flags.includes('privacy_impact')
+  const raisesPrivacy = privacy && !useCase.involves_personal_data && !useCase.involves_sensitive_data
+  if (raisesPrivacy) {
+    await supabase.from('ai_use_case').update({ involves_personal_data: true }).eq('id', d.useCaseId)
+  }
+
+  // Ce que les qualifications retenues engagent, dit au moment du geste.
+  const engaged: string[] = []
+  if (d.flags.includes('prohibited_practice_suspected')) engaged.push('« pratique interdite suspectée » bloque le passage en Revue et en Production')
+  if (d.flags.includes('to_confirm')) engaged.push('« à confirmer » bloque les jalons tant qu’elle est cochée')
+  if (d.flags.includes('high_risk_potential')) engaged.push('« haut risque potentiel » rend l’évaluation d’impact exigée et resserre la cadence de revue')
+  if (raisesPrivacy) engaged.push('« impact sur la vie privée » inscrit des données personnelles sur la fiche et rend l’évaluation d’impact exigée')
+  else if (privacy) engaged.push('« impact sur la vie privée » propose les contrôles de catégories particulières')
+  if (d.flags.includes('security_impact')) engaged.push('« impact sur la sécurité » propose trois contrôles de sécurité')
+  if (d.flags.includes('transparency_obligations')) engaged.push('« obligations de transparence » propose l’information des personnes (article 50)')
+  if (d.flags.includes('out_of_scope')) engaged.push('« hors périmètre » ne lève aucune exigence : la gouvernance interne reste due')
+
   revalidatePath(`/admin/use-cases/${d.useCaseId}`)
   return {
     ok: true,
-    message:
-      'Qualification enregistrée. Elle vaut cadrage, non avis juridique : la revue reste requise selon le niveau retenu.',
+    message: engaged.length
+      ? `Qualification enregistrée — cadrage, non avis juridique. Ce qu’elle engage : ${engaged.join(' ; ')}.`
+      : 'Qualification enregistrée. Elle vaut cadrage, non avis juridique : la revue reste requise selon le niveau retenu.',
   }
 }
 

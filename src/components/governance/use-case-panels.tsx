@@ -11,13 +11,18 @@ import {
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
 import { ControlFinder } from '@/components/governance/control-finder'
-import { CLASSIFICATION_FLAG_LABELS, ORGANIZATION_ROLE_LABELS } from '@/lib/domain/classification'
+import {
+  CLASSIFICATION_FLAG_EFFECTS,
+  CLASSIFICATION_FLAG_LABELS,
+  ORGANIZATION_ROLE_LABELS,
+} from '@/lib/domain/classification'
 import {
   CRITICALITY_CONSEQUENCES,
   CRITICALITY_GRID,
   CRITICALITY_LABELS,
   CRITICALITY_ORDER,
   criticalityRank,
+  GRID_EFFECTS,
   suggestCriticality,
   type CriticalitySignal,
   type GridAnswers,
@@ -80,7 +85,9 @@ export function CriticalityPanel({
           <div className="rounded-md bg-ink-100 px-4 py-3 text-[13px] leading-relaxed text-ink-600">
             Quatre questions proposent un niveau ; vous retenez le vôtre. La criticité ne dit rien du
             règlement — c’est la qualification qui s’en charge — mais elle commande l’évaluation
-            d’impact, l’arbitrage du Comité de direction et la cadence de revue.
+            d’impact, l’arbitrage du Comité de direction et la cadence de revue. Les réponses ne
+            servent pas qu’à proposer : ce qu’elles constatent — données personnelles ou sensibles,
+            personnes vulnérables — s’inscrit sur la fiche et déclenche les règles qui s’y attachent.
           </div>
 
           <fieldset className="grid gap-3 sm:grid-cols-2">
@@ -100,6 +107,9 @@ export function CriticalityPanel({
                     </option>
                   ))}
                 </select>
+                {GRID_EFFECTS[`${q.key}:${answers[q.key] ?? ''}`] ? (
+                  <p className="mt-1 text-xs leading-snug text-ink-500">{GRID_EFFECTS[`${q.key}:${answers[q.key] ?? ''}`]}</p>
+                ) : null}
               </Field>
             ))}
           </fieldset>
@@ -186,7 +196,11 @@ export function CriticalityPanel({
   )
 }
 
-const FLAGS = Object.entries(CLASSIFICATION_FLAG_LABELS).map(([value, label]) => ({ value, label }))
+const FLAGS = Object.entries(CLASSIFICATION_FLAG_LABELS).map(([value, label]) => ({
+  value,
+  label,
+  effect: CLASSIFICATION_FLAG_EFFECTS[value] ?? '',
+}))
 const ROLES = Object.entries(ORGANIZATION_ROLE_LABELS).map(([value, label]) => ({ value, label }))
 
 export function ClassificationPanel({
@@ -265,18 +279,27 @@ export function ClassificationPanel({
         </div>
 
         <fieldset>
-          <legend className="mb-2 text-sm font-medium">Qualifications retenues</legend>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <legend className="mb-1 text-sm font-medium">Qualifications retenues</legend>
+          {/*
+            Chaque case engage quelque chose — un jalon bloque, une evaluation
+            exigee, des controles proposes. Le dire sous le libelle, la ou l'on
+            coche : une case qu'on coche sans savoir est une case mal cochee.
+          */}
+          <p className="mb-2 text-xs text-ink-500">Chacune engage la suite : ce qui est écrit dessous se déclenche côté serveur.</p>
+          <div className="grid gap-2.5 sm:grid-cols-2">
             {FLAGS.map((flag) => (
-              <label key={flag.value} className="flex items-center gap-2.5 text-sm">
+              <label key={flag.value} className="flex items-start gap-2.5 text-sm">
                 <input
                   type="checkbox"
                   name="flags"
                   value={flag.value}
                   defaultChecked={current?.flags.includes(flag.value)}
-                  className="size-4 rounded border-ink-300"
+                  className="mt-0.5 size-4 rounded border-ink-300"
                 />
-                {flag.label}
+                <span className="min-w-0">
+                  {flag.label}
+                  {flag.effect ? <span className="block text-xs leading-snug text-ink-400">{flag.effect}</span> : null}
+                </span>
               </label>
             ))}
           </div>
