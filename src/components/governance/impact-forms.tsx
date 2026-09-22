@@ -4,8 +4,10 @@ import { useActionState, useState, useTransition } from 'react'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
 import {
+  acceptResidualRisks,
   addStakeholder,
   completeImpactStudy,
+  returnImpactStudy,
   depositImpactStudyExport,
   openImpactStudy,
   removeFinding,
@@ -327,15 +329,19 @@ export function RemoveFindingButton({ studyId, finding }: { studyId: string; fin
 // -----------------------------------------------------------------------------
 // Achever, rouvrir, deposer
 // -----------------------------------------------------------------------------
+/**
+ * Le VISA DE METHODE. Il n'acheve pas l'etude : il dit que sa conduite tient,
+ * et appelle l'acceptation des risques residuels par le Porteur.
+ */
 export function CompleteForm({ study, gaps }: { study: ImpactStudy; gaps: string[] }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(completeImpactStudy, null)
   const errors = errorsOf(state)
   return (
     <Modal
-      trigger="Achever l’étude"
+      trigger="Viser l’étude"
       triggerClassName="rounded-md bg-night-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-night-800"
-      title="Achever l’étude d’impact"
-      description="La conclusion engage : elle dit ce que l’étude retient et ce qu’elle conditionne."
+      title="Viser l’étude d’impact"
+      description="Vous attestez que l’étude est conduite correctement. Le Porteur de l’IA acceptera ensuite ce qui reste."
     >
       {() => (
         <form action={formAction} className="flex flex-col gap-4">
@@ -345,6 +351,12 @@ export function CompleteForm({ study, gaps }: { study: ImpactStudy; gaps: string
               Avant d’achever : {gaps.join(' ; ')}. Vous pouvez achever malgré tout — la conclusion doit le dire.
             </div>
           ) : null}
+          <p className="rounded-md bg-ink-100 px-3.5 py-2.5 text-xs leading-relaxed text-ink-600">
+            Deux signatures, deux choses différentes : <strong className="font-medium text-ink-800">votre visa</strong> dit
+            que la méthode tient — périmètre, parties prenantes, domaines examinés, mesures proportionnées ;
+            <strong className="font-medium text-ink-800"> l’acceptation du Porteur</strong> dit que l’organisation assume
+            ce qui demeure. Une même personne ne pose pas les deux.
+          </p>
           <Field label="Conclusion" htmlFor="c-concl" error={errors.conclusion} hint="Ce que l’étude retient : effets acceptables ou non, sous quelles mesures, ce qui reste à surveiller.">
             <textarea id="c-concl" name="conclusion" rows={5} required defaultValue={study.conclusion ?? ''} className={FIELD} />
           </Field>
@@ -352,7 +364,87 @@ export function CompleteForm({ study, gaps }: { study: ImpactStudy; gaps: string
             <input id="c-review" name="nextReviewAt" type="date" defaultValue={study.next_review_at ?? ''} className={FIELD} />
           </Field>
           <FormFeedback state={state} />
-          <Submit pending={pending} idle="Achever" />
+          <Submit pending={pending} idle="Viser l’étude" />
+        </form>
+      )}
+    </Modal>
+  )
+}
+
+/**
+ * L'ACCEPTATION DES RISQUES RESIDUELS. Le Porteur de l'IA, en son propre nom :
+ * apres les mesures, il demeure des prejudices possibles, et quelqu'un dit
+ * qu'il les assume. Ou renvoie l'etude, en disant pourquoi.
+ */
+export function AcceptResidualForm({ study }: { study: ImpactStudy }) {
+  const [state, formAction, pending] = useActionState<FormState | null, FormData>(acceptResidualRisks, null)
+  const errors = errorsOf(state)
+  const severe = study.findings.filter((f) => f.is_adverse && ['significant', 'severe'].includes(f.residual_severity ?? f.severity))
+  return (
+    <Modal
+      trigger="Accepter les risques résiduels"
+      triggerClassName="rounded-md bg-night-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-night-800"
+      title="Accepter les risques résiduels"
+      description="Ce qui demeure après les mesures. Un acte nominatif : vous signez en votre nom, et il figure au document."
+    >
+      {() => (
+        <form action={formAction} className="flex flex-col gap-4">
+          <input type="hidden" name="studyId" value={study.id} />
+          <p className="rounded-md bg-ink-100 px-3.5 py-2.5 text-xs leading-relaxed text-ink-600">
+            {study.method_signed_by
+              ? `${study.method_signed_by} a visé l’étude : sa méthode tient.`
+              : 'L’étude est visée.'}{' '}
+            Il vous revient de dire que l’organisation assume ce qui reste — c’est ce que le jalon Production exige.
+          </p>
+          {severe.length ? (
+            <div className="rounded-md border border-warn-600/40 bg-amber-50 px-3.5 py-2.5 text-xs leading-relaxed text-warn-600">
+              Ce qui demeure de significatif ou grave après mesures :
+              <ul className="mt-1 list-disc pl-4">
+                {severe.map((f) => (
+                  <li key={f.id}>{f.description}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          <Field
+            label="Ce que vous assumez"
+            htmlFor={`accept-${study.id}`}
+            error={errors.statement}
+            hint="En une ou deux phrases : ce qui reste, sous quelles conditions, et ce que vous surveillerez."
+          >
+            <textarea id={`accept-${study.id}`} name="statement" rows={4} required className={FIELD} />
+          </Field>
+          <FormFeedback state={state} />
+          <Submit pending={pending} idle="Accepter en mon nom" />
+        </form>
+      )}
+    </Modal>
+  )
+}
+
+export function ReturnStudyForm({ studyId }: { studyId: string }) {
+  const [state, formAction, pending] = useActionState<FormState | null, FormData>(returnImpactStudy, null)
+  const errors = errorsOf(state)
+  return (
+    <Modal
+      trigger="Renvoyer à l’étude"
+      triggerClassName="rounded-md border border-ink-200 px-4 py-2.5 text-sm text-ink-700 hover:bg-ink-100"
+      title="Renvoyer à l’étude"
+      description="Vous n’acceptez pas en l’état. Le visa tombe, l’AI Governance Officer reprend la main."
+    >
+      {() => (
+        <form action={formAction} className="flex flex-col gap-4">
+          <input type="hidden" name="studyId" value={studyId} />
+          <Field
+            label="Motif"
+            htmlFor={`return-${studyId}`}
+            error={errors.reason}
+            hint="Ce qui manque ou ce qui ne va pas : un constat oublié, une mesure insuffisante, une partie prenante non consultée."
+          >
+            <textarea id={`return-${studyId}`} name="reason" rows={3} required className={FIELD} />
+          </Field>
+          <FormFeedback state={state} />
+          <Submit pending={pending} idle="Renvoyer" />
         </form>
       )}
     </Modal>

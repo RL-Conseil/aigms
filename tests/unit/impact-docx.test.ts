@@ -7,6 +7,10 @@ const study: ImpactStudy = {
   scope_description: 'Scoring des candidatures reçues sur le portail carrière.', methodology: 'ISO/IEC 42005', lifecycle_phase: 'Pilote',
   dpia_required: true, dpia_reference: 'AIPD-RH-03', conclusion: 'Effets acceptables sous mesures.', completed_at: '2026-09-22T10:00:00Z',
   next_review_at: '2027-03-22', reopened_reason: null, created_at: '2026-09-01T10:00:00Z', updated_at: '2026-09-22T10:00:00Z',
+  method_signed_at: '2026-09-21T09:00:00Z', method_signed_by: 'Alice Officer',
+  residual_accepted_at: '2026-09-22T09:00:00Z', residual_accepted_by: 'Bob Porteur',
+  residual_statement: 'J’assume l’écart résiduel de présélection, sous audit trimestriel.',
+  returned_at: null, returned_reason: null,
   organization_id: 'o', performed_by: 'Alice Officer', approved_by: null,
   use_case: {
     id: 'u', business_ref: 'UC-2026-0002', name: 'Scoring de candidatures', purpose: 'Trier les CV.', status: 'PILOT', criticality: 'high',
@@ -37,7 +41,7 @@ describe('Export .docx de l’étude d’impact', () => {
     if (JSZip) {
       const zip = await JSZip.loadAsync(bytes)
       const xml = await zip.file('word/document.xml')!.async('string')
-      for (const expected of ['Cadrage et contexte', 'Cartographie des parties prenantes', 'Analyse croisée', 'Plan de gouvernance', 'Audit trimestriel', 'AIPD-RH-03', 'Scoring de candidatures']) {
+      for (const expected of ['Cadrage et contexte', 'Cartographie des parties prenantes', 'Analyse croisée', 'Plan de gouvernance', 'Audit trimestriel', 'AIPD-RH-03', 'Scoring de candidatures', 'Visa de méthode', 'Acceptation des risques résiduels', 'Bob Porteur']) {
         expect(xml).toContain(expected)
       }
     }

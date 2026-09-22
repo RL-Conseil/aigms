@@ -5,7 +5,9 @@ import { Shell } from '@/components/shell'
 import { Badge, Card, Empty } from '@/components/ui'
 import { InfoTip } from '@/components/info-tip'
 import {
+  AcceptResidualForm,
   CompleteForm,
+  ReturnStudyForm,
   DepositExportButton,
   FindingForm,
   RemoveFindingButton,
@@ -14,6 +16,7 @@ import {
   ScopeForm,
   StakeholderForm,
 } from '@/components/governance/impact-forms'
+import { getViewerContext } from '@/lib/auth/context'
 import {
   IMPACT_DOMAIN_LABELS,
   IMPACT_FAMILIES,
@@ -39,10 +42,11 @@ import { organizationPeople } from '@/lib/governance/people'
 export default async function ImpactStudyPage({ params }: { params: Promise<{ id: string; studyId: string }> }) {
   const { id, studyId } = await params
   const supabase = await createClient()
-  const [{ data: organization }, { data: studyData }, people] = await Promise.all([
+  const [{ data: organization }, { data: studyData }, people, viewer] = await Promise.all([
     supabase.from('organization').select('id, name').eq('id', id).maybeSingle(),
     supabase.rpc('impact_study', { p_id: studyId }),
     organizationPeople(id),
+    getViewerContext(),
   ])
   if (!organization || !studyData) notFound()
   const study = studyData as unknown as ImpactStudy
@@ -57,7 +61,16 @@ export default async function ImpactStudyPage({ params }: { params: Promise<{ id
   const uc = study.use_case
   const peopleChoices = people.map((p) => ({ id: p.userId, label: p.jobTitle ? `${p.name} — ${p.jobTitle}` : p.name }))
   const gaps = studyGaps(study)
-  const open = study.status !== 'completed' && study.status !== 'superseded'
+  // Trois temps : on conduit, on vise, on accepte. Chacun son acte, chacun
+  // son signataire — et le second n'est pas le premier (0091).
+  const awaitingSignature = Boolean(study.method_signed_at) && !study.residual_accepted_at
+  const open = study.status !== 'completed' && study.status !== 'superseded' && !awaitingSignature
+  const { data: ucOwner } = await supabase
+    .from('ai_use_case')
+    .select('owner_user_id')
+    .eq('id', uc.id)
+    .maybeSingle()
+  const isOwner = Boolean(viewer && ucOwner?.owner_user_id === viewer.userId)
   const base = `/admin/organizations/${id}/etudes-impact`
   const flags = (uc.classification?.flags ?? []).map((f) => CLASSIFICATION_FLAG_LABELS[f] ?? f)
   const adverseSevere = study.findings.filter((f) => f.is_adverse && ['significant', 'severe'].includes(f.severity))
@@ -82,7 +95,23 @@ export default async function ImpactStudyPage({ params }: { params: Promise<{ id
           <a href={`${base}/${studyId}/export`} className="rounded-md border border-ink-200 px-3.5 py-2 text-sm text-ink-700 hover:bg-ink-100">
             Exporter (.docx)
           </a>
-          {open ? <CompleteForm study={study} gaps={gaps} /> : <ReopenForm studyId={studyId} />}
+          {open ? (
+            <CompleteForm study={study} gaps={gaps} />
+          ) : awaitingSignature ? (
+            isOwner ? (
+              <>
+                <AcceptResidualForm study={study} />
+                <ReturnStudyForm studyId={studyId} />
+              </>
+            ) : (
+              <span className="text-sm text-warn-600">
+                En attente de l’acceptation des risques résiduels par{' '}
+                {people.find((p) => p.userId === ucOwner?.owner_user_id)?.name ?? 'le Porteur de l’IA'}.
+              </span>
+            )
+          ) : (
+            <ReopenForm studyId={studyId} />
+          )}
           <InfoTip label="Comment conduire l’étude" title="Quatre temps, comme le modèle">
             <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
               <p><strong className="font-medium text-ink-800">1. Cadrage.</strong> Ce que fait le système, sur qui, avec quelles données ; les groupes affectés, directement ou non — et s’ils sont vulnérables.</p>
@@ -263,12 +292,42 @@ export default async function ImpactStudyPage({ params }: { params: Promise<{ id
         </div>
 
         <div className="space-y-5">
-          <Card title="Conclusion" tone={study.status === 'completed' ? 'neutral' : 'warn'}>
+          <Card title="Conclusion et signatures" tone={study.status === 'completed' ? 'neutral' : 'warn'}>
+            {study.conclusion ? <p className="mb-3 text-sm leading-relaxed text-ink-700">{study.conclusion}</p> : null}
+            {/*
+              Deux actes de nature differente : la methode, et ce qui reste.
+              Un auditeur lit d'abord cela.
+            */}
+            <dl className="mb-3 space-y-2 border-y border-ink-100 py-3 text-sm">
+              <div>
+                <dt className="text-xs uppercase tracking-wide text-ink-400">Visa de méthode</dt>
+                <dd className={study.method_signed_at ? 'text-ink-900' : 'text-warn-600'}>
+                  {study.method_signed_at
+                    ? `${study.method_signed_by ?? '—'} · ${formatDate(study.method_signed_at)}`
+                    : 'Non visée'}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs uppercase tracking-wide text-ink-400">Acceptation des risques résiduels</dt>
+                <dd className={study.residual_accepted_at ? 'text-ink-900' : 'text-warn-600'}>
+                  {study.residual_accepted_at
+                    ? `${study.residual_accepted_by ?? '—'} · ${formatDate(study.residual_accepted_at)}`
+                    : 'Non acceptée — le jalon Production l’exige'}
+                </dd>
+                {study.residual_statement ? (
+                  <dd className="mt-1 text-xs leading-relaxed text-ink-600">« {study.residual_statement} »</dd>
+                ) : null}
+              </div>
+            </dl>
+            {study.returned_at ? (
+              <p className="mb-3 rounded-md border border-warn-600/40 bg-amber-50 px-3.5 py-2.5 text-xs leading-relaxed text-warn-600">
+                Renvoyée à l’étude le {formatDate(study.returned_at)} : {study.returned_reason}
+              </p>
+            ) : null}
             {study.status === 'completed' ? (
               <div className="space-y-2 text-sm">
-                <p className="leading-relaxed text-ink-700">{study.conclusion}</p>
                 <p className="text-xs text-ink-500">
-                  Achevée le {formatDateTime(study.completed_at)} par {study.performed_by ?? '—'}
+                  Achevée le {formatDateTime(study.completed_at)}
                   {study.next_review_at ? ` · prochaine revue le ${formatDate(study.next_review_at)}` : ''}
                 </p>
               </div>

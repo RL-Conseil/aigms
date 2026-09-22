@@ -17,24 +17,38 @@ Les valeurs de l'énuméré `app.app_role` ne changent pas : elles sont dans les
 politiques de sécurité, les tests et les attributions déjà faites. Seul le nom
 change, partout où l'interface le montre — comptes existants et futurs.
 
-Hors des six : `client_admin` (Administrateur client, mêmes prérogatives que
-l'AI Governance Officer côté client) et `platform_admin` (Administration de la
-plateforme, qui ouvre les accès et ne gouverne pas).
+Hors des six, deux rôles :
+
+- `client_admin` — **Administrateur client** : l'AI Governance Officer *chez
+  le client*, quand le cabinet tient le rôle en prestation. Mêmes prérogatives
+  de gouvernance que l'officer, plus le réglage des comptes de son espace. Il
+  s'attribue depuis l'application (migration 0091) et figure dans le RACI avec
+  les mêmes lettres que l'officer. **Il double l'officer, il ne le remplace
+  pas** : la règle des six rôles tenus (0056) ne le compte pas.
+- `platform_admin` — **Administration de la plateforme** : ouvre les accès,
+  ne gouverne pas. Il ne s'attribue pas depuis l'application.
 
 ## RACI synthétique
 
 R réalise · A valide et assume la responsabilité finale · C donne son
 expertise obligatoire · I reçoit l'information sans bloquer le flux.
 
-| Étape du parcours | Porteur de l'IA | AI Governance Officer | Expert (DPO/RSSI) | Comité des risques | Comité de direction | Auditeur |
-|---|---|---|---|---|---|---|
-| 1. Déclaration et inventaire | A | R | C | — | — | I |
-| 2. Évaluation des risques | R | A | C | C | — | I |
-| 3. Validation des contrôles | I | R | A | A | — | I |
-| 4. Arbitrage IA critique | I | C | C | C | A | I |
-| 5. Outillage des contrôles | I | R | C | I | — | I |
-| 6. Référentiel — contrôles-types et familles d'outillage | — | I | — | — | — | I |
-| 7. Audit de conformité | I | I | I | I | I | A |
+| Étape du parcours | Porteur de l'IA | AI Governance Officer | Administrateur client | Expert (DPO/RSSI) | Comité des risques | Comité de direction | Auditeur |
+|---|---|---|---|---|---|---|---|
+| 1. Déclaration et inventaire | A | R | R | C | — | — | I |
+| 2. Évaluation des risques | R | A | A | C | C | — | I |
+| 3. Validation des contrôles | I | R | R | A | A | — | I |
+| 4. Arbitrage IA critique | I | C | C | C | C | A | I |
+| 5. Outillage des contrôles | I | R | R | C | I | — | I |
+| 6. Référentiel — contrôles-types et familles d'outillage | — | I | I | — | — | — | I |
+| 7. Audit de conformité | I | I | I | I | I | I | A |
+
+**L'étude d'impact se signe à deux** (migration 0091) : le **visa de méthode**
+revient à l'AI Governance Officer ou à l'Administrateur client — celui qui l'a
+conduite ; l'**acceptation des risques résiduels** revient au **Porteur de
+l'IA**, nommément. Une même personne ne pose pas les deux signatures, et le
+Porteur peut renvoyer l'étude avec un motif. Le jalon Production exige les
+deux.
 
 Où cela se joue dans l'application : 1 → fiche du cas d'usage, Avancement ;
 2 → rubriques Risques et Étude d'impact ; 3 → Contrôles affectés et registre

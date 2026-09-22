@@ -20,8 +20,11 @@ describe('Roles applicatifs', () => {
     }
   })
 
-  it("l'administration et l'administrateur client ne sont pas attribuables depuis l'application", () => {
+  it("l'administration plateforme ne s'attribue pas depuis l'application, l'administrateur client si", () => {
+    // Depuis 0091 : l'Administrateur client est l'officer chez le client, un
+    // role a part entiere. platform_admin, lui, ouvre les acces et ne se
+    // donne pas depuis un ecran.
     expect(ASSIGNABLE_ROLES).not.toContain('platform_admin')
-    expect(ASSIGNABLE_ROLES).not.toContain('client_admin')
+    expect(ASSIGNABLE_ROLES).toContain('client_admin')
   })
 })

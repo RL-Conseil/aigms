@@ -284,6 +284,10 @@ const completeSchema = z.object({
   nextReviewAt: z.string().trim().optional().or(z.literal('')),
 })
 
+/**
+ * Le VISA DE METHODE : l'etude est conduite correctement. Il n'acheve pas
+ * l'etude — il appelle l'acceptation des risques residuels par le Porteur.
+ */
 export async function completeImpactStudy(_previous: FormState | null, formData: FormData): Promise<FormState> {
   const parsed = completeSchema.safeParse({
     studyId: formData.get('studyId'),
@@ -298,15 +302,84 @@ export async function completeImpactStudy(_previous: FormState | null, formData:
   const { error } = await supabase
     .from('impact_assessment')
     .update({
-      status: 'completed',
+      status: 'awaiting_signature',
       conclusion: d.conclusion,
-      completed_at: new Date().toISOString(),
       next_review_at: d.nextReviewAt || null,
+      method_signed_at: new Date().toISOString(),
+      returned_at: null,
+      returned_reason: null,
     })
     .eq('id', d.studyId)
   if (error) return { ok: false, message: explain(error) }
   paths.revalidate()
-  return { ok: true, message: 'Étude achevée. L’action « déposer la preuve » est ouverte : l’export d’un clic la solde.' }
+  return {
+    ok: true,
+    message:
+      'Étude visée : sa méthode tient. Le Porteur de l’IA est appelé à accepter les risques résiduels — relance à sept jours, puis quatorze.',
+  }
+}
+
+// -----------------------------------------------------------------------------
+// L'acceptation des risques residuels, et son refus
+// -----------------------------------------------------------------------------
+const acceptSchema = z.object({
+  studyId: z.string().uuid(),
+  statement: z.string().trim().min(20, 'Dire ce que vous assumez, et sous quelles conditions.').max(4000),
+})
+
+export async function acceptResidualRisks(_previous: FormState | null, formData: FormData): Promise<FormState> {
+  const parsed = acceptSchema.safeParse({
+    studyId: formData.get('studyId'),
+    statement: formData.get('statement'),
+  })
+  if (!parsed.success) return firstIssues(parsed.error)
+  const d = parsed.data
+  const supabase = await createClient()
+  const paths = await studyPaths(supabase, d.studyId)
+  if (!paths) return { ok: false, message: 'Étude introuvable.' }
+
+  // L'acceptation et l'achevement vont ensemble : la base refuse l'un sans
+  // l'autre, et refuse que la meme personne pose les deux signatures.
+  // L'ecriture d'une etude reste fermee au Porteur : sa signature passe par
+  // un acte, comme une transition (0091).
+  const { error } = await supabase.rpc('accept_residual_risks', {
+    p_study_id: d.studyId,
+    p_statement: d.statement,
+  })
+  if (error) return { ok: false, message: explain(error) }
+  paths.revalidate()
+  return {
+    ok: true,
+    message:
+      'Risques résiduels acceptés en votre nom. L’étude est achevée : l’export déposé au registre des preuves la clôt.',
+  }
+}
+
+const returnSchema = z.object({
+  studyId: z.string().uuid(),
+  reason: z.string().trim().min(15, 'Dire ce qui manque ou ce qui ne va pas.').max(2000),
+})
+
+export async function returnImpactStudy(_previous: FormState | null, formData: FormData): Promise<FormState> {
+  const parsed = returnSchema.safeParse({
+    studyId: formData.get('studyId'),
+    reason: formData.get('reason'),
+  })
+  if (!parsed.success) return firstIssues(parsed.error)
+  const d = parsed.data
+  const supabase = await createClient()
+  const paths = await studyPaths(supabase, d.studyId)
+  if (!paths) return { ok: false, message: 'Étude introuvable.' }
+  const { error } = await supabase.rpc('return_impact_study', {
+    p_study_id: d.studyId,
+    p_reason: d.reason,
+  })
+  if (error) return { ok: false, message: explain(error) }
+  paths.revalidate()
+  return {
+    ok: true,
+    message: 'Étude renvoyée à l’étude. Le visa tombe, l’AI Governance Officer est averti et reprend la main.',
+  }
 }
 
 const reopenSchema = z.object({
@@ -343,7 +416,14 @@ export async function depositImpactStudyExport(studyId: string): Promise<FormSta
   const { data, error: readError } = await supabase.rpc('impact_study', { p_id: studyId })
   if (readError || !data) return { ok: false, message: 'Étude introuvable.' }
   const study = data as unknown as ImpactStudy
-  if (study.status !== 'completed') return { ok: false, message: 'L’étude se dépose une fois achevée.' }
+  if (study.status !== 'completed') {
+    return {
+      ok: false,
+      message: study.method_signed_at
+        ? 'L’étude attend l’acceptation des risques résiduels par le Porteur de l’IA.'
+        : 'L’étude se dépose une fois visée et acceptée.',
+    }
+  }
 
   const { data: organization } = await supabase
     .from('organization')

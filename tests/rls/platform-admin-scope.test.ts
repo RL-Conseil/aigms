@@ -152,17 +152,18 @@ describe("Ce que l'administration plateforme ne peut pas faire", () => {
     expect(failure.message).toMatch(/ne peut pas être attribué depuis l/)
   })
 
-  it('attribuer le role client_admin, qui porte des droits de gouvernance etendus', async () => {
-    const failure = await asUser(db, ADMIN, (c) =>
-      expectFailure(
-        c,
+  it("l'Administrateur client s'attribue depuis l'application : c'est l'officer chez le client", async () => {
+    // Depuis 0091, client_admin est un role a part entiere — il figure dans
+    // app.assignable_roles(). Seul platform_admin reste hors de portee.
+    const assigned = await asUser(db, ADMIN, async (c) => {
+      const { rows } = await c.query<{ role: string }>(
         `insert into public.role_assignment (tenant_id, organization_id, user_id, role)
-         values ($1, $2, $3, 'client_admin')`,
+         values ($1, $2, $3, 'client_admin') returning role::text`,
         [DEMO.tenantA, DEMO.orgA, DEMO.systemOwnerA],
-      ),
-    )
-
-    expect(failure.message).toMatch(/ne peut pas être attribué depuis l/)
+      )
+      return rows[0]!.role
+    })
+    expect(assigned).toBe('client_admin')
   })
 })
 

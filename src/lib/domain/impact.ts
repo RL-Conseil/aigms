@@ -11,6 +11,7 @@
 export const IMPACT_STATUS_LABELS: Record<string, string> = {
   draft: 'Brouillon',
   in_progress: 'En cours',
+  awaiting_signature: 'En attente de signature',
   completed: 'Achevée',
   reopened: 'Rouverte',
   superseded: 'Remplacée',
@@ -126,6 +127,15 @@ export type ImpactStudy = {
   completed_at: string | null
   next_review_at: string | null
   reopened_reason: string | null
+  /** Visa de methode (0091) : l'etude est conduite correctement. */
+  method_signed_at: string | null
+  method_signed_by: string | null
+  /** Acceptation des risques residuels par le Porteur, en son nom. */
+  residual_accepted_at: string | null
+  residual_accepted_by: string | null
+  residual_statement: string | null
+  returned_at: string | null
+  returned_reason: string | null
   created_at: string
   updated_at: string
   organization_id: string
