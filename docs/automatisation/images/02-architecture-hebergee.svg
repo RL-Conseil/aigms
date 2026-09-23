@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="720" viewBox="0 0 1160 720" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<rect width="1160" height="720" fill="#ffffff"/>
+<text x="40" y="28" font-size="28" fill="#1e1e1e">Automatisation AIGMS — architecture hébergée (n8n Cloud)</text>
+<text x="40" y="56" font-size="16" fill="#757575">Aucun serveur à tenir. En contrepartie, tout doit être joignable depuis l’internet.</text>
+<rect x="40" y="90" width="480" height="330" rx="12" fill="#e5dbff" fill-opacity="0.35" stroke="#8b5cf6" stroke-width="1" stroke-opacity="0.35"/>
+<text x="56" y="116" font-size="16" fill="#8b5cf6">n8n Cloud — chez l’éditeur</text>
+<rect x="70" y="140" width="300" height="70" rx="12" fill="#d0bfff" fill-opacity="1" stroke="#8b5cf6" stroke-width="2" stroke-opacity="1"/>
+<text x="220" y="180.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Workflows + planification</text>
+<rect x="70" y="230" width="300" height="70" rx="12" fill="#ffc9c9" fill-opacity="1" stroke="#ef4444" stroke-width="2" stroke-opacity="1"/>
+<text x="220" y="260.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Coffre d’identifiants</text>
+<text x="220" y="280.6" font-size="16" fill="#1e1e1e" text-anchor="middle">(chez l’éditeur)</text>
+<text x="70" y="334" font-size="14" fill="#ef4444">Vos identifiants AIGMS</text>
+<text x="70" y="352.2" font-size="14" fill="#ef4444">sortent de votre périmètre.</text>
+<rect x="620" y="90" width="500" height="300" rx="12" fill="#dbe4ff" fill-opacity="0.35" stroke="#4a9eed" stroke-width="1" stroke-opacity="0.35"/>
+<text x="636" y="116" font-size="16" fill="#4a9eed">AIGMS — système de référence</text>
+<rect x="650" y="140" width="200" height="70" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="750" y="170.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Application</text>
+<text x="750" y="190.6" font-size="16" fill="#1e1e1e" text-anchor="middle">(Vercel)</text>
+<rect x="880" y="140" width="210" height="70" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="985" y="170.6" font-size="16" fill="#1e1e1e" text-anchor="middle">PostgREST</text>
+<text x="985" y="190.6" font-size="16" fill="#1e1e1e" text-anchor="middle">/rest/v1</text>
+<rect x="650" y="240" width="440" height="120" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="870" y="295.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Supabase Postgres</text>
+<text x="870" y="315.6" font-size="16" fill="#1e1e1e" text-anchor="middle">RLS · compte d’automatisation nominatif</text>
+<rect x="620" y="440" width="500" height="240" rx="12" fill="#d3f9d8" fill-opacity="0.35" stroke="#22c55e" stroke-width="1" stroke-opacity="0.35"/>
+<text x="636" y="466" font-size="16" fill="#22c55e">Systèmes cibles — exposés à l’internet</text>
+<rect x="650" y="490" width="440" height="60" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="870" y="525.6" font-size="16" fill="#1e1e1e" text-anchor="middle">SaaS : Jira, M365, Yousign, Teams…</text>
+<rect x="650" y="580" width="440" height="60" rx="12" fill="#ffd8a8" fill-opacity="1" stroke="#f59e0b" stroke-width="2" stroke-opacity="1"/>
+<text x="870" y="615.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Sur site : seulement via passerelle exposée</text>
+<defs><marker id="m1360" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="370" y1="175" x2="650" y2="165" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m1360)"/>
+<rect x="453.95" y="156" width="112.10000000000001" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="510" y="173.5" font-size="14" fill="#4a9eed" text-anchor="middle">HTTPS sortant</text>
+<defs><marker id="m1810" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#22c55e"/></marker></defs>
+<line x1="370" y1="265" x2="650" y2="525" stroke="#22c55e" stroke-width="2"  marker-end="url(#m1810)"/>
+<rect x="488.6" y="381" width="42.800000000000004" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="510" y="398.5" font-size="14" fill="#22c55e" text-anchor="middle">agit</text>
+<text x="40" y="476" font-size="16" fill="#ef4444">Ce que cette architecture interdit :</text>
+<text x="40" y="504" font-size="14" fill="#1e1e1e">• atteindre un SI interne sans le publier</text>
+<text x="40" y="529" font-size="14" fill="#1e1e1e">• garder les secrets dans votre périmètre</text>
+<text x="40" y="554" font-size="14" fill="#1e1e1e">• maîtriser la localisation des exécutions</text>
+<text x="40" y="606" font-size="16" fill="#22c55e">Ce qu’elle apporte :</text>
+<text x="40" y="634" font-size="14" fill="#1e1e1e">• aucun serveur, aucune mise à jour à tenir</text>
+<text x="40" y="659" font-size="14" fill="#1e1e1e">• disponibilité assurée par l’éditeur</text>
+</svg>
