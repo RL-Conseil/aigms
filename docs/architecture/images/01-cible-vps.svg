@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="1001" viewBox="0 0 1160 1001" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<rect width="1160" height="1001" fill="#ffffff"/>
+<text x="40" y="28" font-size="28" fill="#1e1e1e">AIGMS hébergé sur VPS — un environnement</text>
+<text x="40" y="56" font-size="16" fill="#757575">Tout ce qui tourne chez IZARHOST pour un client. Même composition pour la préprod et la production.</text>
+<rect x="40" y="100" width="1080" height="560" rx="12" fill="#e5dbff" fill-opacity="0.35" stroke="#8b5cf6" stroke-width="1" stroke-opacity="0.35"/>
+<text x="56" y="126" font-size="16" fill="#8b5cf6">VPS — Docker Compose</text>
+<rect x="80" y="160" width="380" height="70" rx="12" fill="#d0bfff" fill-opacity="1" stroke="#8b5cf6" stroke-width="2" stroke-opacity="1"/>
+<text x="270" y="190.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Traefik — TLS, Let’s Encrypt</text>
+<text x="270" y="210.6" font-size="16" fill="#1e1e1e" text-anchor="middle">aigms.client.fr</text>
+<defs><marker id="m4270" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#8b5cf6"/></marker></defs>
+<line x1="270" y1="230" x2="270" y2="280" stroke="#8b5cf6" stroke-width="2"  marker-end="url(#m4270)"/>
+<rect x="80" y="290" width="380" height="90" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="270" y="330.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Application AIGMS</text>
+<text x="270" y="350.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Next.js 16 — image versionnée</text>
+<text x="80" y="409" font-size="14" fill="#4a9eed">Une image = un commit.</text>
+<text x="80" y="427.2" font-size="14" fill="#4a9eed">Retour arrière en 30 secondes.</text>
+<rect x="520" y="150" width="560" height="460" rx="12" fill="#dbe4ff" fill-opacity="0.35" stroke="#4a9eed" stroke-width="1" stroke-opacity="0.35"/>
+<text x="536" y="176" font-size="16" fill="#4a9eed">Pile Supabase auto-hébergée</text>
+<rect x="550" y="200" width="240" height="60" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="670" y="235.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Kong — passerelle</text>
+<rect x="810" y="200" width="240" height="60" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="930" y="235.6" font-size="16" fill="#1e1e1e" text-anchor="middle">GoTrue — comptes</text>
+<rect x="550" y="280" width="240" height="60" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="670" y="315.6" font-size="16" fill="#1e1e1e" text-anchor="middle">PostgREST — /rest/v1</text>
+<rect x="810" y="280" width="240" height="60" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="930" y="315.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Storage — preuves</text>
+<rect x="550" y="370" width="500" height="100" rx="12" fill="#c3fae8" fill-opacity="1" stroke="#06b6d4" stroke-width="2" stroke-opacity="1"/>
+<text x="800" y="415.6" font-size="16" fill="#1e1e1e" text-anchor="middle">PostgreSQL 17</text>
+<text x="800" y="435.6" font-size="16" fill="#1e1e1e" text-anchor="middle">RLS · 223 déclencheurs · journal append-only</text>
+<rect x="550" y="490" width="500" height="70" rx="12" fill="#c3fae8" fill-opacity="1" stroke="#06b6d4" stroke-width="2" stroke-opacity="1"/>
+<text x="800" y="530.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Volume chiffré — données et fichiers</text>
+<defs><marker id="m6315" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="460" y1="335" x2="550" y2="300" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m6315)"/>
+<rect x="472.05" y="303.5" width="65.9" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="505" y="321" font-size="14" fill="#4a9eed" text-anchor="middle">interne</text>
+<rect x="40" y="700" width="1080" height="180" rx="12" fill="#d3f9d8" fill-opacity="0.35" stroke="#22c55e" stroke-width="1" stroke-opacity="0.35"/>
+<text x="56" y="726" font-size="16" fill="#22c55e">Autour du serveur</text>
+<rect x="80" y="750" width="300" height="70" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="230" y="780.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Sauvegarde chiffrée</text>
+<text x="230" y="800.6" font-size="16" fill="#1e1e1e" text-anchor="middle">hors du serveur</text>
+<rect x="410" y="750" width="300" height="70" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="560" y="780.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Supervision</text>
+<text x="560" y="800.6" font-size="16" fill="#1e1e1e" text-anchor="middle">disque, mémoire, TLS</text>
+<rect x="740" y="750" width="340" height="70" rx="12" fill="#ffd8a8" fill-opacity="1" stroke="#f59e0b" stroke-width="2" stroke-opacity="1"/>
+<text x="910" y="790.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Resend — courriels sortants</text>
+<defs><marker id="m11490" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#22c55e"/></marker></defs>
+<line x1="760" y1="560" x2="760" y2="750" stroke="#22c55e" stroke-width="2" stroke-dasharray="8 6" marker-end="url(#m11490)"/>
+<rect x="700.1" y="641" width="119.80000000000001" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="760" y="658.5" font-size="14" fill="#22c55e" text-anchor="middle">dump quotidien</text>
+<text x="40" y="925" font-size="15" fill="#1e1e1e">Ce qui ne change pas en quittant Vercel : le code, les migrations, les règles en base, les tests.</text>
+<text x="40" y="955" font-size="15" fill="#ef4444">Ce qui change de responsable : les certificats, les sauvegardes, les mises à jour de Postgres.</text>
+</svg>
