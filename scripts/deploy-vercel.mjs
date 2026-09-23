@@ -7,9 +7,19 @@
  * laquelle ce jeton n'a pas acces, et refuse donc de fonctionner. L'API de
  * deploiement, elle, l'accepte.
  *
- * Il deviendra inutile le jour ou l'App GitHub de Vercel aura acces a
- * l'organisation RL-Conseil : les deploiements repartiront automatiquement a
- * chaque push. Voir docs/roadmap/IMPLEMENTATION_STATUS.md.
+ * DEUX CHEMINS, et le premier est de loin le meilleur :
+ *
+ *   1. `gitSource` — Vercel clone lui-meme la branche depuis GitHub. Rien ne
+ *      transite par ce poste : pas d'envoi de fichiers, donc pas de quota
+ *      `api-upload-free` (5 000 envois par 24 heures, epuises en une journee
+ *      quand on renvoie les 506 fichiers du depot a chaque fois). Exige que la
+ *      branche soit poussee et que HEAD y soit.
+ *   2. l'envoi de fichiers, en repli — quand la branche n'est pas poussee, ou
+ *      que le commit local n'est pas celui du distant. Seuls les fichiers que
+ *      Vercel ne connait pas partent : il stocke par empreinte.
+ *
+ * Il deviendra inutile le jour ou l'App GitHub de Vercel deploiera d'elle-meme
+ * a chaque push. Voir docs/roadmap/IMPLEMENTATION_STATUS.md.
  *
  * Usage :
  *   VERCEL_TOKEN=... node scripts/deploy-vercel.mjs            # preview
@@ -59,22 +69,47 @@ if (target === 'production' && branch !== 'main') {
 
 if (git('status', '--porcelain')) {
   console.error('Arbre de travail non propre. Committer avant de deployer : le deploiement')
-  console.error('envoie les fichiers suivis par Git, une modification non commitee serait perdue.')
+  console.error('part du commit, une modification non commitee serait perdue.')
   process.exit(1)
 }
 
+/**
+ * La branche est-elle poussee, au meme commit ?
+ *
+ * C'est la condition pour laisser Vercel cloner. Sinon il construirait un
+ * autre code que celui qu'on a sous les yeux — le pire des deux mondes.
+ */
+const head = git('rev-parse', 'HEAD')
+let distant = null
+try {
+  distant = git('rev-parse', `origin/${branch}`)
+} catch {
+  // Branche jamais poussee : `origin/<branche>` n'existe pas.
+}
+const clonable = distant === head
+
 // -z : noms separes par NUL, sans echappement des accents ni des espaces.
-const tracked = execFileSync('git', ['ls-files', '-z'], { encoding: 'utf8' })
-  .split('\0')
-  .filter(Boolean)
+const files = clonable
+  ? []
+  : execFileSync('git', ['ls-files', '-z'], { encoding: 'utf8' })
+      .split('\0')
+      .filter(Boolean)
+      .map((path) => {
+        const data = readFileSync(path)
+        return {
+          file: path,
+          sha: createHash('sha1').update(data).digest('hex'),
+          size: data.length,
+          data,
+        }
+      })
 
-const files = tracked.map((path) => {
-  const data = readFileSync(path)
-  return { file: path, sha: createHash('sha1').update(data).digest('hex'), size: data.length, data }
-})
-
-const megabytes = (files.reduce((n, f) => n + f.size, 0) / 1024 / 1024).toFixed(1)
-console.log(`Branche ${branch} — ${files.length} fichiers, ${megabytes} Mo`)
+if (clonable) {
+  console.log(`Branche ${branch} — Vercel clone ${head.slice(0, 7)} depuis GitHub`)
+} else {
+  const megabytes = (files.reduce((n, f) => n + f.size, 0) / 1024 / 1024).toFixed(1)
+  console.log(`Branche ${branch} non poussee — envoi de ${files.length} fichiers, ${megabytes} Mo`)
+}
 
 /**
  * N'envoyer que ce qui manque.
@@ -119,18 +154,24 @@ async function envoyer(manquants) {
   }
 }
 
-const body = {
-  name: PROJECT,
-  project: PROJECT,
-  files: files.map(({ file, sha, size }) => ({ file, sha, size })),
-  projectSettings: { framework: 'nextjs' },
-  gitMetadata: {
-    remoteUrl: 'https://github.com/RL-Conseil/aigms',
-    commitSha: git('rev-parse', 'HEAD'),
-    commitMessage: git('log', '-1', '--format=%s'),
-    commitRef: branch,
-  },
-}
+const body = clonable
+  ? {
+      name: PROJECT,
+      project: PROJECT,
+      gitSource: { type: 'github', org: 'RL-Conseil', repo: 'aigms', ref: branch },
+    }
+  : {
+      name: PROJECT,
+      project: PROJECT,
+      files: files.map(({ file, sha, size }) => ({ file, sha, size })),
+      projectSettings: { framework: 'nextjs' },
+      gitMetadata: {
+        remoteUrl: 'https://github.com/RL-Conseil/aigms',
+        commitSha: head,
+        commitMessage: git('log', '-1', '--format=%s'),
+        commitRef: branch,
+      },
+    }
 if (target) body.target = target
 
 let res = await creer()
