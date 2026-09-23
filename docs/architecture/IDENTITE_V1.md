@@ -101,11 +101,16 @@ les 50 organisations, un basculement d'organisation sans se reconnecter.
 le compte de son organisation, et la RLS fait le reste. L'isolation des
 automatisations est celle de la plateforme, vérifiée par les mêmes tests.
 
-**Ce qui reste à développer.** Le bouton « Se connecter avec l'annuaire de mon
-organisation » sur la mire (`src/app/login/page.tsx`) : une saisie d'adresse,
-un `signInWithSSO({ domain })`. **Une demi-journée, aucune migration.**
-Aujourd'hui, `signInWithSSO` n'apparaît nulle part dans `src/` — c'est le seul
-manque.
+**Ce que l'application fait déjà.** Le bouton « Se connecter avec l'annuaire
+de mon organisation » est en place sur la mire (`src/components/login-form.tsx`) :
+la personne saisit son adresse, le **domaine** désigne le fournisseur
+d'identité, `signInWithSSO({ domain })` redirige vers l'IdP, et
+`/auth/callback` (`src/app/auth/callback/route.ts`) échange le code contre une
+session. L'application ne tient **aucune liste de domaines** : la
+correspondance domaine → IdP vit dans Supabase, et brancher un nouveau client
+ne demande aucun redéploiement.
+
+Il ne reste donc, côté développement, **rien** : tout est configuration.
 
 **Ce qu'il faut acheter.** Le plan Supabase Pro (ou l'équivalent self-hosted)
 pour SAML ; l'OIDC est disponible sur tous les plans.
@@ -247,9 +252,11 @@ Concrètement, ce que je propose de dire à IZARRALDE :
   aussi la console d'agrégation, sans quoi le service à 4 jours/an/client ne
   tient plus.
 
-Le seul développement que cette architecture réclame aujourd'hui est **le
-bouton « Se connecter avec l'annuaire de mon organisation »** : une demi-journée,
-sans migration. Tout le reste est de la configuration.
+Le seul développement que cette architecture réclamait — **le bouton
+« Se connecter avec l'annuaire de mon organisation »** — est fait (23 septembre
+2026, branche `feat/connexion-annuaire`). Tout le reste est de la
+configuration : un plan Supabase Pro pour SAML, puis une déclaration de domaine
+par client.
 
 ---
 

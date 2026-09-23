@@ -15,14 +15,32 @@ test('l’accueil est la mire de connexion', async ({ page, context }) => {
 
   await expect(page.getByRole('heading', { name: 'Accès à votre espace de gouvernance' })).toBeVisible()
   await expect(page.getByLabel('Adresse électronique')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Se connecter' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Se connecter', exact: true })).toBeVisible()
 
-  // Un abstract, pas une page de vente : le discours commercial vit ailleurs.
-  await expect(page.getByText('Gouverner l’IA. Décider. Prouver. Améliorer.')).toBeVisible()
-  await expect(page.getByRole('link', { name: 'caritis.fr' })).toBeVisible()
+  // Une accroche, pas une page de vente : le discours commercial vit ailleurs.
+  await expect(page.getByText(/ce que vous pouvez montrer/)).toBeVisible()
 
-  // Precaution produit : aucune promesse de certification.
-  await expect(page.getByText(/ne remplace ni un avis juridique/)).toBeVisible()
+  // Le seul appel commercial, et il pointe hors de l'application.
+  await expect(
+    page.getByRole('link', { name: /Demandez votre atelier de qualification/ }),
+  ).toHaveAttribute('href', 'https://www.caritis.fr/realisations/aigms')
+})
+
+test('la connexion par l’annuaire de l’organisation est offerte', async ({ page, context }) => {
+  await context.clearCookies()
+  await page.goto('/')
+
+  const annuaire = page.getByRole('button', { name: 'Se connecter avec l’annuaire de mon organisation' })
+  await expect(annuaire).toBeVisible()
+
+  // Sans adresse, rien ne part : le domaine designe le fournisseur d'identite.
+  await annuaire.click()
+  await expect(page.getByRole('alert')).toHaveText(/Indiquez d’abord votre adresse professionnelle/)
+
+  // Un domaine sans annuaire declare le dit, et renvoie au mot de passe.
+  await page.getByLabel('Adresse électronique').fill('personne@domaine-sans-annuaire.test')
+  await annuaire.click()
+  await expect(page.getByRole('alert')).toHaveText(/Aucun annuaire n’est déclaré pour domaine-sans-annuaire\.test/)
 })
 
 test('les comptes ne s’ouvrent pas librement', async ({ page, context }) => {

@@ -76,9 +76,11 @@ coder pour les deux premiers, tout se configure.
 3. Supabase → *Authentication* → *Providers* → *Azure* : Client ID, secret,
    **Azure Tenant URL** = `https://login.microsoftonline.com/<tenant-id>` (pour
    refuser les comptes personnels Microsoft).
-4. Dans AIGMS, la mire propose « Se connecter avec Microsoft » —
-   `supabase.auth.signInWithOAuth({ provider: 'azure', options: { scopes: 'email openid profile' } })`.
-   (Bouton à ajouter sur la mire : petite évolution, sans migration.)
+4. Dans AIGMS, la mire propose déjà « Se connecter avec l'annuaire de mon
+   organisation » (voir A2). Pour un bouton « Se connecter avec Microsoft »
+   dédié — `signInWithOAuth({ provider: 'azure', options: { scopes: 'email openid profile' } })` —
+   il reste à l'ajouter ; l'OIDC ne se résout pas par domaine d'adresse, il
+   faut donc un bouton explicite.
 
 **Option A2 — SAML 2.0 (plan Supabase Pro ou supérieur).** Pour les DSI qui
 imposent SAML ou un IdP autre qu'Entra (Okta, ADFS, Keycloak) :
@@ -91,9 +93,14 @@ imposent SAML ou un IdP autre qu'Entra (Okta, ADFS, Keycloak) :
 2. Côté Supabase : `supabase sso add --project-ref <ref> --type saml
    --metadata-url '<URL App Federation Metadata>' --domains client.fr
    --attribute-mapping-file mapping.json`.
-3. Dans AIGMS, la mire propose « Se connecter avec l'annuaire de mon
-   organisation » : saisie de l'adresse, `signInWithSSO({ domain })` redirige
-   vers l'IdP du domaine.
+3. Dans AIGMS, **c'est en place** : la mire propose « Se connecter avec
+   l'annuaire de mon organisation ». La personne saisit son adresse ; le
+   **domaine** désigne l'IdP, `signInWithSSO({ domain })` redirige, et
+   `/auth/callback` échange le code contre une session
+   (`src/components/login-form.tsx`, `src/app/auth/callback/route.ts`).
+   L'application ne tient aucune liste de domaines : brancher un client est une
+   déclaration Supabase, sans redéploiement. Un domaine sans annuaire déclaré
+   obtient un message explicite et reste sur le mot de passe.
 
 **Dans les deux cas**, à la première connexion, le déclencheur
 `on_auth_user_created` crée le profil ; la personne n'a **aucun rôle** tant que
