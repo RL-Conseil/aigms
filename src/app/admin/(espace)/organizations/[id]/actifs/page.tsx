@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import type { RegisterAsset } from '@/lib/domain/assets'
 import { Shell } from '@/components/shell'
 import { Badge, Card, Empty } from '@/components/ui'
 import { ASSET_KIND_LABELS, ASSET_MEASURE_STATUS_LABELS, USE_CASE_STATUS_LABELS, VENDOR_REVIEW_LABELS, formatDate, type UseCaseStatus } from '@/lib/domain/governance'
@@ -17,21 +18,6 @@ import { organizationPeople } from '@/lib/governance/people'
  * techniques posees dessus. C'est l'inventaire qu'ISO/IEC 42001 (A.6) et
  * l'AI Act demandent, et c'est la ou la gouvernance touche la technique.
  */
-export type RegisterAsset = {
-  id: string
-  business_ref: string
-  name: string
-  kind: string
-  description: string | null
-  version: string | null
-  hosting_location: string | null
-  contains_personal_data: boolean
-  vendor: { id: string; name: string; review_status: string } | null
-  owner: string | null
-  use_cases: { id: string; name: string; business_ref: string; status: string; relation: string }[]
-  measures: { id: string; control_id: string; code: string; name: string; measure_kind: string; control_status: string; status: string; note: string | null; verified_at: string | null }[]
-}
-
 const KIND_ORDER = ['ai_system', 'ai_agent', 'ai_model', 'dataset']
 
 export default async function AssetRegisterPage({

@@ -1,8 +1,3 @@
-import 'server-only'
-
-import { cache } from 'react'
-import { createClient } from '@/lib/supabase/server'
-
 /**
  * Ce qui appelle une action.
  *
@@ -10,8 +5,9 @@ import { createClient } from '@/lib/supabase/server'
  * savoir s'il s'y passe quelque chose. Ces compteurs permettent a la navigation
  * de dire ou aller avant qu'on ait a chercher.
  *
- * `cache` memoise l'appel pour la duree du rendu : la coquille, le sous-menu et
- * la page lisent le meme etat sans multiplier les requetes.
+ * Ce module est PUR : la barre de navigation vit dans le navigateur, et elle a
+ * besoin de ces intitules, de cet ordre et de ces destinations. Les lectures
+ * de la base vivent dans `attention-data.ts`, cote serveur.
  */
 
 export type Attention = {
@@ -70,23 +66,6 @@ const LATE: AttentionKind[] = ['overdue_actions', 'open_incidents', 'high_risks_
 
 export function isLate(kind: AttentionKind): boolean {
   return LATE.includes(kind)
-}
-
-export const attentionByOrganization = cache(async (): Promise<Attention[]> => {
-  const supabase = await createClient()
-  const { data } = await supabase.rpc('attention_by_organization')
-  return (data ?? []) as Attention[]
-})
-
-export const attentionFor = cache(async (organizationId: string): Promise<Attention | null> => {
-  const rows = await attentionByOrganization()
-  return rows.find((row) => row.organization_id === organizationId) ?? null
-})
-
-/** Somme de tout ce qui appelle une action sur le perimetre accessible. */
-export async function attentionTotal(): Promise<number> {
-  const rows = await attentionByOrganization()
-  return rows.reduce((sum, row) => sum + row.total, 0)
 }
 
 /** Rend la liste lisible : « 2 preuves à renouveler, 1 incident ouvert ». */

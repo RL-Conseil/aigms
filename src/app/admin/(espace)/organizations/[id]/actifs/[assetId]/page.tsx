@@ -13,7 +13,7 @@ import {
   USE_CASE_STATUS_LABELS,
   type UseCaseStatus,
 } from '@/lib/domain/governance'
-import type { RegisterAsset } from '../page'
+import type { RegisterAsset } from '@/lib/domain/assets'
 
 /**
  * La fiche d'un actif : ce qu'il est, qui l'emploie, les mesures techniques

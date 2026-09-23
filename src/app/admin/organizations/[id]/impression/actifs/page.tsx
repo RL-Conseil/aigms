@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { PrintDocument } from '@/components/print/document'
 import { documentIdentity } from '@/lib/governance/document-identity'
 import { ASSET_KIND_LABELS, ASSET_MEASURE_STATUS_LABELS } from '@/lib/domain/governance'
-import type { RegisterAsset } from '../../actifs/page'
+import type { RegisterAsset } from '@/lib/domain/assets'
 
 export const metadata: Metadata = { title: 'Registre des actifs d’IA' }
 
