@@ -53,16 +53,13 @@ export default function HomePage() {
               <LoginForm captchaSiteKey={captchaSiteKey} />
             </Suspense>
 
-            <div className="mt-8 flex flex-col gap-3 border-t border-ink-200 pt-6 text-[13px] leading-relaxed text-ink-500">
+            <div className="mt-8 border-t border-ink-200 pt-6 text-[13px] leading-relaxed text-ink-500">
               <p>
-                <strong className="font-medium text-ink-700">Pas encore de compte ?</strong> Les
-                comptes ne s’ouvrent pas librement : l’administration de la plateforme les déclare
-                et attribue les rôles — porteur du système, responsable du risque, auditeur, AI
-                Governance Officer. C’est ce qui permet au registre de décisions de tenir.
-              </p>
-              <p>
-                <strong className="font-medium text-ink-700">Mot de passe oublié</strong>, accès à
-                ouvrir ou rôle à modifier : adressez-vous à l’administration de la plateforme.
+                <strong className="font-medium text-ink-700">
+                  Pas encore de compte ou mot de passe oublié ?
+                </strong>{' '}
+                Les comptes ne s’ouvrent pas librement, adressez-vous à l’administrateur de la
+                plateforme.
               </p>
             </div>
           </div>
