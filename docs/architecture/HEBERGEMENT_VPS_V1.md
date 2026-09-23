@@ -3,6 +3,10 @@
 *Version 1 — 23 septembre 2026. Proposition d'architecture pour une
 exploitation chez IZARHOST, en alternative à Vercel + supabase.com.*
 
+> **Suite :** `IDENTITE_V1.md` traite la question de l'identité quand chaque
+> client a son propre annuaire — et pourquoi cela n'impose pas une instance
+> par client.
+
 ---
 
 ## 1. Pourquoi la question se pose

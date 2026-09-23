@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="933" viewBox="0 0 1400 933" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<rect width="1400" height="933" fill="#ffffff"/>
+<text x="40" y="26" font-size="26" fill="#1e1e1e">Cellules — vendre du VPS sans multiplier l’identité</text>
+<text x="40" y="56" font-size="16" fill="#757575">Un serveur par segment, pas par client. Quatre connexions au lieu de cinquante.</text>
+<rect x="40" y="120" width="300" height="80" rx="12" fill="#fff3bf" fill-opacity="1" stroke="#f59e0b" stroke-width="2" stroke-opacity="1"/>
+<text x="190" y="155.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Entra ID — CARITIS</text>
+<text x="190" y="175.6" font-size="16" fill="#1e1e1e" text-anchor="middle">l’officer, une identité</text>
+<rect x="40" y="250" width="1320" height="300" rx="12" fill="#e5dbff" fill-opacity="0.35" stroke="#8b5cf6" stroke-width="1" stroke-opacity="0.35"/>
+<text x="56" y="276" font-size="16" fill="#8b5cf6">Les cellules, chez IZARHOST</text>
+<rect x="80" y="310" width="290" height="90" rx="12" fill="#d0bfff" fill-opacity="1" stroke="#8b5cf6" stroke-width="2" stroke-opacity="1"/>
+<text x="225" y="350.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Cellule STANDARD</text>
+<text x="225" y="370.6" font-size="16" fill="#1e1e1e" text-anchor="middle">15 à 20 clients</text>
+<rect x="400" y="310" width="290" height="90" rx="12" fill="#d0bfff" fill-opacity="1" stroke="#8b5cf6" stroke-width="2" stroke-opacity="1"/>
+<text x="545" y="350.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Cellule SOUVERAINE</text>
+<text x="545" y="370.6" font-size="16" fill="#1e1e1e" text-anchor="middle">données en France</text>
+<rect x="720" y="310" width="290" height="90" rx="12" fill="#ffd8a8" fill-opacity="1" stroke="#f59e0b" stroke-width="2" stroke-opacity="1"/>
+<text x="865" y="350.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Cellule DÉDIÉE</text>
+<text x="865" y="370.6" font-size="16" fill="#1e1e1e" text-anchor="middle">1 client exigeant</text>
+<rect x="1040" y="310" width="280" height="90" rx="12" fill="#c3fae8" fill-opacity="1" stroke="#06b6d4" stroke-width="2" stroke-opacity="1"/>
+<text x="1180" y="350.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Cellule PRÉPROD</text>
+<text x="1180" y="370.6" font-size="16" fill="#1e1e1e" text-anchor="middle">démonstration</text>
+<text x="80" y="435" font-size="15" fill="#1e1e1e">Chaque cellule : AIGMS + n8n + Postgres, et N organisations isolées par la RLS.</text>
+<text x="80" y="465" font-size="15" fill="#f59e0b">La cellule dédiée se facture — c’est une option, pas la règle.</text>
+<defs><marker id="m4250" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="190" y1="200" x2="220" y2="310" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m4250)"/>
+<rect x="187.45" y="241" width="35.1" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="205" y="258.5" font-size="14" fill="#4a9eed" text-anchor="middle">SSO</text>
+<defs><marker id="m6000" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="290" y1="200" x2="530" y2="310" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m6000)"/>
+<defs><marker id="m7680" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="330" y1="200" x2="850" y2="310" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m7680)"/>
+<rect x="40" y="620" width="1320" height="210" rx="12" fill="#d3f9d8" fill-opacity="0.35" stroke="#22c55e" stroke-width="1" stroke-opacity="0.35"/>
+<text x="56" y="646" font-size="16" fill="#22c55e">Ce que l’officer garde</text>
+<rect x="80" y="680" width="400" height="70" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="280" y="720.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Un pilotage par cellule</text>
+<rect x="510" y="680" width="400" height="70" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="710" y="710.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Le portefeuille entier</text>
+<text x="710" y="730.6" font-size="16" fill="#1e1e1e" text-anchor="middle">dans la cellule standard</text>
+<rect x="940" y="680" width="380" height="70" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="1130" y="720.6" font-size="16" fill="#1e1e1e" text-anchor="middle">4 connexions, 1 identité</text>
+<text x="40" y="886" font-size="16" fill="#1e1e1e">Vous vendez 4 VPS au lieu de 50, et vous tenez 4 sauvegardes au lieu de 50.</text>
+</svg>

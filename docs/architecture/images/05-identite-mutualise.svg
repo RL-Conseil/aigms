@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1420" height="620" viewBox="0 0 1420 620" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<rect width="1420" height="620" fill="#ffffff"/>
+<text x="40" y="26" font-size="26" fill="#1e1e1e">Identité en mutualisé — un annuaire par client, une seule plateforme</text>
+<text x="40" y="56" font-size="16" fill="#757575">L’annuaire dit QUI vous êtes. AIGMS dit CE QUE vous avez le droit de faire.</text>
+<rect x="40" y="100" width="380" height="480" rx="12" fill="#d3f9d8" fill-opacity="0.35" stroke="#22c55e" stroke-width="1" stroke-opacity="0.35"/>
+<text x="56" y="126" font-size="16" fill="#22c55e">Les annuaires</text>
+<rect x="70" y="155" width="320" height="60" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="230" y="190.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Entra ID — CARITIS</text>
+<text x="70" y="239" font-size="14" fill="#757575">L’AI Governance Officer,</text>
+<text x="70" y="257.2" font-size="14" fill="#757575">les consultants.</text>
+<rect x="70" y="290" width="320" height="55" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="230" y="323.1" font-size="16" fill="#1e1e1e" text-anchor="middle">AD / Entra — Client A</text>
+<rect x="70" y="360" width="320" height="55" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="230" y="393.1" font-size="16" fill="#1e1e1e" text-anchor="middle">Okta — Client B</text>
+<rect x="70" y="430" width="320" height="55" rx="12" fill="#ffd8a8" fill-opacity="1" stroke="#f59e0b" stroke-width="2" stroke-opacity="1"/>
+<text x="230" y="463.1" font-size="16" fill="#1e1e1e" text-anchor="middle">Sans annuaire — Client C</text>
+<text x="70" y="514" font-size="14" fill="#757575">Comptes locaux, mot de passe.</text>
+<rect x="500" y="230" width="300" height="90" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="650" y="270.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Supabase Auth (GoTrue)</text>
+<text x="650" y="290.6" font-size="16" fill="#1e1e1e" text-anchor="middle">SSO par domaine d’adresse</text>
+<defs><marker id="m5620" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#22c55e"/></marker></defs>
+<line x1="390" y1="185" x2="500" y2="255" stroke="#22c55e" stroke-width="2"  marker-end="url(#m5620)"/>
+<rect x="423.6" y="206" width="42.800000000000004" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="445" y="223.5" font-size="14" fill="#22c55e" text-anchor="middle">OIDC</text>
+<defs><marker id="m6310" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#22c55e"/></marker></defs>
+<line x1="390" y1="317" x2="500" y2="297" stroke="#22c55e" stroke-width="2"  marker-end="url(#m6310)"/>
+<rect x="423.6" y="293" width="42.800000000000004" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="445" y="310.5" font-size="14" fill="#22c55e" text-anchor="middle">SAML</text>
+<defs><marker id="m6800" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#22c55e"/></marker></defs>
+<line x1="390" y1="387" x2="500" y2="337" stroke="#22c55e" stroke-width="2"  marker-end="url(#m6800)"/>
+<rect x="423.6" y="348" width="42.800000000000004" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="445" y="365.5" font-size="14" fill="#22c55e" text-anchor="middle">SAML</text>
+<defs><marker id="m7150" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#f59e0b"/></marker></defs>
+<line x1="390" y1="457" x2="500" y2="357" stroke="#f59e0b" stroke-width="2"  marker-end="url(#m7150)"/>
+<rect x="392.8" y="393" width="104.4" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="445" y="410.5" font-size="14" fill="#f59e0b" text-anchor="middle">mot de passe</text>
+<rect x="500" y="380" width="300" height="80" rx="12" fill="#fff3bf" fill-opacity="1" stroke="#f59e0b" stroke-width="2" stroke-opacity="1"/>
+<text x="650" y="415.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Profil créé,</text>
+<text x="650" y="435.6" font-size="16" fill="#1e1e1e" text-anchor="middle">AUCUN rôle</text>
+<defs><marker id="m8170" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="650" y1="320" x2="650" y2="380" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m8170)"/>
+<text x="500" y="489" font-size="14" fill="#ef4444">Une connexion n’ouvre aucune porte :</text>
+<text x="500" y="507.2" font-size="14" fill="#ef4444">c’est l’administration qui rattache.</text>
+<rect x="880" y="100" width="480" height="480" rx="12" fill="#dbe4ff" fill-opacity="0.35" stroke="#4a9eed" stroke-width="1" stroke-opacity="0.35"/>
+<text x="896" y="126" font-size="16" fill="#4a9eed">AIGMS — une seule instance</text>
+<rect x="910" y="155" width="420" height="70" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="1120" y="185.6" font-size="16" fill="#1e1e1e" text-anchor="middle">role_assignment</text>
+<text x="1120" y="205.6" font-size="16" fill="#1e1e1e" text-anchor="middle">qui, où, quel rôle, jusqu’à quand</text>
+<rect x="910" y="250" width="200" height="55" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="1010" y="283.1" font-size="16" fill="#1e1e1e" text-anchor="middle">Client A</text>
+<rect x="1130" y="250" width="200" height="55" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="1230" y="283.1" font-size="16" fill="#1e1e1e" text-anchor="middle">Client B</text>
+<rect x="910" y="320" width="200" height="55" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="1010" y="353.1" font-size="16" fill="#1e1e1e" text-anchor="middle">Client C</text>
+<rect x="1130" y="320" width="200" height="55" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="1230" y="353.1" font-size="16" fill="#1e1e1e" text-anchor="middle">… 50 clients</text>
+<rect x="910" y="400" width="420" height="70" rx="12" fill="#c3fae8" fill-opacity="1" stroke="#06b6d4" stroke-width="2" stroke-opacity="1"/>
+<text x="1120" y="430.6" font-size="16" fill="#1e1e1e" text-anchor="middle">RLS — l’isolation, vérifiée</text>
+<text x="1120" y="450.6" font-size="16" fill="#1e1e1e" text-anchor="middle">par 293 tests</text>
+<text x="910" y="504" font-size="14" fill="#22c55e">L’officer voit son portefeuille entier</text>
+<text x="910" y="522.2" font-size="14" fill="#22c55e">dans un seul pilotage.</text>
+<defs><marker id="m8480" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="800" y1="275" x2="910" y2="215" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m8480)"/>
+<rect x="829.75" y="231" width="50.5" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="855" y="248.5" font-size="14" fill="#4a9eed" text-anchor="middle">jeton</text>
+</svg>
