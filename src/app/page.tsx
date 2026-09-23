@@ -82,6 +82,11 @@ export default function HomePage() {
 
         <div className="flex grow flex-col justify-center gap-8 py-16">
           <div>
+            {/* La question d'abord, la reponse ensuite : c'est l'ordre dans
+                lequel le sujet se pose a qui arrive ici. */}
+            <p className="mb-4 font-serif text-[1.375rem] leading-snug text-ink-400 text-pretty">
+              Vous pensez contrôler vos usages d’IA ?
+            </p>
             <p className="font-serif text-[2rem] font-medium leading-[1.15] text-white text-pretty">
               Le jour de l’audit, ce qui compte n’est pas ce que vous avez fait.
               <span className="text-teal-400"> C’est ce que vous pouvez montrer.</span>
