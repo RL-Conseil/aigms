@@ -100,7 +100,7 @@ const doc = new Document({
       p(''),
       puce('Ce que l’officer obtient : une connexion, un pilotage qui couvre les 50 organisations, un basculement d’organisation sans se reconnecter.'),
       puce('Pour n8n : une instance, et un compte d’automatisation par organisation (jamais un service_role). Chaque scénario s’authentifie sur PostgREST avec le compte de son organisation, et la RLS fait le reste.'),
-      puce('Ce qui reste à développer : le bouton « Se connecter avec l’annuaire de mon organisation » sur la mire — une demi-journée, aucune migration. C’est le seul manque : signInWithSSO n’apparaît aujourd’hui nulle part dans le code.'),
+      puce('Ce que l’application fait déjà : le bouton « Se connecter avec l’annuaire de mon organisation » est en place sur la mire. Le domaine de l’adresse désigne le fournisseur d’identité, et /auth/callback échange le code contre une session. L’application ne tient aucune liste de domaines : brancher un nouveau client est une déclaration Supabase, sans redéploiement.'),
       puce('Ce qu’il faut acheter : le plan Supabase Pro (ou l’équivalent self-hosted) pour SAML ; l’OIDC est disponible sur tous les plans.'),
       puce('Le prérequis de gouvernance : « Assignment required = Yes » sur chaque application d’entreprise — un départ dans l’annuaire du client coupe l’accès immédiatement, sans action d’AIGMS.'),
 
@@ -171,7 +171,7 @@ const doc = new Document({
       puce('une cellule SOUVERAINE dès qu’un client public ou santé le demande, ce qui est un vrai argument de vente et un troisième VPS ;'),
       puce('une cellule DÉDIÉE au catalogue, facturée, pour le client qui l’exige ;'),
       puce('Keycloak seulement si le dédié devient la règle — et dans ce cas, chiffrer aussi la console d’agrégation, sans quoi le service à 4 jours/an/client ne tient plus.'),
-      p('Le seul développement que cette architecture réclame aujourd’hui est le bouton « Se connecter avec l’annuaire de mon organisation » : une demi-journée, sans migration. Tout le reste est de la configuration.', { bold: true }),
+      p('Le seul développement que cette architecture réclamait — le bouton « Se connecter avec l’annuaire de mon organisation » — est fait. Tout le reste est de la configuration : un plan Supabase Pro pour SAML, puis une déclaration de domaine par client.', { bold: true }),
 
       h('9. En une phrase'),
       p('Un annuaire par client n’impose pas une instance par client : Supabase résout l’IdP par domaine d’adresse, et AIGMS sépare déjà l’identité (l’annuaire) de l’autorisation (role_assignment). Multiplier les instances multiplie l’exploitation, le coût et la surface d’attaque — et détruit le pilotage de portefeuille qui fait tenir le modèle de service.', { bold: true }),

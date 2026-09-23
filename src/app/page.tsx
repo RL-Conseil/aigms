@@ -64,16 +64,6 @@ export default function HomePage() {
                 <strong className="font-medium text-ink-700">Mot de passe oublié</strong>, accès à
                 ouvrir ou rôle à modifier : adressez-vous à l’administration de la plateforme.
               </p>
-              <p>
-                Découvrir AIGMS et demander un atelier de qualification :{' '}
-                <a
-                  href="https://caritis.fr"
-                  className="font-medium text-brand-600 hover:underline"
-                  rel="noreferrer noopener"
-                >
-                  caritis.fr
-                </a>
-              </p>
             </div>
           </div>
         </div>
@@ -88,12 +78,13 @@ export default function HomePage() {
       <aside className="flex flex-col justify-center gap-8 bg-night-900 px-6 py-16 text-ink-200 lg:max-w-md lg:px-12">
         <div>
           <LogoMark size={30} tone="light" />
-          <p className="mt-5 font-serif text-2xl font-medium leading-snug text-white text-pretty">
-            Gouverner l’IA. Décider. Prouver. Améliorer.
+          <p className="mt-5 font-serif text-[2rem] font-medium leading-[1.15] text-white text-pretty">
+            Le jour de l’audit, ce qui compte n’est pas ce que vous avez fait.
+            <span className="text-teal-400"> C’est ce que vous pouvez montrer.</span>
           </p>
           <p className="mt-4 leading-relaxed">
-            Le registre unique des usages d’IA d’une organisation : leurs risques, les décisions qui
-            les autorisent, les contrôles qui les encadrent, et les preuves qui le démontrent.
+            AIGMS tient le registre unique de vos usages d’IA : qui a décidé quoi, sous quelles
+            conditions, et la preuve qui va avec.
           </p>
         </div>
 
@@ -108,17 +99,27 @@ export default function HomePage() {
           ))}
         </dl>
 
-        <div className="flex flex-col gap-3 border-t border-white/10 pt-8 text-[13px] leading-relaxed text-ink-400">
-          <p>
-            AIGMS se travaille sur un écran de bureau ou une tablette : cartes, matrices et
-            déclarations demandent de la largeur. L’application s’ouvre sur un téléphone, mais on
-            n’y instruit pas un dossier.
-          </p>
-          <p>
-            Il aide au cadrage, à la pré-classification, à la documentation et à la preuve. Il ne
-            remplace ni un avis juridique, ni la décision d’un responsable de risque, ni un audit
-            de certification, ni une autorité compétente.
-          </p>
+        {/*
+          Le seul appel commercial de l'application, et il reste discret : qui
+          arrive ici a deja un compte, ou s'est trompe d'adresse. Le discours de
+          vente vit sur caritis.fr et n'a pas a etre maintenu en double.
+        */}
+        <div className="border-t border-white/10 pt-8 text-[13px] leading-relaxed text-ink-400">
+          <a
+            href="https://www.caritis.fr/realisations/aigms"
+            className="group inline-flex items-baseline gap-1.5 hover:text-ink-200"
+            rel="noreferrer noopener"
+          >
+            <span>
+              Vous découvrez AIGMS ?{' '}
+              <span className="font-medium text-teal-400 group-hover:underline">
+                Demandez votre atelier de qualification.
+              </span>
+            </span>
+            <span aria-hidden className="text-teal-400 transition-transform group-hover:translate-x-0.5">
+              →
+            </span>
+          </a>
         </div>
       </aside>
     </main>
