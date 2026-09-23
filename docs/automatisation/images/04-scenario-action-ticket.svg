@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1305" height="750" viewBox="0 0 1305 750" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<rect width="1305" height="750" fill="#ffffff"/>
+<text x="40" y="26" font-size="26" fill="#1e1e1e">Scénario — une action bloquante ouvre un ticket, et son statut revient</text>
+<text x="40" y="56" font-size="16" fill="#757575">Ce que fait l’humain, ce que fait n8n, et ce que personne ne doit automatiser.</text>
+<rect x="40" y="90" width="340" height="620" rx="12" fill="#dbe4ff" fill-opacity="0.35" stroke="#4a9eed" stroke-width="1" stroke-opacity="0.35"/>
+<text x="56" y="116" font-size="16" fill="#4a9eed">AIGMS — l’humain</text>
+<rect x="70" y="140" width="280" height="70" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="210" y="170.6" font-size="16" fill="#1e1e1e" text-anchor="middle">1. Ouvrir une action</text>
+<text x="210" y="190.6" font-size="16" fill="#1e1e1e" text-anchor="middle">bloquante</text>
+<rect x="70" y="560" width="280" height="90" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="210" y="600.6" font-size="16" fill="#1e1e1e" text-anchor="middle">6. Clore l’action</text>
+<text x="210" y="620.6" font-size="16" fill="#1e1e1e" text-anchor="middle">(geste humain, libère le jalon)</text>
+<text x="70" y="679" font-size="14" fill="#ef4444">La clôture n’est jamais</text>
+<text x="70" y="697.2" font-size="14" fill="#ef4444">automatique.</text>
+<rect x="430" y="90" width="400" height="620" rx="12" fill="#e5dbff" fill-opacity="0.35" stroke="#8b5cf6" stroke-width="1" stroke-opacity="0.35"/>
+<text x="446" y="116" font-size="16" fill="#8b5cf6">n8n — toutes les 15 minutes</text>
+<rect x="460" y="140" width="340" height="70" rx="12" fill="#d0bfff" fill-opacity="1" stroke="#8b5cf6" stroke-width="2" stroke-opacity="1"/>
+<text x="630" y="170.6" font-size="16" fill="#1e1e1e" text-anchor="middle">2. Lire les actions bloquantes</text>
+<text x="630" y="190.6" font-size="16" fill="#1e1e1e" text-anchor="middle">sans marqueur ITSM</text>
+<rect x="460" y="250" width="340" height="70" rx="12" fill="#d0bfff" fill-opacity="1" stroke="#8b5cf6" stroke-width="2" stroke-opacity="1"/>
+<text x="630" y="290.6" font-size="16" fill="#1e1e1e" text-anchor="middle">3. Ouvrir le ticket</text>
+<rect x="460" y="360" width="340" height="80" rx="12" fill="#d0bfff" fill-opacity="1" stroke="#8b5cf6" stroke-width="2" stroke-opacity="1"/>
+<text x="630" y="395.6" font-size="16" fill="#1e1e1e" text-anchor="middle">4. Écrire [ITSM: id]</text>
+<text x="630" y="415.6" font-size="16" fill="#1e1e1e" text-anchor="middle">dans la description de l’action</text>
+<rect x="460" y="480" width="340" height="80" rx="12" fill="#d0bfff" fill-opacity="1" stroke="#8b5cf6" stroke-width="2" stroke-opacity="1"/>
+<text x="630" y="515.6" font-size="16" fill="#1e1e1e" text-anchor="middle">5. Ticket fermé → commentaire</text>
+<text x="630" y="535.6" font-size="16" fill="#1e1e1e" text-anchor="middle">dans l’action</text>
+<rect x="880" y="90" width="300" height="400" rx="12" fill="#d3f9d8" fill-opacity="0.35" stroke="#22c55e" stroke-width="1" stroke-opacity="0.35"/>
+<text x="896" y="116" font-size="16" fill="#22c55e">ITSM</text>
+<rect x="910" y="250" width="240" height="70" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="1030" y="290.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Ticket</text>
+<defs><marker id="m1160" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="350" y1="175" x2="460" y2="175" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m1160)"/>
+<defs><marker id="m1720" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#8b5cf6"/></marker></defs>
+<line x1="630" y1="210" x2="630" y2="250" stroke="#8b5cf6" stroke-width="2"  marker-end="url(#m1720)"/>
+<defs><marker id="m2280" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#22c55e"/></marker></defs>
+<line x1="800" y1="285" x2="910" y2="285" stroke="#22c55e" stroke-width="2"  marker-end="url(#m2280)"/>
+<rect x="837.45" y="271" width="35.1" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="855" y="288.5" font-size="14" fill="#22c55e" text-anchor="middle">API</text>
+<defs><marker id="m1940" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#8b5cf6"/></marker></defs>
+<line x1="630" y1="320" x2="630" y2="360" stroke="#8b5cf6" stroke-width="2"  marker-end="url(#m1940)"/>
+<defs><marker id="m2180" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#8b5cf6"/></marker></defs>
+<line x1="630" y1="440" x2="630" y2="480" stroke="#8b5cf6" stroke-width="2"  marker-end="url(#m2180)"/>
+<defs><marker id="m2540" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#f59e0b"/></marker></defs>
+<line x1="910" y1="320" x2="800" y2="510" stroke="#f59e0b" stroke-width="2" stroke-dasharray="8 6" marker-end="url(#m2540)"/>
+<rect x="829.75" y="401" width="50.5" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="855" y="418.5" font-size="14" fill="#f59e0b" text-anchor="middle">fermé</text>
+<defs><marker id="m2010" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="460" y1="600" x2="350" y2="600" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m2010)"/>
+<text x="880" y="534" font-size="14" fill="#757575">Le ticket porte le lien</text>
+<text x="880" y="552.2" font-size="14" fill="#757575">vers l’action dans AIGMS :</text>
+<text x="880" y="584" font-size="14" fill="#1e1e1e">/suivi?vue=actions&amp;action=&lt;id&gt;</text>
+</svg>

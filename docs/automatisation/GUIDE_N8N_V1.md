@@ -3,6 +3,10 @@
 *Version 1 — 23 septembre 2026. Écrit contre la plateforme réelle : chaque
 requête de ce guide a été exécutée sur la préprod avant d'être publiée.*
 
+*L'architecture — serveur à soi ou service hébergé, authentification, schémas —
+vit à part : [`ARCHITECTURE_N8N_V1.md`](./ARCHITECTURE_N8N_V1.md) (et sa
+remise Word).*
+
 ---
 
 ## 1. Avant tout : ce qu'AIGMS fait déjà, et qu'il ne faut pas automatiser

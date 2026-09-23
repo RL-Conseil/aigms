@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="780" viewBox="0 0 1160 780" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<rect width="1160" height="780" fill="#ffffff"/>
+<text x="40" y="28" font-size="28" fill="#1e1e1e">Automatisation AIGMS — architecture auto-hébergée (VPS)</text>
+<text x="40" y="56" font-size="16" fill="#757575">n8n tourne chez vous ou chez votre infogéreur. AIGMS reste le système de référence.</text>
+<rect x="40" y="90" width="480" height="420" rx="12" fill="#e5dbff" fill-opacity="0.35" stroke="#8b5cf6" stroke-width="1" stroke-opacity="0.35"/>
+<text x="56" y="116" font-size="16" fill="#8b5cf6">VPS — votre infrastructure (IZARHOST)</text>
+<rect x="70" y="140" width="300" height="70" rx="12" fill="#d0bfff" fill-opacity="1" stroke="#8b5cf6" stroke-width="2" stroke-opacity="1"/>
+<text x="220" y="180.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Traefik / Nginx — TLS</text>
+<rect x="70" y="230" width="300" height="80" rx="12" fill="#d0bfff" fill-opacity="1" stroke="#8b5cf6" stroke-width="2" stroke-opacity="1"/>
+<text x="220" y="265.6" font-size="16" fill="#1e1e1e" text-anchor="middle">n8n (conteneur)</text>
+<text x="220" y="285.6" font-size="16" fill="#1e1e1e" text-anchor="middle">ordonnanceur + workflows</text>
+<rect x="70" y="330" width="300" height="70" rx="12" fill="#c3fae8" fill-opacity="1" stroke="#06b6d4" stroke-width="2" stroke-opacity="1"/>
+<text x="220" y="360.6" font-size="16" fill="#1e1e1e" text-anchor="middle">PostgreSQL de n8n</text>
+<text x="220" y="380.6" font-size="16" fill="#1e1e1e" text-anchor="middle">exécutions, identifiants</text>
+<rect x="70" y="420" width="300" height="60" rx="12" fill="#c3fae8" fill-opacity="1" stroke="#06b6d4" stroke-width="2" stroke-opacity="1"/>
+<text x="220" y="455.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Sauvegarde chiffrée</text>
+<text x="390" y="344" font-size="14" fill="#8b5cf6">Réseau</text>
+<text x="390" y="362.2" font-size="14" fill="#8b5cf6">privé</text>
+<rect x="620" y="90" width="500" height="300" rx="12" fill="#dbe4ff" fill-opacity="0.35" stroke="#4a9eed" stroke-width="1" stroke-opacity="0.35"/>
+<text x="636" y="116" font-size="16" fill="#4a9eed">AIGMS — système de référence</text>
+<rect x="650" y="140" width="200" height="70" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="750" y="170.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Application</text>
+<text x="750" y="190.6" font-size="16" fill="#1e1e1e" text-anchor="middle">(Vercel)</text>
+<rect x="880" y="140" width="210" height="70" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="985" y="170.6" font-size="16" fill="#1e1e1e" text-anchor="middle">PostgREST</text>
+<text x="985" y="190.6" font-size="16" fill="#1e1e1e" text-anchor="middle">/rest/v1</text>
+<rect x="650" y="240" width="440" height="120" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="870" y="295.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Supabase Postgres</text>
+<text x="870" y="315.6" font-size="16" fill="#1e1e1e" text-anchor="middle">RLS · 223 déclencheurs · journal append-only</text>
+<rect x="620" y="440" width="500" height="300" rx="12" fill="#d3f9d8" fill-opacity="0.35" stroke="#22c55e" stroke-width="1" stroke-opacity="0.35"/>
+<text x="636" y="466" font-size="16" fill="#22c55e">Systèmes cibles — ce que n8n va toucher</text>
+<rect x="650" y="490" width="200" height="60" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="750" y="515.6" font-size="16" fill="#1e1e1e" text-anchor="middle">ITSM</text>
+<text x="750" y="535.6" font-size="16" fill="#1e1e1e" text-anchor="middle">(GLPI, Jira)</text>
+<rect x="880" y="490" width="210" height="60" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="985" y="525.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Entra ID · M365</text>
+<rect x="650" y="580" width="200" height="60" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="750" y="615.6" font-size="16" fill="#1e1e1e" text-anchor="middle">SIEM · Cloud</text>
+<rect x="880" y="580" width="210" height="60" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="985" y="605.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Signature</text>
+<text x="985" y="625.6" font-size="16" fill="#1e1e1e" text-anchor="middle">électronique</text>
+<rect x="650" y="670" width="440" height="55" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="870" y="703.1" font-size="16" fill="#1e1e1e" text-anchor="middle">Teams · Slack</text>
+<defs><marker id="m1460" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="370" y1="255" x2="650" y2="185" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m1460)"/>
+<rect x="403.9" y="206" width="212.20000000000002" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="510" y="223.5" font-size="14" fill="#4a9eed" text-anchor="middle">HTTPS — interroge et écrit</text>
+<defs><marker id="m1850" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#22c55e"/></marker></defs>
+<line x1="370" y1="290" x2="650" y2="540" stroke="#22c55e" stroke-width="2"  marker-end="url(#m1850)"/>
+<rect x="488.6" y="401" width="42.800000000000004" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="510" y="418.5" font-size="14" fill="#22c55e" text-anchor="middle">agit</text>
+<defs><marker id="m1910" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#f59e0b"/></marker></defs>
+<line x1="650" y1="560" x2="370" y2="330" stroke="#f59e0b" stroke-width="2" stroke-dasharray="8 6" marker-end="url(#m1910)"/>
+<rect x="403.9" y="431" width="212.20000000000002" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="510" y="448.5" font-size="14" fill="#f59e0b" text-anchor="middle">renvoie preuves et statuts</text>
+<text x="40" y="554" font-size="14" fill="#757575">n8n n'écrit jamais dans le journal d'audit :</text>
+<text x="40" y="572.2" font-size="14" fill="#757575">la base l'alimente seule, et nomme l'auteur.</text>
+</svg>

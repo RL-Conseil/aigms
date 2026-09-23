@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="805" viewBox="0 0 1440 805" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<rect width="1440" height="805" fill="#ffffff"/>
+<text x="40" y="28" font-size="28" fill="#1e1e1e">Comment n8n parle à AIGMS</text>
+<text x="40" y="56" font-size="16" fill="#757575">Un compte AIGMS, un jeton d’une heure, et la RLS qui décide de tout.</text>
+<rect x="40" y="110" width="260" height="70" rx="12" fill="#d0bfff" fill-opacity="1" stroke="#8b5cf6" stroke-width="2" stroke-opacity="1"/>
+<text x="170" y="150.6" font-size="16" fill="#1e1e1e" text-anchor="middle">n8n — nœud « Jeton »</text>
+<defs><marker id="m1130" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="300" y1="145" x2="540" y2="145" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m1130)"/>
+<rect x="321.6" y="131" width="196.8" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="420" y="148.5" font-size="14" fill="#4a9eed" text-anchor="middle">1. e-mail + mot de passe</text>
+<rect x="560" y="110" width="300" height="70" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="710" y="140.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Supabase Auth</text>
+<text x="710" y="160.6" font-size="16" fill="#1e1e1e" text-anchor="middle">/auth/v1/token</text>
+<defs><marker id="m1870" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="710" y1="180" x2="710" y2="270" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m1870)"/>
+<rect x="623.15" y="211" width="173.70000000000002" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="710" y="228.5" font-size="14" fill="#4a9eed" text-anchor="middle">2. access_token (1 h)</text>
+<rect x="560" y="290" width="300" height="70" rx="12" fill="#fff3bf" fill-opacity="1" stroke="#f59e0b" stroke-width="2" stroke-opacity="1"/>
+<text x="710" y="320.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Jeton porteur</text>
+<text x="710" y="340.6" font-size="16" fill="#1e1e1e" text-anchor="middle">+ clé anon</text>
+<defs><marker id="m1550" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#f59e0b"/></marker></defs>
+<line x1="560" y1="325" x2="340" y2="325" stroke="#f59e0b" stroke-width="2"  marker-end="url(#m1550)"/>
+<rect x="401.65" y="311" width="96.7" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="450" y="328.5" font-size="14" fill="#f59e0b" text-anchor="middle">3. en-têtes</text>
+<rect x="40" y="290" width="260" height="70" rx="12" fill="#d0bfff" fill-opacity="1" stroke="#8b5cf6" stroke-width="2" stroke-opacity="1"/>
+<text x="170" y="330.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Nœud HTTP Request</text>
+<defs><marker id="m1660" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="300" y1="340" x2="560" y2="460" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m1660)"/>
+<rect x="373.95" y="386" width="112.10000000000001" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="430" y="403.5" font-size="14" fill="#4a9eed" text-anchor="middle">4. GET / POST</text>
+<rect x="560" y="430" width="300" height="70" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="710" y="460.6" font-size="16" fill="#1e1e1e" text-anchor="middle">PostgREST</text>
+<text x="710" y="480.6" font-size="16" fill="#1e1e1e" text-anchor="middle">/rest/v1/&lt;table&gt; · /rpc/&lt;fn&gt;</text>
+<defs><marker id="m2500" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#ef4444"/></marker></defs>
+<line x1="710" y1="500" x2="710" y2="580" stroke="#ef4444" stroke-width="2"  marker-end="url(#m2500)"/>
+<rect x="588.5" y="526" width="243.00000000000003" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="710" y="543.5" font-size="14" fill="#ef4444" text-anchor="middle">5. RLS : ce que le rôle permet</text>
+<rect x="560" y="600" width="300" height="80" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="710" y="635.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Postgres</text>
+<text x="710" y="655.6" font-size="16" fill="#1e1e1e" text-anchor="middle">tables · fonctions · déclencheurs</text>
+<defs><marker id="m3140" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#22c55e"/></marker></defs>
+<line x1="860" y1="620" x2="1100" y2="560" stroke="#22c55e" stroke-width="2"  marker-end="url(#m3140)"/>
+<rect x="939.35" y="576" width="81.30000000000001" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="980" y="593.5" font-size="14" fill="#22c55e" text-anchor="middle">6. alerte</text>
+<defs><marker id="m3280" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#06b6d4"/></marker></defs>
+<line x1="860" y1="660" x2="1100" y2="660" stroke="#06b6d4" stroke-width="2"  marker-end="url(#m3280)"/>
+<rect x="943.2" y="646" width="73.60000000000001" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="980" y="663.5" font-size="14" fill="#06b6d4" text-anchor="middle">7. trace</text>
+<rect x="1100" y="520" width="300" height="70" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="1250" y="550.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Alertes nominatives</text>
+<text x="1250" y="570.6" font-size="16" fill="#1e1e1e" text-anchor="middle">et courriels</text>
+<rect x="1100" y="620" width="300" height="70" rx="12" fill="#c3fae8" fill-opacity="1" stroke="#06b6d4" stroke-width="2" stroke-opacity="1"/>
+<text x="1250" y="650.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Journal d’audit</text>
+<text x="1250" y="670.6" font-size="16" fill="#1e1e1e" text-anchor="middle">(append-only)</text>
+<text x="40" y="445" font-size="15" fill="#ef4444">Jamais la clé service_role</text>
+<text x="40" y="464.5" font-size="15" fill="#ef4444">dans un workflow : elle</text>
+<text x="40" y="484" font-size="15" fill="#ef4444">contourne la RLS.</text>
+<text x="560" y="734" font-size="14" fill="#1e1e1e">Ce que la base refuse, quoi qu’un workflow tente : approuver une décision,</text>
+<text x="560" y="759" font-size="14" fill="#1e1e1e">accepter un risque, viser une étude, valider une preuve, franchir un jalon.</text>
+</svg>
