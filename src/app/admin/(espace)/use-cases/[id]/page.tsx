@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { getViewerContext } from '@/lib/auth/context'
 import { Shell } from '@/components/shell'
 import { UseCaseLabelForm } from '@/components/governance/use-case-label-form'
 import { Badge, Card, Empty, Field, Stat, StatStrip } from '@/components/ui'
@@ -161,9 +162,9 @@ export default async function UseCasePage({
   const { onglet, vue, controle } = await searchParams
   const { tab, vue: suiviView } = resolveTab(onglet, vue)
   const supabase = await createClient()
-  const {
-    data: { user: viewer },
-  } = await supabase.auth.getUser()
+  // Le contexte est memoise pour la duree du rendu et verifie le jeton sans
+  // appel reseau : l'en-tete de page le relit sans rien recouter.
+  const viewer = await getViewerContext()
 
   // Une decision approuvee dont la date d'effet est arrivee franchit son
   // jalon au premier chargement de la fiche (0065) — avant de lire le statut.
@@ -1204,7 +1205,7 @@ export default async function UseCasePage({
                           du risque — la base le refuse a quiconque d'autre.
                           Aux autres, on dit a qui cela revient.
                         */}
-                        {!risk.owner_user_id || risk.owner_user_id === viewer?.id ? (
+                        {!risk.owner_user_id || risk.owner_user_id === viewer?.userId ? (
                           <AcceptRiskForm riskId={risk.id} useCaseId={id} />
                         ) : (
                           <p className="text-xs text-ink-500">

@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -351,11 +356,16 @@ export type Database = {
           created_at: string
           created_by: string | null
           criticality: "low" | "moderate" | "high" | "critical" | null
+          criticality_grid: Json | null
+          criticality_rationale: string | null
+          criticality_set_at: string | null
+          criticality_set_by: string | null
           data_description: string | null
           decision_impact: string | null
           expected_benefit: string | null
           id: string
           involves_personal_data: boolean
+          involves_sensitive_data: boolean
           involves_vulnerable_persons: boolean
           name: string
           next_review_at: string | null
@@ -374,6 +384,7 @@ export type Database = {
             | "PILOT"
             | "PRODUCTION"
             | "MONITORING"
+            | "SUSPENDED"
             | "RETIRED"
           status_changed_at: string
           tenant_id: string
@@ -391,11 +402,16 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           criticality?: "low" | "moderate" | "high" | "critical" | null
+          criticality_grid?: Json | null
+          criticality_rationale?: string | null
+          criticality_set_at?: string | null
+          criticality_set_by?: string | null
           data_description?: string | null
           decision_impact?: string | null
           expected_benefit?: string | null
           id?: string
           involves_personal_data?: boolean
+          involves_sensitive_data?: boolean
           involves_vulnerable_persons?: boolean
           name: string
           next_review_at?: string | null
@@ -414,6 +430,7 @@ export type Database = {
             | "PILOT"
             | "PRODUCTION"
             | "MONITORING"
+            | "SUSPENDED"
             | "RETIRED"
           status_changed_at?: string
           tenant_id: string
@@ -431,11 +448,16 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           criticality?: "low" | "moderate" | "high" | "critical" | null
+          criticality_grid?: Json | null
+          criticality_rationale?: string | null
+          criticality_set_at?: string | null
+          criticality_set_by?: string | null
           data_description?: string | null
           decision_impact?: string | null
           expected_benefit?: string | null
           id?: string
           involves_personal_data?: boolean
+          involves_sensitive_data?: boolean
           involves_vulnerable_persons?: boolean
           name?: string
           next_review_at?: string | null
@@ -454,6 +476,7 @@ export type Database = {
             | "PILOT"
             | "PRODUCTION"
             | "MONITORING"
+            | "SUSPENDED"
             | "RETIRED"
           status_changed_at?: string
           tenant_id?: string
@@ -485,6 +508,13 @@ export type Database = {
           {
             foreignKeyName: "ai_use_case_created_by_fkey"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_use_case_criticality_set_by_fkey"
+            columns: ["criticality_set_by"]
             isOneToOne: false
             referencedRelation: "user_profile"
             referencedColumns: ["id"]
@@ -693,6 +723,64 @@ export type Database = {
           },
         ]
       }
+      asset_control: {
+        Row: {
+          asset_id: string
+          control_id: string
+          created_at: string
+          id: string
+          note: string | null
+          status: "planned" | "implemented" | "verified" | "not_applicable"
+          tenant_id: string
+          updated_at: string
+          verified_at: string | null
+        }
+        Insert: {
+          asset_id: string
+          control_id: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          status?: "planned" | "implemented" | "verified" | "not_applicable"
+          tenant_id: string
+          updated_at?: string
+          verified_at?: string | null
+        }
+        Update: {
+          asset_id?: string
+          control_id?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          status?: "planned" | "implemented" | "verified" | "not_applicable"
+          tenant_id?: string
+          updated_at?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_control_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "ai_asset"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_control_control_id_fkey"
+            columns: ["control_id"]
+            isOneToOne: false
+            referencedRelation: "control"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_control_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action:
@@ -733,8 +821,10 @@ export type Database = {
           id: number
           metadata: Json
           occurred_at: string
+          organization_id: string | null
           summary: string | null
           tenant_id: string
+          use_case_id: string | null
         }
         Insert: {
           action:
@@ -775,8 +865,10 @@ export type Database = {
           id?: number
           metadata?: Json
           occurred_at?: string
+          organization_id?: string | null
           summary?: string | null
           tenant_id: string
+          use_case_id?: string | null
         }
         Update: {
           action?:
@@ -817,8 +909,10 @@ export type Database = {
           id?: number
           metadata?: Json
           occurred_at?: string
+          organization_id?: string | null
           summary?: string | null
           tenant_id?: string
+          use_case_id?: string | null
         }
         Relationships: [
           {
@@ -1022,6 +1116,7 @@ export type Database = {
             | "asset_dataset"
             | "in_service"
             | "external_persons"
+            | "sensitive_data"
           control_code: string
           framework_code: string
           id: string
@@ -1050,6 +1145,7 @@ export type Database = {
             | "asset_dataset"
             | "in_service"
             | "external_persons"
+            | "sensitive_data"
           control_code: string
           framework_code: string
           id?: string
@@ -1078,6 +1174,7 @@ export type Database = {
             | "asset_dataset"
             | "in_service"
             | "external_persons"
+            | "sensitive_data"
           control_code?: string
           framework_code?: string
           id?: string
@@ -1108,6 +1205,7 @@ export type Database = {
           framework_mappings: Json
           id: string
           maturity_model: Json
+          measure_kind: "technical" | "organizational" | "contractual" | null
           objective: string | null
           owner_role: string | null
           phase: "DISCOVERY" | "GOVERN" | "BUILD" | "CONNECT" | "OPERATE" | null
@@ -1134,6 +1232,7 @@ export type Database = {
           framework_mappings?: Json
           id?: string
           maturity_model?: Json
+          measure_kind?: "technical" | "organizational" | "contractual" | null
           objective?: string | null
           owner_role?: string | null
           phase?:
@@ -1166,6 +1265,7 @@ export type Database = {
           framework_mappings?: Json
           id?: string
           maturity_model?: Json
+          measure_kind?: "technical" | "organizational" | "contractual" | null
           objective?: string | null
           owner_role?: string | null
           phase?:
@@ -2058,14 +2158,17 @@ export type Database = {
       }
       control: {
         Row: {
+          assessment_questions: string[] | null
           business_ref: string
           catalog_control_id: string | null
           code: string
           created_at: string
+          expected_evidence: string[] | null
           frequency: string | null
           id: string
           is_mandatory: boolean
           last_tested_at: string | null
+          measure_kind: "technical" | "organizational" | "contractual"
           name: string
           next_test_at: string | null
           objective: string
@@ -2082,14 +2185,17 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          assessment_questions?: string[] | null
           business_ref: string
           catalog_control_id?: string | null
           code: string
           created_at?: string
+          expected_evidence?: string[] | null
           frequency?: string | null
           id?: string
           is_mandatory?: boolean
           last_tested_at?: string | null
+          measure_kind: "technical" | "organizational" | "contractual"
           name: string
           next_test_at?: string | null
           objective: string
@@ -2106,14 +2212,17 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          assessment_questions?: string[] | null
           business_ref?: string
           catalog_control_id?: string | null
           code?: string
           created_at?: string
+          expected_evidence?: string[] | null
           frequency?: string | null
           id?: string
           is_mandatory?: boolean
           last_tested_at?: string | null
+          measure_kind?: "technical" | "organizational" | "contractual"
           name?: string
           next_test_at?: string | null
           objective?: string
@@ -2346,6 +2455,55 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenant"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      control_tooling: {
+        Row: {
+          control_id: string
+          created_at: string
+          id: string
+          rationale: string | null
+          tenant_id: string
+          tooling_id: string
+        }
+        Insert: {
+          control_id: string
+          created_at?: string
+          id?: string
+          rationale?: string | null
+          tenant_id: string
+          tooling_id: string
+        }
+        Update: {
+          control_id?: string
+          created_at?: string
+          id?: string
+          rationale?: string | null
+          tenant_id?: string
+          tooling_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "control_tooling_control_id_fkey"
+            columns: ["control_id"]
+            isOneToOne: false
+            referencedRelation: "control"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "control_tooling_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "control_tooling_tooling_id_fkey"
+            columns: ["tooling_id"]
+            isOneToOne: false
+            referencedRelation: "organization_tooling"
             referencedColumns: ["id"]
           },
         ]
@@ -2939,6 +3097,7 @@ export type Database = {
       }
       governance_decision: {
         Row: {
+          applied_at: string | null
           approved_at: string | null
           approver_user_id: string | null
           business_ref: string
@@ -2980,6 +3139,7 @@ export type Database = {
           version: number
         }
         Insert: {
+          applied_at?: string | null
           approved_at?: string | null
           approver_user_id?: string | null
           business_ref: string
@@ -3021,6 +3181,7 @@ export type Database = {
           version?: number
         }
         Update: {
+          applied_at?: string | null
           approved_at?: string | null
           approver_user_id?: string | null
           business_ref?: string
@@ -3209,21 +3370,153 @@ export type Database = {
           },
         ]
       }
+      governance_review: {
+        Row: {
+          agenda: Json
+          attendees: string[] | null
+          business_ref: string
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
+          chaired_by: string | null
+          created_at: string
+          created_by: string | null
+          decisions_taken: string | null
+          evidence_id: string | null
+          expected_attendees: string[] | null
+          held_at: string | null
+          id: string
+          kind: "committee" | "direction"
+          minutes: string | null
+          next_review_on: string | null
+          organization_id: string
+          period_from: string | null
+          scheduled_on: string
+          status: "planned" | "held" | "cancelled"
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          agenda?: Json
+          attendees?: string[] | null
+          business_ref: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          chaired_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          decisions_taken?: string | null
+          evidence_id?: string | null
+          expected_attendees?: string[] | null
+          held_at?: string | null
+          id?: string
+          kind?: "committee" | "direction"
+          minutes?: string | null
+          next_review_on?: string | null
+          organization_id: string
+          period_from?: string | null
+          scheduled_on: string
+          status?: "planned" | "held" | "cancelled"
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          agenda?: Json
+          attendees?: string[] | null
+          business_ref?: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
+          chaired_by?: string | null
+          created_at?: string
+          created_by?: string | null
+          decisions_taken?: string | null
+          evidence_id?: string | null
+          expected_attendees?: string[] | null
+          held_at?: string | null
+          id?: string
+          kind?: "committee" | "direction"
+          minutes?: string | null
+          next_review_on?: string | null
+          organization_id?: string
+          period_from?: string | null
+          scheduled_on?: string
+          status?: "planned" | "held" | "cancelled"
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "governance_review_cancelled_by_fkey"
+            columns: ["cancelled_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "governance_review_chaired_by_fkey"
+            columns: ["chaired_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "governance_review_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "governance_review_evidence_id_fkey"
+            columns: ["evidence_id"]
+            isOneToOne: false
+            referencedRelation: "evidence"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "governance_review_evidence_id_fkey"
+            columns: ["evidence_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_with_freshness"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "governance_review_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "governance_review_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       human_oversight_plan: {
         Row: {
           accountable_user_id: string | null
+          approval_evidence_id: string | null
           approved_at: string | null
           approved_by: string | null
           autonomy_level: "L0" | "L1" | "L2" | "L3" | "L4"
           business_ref: string
+          competence_control_id: string | null
           created_at: string
           expected_evidence: string | null
           id: string
           intervention_triggers: string | null
+          level_control_id: string | null
           monitoring_cadence: string | null
           next_review_at: string | null
           not_applicable_rationale: string | null
           organization_id: string
+          override_control_id: string | null
           override_procedure: string | null
           required_competence: string | null
           status:
@@ -3234,25 +3527,31 @@ export type Database = {
             | "not_applicable"
             | "superseded"
           stop_authority_user_id: string | null
+          stop_control_id: string | null
           stop_procedure: string | null
           tenant_id: string
+          trigger_control_id: string | null
           updated_at: string
           use_case_id: string
         }
         Insert: {
           accountable_user_id?: string | null
+          approval_evidence_id?: string | null
           approved_at?: string | null
           approved_by?: string | null
           autonomy_level: "L0" | "L1" | "L2" | "L3" | "L4"
           business_ref: string
+          competence_control_id?: string | null
           created_at?: string
           expected_evidence?: string | null
           id?: string
           intervention_triggers?: string | null
+          level_control_id?: string | null
           monitoring_cadence?: string | null
           next_review_at?: string | null
           not_applicable_rationale?: string | null
           organization_id: string
+          override_control_id?: string | null
           override_procedure?: string | null
           required_competence?: string | null
           status?:
@@ -3263,25 +3562,31 @@ export type Database = {
             | "not_applicable"
             | "superseded"
           stop_authority_user_id?: string | null
+          stop_control_id?: string | null
           stop_procedure?: string | null
           tenant_id: string
+          trigger_control_id?: string | null
           updated_at?: string
           use_case_id: string
         }
         Update: {
           accountable_user_id?: string | null
+          approval_evidence_id?: string | null
           approved_at?: string | null
           approved_by?: string | null
           autonomy_level?: "L0" | "L1" | "L2" | "L3" | "L4"
           business_ref?: string
+          competence_control_id?: string | null
           created_at?: string
           expected_evidence?: string | null
           id?: string
           intervention_triggers?: string | null
+          level_control_id?: string | null
           monitoring_cadence?: string | null
           next_review_at?: string | null
           not_applicable_rationale?: string | null
           organization_id?: string
+          override_control_id?: string | null
           override_procedure?: string | null
           required_competence?: string | null
           status?:
@@ -3292,8 +3597,10 @@ export type Database = {
             | "not_applicable"
             | "superseded"
           stop_authority_user_id?: string | null
+          stop_control_id?: string | null
           stop_procedure?: string | null
           tenant_id?: string
+          trigger_control_id?: string | null
           updated_at?: string
           use_case_id?: string
         }
@@ -3306,10 +3613,38 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "human_oversight_plan_approval_evidence_id_fkey"
+            columns: ["approval_evidence_id"]
+            isOneToOne: false
+            referencedRelation: "evidence"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "human_oversight_plan_approval_evidence_id_fkey"
+            columns: ["approval_evidence_id"]
+            isOneToOne: false
+            referencedRelation: "evidence_with_freshness"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "human_oversight_plan_approved_by_fkey"
             columns: ["approved_by"]
             isOneToOne: false
             referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "human_oversight_plan_competence_control_id_fkey"
+            columns: ["competence_control_id"]
+            isOneToOne: false
+            referencedRelation: "control"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "human_oversight_plan_level_control_id_fkey"
+            columns: ["level_control_id"]
+            isOneToOne: false
+            referencedRelation: "control"
             referencedColumns: ["id"]
           },
           {
@@ -3320,10 +3655,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "human_oversight_plan_override_control_id_fkey"
+            columns: ["override_control_id"]
+            isOneToOne: false
+            referencedRelation: "control"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "human_oversight_plan_stop_authority_user_id_fkey"
             columns: ["stop_authority_user_id"]
             isOneToOne: false
             referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "human_oversight_plan_stop_control_id_fkey"
+            columns: ["stop_control_id"]
+            isOneToOne: false
+            referencedRelation: "control"
             referencedColumns: ["id"]
           },
           {
@@ -3334,9 +3683,16 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "human_oversight_plan_trigger_control_id_fkey"
+            columns: ["trigger_control_id"]
+            isOneToOne: false
+            referencedRelation: "control"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "human_oversight_plan_use_case_id_fkey"
             columns: ["use_case_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "ai_use_case"
             referencedColumns: ["id"]
           },
@@ -3353,15 +3709,23 @@ export type Database = {
           dpia_required: boolean
           id: string
           lifecycle_phase: string | null
+          method_signed_at: string | null
+          method_signed_by: string | null
           methodology: string
           next_review_at: string | null
           organization_id: string
           performed_by: string | null
           reopened_reason: string | null
+          residual_accepted_at: string | null
+          residual_accepted_by: string | null
+          residual_statement: string | null
+          returned_at: string | null
+          returned_reason: string | null
           scope_description: string
           status:
             | "draft"
             | "in_progress"
+            | "awaiting_signature"
             | "completed"
             | "reopened"
             | "superseded"
@@ -3380,15 +3744,23 @@ export type Database = {
           dpia_required?: boolean
           id?: string
           lifecycle_phase?: string | null
+          method_signed_at?: string | null
+          method_signed_by?: string | null
           methodology?: string
           next_review_at?: string | null
           organization_id: string
           performed_by?: string | null
           reopened_reason?: string | null
+          residual_accepted_at?: string | null
+          residual_accepted_by?: string | null
+          residual_statement?: string | null
+          returned_at?: string | null
+          returned_reason?: string | null
           scope_description: string
           status?:
             | "draft"
             | "in_progress"
+            | "awaiting_signature"
             | "completed"
             | "reopened"
             | "superseded"
@@ -3407,15 +3779,23 @@ export type Database = {
           dpia_required?: boolean
           id?: string
           lifecycle_phase?: string | null
+          method_signed_at?: string | null
+          method_signed_by?: string | null
           methodology?: string
           next_review_at?: string | null
           organization_id?: string
           performed_by?: string | null
           reopened_reason?: string | null
+          residual_accepted_at?: string | null
+          residual_accepted_by?: string | null
+          residual_statement?: string | null
+          returned_at?: string | null
+          returned_reason?: string | null
           scope_description?: string
           status?:
             | "draft"
             | "in_progress"
+            | "awaiting_signature"
             | "completed"
             | "reopened"
             | "superseded"
@@ -3433,6 +3813,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "impact_assessment_method_signed_by_fkey"
+            columns: ["method_signed_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "impact_assessment_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
@@ -3442,6 +3829,13 @@ export type Database = {
           {
             foreignKeyName: "impact_assessment_performed_by_fkey"
             columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "impact_assessment_residual_accepted_by_fkey"
+            columns: ["residual_accepted_by"]
             isOneToOne: false
             referencedRelation: "user_profile"
             referencedColumns: ["id"]
@@ -3471,6 +3865,7 @@ export type Database = {
       }
       impact_finding: {
         Row: {
+          action_id: string | null
           created_at: string
           description: string
           domain:
@@ -3492,6 +3887,7 @@ export type Database = {
           likelihood: "unlikely" | "possible" | "likely" | "almost_certain"
           linked_risk_id: string | null
           mitigation: string | null
+          mitigation_due_date: string | null
           owner_user_id: string | null
           residual_severity:
             | "negligible"
@@ -3505,6 +3901,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          action_id?: string | null
           created_at?: string
           description: string
           domain:
@@ -3526,6 +3923,7 @@ export type Database = {
           likelihood: "unlikely" | "possible" | "likely" | "almost_certain"
           linked_risk_id?: string | null
           mitigation?: string | null
+          mitigation_due_date?: string | null
           owner_user_id?: string | null
           residual_severity?:
             | "negligible"
@@ -3539,6 +3937,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          action_id?: string | null
           created_at?: string
           description?: string
           domain?:
@@ -3560,6 +3959,7 @@ export type Database = {
           likelihood?: "unlikely" | "possible" | "likely" | "almost_certain"
           linked_risk_id?: string | null
           mitigation?: string | null
+          mitigation_due_date?: string | null
           owner_user_id?: string | null
           residual_severity?:
             | "negligible"
@@ -3573,6 +3973,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "impact_finding_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "action"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "impact_finding_impact_assessment_id_fkey"
             columns: ["impact_assessment_id"]
@@ -3663,19 +4070,29 @@ export type Database = {
       }
       incident: {
         Row: {
+          asset_id: string | null
           business_ref: string
           closed_at: string | null
           closure_note: string | null
+          closure_officer_at: string | null
+          closure_officer_by: string | null
+          closure_owner_at: string | null
+          closure_owner_by: string | null
           contained_at: string | null
           containment_action: string | null
           created_at: string
           description: string
           detected_at: string
+          fundamental_rights_detail: string | null
+          fundamental_rights_impacted: boolean
           id: string
           is_recurrence: boolean
           kind: "incident" | "non_conformity" | "observation" | "near_miss"
+          officer_user_id: string | null
           organization_id: string
           owner_user_id: string | null
+          qualified_at: string | null
+          qualified_by: string | null
           reported_by: string | null
           return_to_service_decision_id: string | null
           root_cause: string | null
@@ -3687,25 +4104,48 @@ export type Database = {
             | "ACTION_PLAN"
             | "EFFECTIVENESS_REVIEW"
             | "CLOSED"
+          stop_executed_at: string | null
+          stop_executed_by: string | null
+          stop_note: string | null
+          stop_recommended_at: string | null
+          stop_recommended_by: string | null
+          stop_validated_at: string | null
+          stop_validated_by: string | null
           tenant_id: string
           title: string
+          trigger_source:
+            | "monitoring_alert"
+            | "user_complaint"
+            | "internal_audit"
+            | "vendor_alert"
+            | "other"
           updated_at: string
           use_case_id: string | null
         }
         Insert: {
+          asset_id?: string | null
           business_ref: string
           closed_at?: string | null
           closure_note?: string | null
+          closure_officer_at?: string | null
+          closure_officer_by?: string | null
+          closure_owner_at?: string | null
+          closure_owner_by?: string | null
           contained_at?: string | null
           containment_action?: string | null
           created_at?: string
           description: string
           detected_at?: string
+          fundamental_rights_detail?: string | null
+          fundamental_rights_impacted?: boolean
           id?: string
           is_recurrence?: boolean
           kind?: "incident" | "non_conformity" | "observation" | "near_miss"
+          officer_user_id?: string | null
           organization_id: string
           owner_user_id?: string | null
+          qualified_at?: string | null
+          qualified_by?: string | null
           reported_by?: string | null
           return_to_service_decision_id?: string | null
           root_cause?: string | null
@@ -3717,25 +4157,48 @@ export type Database = {
             | "ACTION_PLAN"
             | "EFFECTIVENESS_REVIEW"
             | "CLOSED"
+          stop_executed_at?: string | null
+          stop_executed_by?: string | null
+          stop_note?: string | null
+          stop_recommended_at?: string | null
+          stop_recommended_by?: string | null
+          stop_validated_at?: string | null
+          stop_validated_by?: string | null
           tenant_id: string
           title: string
+          trigger_source?:
+            | "monitoring_alert"
+            | "user_complaint"
+            | "internal_audit"
+            | "vendor_alert"
+            | "other"
           updated_at?: string
           use_case_id?: string | null
         }
         Update: {
+          asset_id?: string | null
           business_ref?: string
           closed_at?: string | null
           closure_note?: string | null
+          closure_officer_at?: string | null
+          closure_officer_by?: string | null
+          closure_owner_at?: string | null
+          closure_owner_by?: string | null
           contained_at?: string | null
           containment_action?: string | null
           created_at?: string
           description?: string
           detected_at?: string
+          fundamental_rights_detail?: string | null
+          fundamental_rights_impacted?: boolean
           id?: string
           is_recurrence?: boolean
           kind?: "incident" | "non_conformity" | "observation" | "near_miss"
+          officer_user_id?: string | null
           organization_id?: string
           owner_user_id?: string | null
+          qualified_at?: string | null
+          qualified_by?: string | null
           reported_by?: string | null
           return_to_service_decision_id?: string | null
           root_cause?: string | null
@@ -3747,12 +4210,53 @@ export type Database = {
             | "ACTION_PLAN"
             | "EFFECTIVENESS_REVIEW"
             | "CLOSED"
+          stop_executed_at?: string | null
+          stop_executed_by?: string | null
+          stop_note?: string | null
+          stop_recommended_at?: string | null
+          stop_recommended_by?: string | null
+          stop_validated_at?: string | null
+          stop_validated_by?: string | null
           tenant_id?: string
           title?: string
+          trigger_source?:
+            | "monitoring_alert"
+            | "user_complaint"
+            | "internal_audit"
+            | "vendor_alert"
+            | "other"
           updated_at?: string
           use_case_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "incident_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "ai_asset"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_closure_officer_by_fkey"
+            columns: ["closure_officer_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_closure_owner_by_fkey"
+            columns: ["closure_owner_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_officer_user_id_fkey"
+            columns: ["officer_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "incident_organization_id_fkey"
             columns: ["organization_id"]
@@ -3763,6 +4267,13 @@ export type Database = {
           {
             foreignKeyName: "incident_owner_user_id_fkey"
             columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_qualified_by_fkey"
+            columns: ["qualified_by"]
             isOneToOne: false
             referencedRelation: "user_profile"
             referencedColumns: ["id"]
@@ -3779,6 +4290,27 @@ export type Database = {
             columns: ["return_to_service_decision_id"]
             isOneToOne: false
             referencedRelation: "governance_decision"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_stop_executed_by_fkey"
+            columns: ["stop_executed_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_stop_recommended_by_fkey"
+            columns: ["stop_recommended_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_stop_validated_by_fkey"
+            columns: ["stop_validated_by"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
             referencedColumns: ["id"]
           },
           {
@@ -3871,6 +4403,198 @@ export type Database = {
             foreignKeyName: "membership_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification: {
+        Row: {
+          body: string | null
+          created_at: string
+          due_at: string
+          emailed_at: string | null
+          entity_id: string | null
+          entity_type: string | null
+          href: string | null
+          id: string
+          kind:
+            | "risk_owner"
+            | "action_owner"
+            | "action_due"
+            | "oversight_review"
+            | "oversight_review_due"
+            | "decision_submitted"
+            | "decision_to_approve"
+            | "decision_effective"
+            | "change_planned"
+            | "change_due"
+            | "impact_completed"
+            | "treatment_owner"
+            | "treatment_due"
+            | "decision_blocked"
+            | "incident_new"
+            | "incident_qualify"
+            | "incident_stop"
+            | "incident_closure"
+            | "criticality_review"
+            | "evidence_expiring"
+            | "evidence_expired"
+            | "evidence_to_validate"
+            | "use_case_review_due"
+            | "vendor_review_due"
+            | "impact_review_due"
+            | "impact_signature"
+            | "impact_signature_late"
+            | "impact_returned"
+          organization_id: string | null
+          read_at: string | null
+          recipient_user_id: string
+          tenant_id: string
+          title: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          due_at?: string
+          emailed_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          href?: string | null
+          id?: string
+          kind:
+            | "risk_owner"
+            | "action_owner"
+            | "action_due"
+            | "oversight_review"
+            | "oversight_review_due"
+            | "decision_submitted"
+            | "decision_to_approve"
+            | "decision_effective"
+            | "change_planned"
+            | "change_due"
+            | "impact_completed"
+            | "treatment_owner"
+            | "treatment_due"
+            | "decision_blocked"
+            | "incident_new"
+            | "incident_qualify"
+            | "incident_stop"
+            | "incident_closure"
+            | "criticality_review"
+            | "evidence_expiring"
+            | "evidence_expired"
+            | "evidence_to_validate"
+            | "use_case_review_due"
+            | "vendor_review_due"
+            | "impact_review_due"
+            | "impact_signature"
+            | "impact_signature_late"
+            | "impact_returned"
+          organization_id?: string | null
+          read_at?: string | null
+          recipient_user_id: string
+          tenant_id: string
+          title: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          due_at?: string
+          emailed_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          href?: string | null
+          id?: string
+          kind?:
+            | "risk_owner"
+            | "action_owner"
+            | "action_due"
+            | "oversight_review"
+            | "oversight_review_due"
+            | "decision_submitted"
+            | "decision_to_approve"
+            | "decision_effective"
+            | "change_planned"
+            | "change_due"
+            | "impact_completed"
+            | "treatment_owner"
+            | "treatment_due"
+            | "decision_blocked"
+            | "incident_new"
+            | "incident_qualify"
+            | "incident_stop"
+            | "incident_closure"
+            | "criticality_review"
+            | "evidence_expiring"
+            | "evidence_expired"
+            | "evidence_to_validate"
+            | "use_case_review_due"
+            | "vendor_review_due"
+            | "impact_review_due"
+            | "impact_signature"
+            | "impact_signature_late"
+            | "impact_returned"
+          organization_id?: string | null
+          read_at?: string | null
+          recipient_user_id?: string
+          tenant_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_recipient_user_id_fkey"
+            columns: ["recipient_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_preference: {
+        Row: {
+          digest: "none" | "daily" | "weekly"
+          email_enabled: boolean
+          immediate_enabled: boolean
+          last_digest_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          digest?: "none" | "daily" | "weekly"
+          email_enabled?: boolean
+          immediate_enabled?: boolean
+          last_digest_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          digest?: "none" | "daily" | "weekly"
+          email_enabled?: boolean
+          immediate_enabled?: boolean
+          last_digest_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preference_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
             referencedRelation: "user_profile"
             referencedColumns: ["id"]
           },
@@ -3982,6 +4706,74 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenant"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organization_tooling: {
+        Row: {
+          connector_id: string | null
+          created_at: string
+          id: string
+          note: string | null
+          organization_id: string
+          product: string
+          tenant_id: string
+          tool_code: string
+          updated_at: string
+          vendor_id: string | null
+        }
+        Insert: {
+          connector_id?: string | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          organization_id: string
+          product: string
+          tenant_id: string
+          tool_code: string
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Update: {
+          connector_id?: string | null
+          created_at?: string
+          id?: string
+          note?: string | null
+          organization_id?: string
+          product?: string
+          tenant_id?: string
+          tool_code?: string
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_tooling_connector_id_fkey"
+            columns: ["connector_id"]
+            isOneToOne: false
+            referencedRelation: "governance_connector"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_tooling_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organization"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_tooling_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_tooling_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendor"
             referencedColumns: ["id"]
           },
         ]
@@ -5284,7 +6076,57 @@ export type Database = {
       }
     }
     Functions: {
+      accept_residual_risks: {
+        Args: { p_statement: string; p_study_id: string }
+        Returns: {
+          approved_by: string | null
+          business_ref: string
+          completed_at: string | null
+          conclusion: string | null
+          created_at: string
+          dpia_reference: string | null
+          dpia_required: boolean
+          id: string
+          lifecycle_phase: string | null
+          method_signed_at: string | null
+          method_signed_by: string | null
+          methodology: string
+          next_review_at: string | null
+          organization_id: string
+          performed_by: string | null
+          reopened_reason: string | null
+          residual_accepted_at: string | null
+          residual_accepted_by: string | null
+          residual_statement: string | null
+          returned_at: string | null
+          returned_reason: string | null
+          scope_description: string
+          status:
+            | "draft"
+            | "in_progress"
+            | "awaiting_signature"
+            | "completed"
+            | "reopened"
+            | "superseded"
+          supersedes_id: string | null
+          tenant_id: string
+          updated_at: string
+          use_case_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "impact_assessment"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       activity_stakes: { Args: { p_activity_id: string }; Returns: Json }
+      apply_due_decisions: { Args: { p_use_case_id: string }; Returns: Json }
+      asset_link_effects: {
+        Args: { p_asset_id: string; p_use_case_id: string }
+        Returns: Json
+      }
+      asset_register: { Args: { p_organization_id: string }; Returns: Json }
       attention_by_organization: {
         Args: never
         Returns: {
@@ -5305,13 +6147,16 @@ export type Database = {
       audit_log_page: {
         Args: {
           p_action?: string
+          p_actions?: string[]
           p_actor?: string
           p_entity_type?: string
           p_limit?: number
           p_offset?: number
+          p_organization_id?: string
           p_search?: string
           p_since?: string
           p_until?: string
+          p_use_case_id?: string
         }
         Returns: {
           action:
@@ -5352,8 +6197,10 @@ export type Database = {
           id: number
           metadata: Json
           occurred_at: string
+          organization_id: string | null
           summary: string | null
           tenant_id: string
+          use_case_id: string | null
         }[]
         SetofOptions: {
           from: "*"
@@ -5407,6 +6254,7 @@ export type Database = {
         Args: { p_activity_id?: string; p_organization_id: string }
         Returns: Json
       }
+      control_tooling_view: { Args: { p_control_id: string }; Returns: Json }
       controls_awaiting_evidence: {
         Args: { p_organization_id: string }
         Returns: {
@@ -5424,7 +6272,22 @@ export type Database = {
             | "retired"
         }[]
       }
+      criticality_signal: { Args: { p_use_case_id: string }; Returns: Json }
       current_organization: { Args: never; Returns: string }
+      decisions_and_changes: {
+        Args: { p_organization_id: string; p_use_case_id?: string }
+        Returns: Json
+      }
+      digest_recipients: {
+        Args: never
+        Returns: {
+          digest: string
+          email: string
+          full_name: string
+          payload: Json
+          user_id: string
+        }[]
+      }
       document_identity: { Args: { p_organization_id: string }; Returns: Json }
       evaluate_gate: {
         Args: { p_target: string; p_use_case_id: string }
@@ -5520,6 +6383,29 @@ export type Database = {
         Args: { p_activity_id?: string; p_organization_id: string }
         Returns: Json
       }
+      impact_assessment_reason: {
+        Args: { p_use_case_id: string }
+        Returns: string
+      }
+      impact_assessment_required: {
+        Args: { p_use_case_id: string }
+        Returns: boolean
+      }
+      impact_studies: { Args: { p_organization_id: string }; Returns: Json }
+      impact_study: { Args: { p_id: string }; Returns: Json }
+      import_ai_assets: {
+        Args: { p_organization_id: string; p_rows: Json }
+        Returns: Json
+      }
+      import_use_cases: {
+        Args: { p_organization_id: string; p_rows: Json }
+        Returns: Json
+      }
+      import_vendors: {
+        Args: { p_organization_id: string; p_rows: Json }
+        Returns: Json
+      }
+      incident_ticket: { Args: { p_incident_id: string }; Returns: Json }
       instantiate_catalog_control: {
         Args: {
           p_catalog_control_id: string
@@ -5561,6 +6447,104 @@ export type Database = {
           status: "prospect" | "pilot" | "active" | "archived"
         }[]
       }
+      mark_digest_sent: { Args: { p_user_id: string }; Returns: undefined }
+      mark_notifications_emailed: { Args: { p_ids: string[] }; Returns: number }
+      my_notification_digest: { Args: never; Returns: Json }
+      my_notification_preference: {
+        Args: never
+        Returns: {
+          digest: "none" | "daily" | "weekly"
+          email_enabled: boolean
+          immediate_enabled: boolean
+          last_digest_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "notification_preference"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      my_notifications: {
+        Args: { p_limit?: number }
+        Returns: {
+          body: string
+          created_at: string
+          due_at: string
+          entity_id: string
+          entity_type: string
+          href: string
+          id: string
+          kind:
+            | "risk_owner"
+            | "action_owner"
+            | "action_due"
+            | "oversight_review"
+            | "oversight_review_due"
+            | "decision_submitted"
+            | "decision_to_approve"
+            | "decision_effective"
+            | "change_planned"
+            | "change_due"
+            | "impact_completed"
+            | "treatment_owner"
+            | "treatment_due"
+            | "decision_blocked"
+            | "incident_new"
+            | "incident_qualify"
+            | "incident_stop"
+            | "incident_closure"
+            | "criticality_review"
+            | "evidence_expiring"
+            | "evidence_expired"
+            | "evidence_to_validate"
+            | "use_case_review_due"
+            | "vendor_review_due"
+            | "impact_review_due"
+            | "impact_signature"
+            | "impact_signature_late"
+            | "impact_returned"
+          organization_id: string
+          read_at: string
+          title: string
+        }[]
+      }
+      my_unread_notifications: { Args: never; Returns: number }
+      notifications_to_email: {
+        Args: never
+        Returns: {
+          body: string
+          email: string
+          full_name: string
+          href: string
+          kind: string
+          notification_id: string
+          organization_name: string
+          title: string
+          user_id: string
+        }[]
+      }
+      organization_readiness: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
+      organization_tooling_map: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
+      organizations_readiness: {
+        Args: never
+        Returns: {
+          organization_id: string
+          readiness: Json
+        }[]
+      }
+      oversight_catalog_controls: {
+        Args: { p_organization_id: string }
+        Returns: Json
+      }
       process_map: {
         Args: { p_organization_id: string }
         Returns: {
@@ -5587,10 +6571,75 @@ export type Database = {
         }[]
       }
       publish_catalog_version: { Args: { p_version_id: string }; Returns: Json }
+      return_impact_study: {
+        Args: { p_reason: string; p_study_id: string }
+        Returns: {
+          approved_by: string | null
+          business_ref: string
+          completed_at: string | null
+          conclusion: string | null
+          created_at: string
+          dpia_reference: string | null
+          dpia_required: boolean
+          id: string
+          lifecycle_phase: string | null
+          method_signed_at: string | null
+          method_signed_by: string | null
+          methodology: string
+          next_review_at: string | null
+          organization_id: string
+          performed_by: string | null
+          reopened_reason: string | null
+          residual_accepted_at: string | null
+          residual_accepted_by: string | null
+          residual_statement: string | null
+          returned_at: string | null
+          returned_reason: string | null
+          scope_description: string
+          status:
+            | "draft"
+            | "in_progress"
+            | "awaiting_signature"
+            | "completed"
+            | "reopened"
+            | "superseded"
+          supersedes_id: string | null
+          tenant_id: string
+          updated_at: string
+          use_case_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "impact_assessment"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      review_agenda: {
+        Args: { p_organization_id: string; p_since: string }
+        Returns: Json
+      }
+      review_cadence: { Args: { p_organization_id: string }; Returns: Json }
+      review_calendar: { Args: { p_organization_id: string }; Returns: Json }
       risk_heatmap: {
         Args: { p_organization_id: string }
         Returns: {
           accepted_count: number
+          open_count: number
+          process_id: string
+          process_name: string
+          process_order: number
+          risk_count: number
+          risk_level: "low" | "moderate" | "high" | "critical"
+        }[]
+      }
+      risk_heatmap_by_activity: {
+        Args: { p_organization_id: string }
+        Returns: {
+          accepted_count: number
+          activity_id: string
+          activity_name: string
+          activity_order: number
           open_count: number
           process_id: string
           process_name: string
@@ -5604,6 +6653,26 @@ export type Database = {
       screen_change_request: {
         Args: { p_change_request_id: string }
         Returns: Json
+      }
+      search_controls: {
+        Args: {
+          p_limit?: number
+          p_organization_id: string
+          p_query: string
+          p_use_case_id: string
+        }
+        Returns: {
+          applicable: boolean
+          catalog_control_id: string
+          code: string
+          control_id: string
+          name: string
+          objective: string
+          rank: number
+          source: string
+          status: string
+          why: string
+        }[]
       }
       soa_readiness: {
         Args: {
@@ -5682,6 +6751,15 @@ export type Database = {
           name: string
         }[]
       }
+      use_case_assets: { Args: { p_use_case_id: string }; Returns: Json }
+      use_case_personal_data: {
+        Args: { p_use_case_id: string }
+        Returns: boolean
+      }
+      use_case_sensitive_data: {
+        Args: { p_use_case_id: string }
+        Returns: boolean
+      }
       validate_catalog_import: { Args: { p_job_id: string }; Returns: Json }
     }
     Enums: {
@@ -5712,12 +6790,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -5741,11 +6819,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -5766,11 +6844,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -5791,11 +6869,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -5808,11 +6886,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -5844,4 +6922,3 @@ export const Constants = {
     },
   },
 } as const
-

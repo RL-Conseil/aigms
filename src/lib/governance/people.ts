@@ -78,6 +78,63 @@ export const organizationPeople = cache(
   },
 )
 
+/**
+ * Les personnes de PLUSIEURS organisations, en une requete.
+ *
+ * Meme lecture, meme regroupement — mais `in` plutot qu'une requete par
+ * organisation. La vue Actifs et fournisseurs en ouvre autant qu'elle affiche
+ * d'organisations.
+ */
+export const peopleByOrganization = cache(
+  async (organizationIds: string[]): Promise<Map<string, Person[]>> => {
+    const byOrganization = new Map<string, Person[]>()
+    if (!organizationIds.length) return byOrganization
+
+    const supabase = await createClient()
+    const { data } = await supabase
+      .from('role_assignment')
+      .select('organization_id, user_id, role, valid_until, user_profile:user_id (full_name, email, job_title)')
+      .in('organization_id', organizationIds)
+
+    const now = Date.now()
+    const index = new Map<string, Map<string, Person>>()
+
+    for (const row of data ?? []) {
+      if (row.valid_until && new Date(row.valid_until).getTime() <= now) continue
+      const profile = row.user_profile as unknown as {
+        full_name: string | null
+        email: string
+        job_title: string | null
+      } | null
+      if (!profile) continue
+
+      const byUser = index.get(row.organization_id) ?? new Map<string, Person>()
+      index.set(row.organization_id, byUser)
+
+      const existing = byUser.get(row.user_id)
+      if (existing) {
+        if (!existing.roles.includes(row.role)) existing.roles.push(row.role)
+        continue
+      }
+      byUser.set(row.user_id, {
+        userId: row.user_id,
+        name: profile.full_name?.trim() || profile.email,
+        email: profile.email,
+        jobTitle: profile.job_title,
+        roles: [row.role],
+      })
+    }
+
+    for (const [organizationId, byUser] of index) {
+      byOrganization.set(
+        organizationId,
+        [...byUser.values()].sort((a, b) => a.name.localeCompare(b.name, 'fr')),
+      )
+    }
+    return byOrganization
+  },
+)
+
 /** « Claire Ferrand — AI Governance Officer » */
 export function describePerson(person: Person): string {
   const qualifier = person.jobTitle?.trim() || person.roles.map((r) => ROLE_LABELS[r] ?? r).join(', ')
