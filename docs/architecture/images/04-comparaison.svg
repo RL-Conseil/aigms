@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1260" height="856" viewBox="0 0 1260 856" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<rect width="1260" height="856" fill="#ffffff"/>
+<text x="40" y="28" font-size="28" fill="#1e1e1e">Vercel + Supabase Cloud, ou VPS chez IZARHOST</text>
+<text x="40" y="56" font-size="16" fill="#757575">Ce qu’on gagne, ce qu’on doit tenir, et ce qui change de responsable.</text>
+<rect x="40" y="100" width="560" height="620" rx="12" fill="#dbe4ff" fill-opacity="0.35" stroke="#4a9eed" stroke-width="1" stroke-opacity="0.35"/>
+<text x="56" y="126" font-size="16" fill="#4a9eed">Aujourd’hui — Vercel + Supabase Cloud</text>
+<rect x="80" y="160" width="480" height="60" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="320" y="195.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Déploiement automatique par branche</text>
+<rect x="80" y="240" width="480" height="60" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="320" y="275.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Preview par commit, TLS automatique</text>
+<rect x="80" y="320" width="480" height="60" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="320" y="355.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Sauvegardes et correctifs gérés</text>
+<rect x="80" y="400" width="480" height="60" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="320" y="435.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Mises à jour de Postgres gérées</text>
+<rect x="80" y="480" width="480" height="70" rx="12" fill="#ffc9c9" fill-opacity="1" stroke="#ef4444" stroke-width="2" stroke-opacity="1"/>
+<text x="320" y="510.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Données hors de votre périmètre</text>
+<text x="320" y="530.6" font-size="16" fill="#1e1e1e" text-anchor="middle">(régions au choix, éditeur américain)</text>
+<rect x="80" y="570" width="480" height="70" rx="12" fill="#ffd8a8" fill-opacity="1" stroke="#f59e0b" stroke-width="2" stroke-opacity="1"/>
+<text x="320" y="610.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Coût à l’usage, non revendable en marque propre</text>
+<rect x="660" y="100" width="560" height="620" rx="12" fill="#e5dbff" fill-opacity="0.35" stroke="#8b5cf6" stroke-width="1" stroke-opacity="0.35"/>
+<text x="676" y="126" font-size="16" fill="#8b5cf6">Cible — VPS chez IZARHOST</text>
+<rect x="700" y="160" width="480" height="60" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="940" y="195.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Données chez l’hébergeur choisi</text>
+<rect x="700" y="240" width="480" height="60" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="940" y="275.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Revendable : hébergement + service</text>
+<rect x="700" y="320" width="480" height="60" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="940" y="355.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Coût fixe et prévisible</text>
+<rect x="700" y="400" width="480" height="70" rx="12" fill="#ffc9c9" fill-opacity="1" stroke="#ef4444" stroke-width="2" stroke-opacity="1"/>
+<text x="940" y="430.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Sauvegardes, restaurations, correctifs :</text>
+<text x="940" y="450.6" font-size="16" fill="#1e1e1e" text-anchor="middle">à votre charge</text>
+<rect x="700" y="490" width="480" height="70" rx="12" fill="#ffc9c9" fill-opacity="1" stroke="#ef4444" stroke-width="2" stroke-opacity="1"/>
+<text x="940" y="520.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Mises à jour majeures de Postgres :</text>
+<text x="940" y="540.6" font-size="16" fill="#1e1e1e" text-anchor="middle">à votre charge</text>
+<rect x="700" y="580" width="480" height="60" rx="12" fill="#ffd8a8" fill-opacity="1" stroke="#f59e0b" stroke-width="2" stroke-opacity="1"/>
+<text x="940" y="615.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Preview par commit : à reconstruire</text>
+<text x="40" y="776" font-size="16" fill="#1e1e1e">Voie intermédiaire, la plus sûre : application sur VPS, base sur Supabase Cloud ou Postgres géré européen.</text>
+<text x="40" y="810" font-size="15" fill="#757575">Elle déplace ce qui est facile à déplacer, et laisse à un opérateur ce qui demande une astreinte.</text>
+</svg>

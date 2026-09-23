@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="711" viewBox="0 0 1160 711" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<rect width="1160" height="711" fill="#ffffff"/>
+<text x="40" y="28" font-size="28" fill="#1e1e1e">Chaîne de livraison — votre poste n’y figure pas</text>
+<text x="40" y="56" font-size="16" fill="#757575">Vous codez et vous posez une étiquette. La machine fait le reste.</text>
+<rect x="40" y="100" width="320" height="420" rx="12" fill="#d3f9d8" fill-opacity="0.35" stroke="#22c55e" stroke-width="1" stroke-opacity="0.35"/>
+<text x="56" y="126" font-size="16" fill="#22c55e">Votre poste</text>
+<rect x="70" y="150" width="260" height="70" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="200" y="180.6" font-size="16" fill="#1e1e1e" text-anchor="middle">npm run dev</text>
+<text x="200" y="200.6" font-size="16" fill="#1e1e1e" text-anchor="middle">supabase start</text>
+<rect x="70" y="240" width="260" height="70" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="200" y="270.6" font-size="16" fill="#1e1e1e" text-anchor="middle">typecheck · lint · test</text>
+<text x="200" y="290.6" font-size="16" fill="#1e1e1e" text-anchor="middle">supabase db reset</text>
+<rect x="70" y="330" width="260" height="60" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="200" y="365.6" font-size="16" fill="#1e1e1e" text-anchor="middle">git push sur dev</text>
+<rect x="70" y="410" width="260" height="70" rx="12" fill="#fff3bf" fill-opacity="1" stroke="#f59e0b" stroke-width="2" stroke-opacity="1"/>
+<text x="200" y="440.6" font-size="16" fill="#1e1e1e" text-anchor="middle">git tag v1.4.0</text>
+<text x="200" y="460.6" font-size="16" fill="#1e1e1e" text-anchor="middle">git push origin v1.4.0</text>
+<text x="70" y="509" font-size="14" fill="#757575">Aucune commande Docker.</text>
+<rect x="410" y="100" width="380" height="420" rx="12" fill="#e5dbff" fill-opacity="0.35" stroke="#8b5cf6" stroke-width="1" stroke-opacity="0.35"/>
+<text x="426" y="126" font-size="16" fill="#8b5cf6">GitHub Actions</text>
+<rect x="440" y="150" width="320" height="60" rx="12" fill="#d0bfff" fill-opacity="1" stroke="#8b5cf6" stroke-width="2" stroke-opacity="1"/>
+<text x="600" y="185.6" font-size="16" fill="#1e1e1e" text-anchor="middle">1. Tests et types</text>
+<rect x="440" y="230" width="320" height="70" rx="12" fill="#d0bfff" fill-opacity="1" stroke="#8b5cf6" stroke-width="2" stroke-opacity="1"/>
+<text x="600" y="260.6" font-size="16" fill="#1e1e1e" text-anchor="middle">2. docker build</text>
+<text x="600" y="280.6" font-size="16" fill="#1e1e1e" text-anchor="middle">image: aigms:v1.4.0</text>
+<rect x="440" y="320" width="320" height="70" rx="12" fill="#d0bfff" fill-opacity="1" stroke="#8b5cf6" stroke-width="2" stroke-opacity="1"/>
+<text x="600" y="350.6" font-size="16" fill="#1e1e1e" text-anchor="middle">3. Publication</text>
+<text x="600" y="370.6" font-size="16" fill="#1e1e1e" text-anchor="middle">ghcr.io/rl-conseil/aigms</text>
+<rect x="440" y="410" width="320" height="70" rx="12" fill="#d0bfff" fill-opacity="1" stroke="#8b5cf6" stroke-width="2" stroke-opacity="1"/>
+<text x="600" y="440.6" font-size="16" fill="#1e1e1e" text-anchor="middle">4. Migrations jouées</text>
+<text x="600" y="460.6" font-size="16" fill="#1e1e1e" text-anchor="middle">sur la préprod</text>
+<rect x="840" y="100" width="280" height="420" rx="12" fill="#dbe4ff" fill-opacity="0.35" stroke="#4a9eed" stroke-width="1" stroke-opacity="0.35"/>
+<text x="856" y="126" font-size="16" fill="#4a9eed">VPS</text>
+<rect x="870" y="200" width="220" height="70" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="980" y="230.6" font-size="16" fill="#1e1e1e" text-anchor="middle">docker pull</text>
+<text x="980" y="250.6" font-size="16" fill="#1e1e1e" text-anchor="middle">de l’image</text>
+<rect x="870" y="300" width="220" height="70" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="980" y="330.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Bascule</text>
+<text x="980" y="350.6" font-size="16" fill="#1e1e1e" text-anchor="middle">sans coupure</text>
+<rect x="870" y="400" width="220" height="70" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="980" y="430.6" font-size="16" fill="#1e1e1e" text-anchor="middle">Version en ligne</text>
+<text x="980" y="450.6" font-size="16" fill="#1e1e1e" text-anchor="middle">v1.4.0</text>
+<defs><marker id="m5110" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#f59e0b"/></marker></defs>
+<line x1="330" y1="440" x2="440" y2="180" stroke="#f59e0b" stroke-width="2"  marker-end="url(#m5110)"/>
+<rect x="344.35" y="296" width="81.30000000000001" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="385" y="313.5" font-size="14" fill="#f59e0b" text-anchor="middle">déclenche</text>
+<defs><marker id="m7890" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#8b5cf6"/></marker></defs>
+<line x1="760" y1="355" x2="870" y2="245" stroke="#8b5cf6" stroke-width="2"  marker-end="url(#m7890)"/>
+<rect x="789.75" y="286" width="50.5" height="22" fill="#ffffff" opacity="0.92"/>
+<text x="815" y="303.5" font-size="14" fill="#8b5cf6" text-anchor="middle">image</text>
+<defs><marker id="m8790" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="980" y1="270" x2="980" y2="300" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m8790)"/>
+<defs><marker id="m9790" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="980" y1="370" x2="980" y2="400" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m9790)"/>
+<text x="40" y="596" font-size="16" fill="#ef4444">Retour arrière :</text>
+<text x="40" y="625" font-size="15" fill="#1e1e1e">docker compose up -d aigms:v1.3.0 — la version précédente reprend la main en trente secondes.</text>
+<text x="40" y="665" font-size="15" fill="#1e1e1e">Les migrations, elles, ne reviennent pas en arrière : une correction se livre par une migration de plus.</text>
+</svg>
