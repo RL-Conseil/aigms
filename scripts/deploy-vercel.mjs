@@ -76,19 +76,46 @@ const files = tracked.map((path) => {
 const megabytes = (files.reduce((n, f) => n + f.size, 0) / 1024 / 1024).toFixed(1)
 console.log(`Branche ${branch} — ${files.length} fichiers, ${megabytes} Mo`)
 
-for (const f of files) {
-  const res = await fetch(`https://api.vercel.com/v2/files?teamId=${TEAM}`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${TOKEN}`,
-      'Content-Length': String(f.size),
-      'x-vercel-digest': f.sha,
+/**
+ * N'envoyer que ce qui manque.
+ *
+ * Vercel stocke les fichiers par empreinte : un fichier deja connu n'a pas a
+ * repartir, meme sous un autre chemin. Le script les envoyait pourtant tous a
+ * chaque fois — 506 envois par deploiement, et le quota du compte (5 000 par
+ * 24 heures) epuise en une journee de travail, avec ce message :
+ * « api-upload-free : try again in 24 hours ».
+ *
+ * La creation du deploiement accepte la liste complete des empreintes et
+ * repond ce qui lui manque. On n'envoie que cela, puis on recommence.
+ */
+async function creer() {
+  return fetch(
+    `https://api.vercel.com/v13/deployments?teamId=${TEAM}&skipAutoDetectionConfirmation=1`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     },
-    body: f.data,
-  })
-  if (!res.ok) {
-    console.error(`Echec de l'envoi de ${f.file} : ${res.status} ${await res.text()}`)
-    process.exit(1)
+  )
+}
+
+async function envoyer(manquants) {
+  const aEnvoyer = files.filter((f) => manquants.includes(f.sha))
+  console.log(`${aEnvoyer.length} fichier(s) a envoyer sur ${files.length}`)
+  for (const f of aEnvoyer) {
+    const res = await fetch(`https://api.vercel.com/v2/files?teamId=${TEAM}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${TOKEN}`,
+        'Content-Length': String(f.size),
+        'x-vercel-digest': f.sha,
+      },
+      body: f.data,
+    })
+    if (!res.ok) {
+      console.error(`Echec de l'envoi de ${f.file} : ${res.status} ${await res.text()}`)
+      process.exit(1)
+    }
   }
 }
 
@@ -106,14 +133,17 @@ const body = {
 }
 if (target) body.target = target
 
-const res = await fetch(
-  `https://api.vercel.com/v13/deployments?teamId=${TEAM}&skipAutoDetectionConfirmation=1`,
-  {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  },
-)
+let res = await creer()
+
+// 400 `missing_files` : Vercel enumere les empreintes qu'il n'a pas. On les
+// envoie, et une seule fois — s'il en redemande, c'est autre chose.
+if (res.status === 400) {
+  const { error } = await res.clone().json()
+  if (error?.code === 'missing_files' && Array.isArray(error.missing)) {
+    await envoyer(error.missing)
+    res = await creer()
+  }
+}
 
 const deployment = await res.json()
 if (!res.ok) {
