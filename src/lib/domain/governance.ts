@@ -92,6 +92,15 @@ export type ReassessmentVerdict =
   | 'PARTIAL_REASSESSMENT'
   | 'FULL_REASSESSMENT'
 
+/** Comment un incident est arrive a la connaissance de l'organisation. */
+export const INCIDENT_TRIGGER_LABELS: Record<string, string> = {
+  monitoring_alert: 'Alerte automatique de monitoring',
+  user_complaint: 'Plainte ou signalement d’un utilisateur',
+  internal_audit: 'Audit interne',
+  vendor_alert: 'Alerte du fournisseur',
+  other: 'Autre',
+}
+
 export const CHANGE_STATUS_LABELS: Record<string, string> = {
   DRAFT: 'Brouillon',
   IMPACT_SCREENING: 'Qualifié',

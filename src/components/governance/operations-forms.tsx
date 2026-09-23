@@ -13,7 +13,7 @@ import {
 } from '@/lib/actions/operations'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
-import { ACTION_STATUS_LABELS, INCIDENT_STATUS_LABELS } from '@/lib/domain/governance'
+import { ACTION_STATUS_LABELS, INCIDENT_STATUS_LABELS, INCIDENT_TRIGGER_LABELS } from '@/lib/domain/governance'
 
 /**
  * Saisie du suivi operationnel.
@@ -229,14 +229,6 @@ const SEVERITY_LABELS: Record<string, string> = {
   S2: 'S2 — Majeur',
   S3: 'S3 — Modéré',
   S4: 'S4 — Mineur',
-}
-
-export const INCIDENT_TRIGGER_LABELS: Record<string, string> = {
-  monitoring_alert: 'Alerte automatique de monitoring',
-  user_complaint: 'Plainte ou signalement d’un utilisateur',
-  internal_audit: 'Audit interne',
-  vendor_alert: 'Alerte du fournisseur',
-  other: 'Autre',
 }
 
 export function IncidentForm({

@@ -9,7 +9,7 @@ import { VendorLabelForm, VendorReviewForm } from '@/components/governance/regis
 import { DeclareAssetModal, DeclareVendorModal } from '@/components/governance/registry-declare'
 import { AssetLabelForm } from '@/components/governance/asset-label-form'
 import { organizationPeople } from '@/lib/governance/people'
-import { attentionFor } from '@/lib/governance/attention'
+import { attentionFor } from '@/lib/governance/attention-data'
 import {
   ASSET_KIND_LABELS,
   AUTONOMY_LABELS,

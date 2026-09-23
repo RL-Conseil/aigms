@@ -7,9 +7,19 @@
  * laquelle ce jeton n'a pas acces, et refuse donc de fonctionner. L'API de
  * deploiement, elle, l'accepte.
  *
- * Il deviendra inutile le jour ou l'App GitHub de Vercel aura acces a
- * l'organisation RL-Conseil : les deploiements repartiront automatiquement a
- * chaque push. Voir docs/roadmap/IMPLEMENTATION_STATUS.md.
+ * DEUX CHEMINS, et le premier est de loin le meilleur :
+ *
+ *   1. `gitSource` — Vercel clone lui-meme la branche depuis GitHub. Rien ne
+ *      transite par ce poste : pas d'envoi de fichiers, donc pas de quota
+ *      `api-upload-free` (5 000 envois par 24 heures, epuises en une journee
+ *      quand on renvoie les 506 fichiers du depot a chaque fois). Exige que la
+ *      branche soit poussee et que HEAD y soit.
+ *   2. l'envoi de fichiers, en repli — quand la branche n'est pas poussee, ou
+ *      que le commit local n'est pas celui du distant. Seuls les fichiers que
+ *      Vercel ne connait pas partent : il stocke par empreinte.
+ *
+ * Il deviendra inutile le jour ou l'App GitHub de Vercel deploiera d'elle-meme
+ * a chaque push. Voir docs/roadmap/IMPLEMENTATION_STATUS.md.
  *
  * Usage :
  *   VERCEL_TOKEN=... node scripts/deploy-vercel.mjs            # preview
@@ -59,61 +69,122 @@ if (target === 'production' && branch !== 'main') {
 
 if (git('status', '--porcelain')) {
   console.error('Arbre de travail non propre. Committer avant de deployer : le deploiement')
-  console.error('envoie les fichiers suivis par Git, une modification non commitee serait perdue.')
+  console.error('part du commit, une modification non commitee serait perdue.')
   process.exit(1)
 }
 
+/**
+ * La branche est-elle poussee, au meme commit ?
+ *
+ * C'est la condition pour laisser Vercel cloner. Sinon il construirait un
+ * autre code que celui qu'on a sous les yeux — le pire des deux mondes.
+ */
+const head = git('rev-parse', 'HEAD')
+let distant = null
+try {
+  distant = git('rev-parse', `origin/${branch}`)
+} catch {
+  // Branche jamais poussee : `origin/<branche>` n'existe pas.
+}
+const clonable = distant === head
+
 // -z : noms separes par NUL, sans echappement des accents ni des espaces.
-const tracked = execFileSync('git', ['ls-files', '-z'], { encoding: 'utf8' })
-  .split('\0')
-  .filter(Boolean)
+const files = clonable
+  ? []
+  : execFileSync('git', ['ls-files', '-z'], { encoding: 'utf8' })
+      .split('\0')
+      .filter(Boolean)
+      .map((path) => {
+        const data = readFileSync(path)
+        return {
+          file: path,
+          sha: createHash('sha1').update(data).digest('hex'),
+          size: data.length,
+          data,
+        }
+      })
 
-const files = tracked.map((path) => {
-  const data = readFileSync(path)
-  return { file: path, sha: createHash('sha1').update(data).digest('hex'), size: data.length, data }
-})
+if (clonable) {
+  console.log(`Branche ${branch} — Vercel clone ${head.slice(0, 7)} depuis GitHub`)
+} else {
+  const megabytes = (files.reduce((n, f) => n + f.size, 0) / 1024 / 1024).toFixed(1)
+  console.log(`Branche ${branch} non poussee — envoi de ${files.length} fichiers, ${megabytes} Mo`)
+}
 
-const megabytes = (files.reduce((n, f) => n + f.size, 0) / 1024 / 1024).toFixed(1)
-console.log(`Branche ${branch} — ${files.length} fichiers, ${megabytes} Mo`)
-
-for (const f of files) {
-  const res = await fetch(`https://api.vercel.com/v2/files?teamId=${TEAM}`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${TOKEN}`,
-      'Content-Length': String(f.size),
-      'x-vercel-digest': f.sha,
+/**
+ * N'envoyer que ce qui manque.
+ *
+ * Vercel stocke les fichiers par empreinte : un fichier deja connu n'a pas a
+ * repartir, meme sous un autre chemin. Le script les envoyait pourtant tous a
+ * chaque fois — 506 envois par deploiement, et le quota du compte (5 000 par
+ * 24 heures) epuise en une journee de travail, avec ce message :
+ * « api-upload-free : try again in 24 hours ».
+ *
+ * La creation du deploiement accepte la liste complete des empreintes et
+ * repond ce qui lui manque. On n'envoie que cela, puis on recommence.
+ */
+async function creer() {
+  return fetch(
+    `https://api.vercel.com/v13/deployments?teamId=${TEAM}&skipAutoDetectionConfirmation=1`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
     },
-    body: f.data,
-  })
-  if (!res.ok) {
-    console.error(`Echec de l'envoi de ${f.file} : ${res.status} ${await res.text()}`)
-    process.exit(1)
+  )
+}
+
+async function envoyer(manquants) {
+  const aEnvoyer = files.filter((f) => manquants.includes(f.sha))
+  console.log(`${aEnvoyer.length} fichier(s) a envoyer sur ${files.length}`)
+  for (const f of aEnvoyer) {
+    const res = await fetch(`https://api.vercel.com/v2/files?teamId=${TEAM}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${TOKEN}`,
+        'Content-Length': String(f.size),
+        'x-vercel-digest': f.sha,
+      },
+      body: f.data,
+    })
+    if (!res.ok) {
+      console.error(`Echec de l'envoi de ${f.file} : ${res.status} ${await res.text()}`)
+      process.exit(1)
+    }
   }
 }
 
-const body = {
-  name: PROJECT,
-  project: PROJECT,
-  files: files.map(({ file, sha, size }) => ({ file, sha, size })),
-  projectSettings: { framework: 'nextjs' },
-  gitMetadata: {
-    remoteUrl: 'https://github.com/RL-Conseil/aigms',
-    commitSha: git('rev-parse', 'HEAD'),
-    commitMessage: git('log', '-1', '--format=%s'),
-    commitRef: branch,
-  },
-}
+const body = clonable
+  ? {
+      name: PROJECT,
+      project: PROJECT,
+      gitSource: { type: 'github', org: 'RL-Conseil', repo: 'aigms', ref: branch },
+    }
+  : {
+      name: PROJECT,
+      project: PROJECT,
+      files: files.map(({ file, sha, size }) => ({ file, sha, size })),
+      projectSettings: { framework: 'nextjs' },
+      gitMetadata: {
+        remoteUrl: 'https://github.com/RL-Conseil/aigms',
+        commitSha: head,
+        commitMessage: git('log', '-1', '--format=%s'),
+        commitRef: branch,
+      },
+    }
 if (target) body.target = target
 
-const res = await fetch(
-  `https://api.vercel.com/v13/deployments?teamId=${TEAM}&skipAutoDetectionConfirmation=1`,
-  {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${TOKEN}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  },
-)
+let res = await creer()
+
+// 400 `missing_files` : Vercel enumere les empreintes qu'il n'a pas. On les
+// envoie, et une seule fois — s'il en redemande, c'est autre chose.
+if (res.status === 400) {
+  const { error } = await res.clone().json()
+  if (error?.code === 'missing_files' && Array.isArray(error.missing)) {
+    await envoyer(error.missing)
+    res = await creer()
+  }
+}
 
 const deployment = await res.json()
 if (!res.ok) {

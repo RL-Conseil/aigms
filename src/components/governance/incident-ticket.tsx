@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { incidentStep, qualifyIncident, type FormState } from '@/lib/actions/operations'
 import { Field, FIELD, FormFeedback, Submit } from '@/components/forms'
 import { Modal } from '@/components/modal'
-import { INCIDENT_TRIGGER_LABELS } from '@/components/governance/operations-forms'
+import { INCIDENT_TRIGGER_LABELS } from '@/lib/domain/governance'
 import { formatDateTime } from '@/lib/domain/governance'
 
 /**

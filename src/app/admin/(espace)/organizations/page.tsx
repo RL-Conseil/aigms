@@ -7,7 +7,7 @@ import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import { managedOrganizations } from '@/lib/governance/organizations'
 import { ROLE_LABELS, type AppRole } from '@/lib/domain/roles'
 import { AttentionSummary } from '@/components/governance/attention'
-import { attentionByOrganization } from '@/lib/governance/attention'
+import { attentionByOrganization } from '@/lib/governance/attention-data'
 import { DefaultOrganizationButton } from '@/components/governance/default-organization'
 
 /**

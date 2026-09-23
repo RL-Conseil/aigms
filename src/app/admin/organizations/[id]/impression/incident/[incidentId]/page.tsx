@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { PrintDocument } from '@/components/print/document'
 import { documentIdentity } from '@/lib/governance/document-identity'
 import { formatDate, formatDateTime, INCIDENT_STATUS_LABELS } from '@/lib/domain/governance'
-import { INCIDENT_TRIGGER_LABELS } from '@/components/governance/operations-forms'
+import { INCIDENT_TRIGGER_LABELS } from '@/lib/domain/governance'
 
 export const metadata: Metadata = { title: 'Ticket d’incident' }
 
