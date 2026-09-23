@@ -9,6 +9,12 @@ import { UserMenu } from '@/components/admin/user-menu'
 import { AttentionDot } from '@/components/governance/attention'
 import type { Attention } from '@/lib/governance/attention'
 import type { Branding } from '@/lib/branding'
+import {
+  ORGANIZATION_SECTIONS,
+  PRIMARY_SECTIONS,
+  REGISTER_SECTIONS,
+  type OrganizationSection,
+} from '@/lib/domain/sections'
 
 /**
  * La barre de navigation, cote navigateur.
@@ -31,25 +37,6 @@ import type { Branding } from '@/lib/branding'
  * TOUTES les organisations accessibles en un appel — c'est la meme fonction qui
  * sert le pilotage — et la barre y lit la ligne qui la concerne.
  */
-
-export const ORGANIZATION_SECTIONS = [
-  { key: 'apercu', label: 'Cas d’usage', href: '' },
-  { key: 'processus', label: 'Processus et risques', href: '/processus' },
-  { key: 'controles', label: 'Contrôles', href: '/controles' },
-  { key: 'actifs', label: 'Actifs d’IA', href: '/actifs' },
-  { key: 'decisions', label: 'Décisions', href: '/decisions' },
-  { key: 'soa', label: 'Déclaration d’Applicabilité', href: '/declaration-applicabilite' },
-  { key: 'preuves', label: 'Preuves', href: '/preuves' },
-  { key: 'suivi', label: 'Suivi d’actions et d’incidents', href: '/suivi' },
-  { key: 'revues', label: 'Revues de gouvernance', href: '/revues' },
-] as const
-
-export type OrganizationSection = (typeof ORGANIZATION_SECTIONS)[number]['key']
-
-export const PRIMARY_SECTIONS = ['apercu', 'processus'] as const
-export const REGISTER_SECTIONS = [
-  'controles', 'actifs', 'decisions', 'soa', 'preuves', 'suivi', 'revues',
-] as const
 
 type Announcement = { organizationId: string; section: OrganizationSection } | null
 

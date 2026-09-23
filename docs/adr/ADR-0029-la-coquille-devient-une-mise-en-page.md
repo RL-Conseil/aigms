@@ -74,6 +74,28 @@ deux lectures restantes partent ensemble.
   désormais dans `lib/domain/assets.ts`. Le groupe de routes l'a révélé en
   cassant le chemin relatif.
 
+## La faute que cette bascule a produite, et son garde-fou
+
+La première version laissait `ORGANIZATION_SECTIONS`, `PRIMARY_SECTIONS` et
+`REGISTER_SECTIONS` dans `chrome.tsx`, module marqué `'use client'`, et
+`shell.tsx` — composant **serveur** — les en importait. Depuis le serveur, on
+ne reçoit alors pas la valeur mais une **référence** : `REGISTER_SECTIONS.includes(…)`
+lève, et la page répond « A server error occurred ». Le symptôme était précis —
+seules les pages portant une organisation échouaient, puisque la lecture est
+conditionnée par elle.
+
+Ni TypeScript ni le build ne voient cette faute : c'est une erreur d'exécution.
+Elle a donc atteint l'utilisateur.
+
+Les données partent dans `lib/domain/sections.ts`, module pur que les deux
+côtés lisent. Et `tests/unit/frontiere-client.test.ts` refuse désormais qu'un
+module serveur importe autre chose qu'un **composant** depuis un module client.
+
+Ce test, une fois écrit, en a trouvé une seconde, antérieure :
+`INCIDENT_TRIGGER_LABELS` vivait dans `operations-forms.tsx` — client — et la
+page d'impression d'un incident, servie par le serveur, le lisait. Le libellé
+rejoint ses pareils dans `lib/domain/governance.ts`.
+
 ## Ce que cela donne
 
 Vagues d'allers-retours enchaînées, par navigation :

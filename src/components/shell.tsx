@@ -1,7 +1,12 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
-import { AnnounceSection, ORGANIZATION_SECTIONS, PRIMARY_SECTIONS, REGISTER_SECTIONS } from '@/components/chrome'
-import type { OrganizationSection } from '@/components/chrome'
+import { AnnounceSection } from '@/components/chrome'
+import {
+  ORGANIZATION_SECTIONS,
+  PRIMARY_SECTIONS,
+  REGISTER_SECTIONS,
+  type OrganizationSection,
+} from '@/lib/domain/sections'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import { organizationReadiness } from '@/lib/governance/readiness'
 import { ReadinessBanner } from '@/components/governance/readiness-banner'
@@ -19,7 +24,9 @@ import { ReadinessBanner } from '@/components/governance/readiness-banner'
  * servent, et les renommer n'aurait rien appris a personne.
  */
 
-// Reexportes : les pages et les tests les importent depuis ici de longue date.
+// Reexportes depuis le module PUR : un composant serveur ne peut pas lire une
+// donnee exportee par un module `'use client'` — il n'en recoit qu'une
+// reference, et la moindre lecture leve.
 export { ORGANIZATION_SECTIONS, PRIMARY_SECTIONS, REGISTER_SECTIONS }
 export type { OrganizationSection }
 
