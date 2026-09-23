@@ -110,10 +110,28 @@ Les données de la barre se rafraîchissent quand même : `revalidatePath`, appe
 après chaque mutation, provoque un rafraîchissement qui réexécute la mise en
 page. Les pastilles restent justes.
 
+## Suite : l'écran d'attente
+
+*24 septembre 2026.* Un `loading.tsx` pose une frontière `Suspense` autour de
+`{children}` : la barre reste affichée et cliquable, seule la zone de contenu
+attend, et **le routeur montre cet écran dès le clic**, sans attendre le
+serveur. C'est ce qui manquait — l'application ne bougeait pas jusqu'à la
+dernière requête, et paraissait lente même quand le serveur répondait vite.
+
+Un seul suffit pour le groupe `(espace)` : le gabarit — fil d'Ariane, titre,
+cartes — est celui de presque toutes les pages. Les pages d'impression, hors du
+groupe, ont le leur, qui se place lui-même faute de `<main>`.
+
+La forme imite ce qui va s'afficher plutôt qu'un rond qui tourne : l'œil se
+place avant le contenu, et le saut final est moins brutal. `animate-pulse`
+s'arrête de lui-même quand le système demande moins d'animations.
+
 ## Ce que cela ne fait pas
 
-- Aucun `loading.tsx`, donc toujours pas de rendu progressif : le navigateur
-  attend la page entière. C'est le lot suivant.
+- La **mise en page elle-même** bloque encore le premier affichage d'un
+  chargement complet : ses deux vagues précèdent la frontière `Suspense`, qui
+  est en dessous d'elle. Envelopper les pastilles dans leur propre `Suspense`
+  laisserait la barre paraître d'abord — c'est le lot P1-5.
 - `getUser()` part toujours deux fois par requête — proxy et contexte.
 - `apply_due_decisions` s'exécute encore pendant le rendu de la fiche d'un cas
   d'usage.
