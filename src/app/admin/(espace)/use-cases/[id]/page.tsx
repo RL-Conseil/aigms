@@ -4,7 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { getViewerContext } from '@/lib/auth/context'
 import { InfoTip } from '@/components/info-tip'
 import { EvidenceGapNotice } from '@/components/governance/evidence-gap-notice'
-import { ControlEvidenceTip } from '@/components/governance/control-evidence-tip'
+import { CheckboxFilter } from '@/components/governance/checkbox-filter'
+import { ControlEvidenceModal } from '@/components/governance/control-evidence-modal'
 import { proofState, type ControlProof } from '@/lib/domain/proof'
 import { Shell } from '@/components/shell'
 import { UseCaseLabelForm } from '@/components/governance/use-case-label-form'
@@ -163,10 +164,10 @@ export default async function UseCasePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ onglet?: string; vue?: string; controle?: string }>
+  searchParams: Promise<{ onglet?: string; vue?: string; controle?: string; preuve?: string }>
 }) {
   const { id } = await params
-  const { onglet, vue, controle } = await searchParams
+  const { onglet, vue, controle, preuve } = await searchParams
   const { tab, vue: suiviView } = resolveTab(onglet, vue)
   const supabase = await createClient()
   // Le contexte est memoise pour la duree du rendu et verifie le jeton sans
@@ -493,6 +494,13 @@ export default async function UseCasePage({
     list.push({ ...e, freshness: evidenceFreshness(e.valid_until) })
     evidenceByControl.set(l.control_id, list)
   }
+  // Combien d'applicables une preuve validee et vivante demontre : le compteur
+  // des deux cases, et il se calcule une fois.
+  const avecPreuve = applicableControls.filter((c) => {
+    const id = (c.control as unknown as { id: string } | null)?.id
+    return id ? proofState(evidenceByControl.get(id) ?? []) === 'held' : false
+  }).length
+
   const useCaseEvidence = [
     ...new Map(
       (evidenceLinks ?? [])
@@ -1040,6 +1048,36 @@ export default async function UseCasePage({
               <ApplicabilityForm useCaseId={id} controls={controlChoices} />
             </div>
 
+            {/*
+              Restreindre, ou ne pas restreindre : une case, pas un choix entre
+              trois. L'etat vit dans l'adresse — un lien vers « les controles
+              sans preuve de ce cas d'usage » se partage.
+            */}
+            {controls?.length ? (
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <CheckboxFilter
+                  label="Avec preuve(s)"
+                  param="preuve"
+                  value="avec"
+                  checked={preuve === 'avec'}
+                  count={avecPreuve}
+                  basePath={`/admin/use-cases/${id}`}
+                  current={{ onglet: 'controles', controle }}
+                  hint="Les contrôles applicables qu’une preuve validée et non échue démontre."
+                />
+                <CheckboxFilter
+                  label="Sans preuve"
+                  param="preuve"
+                  value="sans"
+                  checked={preuve === 'sans'}
+                  count={applicableControls.length - avecPreuve}
+                  basePath={`/admin/use-cases/${id}`}
+                  current={{ onglet: 'controles', controle }}
+                  hint="Les contrôles applicables que rien ne démontre encore."
+                />
+              </div>
+            ) : null}
+
             {controls?.length ? (
               <div className="flex flex-col gap-6">
                 {/*
@@ -1068,6 +1106,14 @@ export default async function UseCasePage({
                       },
                     }))
                     .filter(({ control }) => (control.measure_kind ?? 'organizational') === kind)
+                    // Le filtre ne porte que sur les applicables : un contrôle
+                    // non applicable n'a pas de preuve à produire.
+                    .filter(({ ca, control }) => {
+                      if (!preuve) return true
+                      if (ca.status !== 'applicable') return false
+                      const tenu = proofState(evidenceByControl.get(control.id) ?? []) === 'held'
+                      return preuve === 'avec' ? tenu : !tenu
+                    })
                     .sort((a, b) => {
                       const rank = (x: typeof a) =>
                         x.ca.status !== 'applicable' ? 3 : x.control.status === 'operating' ? 2 : x.control.status === 'implemented' ? 1 : 0
@@ -1154,53 +1200,27 @@ export default async function UseCasePage({
                                     {control.is_mandatory ? (
                                       <span className="ml-2 text-xs text-ink-400">obligatoire</span>
                                     ) : null}
+                                    {/*
+                                      La justification sous le libelle, et non
+                                      derriere une troisieme infobulle : elle
+                                      explique CE controle-la, elle se lit avec
+                                      lui.
+                                    */}
+                                    {ca.justification ? (
+                                      <span className="mt-0.5 block text-xs leading-relaxed text-ink-500">
+                                        {ca.justification}
+                                      </span>
+                                    ) : null}
                                   </span>
                                 </span>
                                 <span className="flex shrink-0 items-center gap-1.5">
                                   {/*
-                                    Ce que le referentiel attend de ce controle :
-                                    disponible sans quitter la page, absent tant
-                                    qu'on ne le demande pas.
-                                  */}
-                                  {control.expected_evidence?.length || control.assessment_questions?.length ? (
-                                    <InfoTip
-                                      label={`Ce que le référentiel attend de ${control.code}`}
-                                      title={`${control.code} — ce qu’il faut prouver`}
-                                    >
-                                      <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
-                                        {control.objective ? (
-                                          <p>{control.objective}</p>
-                                        ) : null}
-                                        {control.expected_evidence?.length ? (
-                                          <div>
-                                            <p className="mb-1 font-medium text-ink-800">Preuves attendues</p>
-                                            <ul className="list-disc pl-4">
-                                              {control.expected_evidence.map((e) => <li key={e}>{e}</li>)}
-                                            </ul>
-                                          </div>
-                                        ) : null}
-                                        {control.assessment_questions?.length ? (
-                                          <div>
-                                            <p className="mb-1 font-medium text-ink-800">Questions d’évaluation</p>
-                                            <ul className="list-disc pl-4">
-                                              {control.assessment_questions.map((q) => <li key={q}>{q}</li>)}
-                                            </ul>
-                                          </div>
-                                        ) : null}
-                                        {control.frequency ? (
-                                          <p className="text-xs text-ink-500">Cadence : {control.frequency}.</p>
-                                        ) : null}
-                                      </div>
-                                    </InfoTip>
-                                  ) : null}
-                                  {/*
                                     L'etat de preuve du controle, herite : la
                                     piece est rattachee au CONTROLE, pas au
-                                    couple controle x cas d'usage, et une meme
-                                    piece sert plusieurs cas d'usage.
+                                    couple controle x cas d'usage.
                                   */}
                                   {applicable ? (
-                                    <ControlEvidenceTip
+                                    <ControlEvidenceModal
                                       organizationId={useCase.organization_id}
                                       controlId={control.id}
                                       controlCode={control.code}
@@ -1241,30 +1261,45 @@ export default async function UseCasePage({
                                       {CONTROL_STATUS_LABELS[control.status] ?? control.status}
                                     </Badge>
                                   ) : null}
+                                  <Badge tone={ca.status === 'to_determine' ? 'warn' : 'neutral'}>
+                                    {APPLICABILITY_LABELS[ca.status] ?? ca.status}
+                                  </Badge>
                                   {/*
-                                    La justification devient une bulle sur le
-                                    statut : elle explique ce statut-la, et
-                                    n'a pas a occuper une ligne sur chacun des
-                                    cent vingt controles.
+                                    La SEULE infobulle de la ligne, et la
+                                    derniere : ce que le referentiel attend de
+                                    ce controle. Les deux autres sont devenues
+                                    un sous-texte et une icone — trois ronds
+                                    « i » cote a cote ne se distinguaient plus.
                                   */}
-                                  {ca.justification ? (
-                                    <span className="flex items-center gap-1">
-                                      <Badge tone="neutral">
-                                        {APPLICABILITY_LABELS[ca.status] ?? ca.status}
-                                      </Badge>
-                                      <InfoTip
-                                        label={`Justification de « ${APPLICABILITY_LABELS[ca.status] ?? ca.status} » pour ${control.code}`}
-                                        title="Justification"
-                                        tone={ca.status === 'not_applicable' ? 'todo' : 'neutral'}
-                                      >
-                                        <p className="text-sm leading-relaxed text-ink-600">{ca.justification}</p>
-                                      </InfoTip>
-                                    </span>
-                                  ) : (
-                                    <Badge tone={ca.status === 'to_determine' ? 'warn' : 'neutral'}>
-                                      {APPLICABILITY_LABELS[ca.status] ?? ca.status}
-                                    </Badge>
-                                  )}
+                                  {control.expected_evidence?.length || control.assessment_questions?.length ? (
+                                    <InfoTip
+                                      label={`Ce que le référentiel attend de ${control.code}`}
+                                      title={`${control.code} — ce qu’il faut prouver`}
+                                    >
+                                      <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
+                                        {control.objective ? <p>{control.objective}</p> : null}
+                                        {control.expected_evidence?.length ? (
+                                          <div>
+                                            <p className="mb-1 font-medium text-ink-800">Preuves attendues</p>
+                                            <ul className="list-disc pl-4">
+                                              {control.expected_evidence.map((e) => <li key={e}>{e}</li>)}
+                                            </ul>
+                                          </div>
+                                        ) : null}
+                                        {control.assessment_questions?.length ? (
+                                          <div>
+                                            <p className="mb-1 font-medium text-ink-800">Questions d’évaluation</p>
+                                            <ul className="list-disc pl-4">
+                                              {control.assessment_questions.map((q) => <li key={q}>{q}</li>)}
+                                            </ul>
+                                          </div>
+                                        ) : null}
+                                        {control.frequency ? (
+                                          <p className="text-xs text-ink-500">Cadence : {control.frequency}.</p>
+                                        ) : null}
+                                      </div>
+                                    </InfoTip>
+                                  ) : null}
                                 </span>
                               </div>
                               {kind === 'technical' && applicable ? (
