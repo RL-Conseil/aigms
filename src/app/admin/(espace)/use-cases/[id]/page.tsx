@@ -4,6 +4,9 @@ import { createClient } from '@/lib/supabase/server'
 import { getViewerContext } from '@/lib/auth/context'
 import { InfoTip } from '@/components/info-tip'
 import { EvidenceGapNotice } from '@/components/governance/evidence-gap-notice'
+import { CheckboxFilter } from '@/components/governance/checkbox-filter'
+import { ControlEvidenceModal } from '@/components/governance/control-evidence-modal'
+import { proofState, type ControlProof } from '@/lib/domain/proof'
 import { Shell } from '@/components/shell'
 import { UseCaseLabelForm } from '@/components/governance/use-case-label-form'
 import { Badge, Card, Empty, Field, Stat, StatStrip } from '@/components/ui'
@@ -79,6 +82,7 @@ import {
   MEASURE_KIND_HINTS,
   MEASURE_KIND_LABELS,
   APPLICABILITY_LABELS,
+  evidenceFreshness,
   type EvidenceGap,
   DECISION_STATUS_LABELS,
   INCIDENT_STATUS_LABELS,
@@ -160,10 +164,10 @@ export default async function UseCasePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ onglet?: string; vue?: string; controle?: string }>
+  searchParams: Promise<{ onglet?: string; vue?: string; controle?: string; preuve?: string }>
 }) {
   const { id } = await params
-  const { onglet, vue, controle } = await searchParams
+  const { onglet, vue, controle, preuve } = await searchParams
   const { tab, vue: suiviView } = resolveTab(onglet, vue)
   const supabase = await createClient()
   // Le contexte est memoise pour la duree du rendu et verifie le jeton sans
@@ -402,7 +406,7 @@ export default async function UseCasePage({
   // Deposer sans quitter la fiche : les controles qui attendent une preuve,
   // restreints a ceux du cas d'usage, et les typologies de la matrice.
   const [{ data: awaitingData }, { data: typologyData }] =
-    tab === 'supervision'
+    tab === 'supervision' || tab === 'controles'
       ? await Promise.all([
           supabase.rpc('controls_awaiting_evidence', { p_organization_id: useCase.organization_id }),
           supabase.rpc('evidence_typologies', { p_organization_id: useCase.organization_id }),
@@ -467,7 +471,7 @@ export default async function UseCasePage({
   const planControlIds = planControls.map((p) => p.control.id)
   const evidenceControlIds = [...new Set([...applicableControlIds, ...planControlIds])]
   const { data: evidenceLinks } =
-    tab === 'supervision' && evidenceControlIds.length
+    (tab === 'supervision' || tab === 'controles') && evidenceControlIds.length
       ? await supabase
           .from('control_evidence')
           .select(
@@ -475,15 +479,28 @@ export default async function UseCasePage({
           )
           .in('control_id', evidenceControlIds)
       : { data: null }
-  // Par controle du plan : ce qui le demontre, ou rien.
-  const evidenceByControl = new Map<string, { id: string; business_ref: string; title: string; validation_status: string }[]>()
+  // Par controle : ce qui le demontre, ou rien.
+  const evidenceByControl = new Map<string, ControlProof[]>()
   for (const l of evidenceLinks ?? []) {
-    const e = l.evidence as unknown as { id: string; business_ref: string; title: string; validation_status: string } | null
+    const e = l.evidence as unknown as {
+      id: string
+      business_ref: string
+      title: string
+      validation_status: string
+      valid_until: string | null
+    } | null
     if (!e) continue
     const list = evidenceByControl.get(l.control_id) ?? []
-    list.push(e)
+    list.push({ ...e, freshness: evidenceFreshness(e.valid_until) })
     evidenceByControl.set(l.control_id, list)
   }
+  // Combien d'applicables une preuve validee et vivante demontre : le compteur
+  // des deux cases, et il se calcule une fois.
+  const avecPreuve = applicableControls.filter((c) => {
+    const id = (c.control as unknown as { id: string } | null)?.id
+    return id ? proofState(evidenceByControl.get(id) ?? []) === 'held' : false
+  }).length
+
   const useCaseEvidence = [
     ...new Map(
       (evidenceLinks ?? [])
@@ -1031,6 +1048,36 @@ export default async function UseCasePage({
               <ApplicabilityForm useCaseId={id} controls={controlChoices} />
             </div>
 
+            {/*
+              Restreindre, ou ne pas restreindre : une case, pas un choix entre
+              trois. L'etat vit dans l'adresse — un lien vers « les controles
+              sans preuve de ce cas d'usage » se partage.
+            */}
+            {controls?.length ? (
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <CheckboxFilter
+                  label="Avec preuve(s)"
+                  param="preuve"
+                  value="avec"
+                  checked={preuve === 'avec'}
+                  count={avecPreuve}
+                  basePath={`/admin/use-cases/${id}`}
+                  current={{ onglet: 'controles', controle }}
+                  hint="Les contrôles applicables qu’une preuve validée et non échue démontre."
+                />
+                <CheckboxFilter
+                  label="Sans preuve"
+                  param="preuve"
+                  value="sans"
+                  checked={preuve === 'sans'}
+                  count={applicableControls.length - avecPreuve}
+                  basePath={`/admin/use-cases/${id}`}
+                  current={{ onglet: 'controles', controle }}
+                  hint="Les contrôles applicables que rien ne démontre encore."
+                />
+              </div>
+            ) : null}
+
             {controls?.length ? (
               <div className="flex flex-col gap-6">
                 {/*
@@ -1059,6 +1106,14 @@ export default async function UseCasePage({
                       },
                     }))
                     .filter(({ control }) => (control.measure_kind ?? 'organizational') === kind)
+                    // Le filtre ne porte que sur les applicables : un contrôle
+                    // non applicable n'a pas de preuve à produire.
+                    .filter(({ ca, control }) => {
+                      if (!preuve) return true
+                      if (ca.status !== 'applicable') return false
+                      const tenu = proofState(evidenceByControl.get(control.id) ?? []) === 'held'
+                      return preuve === 'avec' ? tenu : !tenu
+                    })
                     .sort((a, b) => {
                       const rank = (x: typeof a) =>
                         x.ca.status !== 'applicable' ? 3 : x.control.status === 'operating' ? 2 : x.control.status === 'implemented' ? 1 : 0
@@ -1079,7 +1134,11 @@ export default async function UseCasePage({
                     mesure technique sans actif — s'ouvre, lui : le repli ne
                     doit pas cacher ce qui manque.
                   */
-                  const open = unplaced > 0 || rows.length <= 6
+                  // Applicables qu'aucune preuve validee et vivante ne demontre.
+                  const sansPreuve = applicableRows.filter(
+                    (r) => proofState(evidenceByControl.get(r.control.id) ?? []) !== 'held',
+                  ).length
+                  const open = unplaced > 0 || sansPreuve > 0 || rows.length <= 6
                   return (
                     <details key={kind} open={open} className="group">
                       <summary className="mb-2 flex cursor-pointer flex-wrap items-baseline justify-between gap-2 border-b border-ink-200 pb-2 marker:content-['']">
@@ -1091,6 +1150,15 @@ export default async function UseCasePage({
                           <span className="ml-2 text-xs font-normal text-ink-400">
                             {applicableRows.length} applicable{applicableRows.length > 1 ? 's' : ''} sur {rows.length}
                           </span>
+                          {/*
+                            Ce qui manque se lit SANS OUVRIR le groupe : un
+                            repli qui cache un ecart ne vaut rien.
+                          */}
+                          {sansPreuve ? (
+                            <span className="ml-2 text-xs font-normal text-warn-600">
+                              · {sansPreuve} sans preuve
+                            </span>
+                          ) : null}
                         </h3>
                         <p className={`text-xs ${unplaced ? 'text-warn-600' : 'text-ink-500'}`}>
                           {kind === 'technical'
@@ -1132,13 +1200,76 @@ export default async function UseCasePage({
                                     {control.is_mandatory ? (
                                       <span className="ml-2 text-xs text-ink-400">obligatoire</span>
                                     ) : null}
+                                    {/*
+                                      La justification sous le libelle, et non
+                                      derriere une troisieme infobulle : elle
+                                      explique CE controle-la, elle se lit avec
+                                      lui.
+                                    */}
+                                    {ca.justification ? (
+                                      <span className="mt-0.5 block text-xs leading-relaxed text-ink-500">
+                                        {ca.justification}
+                                      </span>
+                                    ) : null}
                                   </span>
                                 </span>
                                 <span className="flex shrink-0 items-center gap-1.5">
                                   {/*
-                                    Ce que le referentiel attend de ce controle :
-                                    disponible sans quitter la page, absent tant
-                                    qu'on ne le demande pas.
+                                    L'etat de preuve du controle, herite : la
+                                    piece est rattachee au CONTROLE, pas au
+                                    couple controle x cas d'usage.
+                                  */}
+                                  {applicable ? (
+                                    <ControlEvidenceModal
+                                      organizationId={useCase.organization_id}
+                                      controlId={control.id}
+                                      controlCode={control.code}
+                                      proofs={evidenceByControl.get(control.id) ?? []}
+                                      available={(validatedEvidence ?? []).map((e) => ({
+                                        id: e.id,
+                                        business_ref: e.business_ref,
+                                        title: e.title,
+                                      }))}
+                                      deposit={
+                                        <EvidenceDepositModal
+                                          organizationId={useCase.organization_id}
+                                          controls={
+                                            depositControls.some((c) => c.id === control.id)
+                                              ? depositControls
+                                              : [
+                                                  ...depositControls,
+                                                  {
+                                                    id: control.id,
+                                                    code: control.code,
+                                                    name: control.name,
+                                                    status: control.status,
+                                                    is_evidenced: false,
+                                                  },
+                                                ]
+                                          }
+                                          typologies={depositTypologies}
+                                          defaultControlId={control.id}
+                                          useCaseId={id}
+                                          trigger="Déposer une preuve"
+                                          triggerClassName="text-xs font-medium text-brand-600 hover:underline"
+                                        />
+                                      }
+                                    />
+                                  ) : null}
+                                  {applicable ? (
+                                    <Badge tone={controlStatusTone(control.status)}>
+                                      {CONTROL_STATUS_LABELS[control.status] ?? control.status}
+                                    </Badge>
+                                  ) : null}
+                                  <Badge tone={ca.status === 'to_determine' ? 'warn' : 'neutral'}>
+                                    {APPLICABILITY_LABELS[ca.status] ?? ca.status}
+                                  </Badge>
+                                  {/*
+                                    La SEULE infobulle de la ligne, et la
+                                    derniere : ce que le referentiel attend de
+                                    ce controle. Les deux autres sont devenues
+                                    un sous-texte et une icone — trois ronds
+                                    « i » cote a cote ne se distinguaient plus.
                                   */}
                                   {control.expected_evidence?.length || control.assessment_questions?.length ? (
                                     <InfoTip
@@ -1146,9 +1277,7 @@ export default async function UseCasePage({
                                       title={`${control.code} — ce qu’il faut prouver`}
                                     >
                                       <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
-                                        {control.objective ? (
-                                          <p>{control.objective}</p>
-                                        ) : null}
+                                        {control.objective ? <p>{control.objective}</p> : null}
                                         {control.expected_evidence?.length ? (
                                           <div>
                                             <p className="mb-1 font-medium text-ink-800">Preuves attendues</p>
@@ -1171,35 +1300,6 @@ export default async function UseCasePage({
                                       </div>
                                     </InfoTip>
                                   ) : null}
-                                  {applicable ? (
-                                    <Badge tone={controlStatusTone(control.status)}>
-                                      {CONTROL_STATUS_LABELS[control.status] ?? control.status}
-                                    </Badge>
-                                  ) : null}
-                                  {/*
-                                    La justification devient une bulle sur le
-                                    statut : elle explique ce statut-la, et
-                                    n'a pas a occuper une ligne sur chacun des
-                                    cent vingt controles.
-                                  */}
-                                  {ca.justification ? (
-                                    <span className="flex items-center gap-1">
-                                      <Badge tone="neutral">
-                                        {APPLICABILITY_LABELS[ca.status] ?? ca.status}
-                                      </Badge>
-                                      <InfoTip
-                                        label={`Justification de « ${APPLICABILITY_LABELS[ca.status] ?? ca.status} » pour ${control.code}`}
-                                        title="Justification"
-                                        tone={ca.status === 'not_applicable' ? 'todo' : 'neutral'}
-                                      >
-                                        <p className="text-sm leading-relaxed text-ink-600">{ca.justification}</p>
-                                      </InfoTip>
-                                    </span>
-                                  ) : (
-                                    <Badge tone={ca.status === 'to_determine' ? 'warn' : 'neutral'}>
-                                      {APPLICABILITY_LABELS[ca.status] ?? ca.status}
-                                    </Badge>
-                                  )}
                                 </span>
                               </div>
                               {kind === 'technical' && applicable ? (
