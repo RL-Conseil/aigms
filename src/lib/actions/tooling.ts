@@ -38,6 +38,11 @@ const toolingSchema = z.object({
   toolCode: z.string().trim().min(2).max(64),
   product: z.string().trim().min(2, 'Nommer le produit employé.').max(160),
   vendorId: z.string().uuid().optional().or(z.literal('')),
+  // À quel titre l'outil est déclaré : instrument d'un contrôle (ISO 27002,
+  // RGPD art. 32), ressource d'un système d'IA (ISO 42001 A.4.4), ou les deux.
+  role: z.enum(['control_instrument', 'system_resource', 'both']).default('control_instrument'),
+  // Renseigné quand l'outil est lui-même un actif d'IA déclaré.
+  assetId: z.string().uuid().optional().or(z.literal('')),
   note: z.string().trim().max(1000).optional().or(z.literal('')),
 })
 
@@ -53,6 +58,8 @@ export async function saveTooling(_previous: FormState | null, formData: FormDat
     toolCode: formData.get('toolCode'),
     product: formData.get('product'),
     vendorId: formData.get('vendorId') ?? '',
+    role: formData.get('role') || 'control_instrument',
+    assetId: formData.get('assetId') ?? '',
     note: formData.get('note') ?? '',
   })
   if (!parsed.success) return firstIssues(parsed.error)
@@ -72,6 +79,8 @@ export async function saveTooling(_previous: FormState | null, formData: FormDat
     tool_code: d.toolCode,
     product: d.product,
     vendor_id: d.vendorId || null,
+    role: d.role,
+    asset_id: d.assetId || null,
     note: d.note || null,
   }
 

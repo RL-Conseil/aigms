@@ -29,14 +29,25 @@ export default async function ToolingPage({
   const { vue } = await searchParams
   const supabase = await createClient()
 
-  const [{ data: organization }, { data: mapData }, { data: vendors }] = await Promise.all([
-    supabase.from('organization').select('id, name').eq('id', id).maybeSingle(),
-    supabase.rpc('organization_tooling_map', { p_organization_id: id }),
-    supabase.from('vendor').select('id, name').eq('organization_id', id).order('name'),
-  ])
+  const [{ data: organization }, { data: mapData }, { data: vendors }, { data: assets }] =
+    await Promise.all([
+      supabase.from('organization').select('id, name').eq('id', id).maybeSingle(),
+      supabase.rpc('organization_tooling_map', { p_organization_id: id }),
+      supabase.from('vendor').select('id, name').eq('organization_id', id).order('name'),
+      supabase
+        .from('ai_asset')
+        .select('id, name, business_ref')
+        .eq('organization_id', id)
+        .order('name'),
+    ])
   if (!organization) notFound()
 
-  const families = ((mapData ?? { families: [] }) as { families: ToolFamily[] }).families
+  const map = (mapData ?? { families: [], signals: null }) as {
+    families: ToolFamily[]
+    signals: { technical_without_tooling: number; evidence_automatable: number } | null
+  }
+  const families = map.families
+  const signals = map.signals ?? { technical_without_tooling: 0, evidence_automatable: 0 }
   const declared = families.filter((f) => f.declared)
   const expected = families.filter((f) => f.controls > 0)
   const missing = expected.filter((f) => !f.declared)
@@ -70,10 +81,44 @@ export default async function ToolingPage({
               Datadog, chez nous »</strong> — et l’on sait où prendre sa preuve.
             </p>
             <p>
+              <strong className="font-medium text-ink-800">Deux natures, deux textes.</strong> Un
+              outil se déclare à l’un de deux titres, parfois aux deux :
+            </p>
+            <ul className="flex list-disc flex-col gap-2 pl-5">
+              <li>
+                <strong className="font-medium text-ink-800">Instrument d’un contrôle</strong> — il
+                sert à tenir ou à prouver une mesure. C’est la lecture d’ISO/IEC 27002, où la nature
+                technique appartient à la mesure elle-même, et de l’article 32 du RGPD, qui parle de
+                « mesures techniques et organisationnelles ». L’outil n’est pas un objet gouverné :
+                c’est un moyen.
+              </li>
+              <li>
+                <strong className="font-medium text-ink-800">Ressource d’un système d’IA</strong> —
+                il a servi à développer, entraîner, valider ou exploiter un système. ISO/IEC 42001
+                le nomme explicitement en <strong className="font-medium text-ink-800">A.4.4,
+                « Tooling resources »</strong>, et l’annexe IV de l’AI Act demande la même chose
+                pour la documentation technique.
+              </li>
+              <li>
+                <strong className="font-medium text-ink-800">Les deux</strong> — une passerelle
+                d’appels IA avec modération, un juge LLM d’évaluation, un assistant de code. Il tient
+                un contrôle <em>et</em> constitue un actif d’IA à gouverner. Rattachez-le alors à son
+                actif : sans ce lien, le même produit se saisit deux fois sans que rien ne le dise.
+              </li>
+            </ul>
+            <p>
               <strong className="font-medium text-ink-800">Ce n’est pas une CMDB.</strong> Une ligne
               par famille, le produit employé : pas d’instances, pas de dépendances, pas de cycle de
               vie. L’inventaire du SI vit dans votre ITSM ; AIGMS s’y connecte plutôt que de le
-              refaire.
+              refaire. Le rattachement à un actif ne change pas cette règle — il désigne une fiche
+              existante, il n’en crée pas.
+            </p>
+            <p>
+              <strong className="font-medium text-ink-800">Ce que la carte signale.</strong> Un
+              contrôle de nature technique dont aucun outillage n’est retenu énonce un moyen sans le
+              nommer : il ne se prouve pas. À l’inverse, un contrôle qui retient un outil dont le
+              connecteur est actif, et qui n’a pourtant aucune preuve validée et fraîche, collecte à
+              la main ce qui pourrait venir tout seul.
             </p>
             <p>
               <strong className="font-medium text-ink-800">Qui déclare quoi.</strong> L’outillage se
@@ -93,6 +138,39 @@ export default async function ToolingPage({
         <Stat label="Attendues sans produit" value={missing.length} tone={missing.length ? 'warn' : 'ok'} />
         <Stat label="Retenus par au moins un contrôle" value={declared.filter((f) => (f.declared?.used_by ?? 0) > 0).length} total={declared.length} tone="neutral" />
       </StatStrip>
+
+      {/*
+        Les deux signaux. Le premier est une lacune de gouvernance ; le second
+        est un gisement — une collecte qui pourrait etre automatique et qui ne
+        l'est pas. Ni l'un ni l'autre ne bloque : ils disent ou regarder.
+      */}
+      {signals.technical_without_tooling || signals.evidence_automatable ? (
+        <div className="mt-5 flex flex-col gap-2">
+          {signals.technical_without_tooling ? (
+            <p className="rounded-md border border-warn-600/25 bg-warn-600/5 px-4 py-3 text-sm leading-relaxed text-ink-700">
+              <strong className="font-medium text-ink-900">
+                {signals.technical_without_tooling} contrôle(s) de nature technique ne nomment aucun
+                outillage.
+              </strong>{' '}
+              Un contrôle technique qui ne dit pas avec quoi il se tient énonce un moyen sans le
+              nommer : il ne se prouve pas.{' '}
+              <Link href={`/admin/organizations/${id}/controles`} className="text-brand-600 hover:underline">
+                Voir les contrôles
+              </Link>
+            </p>
+          ) : null}
+          {signals.evidence_automatable ? (
+            <p className="rounded-md border border-brand-600/25 bg-brand-600/5 px-4 py-3 text-sm leading-relaxed text-ink-700">
+              <strong className="font-medium text-ink-900">
+                {signals.evidence_automatable} contrôle(s) pourraient tirer leur preuve d’un
+                connecteur déjà branché.
+              </strong>{' '}
+              Ils retiennent un outil dont le connecteur est actif, et n’ont aucune preuve validée et
+              fraîche. La collecte se fait donc encore à la main.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="mt-5 mb-5 flex flex-wrap items-center gap-3">
         <SegmentedFilter
@@ -140,6 +218,11 @@ export default async function ToolingPage({
                           <>
                             {' · '}
                             <strong className="font-medium text-ink-800">{d.product}</strong>
+                            {d.role === 'system_resource'
+                              ? ' · ressource du système'
+                              : d.role === 'both'
+                                ? ' · instrument et ressource'
+                                : ''}
                             {d.vendor ? ` · ${d.vendor.name}` : ''}
                             {d.used_by ? ` · retenu par ${d.used_by} contrôle(s)` : ' · retenu par aucun contrôle'}
                           </>
@@ -150,6 +233,18 @@ export default async function ToolingPage({
                           </>
                         )}
                       </p>
+                      {d?.asset ? (
+                        <p className="mt-1 text-xs text-ink-600">
+                          Cet outil est aussi un actif d’IA déclaré :{' '}
+                          <Link
+                            href={`/admin/organizations/${id}/actifs/${d.asset.id}`}
+                            className="text-brand-600 hover:underline"
+                          >
+                            {d.asset.business_ref} — {d.asset.name}
+                          </Link>
+                          . Il s’instruit comme tel.
+                        </p>
+                      ) : null}
                       {d?.note ? <p className="mt-1 text-xs text-ink-500">{d.note}</p> : null}
                       {d?.vendor && !['approved', 'approved_with_conditions'].includes(d.vendor.review_status) ? (
                         <p className="mt-1 text-xs text-warn-600">
@@ -158,7 +253,7 @@ export default async function ToolingPage({
                       ) : null}
                     </div>
                     <span className="flex shrink-0 items-center gap-3">
-                      <ToolingForm organizationId={id} family={family} vendors={vendors ?? []} />
+                      <ToolingForm organizationId={id} family={family} vendors={vendors ?? []} assets={assets ?? []} />
                       {d ? (
                         <RemoveToolingButton organizationId={id} toolingId={d.id} product={d.product} usedBy={d.used_by} />
                       ) : null}
