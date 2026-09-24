@@ -4712,42 +4712,55 @@ export type Database = {
       }
       organization_tooling: {
         Row: {
+          asset_id: string | null
           connector_id: string | null
           created_at: string
           id: string
           note: string | null
           organization_id: string
           product: string
+          role: "control_instrument" | "system_resource" | "both"
           tenant_id: string
           tool_code: string
           updated_at: string
           vendor_id: string | null
         }
         Insert: {
+          asset_id?: string | null
           connector_id?: string | null
           created_at?: string
           id?: string
           note?: string | null
           organization_id: string
           product: string
+          role?: "control_instrument" | "system_resource" | "both"
           tenant_id: string
           tool_code: string
           updated_at?: string
           vendor_id?: string | null
         }
         Update: {
+          asset_id?: string | null
           connector_id?: string | null
           created_at?: string
           id?: string
           note?: string | null
           organization_id?: string
           product?: string
+          role?: "control_instrument" | "system_resource" | "both"
           tenant_id?: string
           tool_code?: string
           updated_at?: string
           vendor_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "organization_tooling_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "ai_asset"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "organization_tooling_connector_id_fkey"
             columns: ["connector_id"]
