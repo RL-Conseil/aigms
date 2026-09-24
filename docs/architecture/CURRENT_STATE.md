@@ -58,7 +58,7 @@ vérité produit sont les fichiers `.md`. Voir `docs/adr/ADR-0001-repository-lay
 
 | Service | État constaté | Décision |
 |---|---|---|
-| GitHub | `gh` v2.45 ; deux comptes locaux : `richard-affinity`, `rlabrador` | Repo cible `RL-Conseil/aigms` (privé, existant, non vide) accessible **uniquement** via `rlabrador` |
+| GitHub | `gh` v2.45 ; deux comptes locaux : `richard-affinity`, `rlabrador` | Repo cible `RL-Conseil/aigms`, accessible **uniquement** via `rlabrador`. *Déplacé sous `caritis/aigms` le 5 octobre 2026 — voir `docs/roadmap/IMPLEMENTATION_STATUS.md`.* |
 | GitHub — scope `workflow` | Absent sur le token `rlabrador` | Bloquant pour pousser `.github/workflows/` — voir §5 |
 | Vercel | CLI v54.18.1, connecté en tant que `affinity-2575`, team `richard-2575s-projects` | Aucun projet AIGMS existant |
 | Supabase (MCP) | Connecté à l'organisation `affinityhousefactory64@gmail.com's Org` | **N'a pas accès** au projet cible `xsagbzrgoljzgorwvsir` — le provisionnement passe par le CLI |

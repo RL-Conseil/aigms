@@ -44,9 +44,10 @@ Vercel → projet `aigms` → *Settings* → *Domains* → ajouter `demo.aigms.e
 Vercel indique l'enregistrement DNS à créer chez le registraire — un `CNAME`
 vers `cname.vercel-dns.com`.
 
-Ne pas l'attacher à une branche Git : le projet n'est pas relié par branche
-au dépôt (son lien pointe vers `rlabrador/aigms`, alors que les poussées vont
-sur `RL-Conseil/aigms`). C'est le script de déploiement qui l'attache.
+Ne pas l'attacher à une branche Git : le projet est relié au dépôt
+`caritis/aigms`, mais aucune branche n'y déclenche de déploiement automatique.
+C'est le script de déploiement qui attache le domaine, à chaque passage depuis
+`dev`.
 
 ### 2. Déployer
 
