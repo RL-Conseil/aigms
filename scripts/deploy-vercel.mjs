@@ -36,6 +36,15 @@ const TOKEN = process.env.VERCEL_TOKEN
 const TEAM = process.env.VERCEL_TEAM_ID ?? 'team_EpSGhRhqme39AX6zVEfe57Y4'
 const PROJECT = 'aigms'
 
+/*
+ * Ou vit le code. Deplace de RL-Conseil vers caritis le 5 octobre 2026 : le
+ * depot appartient a la societe qui edite AIGMS, pas au cabinet qui l'a
+ * demarre. Les deux valeurs se surchargent par l'environnement, pour qu'un
+ * second deplacement ne demande plus de toucher a ce fichier.
+ */
+const GIT_ORG = process.env.GITHUB_ORG ?? 'caritis'
+const GIT_REPO = process.env.GITHUB_REPO ?? 'aigms'
+
 /**
  * Le domaine de demonstration, pose EN PLUS de l'alias de branche quand on
  * deploie depuis `dev`.
@@ -158,7 +167,7 @@ const body = clonable
   ? {
       name: PROJECT,
       project: PROJECT,
-      gitSource: { type: 'github', org: 'RL-Conseil', repo: 'aigms', ref: branch },
+      gitSource: { type: 'github', org: GIT_ORG, repo: GIT_REPO, ref: branch },
     }
   : {
       name: PROJECT,
@@ -166,7 +175,7 @@ const body = clonable
       files: files.map(({ file, sha, size }) => ({ file, sha, size })),
       projectSettings: { framework: 'nextjs' },
       gitMetadata: {
-        remoteUrl: 'https://github.com/RL-Conseil/aigms',
+        remoteUrl: `https://github.com/${GIT_ORG}/${GIT_REPO}`,
         commitSha: head,
         commitMessage: git('log', '-1', '--format=%s'),
         commitRef: branch,
