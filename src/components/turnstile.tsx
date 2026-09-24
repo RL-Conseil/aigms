@@ -41,9 +41,18 @@ declare global {
 export function Turnstile({
   siteKey,
   onToken,
+  resetSignal = 0,
 }: {
   siteKey: string
   onToken: (token: string | null) => void
+  /**
+   * UN JETON NE SERT QU'UNE FOIS. Apres un echec d'authentification, la page
+   * reste ouverte et le jeton deja consomme : reessayer avec le meme se ferait
+   * refuser par Cloudflare, et l'utilisateur verrait un second echec sans
+   * comprendre pourquoi. Le formulaire incremente ce nombre a chaque echec ;
+   * le widget se rearme et rend un jeton neuf.
+   */
+  resetSignal?: number
 }) {
   const containerId = useId().replace(/:/g, '')
   const widgetRef = useRef<string | null>(null)
@@ -69,6 +78,14 @@ export function Turnstile({
       'error-callback': () => callbackRef.current(null),
     })
   }, [ready, siteKey, containerId])
+
+  // `resetSignal` a 0 est l'etat initial : on ne rearme pas un widget qui vient
+  // de naitre, sans quoi le premier defi serait jete avant d'etre resolu.
+  useEffect(() => {
+    if (!resetSignal || !widgetRef.current || !window.turnstile) return
+    window.turnstile.reset(widgetRef.current)
+    callbackRef.current(null)
+  }, [resetSignal])
 
   return (
     <div>

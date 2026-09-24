@@ -45,15 +45,61 @@ Tant que la clé publique est absente, la mire fonctionne sans captcha — c'est
 délibéré : le développement, les Previews et les tests de bout en bout n'ont pas
 à résoudre un défi.
 
+### Où va la clé secrète — et pourquoi pas sur Vercel
+
+**AIGMS n'appelle jamais `siteverify` lui-même.** La mire envoie le jeton à
+`signInWithPassword`, et c'est **Supabase Auth** qui le vérifie auprès de
+Cloudflare, avec la clé secrète configurée sur le projet. Poser un
+`TURNSTILE_SECRET_KEY` dans l'environnement de l'application ne protégerait
+donc rien : aucune ligne de code ne le lirait.
+
+C'est la conséquence de l'architecture, pas un choix : la mire n'a pas de
+gestionnaire serveur à protéger, elle parle directement à Supabase.
+
 ### Poser le widget
 
-1. Sur `dash.cloudflare.com` > Turnstile, créer un widget pour le domaine
-   `aigms.eu` (et ajouter le domaine des Previews Vercel si le captcha doit y
-   être actif).
-2. Reporter la **clé de site** dans `NEXT_PUBLIC_TURNSTILE_SITE_KEY`.
-3. Reporter la **clé secrète** dans Supabase, écran cité plus haut.
-4. Vérifier qu'une connexion réussit, puis qu'une connexion depuis un client qui
+1. Sur `dash.cloudflare.com` > Turnstile, créer un widget. **Les noms d'hôte
+   comptent** : Turnstile refuse un défi servi depuis un domaine qu'il ne
+   connaît pas. Déclarer `aigms.eu` (qui couvre `www.aigms.eu` et
+   `demo.aigms.eu`), `localhost`, et **chaque alias de Preview Vercel** que le
+   captcha doit laisser passer — `aigms-dev.vercel.app` en premier lieu.
+2. Reporter la **clé de site** dans `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
+   (Vercel, `.env.local`). Elle est publique : elle peut circuler.
+3. Poser la **clé secrète** dans `.env.local` sous `TURNSTILE_SECRET_KEY`, puis :
+
+   ```
+   npm run captcha:activer                 # sur la préprod
+   npm run captcha:activer -- --production # sur la production
+   npm run captcha:activer -- --etat       # ne change rien, dit où l'on en est
+   ```
+
+   Le script pose le fournisseur, le secret et l'activation sur Supabase **dans
+   cet ordre** — un captcha activé sans secret ferait refuser toute
+   authentification. Il ne rend que des booléens : le secret n'est jamais
+   affiché, jamais passé en argument, jamais journalisé.
+
+4. **Redéployer** — `NEXT_PUBLIC_*` n'entre en vigueur qu'au déploiement suivant.
+5. Vérifier qu'une connexion réussit, puis qu'une connexion depuis un client qui
    n'envoie pas de jeton échoue.
+
+> **L'ordre entre les deux environnements compte aussi.** Activer le captcha sur
+> la préprod ferme la connexion à toute Preview dont le nom d'hôte n'est pas
+> déclaré dans le widget, `demo.aigms.eu` compris. Vérifier la liste des
+> domaines avant d'activer, pas après.
+
+### Le jeton ne sert qu'une fois
+
+Après un échec d'authentification, la page reste ouverte et le jeton est déjà
+consommé : réessayer avec le même se ferait refuser par Cloudflare, et la
+personne verrait un second échec sans rapport avec son mot de passe. La mire
+réarme donc le widget à chaque échec — mot de passe comme annuaire — et repart
+d'un jeton neuf.
+
+### En local
+
+`supabase/config.toml` laisse `[auth.captcha]` en commentaire, et cela reste
+ainsi : l'activer casserait les tests et le développement, qui n'ont pas à
+résoudre un défi.
 
 ## Ce qui reste ouvert
 
