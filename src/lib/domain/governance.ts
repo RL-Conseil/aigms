@@ -101,6 +101,13 @@ export const INCIDENT_TRIGGER_LABELS: Record<string, string> = {
   other: 'Autre',
 }
 
+/** Les trois réponses possibles à l'applicabilité d'un contrôle. */
+export const APPLICABILITY_LABELS: Record<string, string> = {
+  applicable: 'Applicable',
+  not_applicable: 'Non applicable',
+  to_determine: 'À déterminer',
+}
+
 export const CHANGE_STATUS_LABELS: Record<string, string> = {
   DRAFT: 'Brouillon',
   IMPACT_SCREENING: 'Qualifié',

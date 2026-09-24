@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getViewerContext } from '@/lib/auth/context'
+import { InfoTip } from '@/components/info-tip'
 import { Shell } from '@/components/shell'
 import { UseCaseLabelForm } from '@/components/governance/use-case-label-form'
 import { Badge, Card, Empty, Field, Stat, StatStrip } from '@/components/ui'
@@ -22,7 +23,7 @@ import {
 } from '@/lib/domain/classification'
 import { GateChecklist } from '@/components/gate-checklist'
 import { Lifecycle } from '@/components/lifecycle'
-import { ApplicabilityForm, RiskTreatmentForm } from '@/components/governance/control-forms'
+import { ApplicabilityForm, ApplicabilityPencil, RiskTreatmentForm } from '@/components/governance/control-forms'
 import { ControlProposals, type Suggestions } from '@/components/governance/control-proposals'
 import { ActionProposals, type ActionSuggestions } from '@/components/governance/action-proposals'
 import {
@@ -76,6 +77,7 @@ import {
   controlStatusTone,
   MEASURE_KIND_HINTS,
   MEASURE_KIND_LABELS,
+  APPLICABILITY_LABELS,
   DECISION_STATUS_LABELS,
   INCIDENT_STATUS_LABELS,
   DECISION_TYPE_LABELS,
@@ -260,7 +262,7 @@ export default async function UseCasePage({
       .order('approved_at', { ascending: false, nullsFirst: false }),
     supabase
       .from('control_applicability')
-      .select('id, status, justification, control:control_id (id, code, name, is_mandatory, status, measure_kind)')
+      .select('id, status, justification, control:control_id (id, code, name, objective, is_mandatory, status, measure_kind, frequency, expected_evidence, assessment_questions)')
       .eq('use_case_id', id),
     supabase
       .from('action')
@@ -1016,9 +1018,13 @@ export default async function UseCasePage({
                         id: string
                         code: string
                         name: string
+                        objective: string | null
                         is_mandatory: boolean
                         status: string
                         measure_kind: string
+                        frequency: string | null
+                        expected_evidence: string[] | null
+                        assessment_questions: string[] | null
                       },
                     }))
                     .filter(({ control }) => (control.measure_kind ?? 'organizational') === kind)
@@ -1035,13 +1041,24 @@ export default async function UseCasePage({
                           (r) => !useCaseAssets.some((a) => a.measures.some((m) => m.control_id === r.control.id)),
                         ).length
                       : 0
+                  /*
+                    Replie par defaut des que le groupe est fourni : trois
+                    listes ouvertes de bout en bout font une page ou l'on ne
+                    retrouve rien. Un groupe qui appelle une action — une
+                    mesure technique sans actif — s'ouvre, lui : le repli ne
+                    doit pas cacher ce qui manque.
+                  */
+                  const open = unplaced > 0 || rows.length <= 6
                   return (
-                    <section key={kind}>
-                      <header className="mb-2 flex flex-wrap items-baseline justify-between gap-2 border-b border-ink-200 pb-2">
+                    <details key={kind} open={open} className="group">
+                      <summary className="mb-2 flex cursor-pointer flex-wrap items-baseline justify-between gap-2 border-b border-ink-200 pb-2 marker:content-['']">
                         <h3 className="text-sm font-semibold text-ink-900">
+                          <span aria-hidden className="mr-1.5 inline-block text-ink-400 transition-transform group-open:rotate-90">
+                            ›
+                          </span>
                           {MEASURE_KIND_LABELS[kind]}s
                           <span className="ml-2 text-xs font-normal text-ink-400">
-                            {applicableRows.length} applicable{applicableRows.length > 1 ? 's' : ''}
+                            {applicableRows.length} applicable{applicableRows.length > 1 ? 's' : ''} sur {rows.length}
                           </span>
                         </h3>
                         <p className={`text-xs ${unplaced ? 'text-warn-600' : 'text-ink-500'}`}>
@@ -1053,7 +1070,7 @@ export default async function UseCasePage({
                                 : 'Aucun actif rattaché : ces mesures n’ont pas encore où se poser.'
                             : MEASURE_KIND_HINTS[kind]}
                         </p>
-                      </header>
+                      </summary>
                       <ul className="divide-y divide-ink-100">
                         {rows.map(({ ca, control }) => {
                           const applicable = ca.status === 'applicable'
@@ -1066,26 +1083,94 @@ export default async function UseCasePage({
                               className={`scroll-mt-24 py-2.5 text-sm ${highlighted ? '-mx-3 rounded-md bg-brand-500/10 px-3 ring-1 ring-brand-500/40' : ''}`}
                             >
                               <div className="flex flex-wrap items-start justify-between gap-2">
-                                <span className={applicable ? 'text-ink-900' : 'text-ink-500'}>
-                                  {control.code} — {control.name}
+                                <span className={`flex min-w-0 items-start gap-2 ${applicable ? 'text-ink-900' : 'text-ink-500'}`}>
+                                  {/*
+                                    Statuer depuis la ligne : le controle est
+                                    connu, il ne reste que la reponse. La
+                                    modale generale obligeait a le rechoisir
+                                    dans une liste de cent vingt.
+                                  */}
+                                  <ApplicabilityPencil
+                                    useCaseId={id}
+                                    control={{ id: control.id, code: control.code, name: control.name }}
+                                    current={ca.status}
+                                    justification={ca.justification}
+                                  />
+                                  <span className="min-w-0">
+                                    {control.code} — {control.name}
+                                    {control.is_mandatory ? (
+                                      <span className="ml-2 text-xs text-ink-400">obligatoire</span>
+                                    ) : null}
+                                  </span>
                                 </span>
                                 <span className="flex shrink-0 items-center gap-1.5">
+                                  {/*
+                                    Ce que le referentiel attend de ce controle :
+                                    disponible sans quitter la page, absent tant
+                                    qu'on ne le demande pas.
+                                  */}
+                                  {control.expected_evidence?.length || control.assessment_questions?.length ? (
+                                    <InfoTip
+                                      label={`Ce que le référentiel attend de ${control.code}`}
+                                      title={`${control.code} — ce qu’il faut prouver`}
+                                    >
+                                      <div className="flex flex-col gap-3 text-sm leading-relaxed text-ink-600">
+                                        {control.objective ? (
+                                          <p>{control.objective}</p>
+                                        ) : null}
+                                        {control.expected_evidence?.length ? (
+                                          <div>
+                                            <p className="mb-1 font-medium text-ink-800">Preuves attendues</p>
+                                            <ul className="list-disc pl-4">
+                                              {control.expected_evidence.map((e) => <li key={e}>{e}</li>)}
+                                            </ul>
+                                          </div>
+                                        ) : null}
+                                        {control.assessment_questions?.length ? (
+                                          <div>
+                                            <p className="mb-1 font-medium text-ink-800">Questions d’évaluation</p>
+                                            <ul className="list-disc pl-4">
+                                              {control.assessment_questions.map((q) => <li key={q}>{q}</li>)}
+                                            </ul>
+                                          </div>
+                                        ) : null}
+                                        {control.frequency ? (
+                                          <p className="text-xs text-ink-500">Cadence : {control.frequency}.</p>
+                                        ) : null}
+                                      </div>
+                                    </InfoTip>
+                                  ) : null}
                                   {applicable ? (
                                     <Badge tone={controlStatusTone(control.status)}>
                                       {CONTROL_STATUS_LABELS[control.status] ?? control.status}
                                     </Badge>
                                   ) : null}
-                                  <Badge tone="neutral">
-                                    {applicable ? 'Applicable' : 'Non applicable'}
-                                  </Badge>
+                                  {/*
+                                    La justification devient une bulle sur le
+                                    statut : elle explique ce statut-la, et
+                                    n'a pas a occuper une ligne sur chacun des
+                                    cent vingt controles.
+                                  */}
+                                  {ca.justification ? (
+                                    <span className="flex items-center gap-1">
+                                      <Badge tone="neutral">
+                                        {APPLICABILITY_LABELS[ca.status] ?? ca.status}
+                                      </Badge>
+                                      <InfoTip
+                                        label={`Justification de « ${APPLICABILITY_LABELS[ca.status] ?? ca.status} » pour ${control.code}`}
+                                        title="Justification"
+                                        tone={ca.status === 'not_applicable' ? 'todo' : 'neutral'}
+                                      >
+                                        <p className="text-sm leading-relaxed text-ink-600">{ca.justification}</p>
+                                      </InfoTip>
+                                    </span>
+                                  ) : (
+                                    <Badge tone={ca.status === 'to_determine' ? 'warn' : 'neutral'}>
+                                      {APPLICABILITY_LABELS[ca.status] ?? ca.status}
+                                    </Badge>
+                                  )}
                                 </span>
                               </div>
-                              {control.is_mandatory ? (
-                                <span className="text-xs text-ink-400">Contrôle obligatoire</span>
-                              ) : null}
-                              {ca.justification ? (
-                                <p className="text-xs text-ink-600">{ca.justification}</p>
-                              ) : null}
                               {kind === 'technical' && applicable ? (
                                 <div className="mt-1.5 flex flex-wrap items-center gap-2">
                                   {carriers.map((a) => {
@@ -1116,7 +1201,7 @@ export default async function UseCasePage({
                           )
                         })}
                       </ul>
-                    </section>
+                    </details>
                   )
                 })}
               </div>
