@@ -32,6 +32,16 @@ export function LoginForm({ captchaSiteKey }: { captchaSiteKey?: string }) {
   )
   const [pending, setPending] = useState<'password' | 'sso' | null>(null)
   const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  /**
+   * Un jeton de captcha ne sert qu'une fois. Apres un echec, le rearmement
+   * rend un jeton neuf — sans quoi la seconde tentative serait refusee par
+   * Cloudflare, et non par le mot de passe.
+   */
+  const [captchaTour, setCaptchaTour] = useState(0)
+  const rearmerCaptcha = () => {
+    setCaptchaToken(null)
+    setCaptchaTour((n) => n + 1)
+  }
 
   /** Le captcha, quand il existe, vaut pour les deux chemins de connexion. */
   function captchaManquant() {
@@ -59,6 +69,7 @@ export function LoginForm({ captchaSiteKey }: { captchaSiteKey?: string }) {
     if (error) {
       setError('Identifiants invalides.')
       setPending(null)
+      if (captchaSiteKey) rearmerCaptcha()
       return
     }
 
@@ -99,6 +110,7 @@ export function LoginForm({ captchaSiteKey }: { captchaSiteKey?: string }) {
     if (error || !data?.url) {
       setError(`Aucun annuaire n’est déclaré pour ${domain}. Utilisez votre mot de passe.`)
       setPending(null)
+      if (captchaSiteKey) rearmerCaptcha()
       return
     }
 
@@ -138,7 +150,9 @@ export function LoginForm({ captchaSiteKey }: { captchaSiteKey?: string }) {
         />
       </div>
 
-      {captchaSiteKey ? <Turnstile siteKey={captchaSiteKey} onToken={setCaptchaToken} /> : null}
+      {captchaSiteKey ? (
+        <Turnstile siteKey={captchaSiteKey} onToken={setCaptchaToken} resetSignal={captchaTour} />
+      ) : null}
 
       {error ? (
         <p role="alert" className="rounded-md bg-rose-50 px-4 py-3 text-sm text-rose-800">

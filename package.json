@@ -19,6 +19,7 @@
     "test:e2e": "playwright test",
     "deploy:preview": "node --env-file-if-exists=.env.local scripts/deploy-vercel.mjs",
     "secrets:vercel": "node scripts/poser-secrets-vercel.mjs",
+    "captcha:activer": "node --env-file-if-exists=.env.local scripts/activer-captcha.mjs",
     "deploy:prod": "node --env-file-if-exists=.env.local scripts/deploy-vercel.mjs production",
     "db:push": "supabase db push",
     "db:reset": "supabase db reset",
