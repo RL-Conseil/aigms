@@ -11,8 +11,8 @@
 export const ORGANIZATION_SECTIONS = [
   { key: 'apercu', label: 'Cas d’usage', href: '' },
   { key: 'processus', label: 'Processus et risques', href: '/processus' },
-  { key: 'controles', label: 'Contrôles', href: '/controles' },
-  { key: 'actifs', label: 'Actifs d’IA', href: '/actifs' },
+  { key: 'controles', label: 'Contrôles et outillages', href: '/controles' },
+  { key: 'actifs', label: 'Actifs d’IA et fournisseurs', href: '/actifs' },
   { key: 'decisions', label: 'Décisions', href: '/decisions' },
   { key: 'soa', label: 'Déclaration d’Applicabilité', href: '/declaration-applicabilite' },
   { key: 'preuves', label: 'Preuves', href: '/preuves' },

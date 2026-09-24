@@ -48,7 +48,7 @@ export default async function ToolingPage({
   }
   const families = map.families
   const signals = map.signals ?? { technical_without_tooling: 0, evidence_automatable: 0 }
-  const declared = families.filter((f) => f.declared)
+  const declared = families.filter((f) => f.declared.length)
   const expected = families.filter((f) => f.controls > 0)
   const missing = expected.filter((f) => !f.declared)
 
@@ -134,9 +134,18 @@ export default async function ToolingPage({
     >
       <StatStrip>
         <Stat label="Familles attendues par vos contrôles" value={expected.length} total={families.length} />
-        <Stat label="Produits déclarés" value={declared.length} tone={declared.length ? 'ok' : 'warn'} />
+        <Stat
+          label="Produits déclarés"
+          value={families.reduce((n, f) => n + f.declared.length, 0)}
+          tone={declared.length ? 'ok' : 'warn'}
+        />
         <Stat label="Attendues sans produit" value={missing.length} tone={missing.length ? 'warn' : 'ok'} />
-        <Stat label="Retenus par au moins un contrôle" value={declared.filter((f) => (f.declared?.used_by ?? 0) > 0).length} total={declared.length} tone="neutral" />
+        <Stat
+          label="Retenus par au moins un contrôle"
+          value={families.reduce((n, f) => n + f.declared.filter((d) => d.used_by > 0).length, 0)}
+          total={families.reduce((n, f) => n + f.declared.length, 0)}
+          tone="neutral"
+        />
       </StatStrip>
 
       {/*
@@ -197,7 +206,8 @@ export default async function ToolingPage({
         {shown.length ? (
           <ul className="divide-y divide-ink-100">
             {shown.map((family) => {
-              const d = family.declared
+              const produits = family.declared
+              const servis = family.served_controls ?? []
               return (
                 <li key={family.code} className="py-3 first:pt-0 last:pb-0">
                   <div className="flex flex-wrap items-start justify-between gap-3">
@@ -205,58 +215,112 @@ export default async function ToolingPage({
                       <div className="flex flex-wrap items-center gap-2">
                         <span className="text-sm font-medium text-ink-900">{family.name}</span>
                         {family.acronym ? <Badge>{family.acronym}</Badge> : null}
+                        {/*
+                          « 7 contrôles attendent cette famille » ne dit pas
+                          lesquels, et obligeait a les chercher au registre.
+                          L'infobulle les nomme, et dit lequel n'a encore rien
+                          retenu.
+                        */}
                         {family.controls ? (
-                          <Badge tone={d ? 'ok' : 'warn'}>
-                            {family.controls} contrôle(s) attendent cette famille
-                          </Badge>
+                          <span className="inline-flex items-center gap-1.5">
+                            <Badge tone={produits.length ? 'ok' : 'warn'}>
+                              {family.controls} contrôle(s) attendent cette famille
+                            </Badge>
+                            {servis.length ? (
+                              <InfoTip
+                                label={`Les ${family.controls} contrôles servis par ${family.name}`}
+                                title={`Contrôles servis par « ${family.name} »`}
+                                align="left"
+                              >
+                                <ul className="flex flex-col gap-1.5 text-sm text-ink-600">
+                                  {servis.map((c) => (
+                                    <li key={c.id} className="flex flex-wrap items-baseline gap-2">
+                                      <span className="font-mono text-xs text-ink-400">{c.code}</span>
+                                      <span className="text-ink-800">{c.name}</span>
+                                      {c.measure_kind === 'technical' ? <Badge>technique</Badge> : null}
+                                      {c.retained ? null : (
+                                        <span className="text-xs text-warn-600">
+                                          aucun outillage retenu
+                                        </span>
+                                      )}
+                                    </li>
+                                  ))}
+                                </ul>
+                                <p className="mt-3 text-xs leading-relaxed text-ink-500">
+                                  Le rattachement vient du référentiel : c’est une typologie. Le
+                                  produit se retient contrôle par contrôle, depuis le registre des
+                                  contrôles.
+                                </p>
+                              </InfoTip>
+                            ) : null}
+                          </span>
                         ) : null}
                       </div>
                       <p className="text-xs text-ink-500">
                         {family.domain ?? family.code}
                         {family.phase ? ` · ${family.phase}` : ''}
-                        {d ? (
-                          <>
-                            {' · '}
-                            <strong className="font-medium text-ink-800">{d.product}</strong>
-                            {d.role === 'system_resource'
-                              ? ' · ressource du système'
-                              : d.role === 'both'
-                                ? ' · instrument et ressource'
-                                : ''}
-                            {d.vendor ? ` · ${d.vendor.name}` : ''}
-                            {d.used_by ? ` · retenu par ${d.used_by} contrôle(s)` : ' · retenu par aucun contrôle'}
-                          </>
-                        ) : (
-                          <>
-                            {family.examples.length ? ` · ex. ${family.examples.slice(0, 3).join(', ')}` : ''}
-                            {' · aucun produit déclaré'}
-                          </>
-                        )}
+                        {produits.length ? '' : family.examples.length ? ` · ex. ${family.examples.slice(0, 3).join(', ')}` : ''}
+                        {produits.length ? '' : ' · aucun produit déclaré'}
                       </p>
-                      {d?.asset ? (
-                        <p className="mt-1 text-xs text-ink-600">
-                          Cet outil est aussi un actif d’IA déclaré :{' '}
-                          <Link
-                            href={`/admin/organizations/${id}/actifs/${d.asset.id}`}
-                            className="text-brand-600 hover:underline"
-                          >
-                            {d.asset.business_ref} — {d.asset.name}
-                          </Link>
-                          . Il s’instruit comme tel.
-                        </p>
-                      ) : null}
-                      {d?.note ? <p className="mt-1 text-xs text-ink-500">{d.note}</p> : null}
-                      {d?.vendor && !['approved', 'approved_with_conditions'].includes(d.vendor.review_status) ? (
-                        <p className="mt-1 text-xs text-warn-600">
-                          Son fournisseur n’a pas de revue approuvée : précondition de production des cas d’usage qui en dépendent.
-                        </p>
+
+                      {produits.length ? (
+                        <ul className="mt-2 flex flex-col gap-2">
+                          {produits.map((d) => (
+                            <li key={d.id} className="rounded-md border border-ink-100 px-3 py-2">
+                              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                                <span className="text-sm font-medium text-ink-800">{d.product}</span>
+                                <span className="flex shrink-0 items-center gap-3">
+                                  <ToolingForm
+                                    organizationId={id}
+                                    family={family}
+                                    vendors={vendors ?? []}
+                                    assets={assets ?? []}
+                                    declared={d}
+                                  />
+                                  <RemoveToolingButton
+                                    organizationId={id}
+                                    toolingId={d.id}
+                                    product={d.product}
+                                    usedBy={d.used_by}
+                                  />
+                                </span>
+                              </div>
+                              <p className="text-xs text-ink-500">
+                                {d.role === 'system_resource'
+                                  ? 'ressource du système'
+                                  : d.role === 'both'
+                                    ? 'instrument et ressource'
+                                    : 'instrument du contrôle'}
+                                {d.vendor ? ` · ${d.vendor.name}` : ''}
+                                {d.connector ? ` · connecteur ${d.connector.name}` : ''}
+                                {d.used_by ? ` · retenu par ${d.used_by} contrôle(s)` : ' · retenu par aucun contrôle'}
+                              </p>
+                              {d.asset ? (
+                                <p className="mt-1 text-xs text-ink-600">
+                                  Cet outil est aussi un actif d’IA déclaré :{' '}
+                                  <Link
+                                    href={`/admin/organizations/${id}/actifs/${d.asset.id}`}
+                                    className="text-brand-600 hover:underline"
+                                  >
+                                    {d.asset.business_ref} — {d.asset.name}
+                                  </Link>
+                                  . Il s’instruit comme tel.
+                                </p>
+                              ) : null}
+                              {d.note ? <p className="mt-1 text-xs text-ink-500">{d.note}</p> : null}
+                              {d.vendor && !['approved', 'approved_with_conditions'].includes(d.vendor.review_status) ? (
+                                <p className="mt-1 text-xs text-warn-600">
+                                  Son fournisseur n’a pas de revue approuvée : précondition de
+                                  production des cas d’usage qui en dépendent.
+                                </p>
+                              ) : null}
+                            </li>
+                          ))}
+                        </ul>
                       ) : null}
                     </div>
                     <span className="flex shrink-0 items-center gap-3">
                       <ToolingForm organizationId={id} family={family} vendors={vendors ?? []} assets={assets ?? []} />
-                      {d ? (
-                        <RemoveToolingButton organizationId={id} toolingId={d.id} product={d.product} usedBy={d.used_by} />
-                      ) : null}
                     </span>
                   </div>
                 </li>

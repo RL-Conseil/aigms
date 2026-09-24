@@ -56,9 +56,9 @@ describe('RACI — arbitrage critique', () => {
       const { rows } = await c.query<{ id: string }>(
         `insert into public.governance_decision
            (tenant_id, organization_id, use_case_id, decision_type, subject, decision_statement, rationale,
-            status, submitted_by, submitted_at, expected_approver_user_id)
+            status, submitted_by, submitted_at, expected_approver_user_id, evidence_gap_statement)
          values ($1, $2, $3, 'go_production', 'Mise en production du scoring', 'Mise en service.', 'Préconditions réunies.',
-                 'submitted', $4, now(), $5) returning id`,
+                 'submitted', $4, now(), $5, 'Remédiation en cours : preuves attendues de l’organisation.') returning id`,
         [DEMO.tenantA, DEMO.orgA, DEMO.useCasePilot, DEMO.officerA, REVIEWER_A],
       )
       const id = rows[0]!.id
@@ -73,7 +73,10 @@ describe('RACI — arbitrage critique', () => {
       const byExpert = await expectFailure(
         c,
         `update public.governance_decision
-            set status = 'approved', approver_user_id = $2, approved_at = now(), effective_from = current_date, review_due_at = current_date + 180
+            set status = 'approved', approver_user_id = $2, approved_at = now(), effective_from = current_date, review_due_at = current_date + 180,
+                -- 0098 : une décision qui porte un écart de preuve ne s'approuve
+                -- pas sans que son signataire déclare l'avoir lu.
+                evidence_gap_acknowledged_at = now()
           where id = $1`,
         [id, REVIEWER_A],
       )
@@ -90,7 +93,10 @@ describe('RACI — arbitrage critique', () => {
       )
       const { rowCount } = await c.query(
         `update public.governance_decision
-            set status = 'approved', approver_user_id = $2, approved_at = now(), effective_from = current_date, review_due_at = current_date + 180
+            set status = 'approved', approver_user_id = $2, approved_at = now(), effective_from = current_date, review_due_at = current_date + 180,
+                -- 0098 : une décision qui porte un écart de preuve ne s'approuve
+                -- pas sans que son signataire déclare l'avoir lu.
+                evidence_gap_acknowledged_at = now()
           where id = $1`,
         [id, DEMO.boardA],
       )
@@ -111,9 +117,9 @@ describe('RACI — arbitrage critique', () => {
       const { rows } = await c.query<{ id: string }>(
         `insert into public.governance_decision
            (tenant_id, organization_id, use_case_id, decision_type, subject, decision_statement, rationale,
-            status, submitted_by, submitted_at)
+            status, submitted_by, submitted_at, evidence_gap_statement)
          values ($1, $2, $3, 'go_production', 'Mise en production de l’assistant', 'Mise en service.', 'Préconditions réunies.',
-                 'submitted', $4, now()) returning id`,
+                 'submitted', $4, now(), 'Remédiation en cours : preuves attendues de l’organisation.') returning id`,
         [DEMO.tenantA, DEMO.orgA, DEMO.useCaseProduction, DEMO.officerA],
       )
       await c.query(
@@ -124,7 +130,10 @@ describe('RACI — arbitrage critique', () => {
       await becomeUser(c, REVIEWER_A)
       const { rowCount } = await c.query(
         `update public.governance_decision
-            set status = 'approved', approver_user_id = $2, approved_at = now(), effective_from = current_date, review_due_at = current_date + 180
+            set status = 'approved', approver_user_id = $2, approved_at = now(), effective_from = current_date, review_due_at = current_date + 180,
+                -- 0098 : une décision qui porte un écart de preuve ne s'approuve
+                -- pas sans que son signataire déclare l'avoir lu.
+                evidence_gap_acknowledged_at = now()
           where id = $1`,
         [rows[0]!.id, REVIEWER_A],
       )

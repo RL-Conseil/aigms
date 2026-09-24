@@ -7,7 +7,7 @@ import { asUser, connect, DEMO, expectFailure } from '../helpers/db'
  * acceptation de risque, moteur de reevaluation et journal d'audit.
  */
 
-type GateCheck = { code: string; label: string; satisfied: boolean; detail: string }
+type GateCheck = { code: string; label: string; satisfied: boolean; detail: string; severity?: string }
 type GateResult = { satisfied: boolean; target_status: string; checks: GateCheck[] }
 type TransitionResult = {
   transitioned: boolean
@@ -117,14 +117,18 @@ describe('Transitions de cycle de vie', () => {
 })
 
 describe('Gate PRODUCTION', () => {
-  it('le cas d usage en production a satisfait les huit preconditions', async () => {
+  it('le cas d usage en production a satisfait les huit preconditions bloquantes', async () => {
     const result = await asUser(db, DEMO.officerA, (c) =>
       gate(c, DEMO.useCaseProduction, 'PRODUCTION'),
     )
 
     expect(result.satisfied).toBe(true)
-    expect(result.checks).toHaveLength(8)
-    expect(result.checks.map((c) => c.code)).toEqual([
+    // Depuis 0097, une neuvieme verification AVERTIT sans retenir le jalon :
+    // elle figure a la liste sans entrer dans la synthese.
+    expect(result.checks.map((c) => c.code)).toContain('CONTROLS_EVIDENCED')
+    const bloquantes = result.checks.filter((c) => (c.severity ?? 'blocking') === 'blocking')
+    expect(bloquantes).toHaveLength(8)
+    expect(bloquantes.map((c) => c.code)).toEqual([
       'CLASSIFICATION_COMPLETE',
       'RISKS_TREATED',
       'IMPACT_ASSESSMENT',
@@ -299,9 +303,10 @@ describe('Registre de decisions', () => {
         `insert into public.governance_decision
            (tenant_id, organization_id, use_case_id, decision_type, subject,
             decision_statement, rationale, status, submitted_by,
-            expected_approver_user_id)
+            expected_approver_user_id, evidence_gap_statement)
          values ($1, $2, $3, 'go_production', 'Adressee au relecteur',
-                 'Autorise', 'Justification', 'submitted', $4, $5)
+                 'Autorise', 'Justification', 'submitted', $4, $5,
+                 'Remédiation en cours : preuves attendues de l’organisation.')
          returning expected_approver_user_id`,
         [DEMO.tenantA, DEMO.orgA, DEMO.useCasePilot, DEMO.officerA, DEMO.riskOwnerA],
       )

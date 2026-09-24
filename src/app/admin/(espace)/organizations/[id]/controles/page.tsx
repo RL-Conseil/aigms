@@ -55,10 +55,10 @@ export default async function ControlsPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ etat?: string }>
+  searchParams: Promise<{ etat?: string; outillage?: string }>
 }) {
   const { id } = await params
-  const { etat } = await searchParams
+  const { etat, outillage } = await searchParams
   const supabase = await createClient()
 
   const [{ data: organization }, { data: controlRows }, { data: requirementRows }, { data: links }, { data: orgSuggestions }] =
@@ -114,7 +114,16 @@ export default async function ControlsPage({
     mappedBy.set(link.control_id, list)
   }
 
-  const shown = etat ? controls.filter((c) => c.status === etat) : controls
+  /*
+   * Un controle de nature technique dont aucun outillage n'est retenu enonce
+   * un moyen sans le nommer : il ne se prouve pas (0094). Le filtre les isole
+   * — sans cela, il fallait ouvrir les cent-vingt controles pour les trouver.
+   */
+  const needsTooling = (c: Control) => c.measure_kind === 'technical' && !toolingBy.has(c.id)
+  const missingTooling = controls.filter(needsTooling)
+
+  const byState = etat ? controls.filter((c) => c.status === etat) : controls
+  const shown = outillage === 'manquant' ? byState.filter(needsTooling) : byState
   const operating = controls.filter((c) => c.status === 'operating').length
   const mandatory = controls.filter((c) => c.is_mandatory).length
   const unmapped = controls.filter((c) => !mappedBy.has(c.id)).length
@@ -190,6 +199,7 @@ export default async function ControlsPage({
           label="Filtrer par état"
           param="etat"
           basePath={`/admin/organizations/${id}/controles`}
+          current={{ outillage: outillage ?? '' }}
           selected={etat}
           options={STATE_FILTERS.map((option) => ({
             key: option.key,
@@ -200,6 +210,27 @@ export default async function ControlsPage({
           }))}
         />
       </div>
+
+      {missingTooling.length ? (
+        <div className="mb-5">
+          <SegmentedFilter
+            label="Outillage"
+            param="outillage"
+            basePath={`/admin/organizations/${id}/controles`}
+            current={{ etat: etat ?? '' }}
+            selected={outillage === 'manquant' ? 'manquant' : ''}
+            options={[
+              { key: '', label: 'Tous les contrôles', count: byState.length },
+              {
+                key: 'manquant',
+                label: 'Technique, sans outillage',
+                count: byState.filter(needsTooling).length,
+                hint: 'Un contrôle technique qui ne dit pas avec quoi il se tient ne se prouve pas.',
+              },
+            ]}
+          />
+        </div>
+      ) : null}
 
       <Card title="Contrôles opérationnels" subtitle={`${shown.length} contrôle(s)`}>
         {shown.length ? (

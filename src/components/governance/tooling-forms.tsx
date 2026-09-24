@@ -42,16 +42,28 @@ export type ToolFamily = {
   examples: string[]
   expected_evidence: string[]
   controls: number
-  declared: {
+  /** Les contrôles que cette famille sert, pour les nommer plutôt que les compter. */
+  served_controls: {
     id: string
-    product: string
-    note: string | null
-    role: ToolingRole
-    vendor: { id: string; name: string; review_status: string } | null
-    asset: { id: string; name: string; business_ref: string; kind: string } | null
-    connector: { id: string; name: string; status: string } | null
-    used_by: number
-  } | null
+    code: string
+    name: string
+    status: string
+    measure_kind: 'technical' | 'organizational' | 'contractual'
+    retained: boolean
+  }[]
+  /** Une famille porte autant de produits que l'organisation en emploie (0095). */
+  declared: DeclaredTool[]
+}
+
+export type DeclaredTool = {
+  id: string
+  product: string
+  note: string | null
+  role: ToolingRole
+  vendor: { id: string; name: string; review_status: string } | null
+  asset: { id: string; name: string; business_ref: string; kind: string } | null
+  connector: { id: string; name: string; status: string } | null
+  used_by: number
 }
 
 const errorsOf = (state: FormState | null) => (state && !state.ok ? (state.fieldErrors ?? {}) : {})
@@ -61,20 +73,22 @@ export function ToolingForm({
   family,
   vendors,
   assets,
+  declared = null,
 }: {
   organizationId: string
   family: ToolFamily
   vendors: { id: string; name: string }[]
   /** Les actifs d'IA de l'organisation : un outil peut en être un. */
   assets: { id: string; name: string; business_ref: string }[]
+  /** Le produit à corriger. Absent : on en ajoute un à la famille. */
+  declared?: DeclaredTool | null
 }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(saveTooling, null)
   const errors = errorsOf(state)
-  const declared = family.declared
 
   return (
     <Modal
-      trigger={declared ? 'Corriger' : 'Déclarer le produit'}
+      trigger={declared ? 'Corriger' : family.declared.length ? 'Ajouter un produit' : 'Déclarer le produit'}
       triggerClassName={
         declared
           ? 'text-xs text-brand-600 hover:underline'
@@ -92,7 +106,9 @@ export function ToolingForm({
           {family.examples.length ? (
             <p className="rounded-md bg-ink-100 px-3.5 py-2.5 text-xs leading-relaxed text-ink-600">
               Exemples de cette famille : {family.examples.join(', ')}. Inscrivez ce que vous employez
-              réellement — ce n’est pas un inventaire du SI, une ligne par famille suffit.
+              réellement. Plusieurs produits par famille sont admis — un par ligne, chacun avec son
+              fournisseur et son connecteur. Ce n’est pas pour autant un inventaire du SI : pas
+              d’instances, pas de versions, pas de dépendances.
             </p>
           ) : null}
 
@@ -224,7 +240,7 @@ export type ControlToolingView = {
     needs_tooling: boolean
     evidence_automatable: boolean
   } | null
-  suggested: { code: string; acronym: string | null; name: string; examples: string[]; declared: { id: string; product: string } | null }[]
+  suggested: { code: string; acronym: string | null; name: string; examples: string[]; declared: { id: string; product: string }[] }[]
   retained: { id: string; tooling_id: string; product: string; family: string | null; rationale: string | null; role: ToolingRole }[]
   available: { id: string; tool_code: string; product: string; family: string | null; role: ToolingRole }[]
 }
@@ -242,7 +258,7 @@ export function ControlToolingForm({
 }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(retainTooling, null)
   const [checked, setChecked] = useState<Set<string>>(new Set(view.retained.map((r) => r.tooling_id)))
-  const suggestedIds = new Set(view.suggested.map((s) => s.declared?.id).filter(Boolean) as string[])
+  const suggestedIds = new Set(view.suggested.flatMap((s) => s.declared.map((d) => d.id)))
 
   const toggle = (id: string) =>
     setChecked((prev) => {

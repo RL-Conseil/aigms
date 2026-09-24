@@ -57,6 +57,7 @@ export function DecisionForm({
   fixedUseCaseId,
   allowedTypes,
   evidence = [],
+  evidenceGap = [],
 }: {
   organizationId: string
   useCases: { id: string; name: string; business_ref: string }[]
@@ -69,6 +70,12 @@ export function DecisionForm({
   allowedTypes?: string[]
   /** Les preuves validees de l'organisation, a rattacher a la decision. */
   evidence?: { id: string; business_ref: string; title: string }[]
+  /**
+   * Les controles applicables que rien ne prouve, au moment ou l'on ouvre le
+   * formulaire. Non vide : la mise en production reste possible, mais elle
+   * s'explique (0098).
+   */
+  evidenceGap?: { control_id: string; code: string; name: string; is_mandatory: boolean }[]
 }) {
   const [state, formAction, pending] = useActionState<FormState | null, FormData>(
     submitDecision,
@@ -218,6 +225,49 @@ export function DecisionForm({
         ) : null}
       </fieldset>
 
+      {/*
+        L'ecart de preuve, sur une mise en production. Il n'apparait que sur ce
+        type-la, et seulement s'il existe : une mise en garde permanente ne se
+        lit plus au bout de trois fois.
+      */}
+      {type === 'go_production' && evidenceGap.length ? (
+        <div className="rounded-md border border-warn-600/30 bg-warn-600/5 p-4">
+          <p className="text-sm font-medium text-ink-900">
+            {evidenceGap.length} contrôle(s) applicable(s) sans preuve validée
+          </p>
+          <ul className="mt-1.5 flex flex-wrap gap-1.5">
+            {evidenceGap.map((g) => (
+              <li
+                key={g.control_id}
+                title={g.name}
+                className={`rounded-full px-2 py-0.5 text-[11px] ${
+                  g.is_mandatory ? 'bg-warn-600/15 text-warn-600' : 'bg-white text-ink-600'
+                }`}
+              >
+                {g.code}
+                {g.is_mandatory ? ' · obligatoire' : ''}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2.5 text-xs leading-relaxed text-ink-600">
+            La mise en production reste possible : cet écart n’est pas bloquant. Mais la personne
+            appelée à se prononcer en sera avertie, par alerte et par courriel, et devra déclarer en
+            avoir pris connaissance. Dites-lui ce qu’il en est.
+          </p>
+
+          <div className="mt-3">
+            <Field
+              label="Ce que vous en dites"
+              htmlFor="dec-gap-statement"
+              error={errors.evidenceGapStatement}
+              hint="Remédiation en cours, pièce non encore présentée par l’organisation, échéance visée. Ce texte part tel quel dans l’avertissement et figure sur la décision remise."
+            >
+              <textarea id="dec-gap-statement" name="evidenceGapStatement" rows={3} required className={FIELD} />
+            </Field>
+          </div>
+        </div>
+      ) : null}
+
       <Field
         label="Personne appelée à se prononcer"
         htmlFor="dec-approver"
@@ -338,6 +388,8 @@ export function DecisionRulingForm({
   rationale,
   conditions,
   awaiting,
+  evidenceGap = [],
+  evidenceGapStatement = null,
 }: {
   organizationId: string
   decisionId: string
@@ -346,6 +398,10 @@ export function DecisionRulingForm({
   decisionType: string
   rationale: string | null
   conditions: string | null
+  /** L'écart figé à la soumission, tel qu'il a été notifié (0098). */
+  evidenceGap?: { control_id: string; code: string; name: string; is_mandatory: boolean }[]
+  /** Ce que l'AI Governance Officer en a dit. */
+  evidenceGapStatement?: string | null
   /**
    * Vrai tant que la decision attend un verdict. Le composant reste monte
    * apres l'acte : la revalidation retire le declencheur, et la confirmation
@@ -374,6 +430,56 @@ export function DecisionRulingForm({
           <input type="hidden" name="organizationId" value={organizationId} />
           <input type="hidden" name="decisionId" value={decisionId} />
           <input type="hidden" name="useCaseId" value={useCaseId ?? ''} />
+
+          {/*
+            L'ecart d'abord, le verdict ensuite : on ne se prononce pas sur ce
+            qu'on n'a pas lu. La case est exigee par la base, pas seulement
+            ici — une case cochee a l'ecran ne prouve rien.
+          */}
+          {evidenceGap.length ? (
+            <div className="rounded-md border border-warn-600/30 bg-warn-600/5 p-4">
+              <p className="text-sm font-medium text-ink-900">
+                Écart de preuve constaté à la soumission
+              </p>
+              <p className="mt-1 text-xs text-ink-600">
+                {evidenceGap.length} contrôle(s) applicable(s) n’étaient démontrés par aucune preuve
+                validée :
+              </p>
+              <ul className="mt-1.5 flex flex-wrap gap-1.5">
+                {evidenceGap.map((g) => (
+                  <li
+                    key={g.control_id}
+                    title={g.name}
+                    className={`rounded-full px-2 py-0.5 text-[11px] ${
+                      g.is_mandatory ? 'bg-warn-600/15 text-warn-600' : 'bg-white text-ink-600'
+                    }`}
+                  >
+                    {g.code}
+                    {g.is_mandatory ? ' · obligatoire' : ''}
+                  </li>
+                ))}
+              </ul>
+              {evidenceGapStatement ? (
+                <p className="mt-2.5 rounded-md bg-white px-3 py-2 text-xs leading-relaxed text-ink-700">
+                  <span className="font-medium text-ink-900">Ce qu’en dit l’AI Governance Officer : </span>
+                  {evidenceGapStatement}
+                </p>
+              ) : null}
+              <label className="mt-3 flex items-start gap-2.5 text-sm text-ink-800">
+                <input
+                  type="checkbox"
+                  name="gapAcknowledged"
+                  className="mt-0.5 size-4 rounded border-ink-300"
+                />
+                <span>
+                  J’ai pris connaissance de cet écart de preuve et l’assume en approuvant.
+                  {errors.gapAcknowledged ? (
+                    <span className="block text-[13px] text-stop-600">{errors.gapAcknowledged}</span>
+                  ) : null}
+                </span>
+              </label>
+            </div>
+          ) : null}
 
           <Field label="Verdict" htmlFor={`verdict-${decisionId}`}>
             <select

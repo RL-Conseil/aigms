@@ -27,7 +27,7 @@ function firstIssues(error: z.ZodError): FormState {
 
 function explain(error: { message: string }): string {
   if (error.message.includes('row-level security')) return 'Votre rôle ne permet pas cette écriture.'
-  if (error.message.includes('duplicate key')) return 'Cette famille porte déjà un produit : le corriger plutôt que l’ajouter.'
+  if (error.message.includes('duplicate key')) return 'Ce produit est déjà déclaré sur cette famille : le corriger plutôt que l’ajouter.'
   const raise = error.message.match(/^(?:.*?:\s)?([A-ZÀ-Ü][^\n]*)$/m)
   return raise?.[1] ?? error.message
 }

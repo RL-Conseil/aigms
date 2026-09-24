@@ -358,6 +358,83 @@ export function RequirementMappingForm({
 // -----------------------------------------------------------------------------
 // Applicabilité à un cas d'usage
 // -----------------------------------------------------------------------------
+
+/**
+ * Statuer CE controle-la, depuis sa ligne.
+ *
+ * La modale generale oblige a rechoisir le controle dans une liste de cent
+ * vingt, alors qu'on vient de cliquer dessus. Ici le controle est connu : il
+ * ne reste que la reponse et sa justification.
+ */
+export function ApplicabilityPencil({
+  useCaseId,
+  control,
+  current,
+  justification,
+}: {
+  useCaseId: string
+  control: { id: string; code: string; name: string }
+  current: string
+  justification: string | null
+}) {
+  const [state, formAction, pending] = useActionState<FormState | null, FormData>(
+    setControlApplicability,
+    null,
+  )
+  const errors = state && !state.ok ? (state.fieldErrors ?? {}) : {}
+
+  return (
+    <Modal
+      trigger={
+        <span aria-hidden className="text-sm leading-none">
+          ✎
+        </span>
+      }
+      triggerLabel={`Statuer l’applicabilité de ${control.code}`}
+      triggerClassName="inline-flex size-6 items-center justify-center rounded-md border border-ink-200 text-ink-500 hover:border-ink-400 hover:text-ink-800"
+      title={`${control.code} — applicabilité`}
+      description={control.name}
+    >
+      {() => (
+        <form action={formAction} className="flex flex-col gap-4">
+          <input type="hidden" name="useCaseId" value={useCaseId} />
+          <input type="hidden" name="controlId" value={control.id} />
+
+          <Field label="Applicabilité" htmlFor={`app-status-${control.id}`}>
+            <select
+              id={`app-status-${control.id}`}
+              name="status"
+              defaultValue={current}
+              className={FIELD}
+            >
+              <option value="applicable">Applicable</option>
+              <option value="not_applicable">Non applicable</option>
+              <option value="to_determine">À déterminer</option>
+            </select>
+          </Field>
+
+          <Field
+            label="Justification"
+            htmlFor={`app-justification-${control.id}`}
+            error={errors.justification}
+            hint="Obligatoire pour une exclusion : un « non applicable » silencieux est ce qu’un auditeur relève en premier."
+          >
+            <textarea
+              id={`app-justification-${control.id}`}
+              name="justification"
+              rows={3}
+              defaultValue={justification ?? ''}
+              className={FIELD}
+            />
+          </Field>
+
+          <FormFeedback state={state} />
+          <Submit pending={pending} idle="Statuer" />
+        </form>
+      )}
+    </Modal>
+  )
+}
 export function ApplicabilityForm({
   useCaseId,
   controls,
@@ -375,9 +452,9 @@ export function ApplicabilityForm({
 
   return (
     <Modal
-      trigger="Statuer un contrôle"
+      trigger="Statuer un contrôle du référentiel"
       title="Applicabilité d’un contrôle"
-      description="Applicable, non applicable, ou à déterminer — mais jamais vide."
+      description="Pour un contrôle qui n’est pas encore affecté. Ceux qui le sont se statuent depuis leur ligne, au crayon."
     >
       {() => (
         <form action={formAction} className="flex flex-col gap-4">
