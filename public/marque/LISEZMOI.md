@@ -66,10 +66,13 @@ sur un réseau. Format `og:image`.
 - **Marque blanche** : un tenant qui dépose son logo remplace le bloc entier
   (glyphe et nom), pas seulement le nom. Voir `Wordmark` et `tenantBranding`.
 
-## Une divergence connue
+## Le favicon suit la palette
 
-`src/app/icon.svg` — le favicon servi par l'application — porte `#1e2a44` et
-`#3fb6c4`, écrits à la main. Ce ne sont pas les équivalents exacts de
-`--color-night-900` et `--color-teal-400`, qui valent `#0c2036` et `#09aeae`.
-Les fichiers de ce dossier suivent la **palette**. Aligner le favicon dessus
-est un geste d'une ligne, qui n'a pas été fait sans décision.
+`src/app/icon.svg` — le favicon servi par l'application — portait `#1e2a44` et
+`#3fb6c4`, écrits à la main, qui ne sont pas les équivalents de
+`--color-night-900` et `--color-teal-400`. Il porte désormais `#0c2036` et
+`#09aeae`, comme les fichiers de ce dossier : la marque ne se dédouble plus
+selon l'endroit où on la regarde.
+
+Il reste écrit à la main plutôt que produit par le script — un favicon est lu
+par le compilateur de Next.js, qui exige un fichier à cet emplacement exact.

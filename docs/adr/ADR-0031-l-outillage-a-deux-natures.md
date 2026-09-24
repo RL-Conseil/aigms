@@ -110,10 +110,24 @@ Deux manques constatés à l'usage :
   parcourir. Le registre des contrôles porte un filtre **« Technique, sans
   outillage »**, qui n'apparaît que s'il y a quelque chose à voir.
 
-## Ce qui n'a pas été fait
+## L'outillage d'un actif — le lien inverse
 
-`asset_tooling` — l'inventaire, par actif, des outils qui ont servi à le
-construire (42001 A.4.4 lu à la lettre, annexe IV) — reste à faire. `asset_id`
-couvre le cas « l'outil est un actif » ; il ne couvre pas « ce système a été
-entraîné avec MLflow et DVC ». C'est une table de plus et un écran sur la fiche
-d'actif, à décider pour eux-mêmes.
+*4 octobre 2026. Migration 0103.*
+
+`asset_id` répondait à « cet outil est un actif ». Il ne répondait pas à « ce
+système a été entraîné avec MLflow et DVC », qui est la question de l'auditeur
+— celle d'ISO/IEC 42001 **A.4.4 lu à la lettre** (documenter l'outillage **par
+système**) et de l'**annexe IV de l'AI Act**.
+
+`asset_tooling` porte le couple actif × outillage, avec une **phase** du cycle
+de vie (conception, données, entraînement, validation, déploiement,
+exploitation). Un même outil peut servir à deux moments : l'unicité porte sur
+le triplet, pas sur le couple — sinon on perd l'un des deux.
+
+La fiche d'un actif porte la carte « Avec quoi il a été fait ». Vide, elle le
+dit sans détour : un auditeur demandera avec quoi ce système a été entraîné,
+validé et déployé.
+
+**Toujours pas de CMDB.** Un couple, une phase, une note. Pas d'instances, pas
+de versions, pas de dépendances — la règle tient depuis 0088, et les trois
+tables ajoutées depuis ne l'ont pas entamée.

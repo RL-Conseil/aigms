@@ -14,6 +14,12 @@ import {
   type UseCaseStatus,
 } from '@/lib/domain/governance'
 import type { RegisterAsset } from '@/lib/domain/assets'
+import {
+  AttachAssetToolingForm,
+  DetachAssetToolingButton,
+  PHASE_LABELS,
+  type AssetTooling,
+} from '@/components/governance/asset-tooling-forms'
 
 /**
  * La fiche d'un actif : ce qu'il est, qui l'emploie, les mesures techniques
@@ -31,6 +37,14 @@ export default async function AssetPage({ params }: { params: Promise<{ id: stri
   if (!organization) notFound()
   const asset = ((registerData ?? []) as RegisterAsset[]).find((a) => a.id === assetId)
   if (!asset) notFound()
+
+  // Avec quoi cet actif a été fait (0103) : ce qu'ISO/IEC 42001 A.4.4 et
+  // l'annexe IV de l'AI Act demandent, par système.
+  const { data: toolingData } = await supabase.rpc('asset_tooling_view', { p_asset_id: assetId })
+  const tooling = (toolingData ?? { declared: [], available: [] }) as {
+    declared: AssetTooling[]
+    available: { id: string; product: string; family: string | null }[]
+  }
 
   const { data: raw } = await supabase
     .from('ai_asset')
@@ -152,6 +166,54 @@ export default async function AssetPage({ params }: { params: Promise<{ id: stri
         </div>
 
         <div className="space-y-5">
+          {/*
+            L'outillage du systeme, et non du controle : ISO/IEC 42001 A.4.4
+            « Tooling resources » demande de dire avec quoi CE systeme a ete
+            construit et exploite, et l'annexe IV de l'AI Act le reprend dans
+            la documentation technique. C'est l'inverse du lien pose en 0094,
+            qui disait « cet outil est un actif ».
+          */}
+          <Card
+            title="Avec quoi il a été fait"
+            subtitle={`${tooling.declared.length} outil(s) — ISO/IEC 42001 A.4.4, annexe IV de l’AI Act`}
+            action={
+              <AttachAssetToolingForm
+                organizationId={id}
+                assetId={assetId}
+                available={tooling.available}
+              />
+            }
+          >
+            {tooling.declared.length ? (
+              <ul className="divide-y divide-ink-100">
+                {tooling.declared.map((t) => (
+                  <li key={t.id} className="flex flex-wrap items-baseline justify-between gap-2 py-2 text-sm">
+                    <span className="min-w-0">
+                      <span className="text-ink-900">{t.product}</span>
+                      <span className="block text-xs text-ink-400">
+                        {PHASE_LABELS[t.phase] ?? t.phase}
+                        {t.family ? ` · ${t.family}` : ''}
+                        {t.vendor ? ` · ${t.vendor.name}` : ''}
+                      </span>
+                      {t.note ? <span className="mt-0.5 block text-xs text-ink-500">{t.note}</span> : null}
+                    </span>
+                    <DetachAssetToolingButton
+                      organizationId={id}
+                      assetId={assetId}
+                      id={t.id}
+                      product={t.product}
+                    />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <Empty>
+                Rien n’est déclaré. Un auditeur demandera avec quoi ce système a été entraîné,
+                validé et déployé — c’est ici que cela se dit.
+              </Empty>
+            )}
+          </Card>
+
           <Card title="Cas d’usage qui l’emploient" subtitle={`${asset.use_cases.length} cas d’usage`}>
             {asset.use_cases.length ? (
               <ul className="divide-y divide-ink-100">
