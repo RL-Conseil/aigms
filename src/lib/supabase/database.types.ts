@@ -781,6 +781,79 @@ export type Database = {
           },
         ]
       }
+      asset_tooling: {
+        Row: {
+          asset_id: string
+          created_at: string
+          id: string
+          note: string | null
+          phase:
+            | "design"
+            | "data"
+            | "training"
+            | "validation"
+            | "deployment"
+            | "operation"
+          tenant_id: string
+          tooling_id: string
+          updated_at: string
+        }
+        Insert: {
+          asset_id: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          phase?:
+            | "design"
+            | "data"
+            | "training"
+            | "validation"
+            | "deployment"
+            | "operation"
+          tenant_id: string
+          tooling_id: string
+          updated_at?: string
+        }
+        Update: {
+          asset_id?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          phase?:
+            | "design"
+            | "data"
+            | "training"
+            | "validation"
+            | "deployment"
+            | "operation"
+          tenant_id?: string
+          tooling_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_tooling_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "ai_asset"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_tooling_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_tooling_tooling_id_fkey"
+            columns: ["tooling_id"]
+            isOneToOne: false
+            referencedRelation: "organization_tooling"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action:
@@ -6162,6 +6235,7 @@ export type Database = {
         Returns: Json
       }
       asset_register: { Args: { p_organization_id: string }; Returns: Json }
+      asset_tooling_view: { Args: { p_asset_id: string }; Returns: Json }
       attention_by_organization: {
         Args: never
         Returns: {
@@ -6263,6 +6337,19 @@ export type Database = {
           review_frequency: string
           title: string
           version: string
+        }[]
+      }
+      claim_decision_notices: {
+        Args: { p_decision_id: string }
+        Returns: {
+          body: string
+          email: string
+          full_name: string
+          href: string
+          kind: string
+          notification_id: string
+          organization_name: string
+          title: string
         }[]
       }
       commit_catalog_import: { Args: { p_job_id: string }; Returns: Json }
