@@ -114,9 +114,28 @@ pour celui-là même à qui on la demandait, avec un message parlant d'une
 réécriture qui n'avait pas eu lieu. Corrigé en 0101. Le test RACI l'a trouvé
 avant la Preview.
 
+## Les deux propositions d'action
+
+*4 octobre 2026. Migration 0102.*
+
+`app.suggest_actions` dérivait six familles d'écarts. Les deux qui manquaient
+étaient celles que l'officer découvre le plus tard.
+
+**L'applicabilité indéterminée.** `control_applicability.status` vaut
+`to_determine` par défaut (0009) : retenir vingt contrôles proposés sans
+statuer les laisse tous indéterminés, et le gate ne bloque que sur les
+obligatoires. Une proposition **par contrôle** noierait la liste — vingt lignes
+qui disent la même chose. D'où **une seule action groupée** par cas d'usage,
+qui se ferme d'elle-même quand il ne reste rien, et qui n'est bloquante que si
+des obligatoires sont concernés : exactement ce que le gate exige déjà.
+
+**Le contrôle applicable sans aucune preuve.** Le cas 3 couvrait la preuve
+échue ou proche de l'échéance, jamais la preuve **absente**. Une par contrôle,
+non bloquante — 0097 avertit, il ne bloque pas — et **plafonnée à cinq**, les
+obligatoires d'abord. Au-delà de cinq ce n'est plus une action mais un
+chantier, et trente propositions feraient abandonner la liste.
+
 ## Ce qui n'est pas fait
 
 - **`CONTROLS_EVIDENCED` reste un avertissement.** Le rendre bloquant à une
   date fixée est la suite naturelle, et c'est une décision qui vous revient.
-- **Aucune proposition d'action** n'est encore dérivée de l'écart ni de
-  l'applicabilité indéterminée. Les deux cas restent au plan.
