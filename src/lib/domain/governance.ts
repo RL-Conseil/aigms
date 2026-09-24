@@ -194,6 +194,28 @@ export const FRESHNESS_LABELS: Record<EvidenceFreshness, string> = {
   unknown: 'Sans échéance',
 }
 
+/**
+ * La meme regle que `app.evidence_freshness` (0009), cote ecran.
+ *
+ * Elle y est ecrite deux fois, et c'est deliberement une duplication surveillee :
+ * la base reste l'autorite — c'est elle qui refuse une transition ou colore un
+ * graphe —, mais la fiche d'un cas d'usage lit ses preuves par PostgREST et
+ * n'a pas de raison de faire un aller-retour de plus pour une soustraction de
+ * dates. LE SEUIL EST DE TRENTE JOURS DES DEUX COTES : le changer ici sans le
+ * changer la-bas ferait diverger l'ecran et la regle.
+ */
+const EXPIRING_DAYS = 30
+
+export function evidenceFreshness(validUntil: string | null | undefined): EvidenceFreshness {
+  if (!validUntil) return 'unknown'
+  const due = new Date(`${validUntil}T00:00:00Z`)
+  const today = new Date()
+  const midi = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())
+  if (due.getTime() < midi) return 'expired'
+  if (due.getTime() < midi + EXPIRING_DAYS * 86_400_000) return 'expiring'
+  return 'fresh'
+}
+
 /** Formate une date ISO pour l'affichage francais, ou un tiret si absente. */
 export function formatDate(value: string | null | undefined): string {
   if (!value) return '—'

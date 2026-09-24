@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/server'
 import { getViewerContext } from '@/lib/auth/context'
 import { InfoTip } from '@/components/info-tip'
 import { EvidenceGapNotice } from '@/components/governance/evidence-gap-notice'
+import { ControlEvidenceTip } from '@/components/governance/control-evidence-tip'
+import { proofState, type ControlProof } from '@/lib/domain/proof'
 import { Shell } from '@/components/shell'
 import { UseCaseLabelForm } from '@/components/governance/use-case-label-form'
 import { Badge, Card, Empty, Field, Stat, StatStrip } from '@/components/ui'
@@ -79,6 +81,7 @@ import {
   MEASURE_KIND_HINTS,
   MEASURE_KIND_LABELS,
   APPLICABILITY_LABELS,
+  evidenceFreshness,
   type EvidenceGap,
   DECISION_STATUS_LABELS,
   INCIDENT_STATUS_LABELS,
@@ -402,7 +405,7 @@ export default async function UseCasePage({
   // Deposer sans quitter la fiche : les controles qui attendent une preuve,
   // restreints a ceux du cas d'usage, et les typologies de la matrice.
   const [{ data: awaitingData }, { data: typologyData }] =
-    tab === 'supervision'
+    tab === 'supervision' || tab === 'controles'
       ? await Promise.all([
           supabase.rpc('controls_awaiting_evidence', { p_organization_id: useCase.organization_id }),
           supabase.rpc('evidence_typologies', { p_organization_id: useCase.organization_id }),
@@ -467,7 +470,7 @@ export default async function UseCasePage({
   const planControlIds = planControls.map((p) => p.control.id)
   const evidenceControlIds = [...new Set([...applicableControlIds, ...planControlIds])]
   const { data: evidenceLinks } =
-    tab === 'supervision' && evidenceControlIds.length
+    (tab === 'supervision' || tab === 'controles') && evidenceControlIds.length
       ? await supabase
           .from('control_evidence')
           .select(
@@ -475,13 +478,19 @@ export default async function UseCasePage({
           )
           .in('control_id', evidenceControlIds)
       : { data: null }
-  // Par controle du plan : ce qui le demontre, ou rien.
-  const evidenceByControl = new Map<string, { id: string; business_ref: string; title: string; validation_status: string }[]>()
+  // Par controle : ce qui le demontre, ou rien.
+  const evidenceByControl = new Map<string, ControlProof[]>()
   for (const l of evidenceLinks ?? []) {
-    const e = l.evidence as unknown as { id: string; business_ref: string; title: string; validation_status: string } | null
+    const e = l.evidence as unknown as {
+      id: string
+      business_ref: string
+      title: string
+      validation_status: string
+      valid_until: string | null
+    } | null
     if (!e) continue
     const list = evidenceByControl.get(l.control_id) ?? []
-    list.push(e)
+    list.push({ ...e, freshness: evidenceFreshness(e.valid_until) })
     evidenceByControl.set(l.control_id, list)
   }
   const useCaseEvidence = [
@@ -1079,7 +1088,11 @@ export default async function UseCasePage({
                     mesure technique sans actif — s'ouvre, lui : le repli ne
                     doit pas cacher ce qui manque.
                   */
-                  const open = unplaced > 0 || rows.length <= 6
+                  // Applicables qu'aucune preuve validee et vivante ne demontre.
+                  const sansPreuve = applicableRows.filter(
+                    (r) => proofState(evidenceByControl.get(r.control.id) ?? []) !== 'held',
+                  ).length
+                  const open = unplaced > 0 || sansPreuve > 0 || rows.length <= 6
                   return (
                     <details key={kind} open={open} className="group">
                       <summary className="mb-2 flex cursor-pointer flex-wrap items-baseline justify-between gap-2 border-b border-ink-200 pb-2 marker:content-['']">
@@ -1091,6 +1104,15 @@ export default async function UseCasePage({
                           <span className="ml-2 text-xs font-normal text-ink-400">
                             {applicableRows.length} applicable{applicableRows.length > 1 ? 's' : ''} sur {rows.length}
                           </span>
+                          {/*
+                            Ce qui manque se lit SANS OUVRIR le groupe : un
+                            repli qui cache un ecart ne vaut rien.
+                          */}
+                          {sansPreuve ? (
+                            <span className="ml-2 text-xs font-normal text-warn-600">
+                              · {sansPreuve} sans preuve
+                            </span>
+                          ) : null}
                         </h3>
                         <p className={`text-xs ${unplaced ? 'text-warn-600' : 'text-ink-500'}`}>
                           {kind === 'technical'
@@ -1170,6 +1192,49 @@ export default async function UseCasePage({
                                         ) : null}
                                       </div>
                                     </InfoTip>
+                                  ) : null}
+                                  {/*
+                                    L'etat de preuve du controle, herite : la
+                                    piece est rattachee au CONTROLE, pas au
+                                    couple controle x cas d'usage, et une meme
+                                    piece sert plusieurs cas d'usage.
+                                  */}
+                                  {applicable ? (
+                                    <ControlEvidenceTip
+                                      organizationId={useCase.organization_id}
+                                      controlId={control.id}
+                                      controlCode={control.code}
+                                      proofs={evidenceByControl.get(control.id) ?? []}
+                                      available={(validatedEvidence ?? []).map((e) => ({
+                                        id: e.id,
+                                        business_ref: e.business_ref,
+                                        title: e.title,
+                                      }))}
+                                      deposit={
+                                        <EvidenceDepositModal
+                                          organizationId={useCase.organization_id}
+                                          controls={
+                                            depositControls.some((c) => c.id === control.id)
+                                              ? depositControls
+                                              : [
+                                                  ...depositControls,
+                                                  {
+                                                    id: control.id,
+                                                    code: control.code,
+                                                    name: control.name,
+                                                    status: control.status,
+                                                    is_evidenced: false,
+                                                  },
+                                                ]
+                                          }
+                                          typologies={depositTypologies}
+                                          defaultControlId={control.id}
+                                          useCaseId={id}
+                                          trigger="Déposer une preuve"
+                                          triggerClassName="text-xs font-medium text-brand-600 hover:underline"
+                                        />
+                                      }
+                                    />
                                   ) : null}
                                   {applicable ? (
                                     <Badge tone={controlStatusTone(control.status)}>
