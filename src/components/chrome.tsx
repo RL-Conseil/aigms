@@ -2,7 +2,16 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import {
+  createContext,
+  Suspense,
+  use,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react'
 import { Wordmark } from '@/components/logo'
 import { NavDropdown } from '@/components/nav-dropdown'
 import { UserMenu } from '@/components/admin/user-menu'
@@ -77,6 +86,78 @@ function fromPathname(pathname: string): Announcement {
   return { organizationId, section: section?.key ?? 'apercu' }
 }
 
+/**
+ * Ce qui appelle une action, dans une section — ou dans plusieurs.
+ *
+ * `use` suspend CE composant, pas la barre : les intitules, les liens et les
+ * menus s'affichent tout de suite, et les pastilles arrivent apres. Une
+ * pastille absente une fraction de seconde ne trompe personne ; une barre
+ * absente une seconde, si.
+ */
+function compter(row: Attention | undefined, key: OrganizationSection): number {
+  if (!row) return 0
+  switch (key) {
+    case 'preuves':
+      return row.stale_evidence + row.evidence_to_review
+    case 'soa':
+      return row.soa_undecided
+    case 'processus':
+      return row.high_risks_open
+    case 'suivi':
+      return row.overdue_actions + row.open_incidents + row.reviews_due
+    default:
+      return 0
+  }
+}
+
+function SectionDot({
+  attention,
+  organizationId,
+  keys,
+  late = false,
+  label,
+}: {
+  attention: Promise<Attention[]>
+  organizationId: string | null
+  keys: readonly OrganizationSection[]
+  late?: boolean
+  label: string
+}) {
+  const row = use(attention).find((a) => a.organization_id === organizationId)
+  return <AttentionDot count={keys.reduce((n, k) => n + compter(row, k), 0)} late={late} inverted label={label} />
+}
+
+/** La meme, en clair : dans le menu deroulant, le fond n'est plus sombre. */
+function SectionDotLight({
+  attention,
+  organizationId,
+  section,
+}: {
+  attention: Promise<Attention[]>
+  organizationId: string | null
+  section: OrganizationSection
+}) {
+  const row = use(attention).find((a) => a.organization_id === organizationId)
+  return <AttentionDot count={compter(row, section)} late={false} label="élément(s) appelant une action" />
+}
+
+/** Tout ce qui appelle une action sur le perimetre : la pastille du pilotage. */
+function TotalDot({ attention }: { attention: Promise<Attention[]> }) {
+  const total = use(attention).reduce((n, a) => n + a.total, 0)
+  return <AttentionDot count={total} inverted label="élément(s) appelant une action" />
+}
+
+/** Le compte d'alertes non lues, sur la cloche. */
+function UnreadCount({ unread }: { unread: Promise<number> }) {
+  const n = use(unread)
+  if (!n) return null
+  return (
+    <span className="absolute -right-1 -top-1 inline-flex min-w-[1.1rem] items-center justify-center rounded-full bg-warn-600 px-1 text-[10px] font-semibold tabular-nums text-night-950">
+      {n}
+    </span>
+  )
+}
+
 export function Chrome({
   viewer,
   branding,
@@ -93,8 +174,8 @@ export function Chrome({
   branding: Branding
   roleLabel: string
   administrating: boolean
-  unread: number
-  attention: Attention[]
+  unread: Promise<number>
+  attention: Promise<Attention[]>
   fallbackOrganizationId: string | null
   adminNav: { href: string; label: string }[]
   governanceNav: { href: string; label: string }[]
@@ -111,28 +192,6 @@ export function Chrome({
   const nav = administrating ? adminNav : governanceNav
   const orgBase = organizationId ? `/admin/organizations/${organizationId}` : null
 
-  // L'administration n'a pas de gouvernance a suivre : lui compter des retards
-  // qu'elle ne peut pas solder serait une invitation a outrepasser son role.
-  const row = administrating ? null : attention.find((a) => a.organization_id === organizationId)
-  const pending = administrating ? 0 : attention.reduce((n, a) => n + a.total, 0)
-
-  const sectionCount = (key: OrganizationSection): number => {
-    if (!row) return 0
-    switch (key) {
-      case 'preuves':
-        return row.stale_evidence + row.evidence_to_review
-      case 'soa':
-        return row.soa_undecided
-      case 'processus':
-        return row.high_risks_open
-      case 'suivi':
-        return row.overdue_actions + row.open_incidents + row.reviews_due
-      default:
-        return 0
-    }
-  }
-
-  const registerTotal = REGISTER_SECTIONS.reduce((n, key) => n + sectionCount(key), 0)
   const announceValue = useMemo(() => setAnnounced, [])
 
   return (
@@ -193,12 +252,15 @@ export function Chrome({
                         }`}
                       >
                         {section.label}
-                        <AttentionDot
-                          count={sectionCount(key)}
-                          late={key === 'processus'}
-                          inverted
-                          label="élément(s) appelant une action"
-                        />
+                        <Suspense fallback={null}>
+                          <SectionDot
+                            attention={attention}
+                            organizationId={organizationId}
+                            keys={[key]}
+                            late={key === 'processus'}
+                            label="élément(s) appelant une action"
+                          />
+                        </Suspense>
                       </Link>
                     )
                   })}
@@ -206,12 +268,14 @@ export function Chrome({
                     label="Registres"
                     active={REGISTER_SECTIONS.some((key) => activeSection === key)}
                     badge={
-                      <AttentionDot
-                        count={registerTotal}
-                        late={false}
-                        inverted
-                        label="élément(s) appelant une action dans les registres"
-                      />
+                      <Suspense fallback={null}>
+                        <SectionDot
+                          attention={attention}
+                          organizationId={organizationId}
+                          keys={REGISTER_SECTIONS}
+                          label="élément(s) appelant une action dans les registres"
+                        />
+                      </Suspense>
                     }
                     items={REGISTER_SECTIONS.map((key) => {
                       const section = ORGANIZATION_SECTIONS.find((s) => s.key === key)!
@@ -220,11 +284,13 @@ export function Chrome({
                         label: section.label,
                         active: activeSection === key,
                         badge: (
-                          <AttentionDot
-                            count={sectionCount(key)}
-                            late={false}
-                            label="élément(s) appelant une action"
-                          />
+                          <Suspense fallback={null}>
+                            <SectionDotLight
+                              attention={attention}
+                              organizationId={organizationId}
+                              section={key}
+                            />
+                          </Suspense>
                         ),
                       }
                     })}
@@ -239,7 +305,9 @@ export function Chrome({
                       }`}
                     >
                       {link.label}
-                      <AttentionDot count={pending} inverted label="élément(s) appelant une action" />
+                      <Suspense fallback={null}>
+                        <TotalDot attention={attention} />
+                      </Suspense>
                     </Link>
                   ))}
                 </>
@@ -253,7 +321,7 @@ export function Chrome({
               {viewer ? (
                 <Link
                   href="/admin/alertes"
-                  aria-label={unread ? `Mes alertes, ${unread} non lue(s)` : 'Mes alertes'}
+                  aria-label="Mes alertes"
                   className="relative inline-flex items-center rounded-md p-1.5 text-white/75 hover:bg-white/10 hover:text-white"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -270,11 +338,9 @@ export function Chrome({
                       strokeLinecap="round"
                     />
                   </svg>
-                  {unread ? (
-                    <span className="absolute -right-1 -top-1 inline-flex min-w-[1.1rem] items-center justify-center rounded-full bg-warn-600 px-1 text-[10px] font-semibold tabular-nums text-night-950">
-                      {unread}
-                    </span>
-                  ) : null}
+                  <Suspense fallback={null}>
+                    <UnreadCount unread={unread} />
+                  </Suspense>
                 </Link>
               ) : null}
               {viewer ? (

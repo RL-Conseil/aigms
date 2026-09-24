@@ -42,17 +42,32 @@ const ADMIN_NAV = [
 ]
 
 export default async function EspaceLayout({ children }: { children: ReactNode }) {
-  const viewer = await getViewerContext()
+  // Ce que la barre ne peut pas afficher sans : qui vous etes, et sous quelle
+  // marque. Les deux partent ensemble — une seule vague.
+  const [viewer, branding] = await Promise.all([getViewerContext(), tenantBranding()])
   const administrating = isAdministrating(viewer)
 
-  // Ce qui suit est independant les uns des autres : une seule vague.
-  // `attentionByOrganization` couvre tout le portefeuille en un appel — la
-  // barre y lit la ligne de l'organisation ouverte, et le total pour Pilotage.
-  const [branding, unread, attention] = await Promise.all([
-    tenantBranding(),
-    viewer ? unreadNotifications() : Promise.resolve(0),
-    administrating || !viewer ? Promise.resolve([]) : attentionByOrganization(),
-  ])
+  /*
+   * Les compteurs, eux, ne sont PAS attendus ici.
+   *
+   * On passe les promesses ; la barre les consomme derriere une frontiere
+   * `Suspense`, pastille par pastille. Les intitules, les liens et les menus
+   * s'affichent donc sans attendre la base — et une pastille qui manque une
+   * fraction de seconde ne trompe personne, quand une barre qui manque une
+   * seconde, si.
+   *
+   * `catch` plutot que rien : un compteur indisponible ne doit pas emporter la
+   * navigation. La barre s'affiche alors sans pastille, ce qui est le pire cas
+   * acceptable.
+   *
+   * `attentionByOrganization` couvre tout le portefeuille en un appel — la
+   * barre y lit la ligne de l'organisation ouverte, et le total pour Pilotage.
+   * L'administration n'a pas de gouvernance a suivre : lui compter des retards
+   * qu'elle ne peut pas solder serait une invitation a outrepasser son role.
+   */
+  const unread = viewer ? unreadNotifications().catch(() => 0) : Promise.resolve(0)
+  const attention =
+    administrating || !viewer ? Promise.resolve([]) : attentionByOrganization().catch(() => [])
 
   return (
     <Chrome

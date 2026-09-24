@@ -40,9 +40,28 @@ export async function proxy(request: NextRequest) {
     },
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  /*
+   * `getClaims` plutot que `getUser`.
+   *
+   * `getUser` interroge le serveur d'authentification a CHAQUE requete — et le
+   * proxy en voit beaucoup : chaque navigation, mais aussi chaque
+   * prechargement de lien, que Next declenche au survol. Autant d'allers-
+   * retours pour une reponse que le jeton porte deja.
+   *
+   * Les deux projets Supabase signent en ES256 : la signature se verifie ici,
+   * avec la cle publique recuperee une fois puis gardee. Ce n'est pas une
+   * verification au rabais — c'est la meme que fait PostgREST avant d'appliquer
+   * la RLS.
+   *
+   * CE QUE CELA CHANGE : une session revoquee cote serveur reste acceptee
+   * jusqu'a l'expiration du jeton, une heure au plus. C'est deja le cas pour
+   * l'acces aux DONNEES, que PostgREST sert sur la seule foi de la signature :
+   * ce changement aligne la porte sur ce que la RLS fait depuis toujours.
+   * Couper quelqu'un immediatement se fait la ou cela compte — en retirant son
+   * affectation (`valid_until = now()`), lue en base a chaque requete.
+   */
+  const { data: claims } = await supabase.auth.getClaims()
+  const user = claims?.claims ?? null
 
   const { pathname } = request.nextUrl
 

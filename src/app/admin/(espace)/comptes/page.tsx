@@ -7,7 +7,7 @@ import type { NotificationPreference } from '@/components/admin/notification-for
 import { RoleMatrix } from '@/components/admin/role-matrix'
 import { RaciTable } from '@/components/admin/raci-table'
 import { roleCapabilities } from '@/lib/admin/role-capabilities'
-import { organizationReadiness } from '@/lib/governance/readiness'
+import { allOrganizationsReadiness } from '@/lib/governance/readiness'
 import { ReadinessCard } from '@/components/governance/readiness-banner'
 import { InfoTip } from '@/components/info-tip'
 import { Disclosure } from '@/components/forms'
@@ -109,9 +109,12 @@ export default async function AccountsPage() {
   const roleOrder: AppRole[] = ['governance_officer', 'client_admin', 'system_owner', 'reviewer', 'risk_owner', 'executive_viewer', 'auditor', 'platform_admin']
   const byRole = (x: { role: AppRole }, y: { role: AppRole }) => roleOrder.indexOf(x.role) - roleOrder.indexOf(y.role)
 
-  const readiness = await Promise.all(
-    (organizations ?? []).map(async (o) => ({ ...o, readiness: await organizationReadiness(o.id) })),
-  )
+  // Une lecture pour tout le portefeuille (0093), au lieu d'une par organisation.
+  const readinessByOrganization = await allOrganizationsReadiness()
+  const readiness = (organizations ?? []).map((o) => ({
+    ...o,
+    readiness: readinessByOrganization.get(o.id) ?? null,
+  }))
 
   return (
     <Shell

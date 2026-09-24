@@ -9,7 +9,7 @@ import { VendorLabelForm } from '@/components/governance/registry-forms'
 import { RegistryImportForm } from '@/components/governance/registry-import'
 import { DeclareAssetModal, DeclareVendorModal } from '@/components/governance/registry-declare'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
-import { organizationPeople } from '@/lib/governance/people'
+import { organizationPeople, peopleByOrganization } from '@/lib/governance/people'
 import { ROLE_LABELS } from '@/lib/domain/roles'
 import { ASSET_KIND_LABELS, VENDOR_REVIEW_LABELS, formatDate } from '@/lib/domain/governance'
 import { CRITICALITY_LABELS, type Criticality } from '@/lib/domain/criticality'
@@ -84,12 +84,10 @@ export default async function AdminAssetsVendorsPage({
   // de l'organisation de l'actif : lus une fois par organisation presente.
   const orgIds = [...new Set(shownAssets.map((a) => a.organization_id))]
   const peopleByOrg = new Map(
-    await Promise.all(
-      orgIds.map(async (oid) => {
-        const people = await organizationPeople(oid)
-        return [oid, people.map((p) => ({ id: p.userId, label: p.jobTitle ? `${p.name} — ${p.jobTitle}` : p.name }))] as const
-      }),
-    ),
+    [...(await peopleByOrganization(orgIds))].map(([oid, people]) => [
+      oid,
+      people.map((p) => ({ id: p.userId, label: p.jobTitle ? `${p.name} — ${p.jobTitle}` : p.name })),
+    ]),
   )
   const vendorsByOrg = new Map<string, { id: string; name: string }[]>()
   for (const v of vendors ?? []) {

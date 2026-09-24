@@ -38,23 +38,24 @@ export type ViewerContext = {
 export const getViewerContext = cache(async (): Promise<ViewerContext | null> => {
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) return null
+  // La signature se verifie localement (ES256), sans appeler le serveur
+  // d'authentification : voir la note du proxy. Le jeton porte l'identifiant et
+  // l'adresse ; le reste se lit en base, sous RLS.
+  const { data: claims } = await supabase.auth.getClaims()
+  const user = claims?.claims
+  if (!user?.sub) return null
 
   const [{ data: profile }, { data: membership }, { data: currentOrganization }] =
     await Promise.all([
     supabase
       .from('user_profile')
       .select('id, email, full_name, job_title, is_platform_admin')
-      .eq('id', user.id)
+      .eq('id', user.sub)
       .maybeSingle(),
     supabase
       .from('membership')
       .select('role, tenant:tenant_id (id, name, slug)')
-      .eq('user_id', user.id)
+      .eq('user_id', user.sub)
       .eq('status', 'active')
       .maybeSingle(),
     supabase.rpc('current_organization'),
@@ -66,8 +67,8 @@ export const getViewerContext = cache(async (): Promise<ViewerContext | null> =>
     | undefined
 
   return {
-    userId: user.id,
-    email: profile?.email ?? user.email ?? '',
+    userId: user.sub,
+    email: profile?.email ?? (typeof user.email === 'string' ? user.email : ''),
     fullName: profile?.full_name ?? null,
     jobTitle: profile?.job_title ?? null,
     isPlatformAdmin: profile?.is_platform_admin === true,
