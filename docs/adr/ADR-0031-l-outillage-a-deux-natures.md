@@ -76,6 +76,40 @@ Deux réserves tiennent :
 - **la carte vide ne calcule rien** — c'est une donnée d'entrée du Discovery,
   pas un acquis.
 
+## Une famille porte plusieurs produits
+
+*2 octobre 2026. Migration 0095.*
+
+0088 imposait `unique (organization_id, tool_code)` — un produit par famille.
+C'était une erreur, et `connector_id` la rend visible : **le connecteur est
+porté par la ligne**. Deux produits écrasés en un libellé (« Datadog +
+Grafana ») ne peuvent en porter qu'un, le second devient inatteignable, et le
+signal « preuve automatisable » ment.
+
+Les cas interdits étaient ordinaires : l'observabilité tenue par un produit en
+production et un autre ailleurs, deux CSPM pendant une migration, un SIEM
+groupe et un SIEM filiale.
+
+`unique (organization_id, tool_code, product)` remplace la contrainte :
+plusieurs produits, pas deux fois le même. **Cela ne rapproche pas d'une
+CMDB** — ce qui en ferait une, ce sont les instances, les dépendances et le
+cycle de vie, pas le nombre de produits.
+
+Conséquence sur les lectures : `declared` cesse d'être un objet et devient une
+liste, dans la carte comme dans la vue par contrôle.
+
+## Nommer les contrôles, et les retrouver
+
+Deux manques constatés à l'usage :
+
+- « 7 contrôles attendent cette famille » ne disait pas **lesquels**, et
+  obligeait à les chercher au registre. La carte porte désormais
+  `served_controls` et une infobulle les nomme, en signalant ceux qui n'ont
+  encore rien retenu.
+- Le signal « contrôle technique sans outillage » se comptait sans se
+  parcourir. Le registre des contrôles porte un filtre **« Technique, sans
+  outillage »**, qui n'apparaît que s'il y a quelque chose à voir.
+
 ## Ce qui n'a pas été fait
 
 `asset_tooling` — l'inventaire, par actif, des outils qui ont servi à le
