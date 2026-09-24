@@ -4540,6 +4540,7 @@ export type Database = {
             | "impact_signature_late"
             | "impact_returned"
             | "decision_gap_notice"
+            | "evidence_deadline"
           organization_id: string | null
           read_at: string | null
           recipient_user_id: string
@@ -4585,6 +4586,7 @@ export type Database = {
             | "impact_signature_late"
             | "impact_returned"
             | "decision_gap_notice"
+            | "evidence_deadline"
           organization_id?: string | null
           read_at?: string | null
           recipient_user_id: string
@@ -4630,6 +4632,7 @@ export type Database = {
             | "impact_signature_late"
             | "impact_returned"
             | "decision_gap_notice"
+            | "evidence_deadline"
           organization_id?: string | null
           read_at?: string | null
           recipient_user_id?: string
@@ -4714,6 +4717,7 @@ export type Database = {
           country_code: string | null
           created_at: string
           document_footer_note: string | null
+          evidence_gate_enforced_from: string | null
           headcount: number | null
           id: string
           legal_name: string | null
@@ -4747,6 +4751,7 @@ export type Database = {
           country_code?: string | null
           created_at?: string
           document_footer_note?: string | null
+          evidence_gate_enforced_from?: string | null
           headcount?: number | null
           id?: string
           legal_name?: string | null
@@ -4780,6 +4785,7 @@ export type Database = {
           country_code?: string | null
           created_at?: string
           document_footer_note?: string | null
+          evidence_gate_enforced_from?: string | null
           headcount?: number | null
           id?: string
           legal_name?: string | null
@@ -6630,6 +6636,7 @@ export type Database = {
             | "impact_signature_late"
             | "impact_returned"
             | "decision_gap_notice"
+            | "evidence_deadline"
           organization_id: string
           read_at: string
           title: string
