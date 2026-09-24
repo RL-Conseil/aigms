@@ -11,6 +11,8 @@
  *   preview + development -> la cle de service de la PREPROD
  *   production            -> la cle de service de la PRODUCTION
  *   CRON_SECRET           -> engendre au hasard, identique sur les trois
+ *   RESEND_API_KEY        -> repris de .env.local, s'il y est
+ *   SYSTEM_EMAIL_FROM     -> idem : sans expediteur, aucun courriel ne part
  *
  * Usage :
  *   SUPABASE_ACCESS_TOKEN=... VERCEL_TOKEN=... node scripts/poser-secrets-vercel.mjs
@@ -71,8 +73,27 @@ async function put(key, value, targets) {
 
   for (const env of envs ?? []) {
     if (env.key !== key) continue
-    const same = (env.target ?? []).some((t) => targets.includes(t))
+    const anciennes = env.target ?? []
+    const same = anciennes.some((t) => targets.includes(t))
     if (!same) continue
+
+    /*
+     * UN REMPLACEMENT NE RETRECIT PAS LA PORTEE. Une entree qui couvrait
+     * production + preview + development etait supprimee puis recreee sur les
+     * seules cibles demandees : la production perdait la variable, en silence.
+     * Constate le 5 octobre 2026 sur RESEND_API_KEY et SYSTEM_EMAIL_FROM.
+     *
+     * On refuse plutot que de deviner : c'est a l'appelant de dire s'il veut
+     * aussi la production.
+     */
+    const perdues = anciennes.filter((t) => !targets.includes(t))
+    if (perdues.length) {
+      throw new Error(
+        `${key} couvre deja ${anciennes.join(', ')} ; la reposer sur ${targets.join(', ')} ` +
+          `lui retirerait ${perdues.join(', ')}. Relancer avec --production, ou ajuster les cibles.`,
+      )
+    }
+
     const removed = await vercel(`/v9/projects/${PROJECT_ID}/env/${env.id}`, { method: 'DELETE' })
     if (!removed.ok) throw new Error(`Ancienne valeur de ${key} non retiree : ${removed.status}`)
   }
@@ -97,5 +118,36 @@ if (withProduction) {
 // Le secret partage avec la tache planifiee : la route d'envoi des alertes
 // refuse tout appel qui ne le porte pas.
 await put('CRON_SECRET', randomBytes(32).toString('hex'), withProduction ? ['production', 'preview', 'development'] : ['preview', 'development'])
+
+/*
+ * Le courrier. Les deux variables vont ENSEMBLE : `isMailerConfigured` exige la
+ * cle ET l'expediteur, et poser l'une sans l'autre laisse un envoi qui ne part
+ * pas sans dire pourquoi.
+ *
+ * Elles se reprennent de `.env.local` plutot que de s'inventer : la cle vient
+ * du tableau de bord Resend, l'expediteur d'un domaine verifie chez lui. Le
+ * script ne les affiche jamais — il dit seulement ce qu'il a pose.
+ */
+/*
+ * Les trois cibles, toujours. Contrairement a la cle de service, qui differe
+ * d'un projet Supabase a l'autre, la cle Resend et l'expediteur sont les memes
+ * partout : les restreindre a la preproduction laisserait la production sans
+ * courrier, ce qui ne se verrait que le jour ou une alerte devrait partir.
+ */
+const CIBLES_COURRIEL = ['production', 'preview', 'development']
+const resend = process.env.RESEND_API_KEY?.trim()
+const expediteur = process.env.SYSTEM_EMAIL_FROM?.trim()
+
+if (resend && expediteur) {
+  await put('RESEND_API_KEY', resend, CIBLES_COURRIEL)
+  await put('SYSTEM_EMAIL_FROM', expediteur, CIBLES_COURRIEL)
+} else if (resend || expediteur) {
+  console.log(
+    `  courriel ignore : ${resend ? 'SYSTEM_EMAIL_FROM' : 'RESEND_API_KEY'} manque dans .env.local,\n` +
+      '  et une seule des deux ne fait rien partir.',
+  )
+} else {
+  console.log('  courriel ignore : ni RESEND_API_KEY ni SYSTEM_EMAIL_FROM dans .env.local.')
+}
 
 console.log('\nRedéployer pour qu’elles entrent en vigueur : npm run deploy:preview')
