@@ -47,7 +47,7 @@ Tous verts au 7 septembre 2026.
 
 | Ressource | État |
 |---|---|
-| Dépôt GitHub `RL-Conseil/aigms` | privé, existant |
+| Dépôt GitHub `caritis/aigms` | **public**, 125 branches. Transféré depuis `RL-Conseil` le 5 octobre 2026 : le dépôt appartient à la société qui édite AIGMS, pas au cabinet qui l'a démarré. GitHub redirige les anciennes adresses |
 | Supabase local (Docker) | opérationnel, 15 migrations appliquées |
 | Supabase `aigms-supabase` (`xsagbzrgoljzgorwvsir`, eu-west-1, org **caritis**) | **production** : schéma à la migration 0015, 24 migrations de retard sur `dev` (0016 → 0039). Porte encore le jeu de démonstration, à purger une fois un compte réel créé. Réactivée le 15 septembre 2026 après mise en pause ; `site_url`, `password_min_length` (12) et `uri_allow_list` réglés |
 | Supabase `aigms-supabase-preprod` (`xahqdxwmlewyjpsiuzux`, eu-west-1, org **caritis**) | **preprod** : 39 migrations appliquées (0034 → 0039 poussées le 15 septembre 2026), sert les déploiements Preview. Les deux projets partagent l'organisation caritis : un seul jeton Owner les couvre |
@@ -770,12 +770,21 @@ tiers réalisable.
 1. **CI** — le jeton GitHub `rlabrador` n'a pas le scope `workflow` : le commit
    contenant `.github/workflows/ci.yml` attend en local.
    `gh auth refresh -h github.com -u rlabrador -s workflow` puis `git push`.
-2. **Vercel ↔ GitHub** — le projet Vercel est lié à `rlabrador/aigms`, un dépôt
-   vide, alors que le code vit dans `RL-Conseil/aigms`. L'App GitHub de Vercel
-   n'ayant pas accès à cette organisation, le lien ne peut pas être posé par
-   API. Installer l'App (https://github.com/apps/vercel) sur `RL-Conseil`, puis
-   relier le projet : les déploiements redeviendront automatiques à chaque push.
-   D'ici là, ils se font par appel API depuis le poste de développement.
+2. **Vercel ↔ GitHub** — *rétabli le 5 octobre 2026.* Le projet Vercel est lié
+   à `caritis/aigms`, et `npm run deploy:preview` laisse Vercel **cloner** la
+   branche depuis GitHub : rien ne transite par le poste, et le quota d'envoi
+   de fichiers n'est plus en jeu.
+
+   **Un piège rencontré au passage, qui resservira** : Vercel suit un dépôt par
+   son `repoId`, pas par son nom. Après le transfert, le projet affichait bien
+   `caritis/aigms` tout en pointant sur l'identifiant d'un dépôt homonyme vide —
+   le premier déploiement aurait construit le vide. Vérifier le `repoId`, pas le
+   nom. Et `POST /link` refuse d'écraser un lien : il faut `DELETE` d'abord.
+
+   Ce qui reste : les déploiements ne sont pas **automatiques** au push. Installer
+   l'App GitHub de Vercel (https://github.com/apps/vercel) sur `caritis` les
+   déclencherait à chaque poussée, et rendrait `scripts/deploy-vercel.mjs`
+   inutile.
 
 ## Suite immédiate
 

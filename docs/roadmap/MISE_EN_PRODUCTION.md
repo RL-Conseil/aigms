@@ -146,8 +146,9 @@ tenant concerné, en laissant `tenant`, `organization` et `membership`.
   sur `feat/ci-github-actions`, faute du scope `workflow` sur le jeton GitHub.
   `gh auth refresh -h github.com -u rlabrador -s workflow` puis un merge le
   débloquent.
-- **Les déploiements automatiques** : l'App GitHub de Vercel n'a pas accès à
-  l'organisation `RL-Conseil`, d'où le déploiement par script. L'installer
-  rendrait Preview et Production automatiques au push.
+- **Les déploiements automatiques** : le projet est relié à `caritis/aigms` et
+  Vercel clone la branche lui-même, mais aucune poussée ne déclenche de
+  déploiement. Installer l'App GitHub de Vercel sur `caritis` rendrait Preview
+  et Production automatiques au push, et retirerait le script.
 - **Le changement de mot de passe depuis l'application** n'existe pas : il se
   fait depuis la console Supabase.
