@@ -9,6 +9,8 @@ import { Badge, Card, Empty } from '@/components/ui'
 import { InfoTip } from '@/components/info-tip'
 import { OrganizationIdentityForm, OrganizationLogoForm } from '@/components/admin/forms'
 import { ActivityProfileForm } from '@/components/governance/activity-profile-form'
+import { EvidenceDeadlineForm } from '@/components/admin/evidence-deadline-form'
+import { formatDate } from '@/lib/domain/governance'
 import { documentIdentity } from '@/lib/governance/document-identity'
 import { getViewerContext, isAdministrating } from '@/lib/auth/context'
 import { ROLE_LABELS } from '@/lib/domain/roles'
@@ -41,7 +43,8 @@ export default async function OrganizationAdministrationPage({
       `id, name, business_ref, status, ai_activity_profile, legal_name,
        address_line1, address_line2, postal_code, city,
        registration_number, vat_number, website, contact_name, contact_email,
-       contact_phone, confidentiality_label, document_footer_note`,
+       contact_phone, confidentiality_label, document_footer_note,
+       evidence_gate_enforced_from`,
     )
     .eq('id', id)
     .maybeSingle()
@@ -173,6 +176,27 @@ export default async function OrganizationAdministrationPage({
             subtitle={profile ? ACTIVITY_PROFILE_LABELS[profile] : 'Non renseigné'}
           >
             <ActivityProfileForm organizationId={id} current={profile} />
+          </Card>
+
+          {/*
+            La fin de la voie douce (0097, 0105). Elle vit ici parce que c'est
+            un engagement pris envers CE client, pas une regle du produit : il
+            se negocie et se reporte. La poser declenche les alertes, la
+            relance de chaque cas d'usage qui porte un ecart, et les rappels.
+          */}
+          <Card
+            title="Preuves exigées à la mise en production"
+            subtitle={
+              organization.evidence_gate_enforced_from
+                ? `Bloquant à partir du ${formatDate(organization.evidence_gate_enforced_from)}`
+                : 'Avertissement seulement — aucune échéance posée'
+            }
+            tone={organization.evidence_gate_enforced_from ? 'neutral' : 'warn'}
+          >
+            <EvidenceDeadlineForm
+              organizationId={id}
+              current={organization.evidence_gate_enforced_from}
+            />
           </Card>
 
           <Card title="Logo" subtitle="Porté en haut de chaque page imprimée.">

@@ -37,7 +37,7 @@ import { publicEnv } from '@/lib/env'
  * Voir docs/adr/ADR-0008-account-provisioning.md.
  */
 
-type Result = { ok: true; message: string } | { ok: false; message: string }
+export type Result = { ok: true; message: string } | { ok: false; message: string }
 
 /**
  * Verifie que l'appelant administre le tenant, avec le client soumis a la RLS.
@@ -462,6 +462,59 @@ export async function updateOrganizationIdentity(
   return {
     ok: true,
     message: 'Identité enregistrée. Le nom s’applique partout, l’en-tête aux documents imprimés.',
+  }
+}
+
+// -----------------------------------------------------------------------------
+// L'echeance a partir de laquelle l'absence de preuve retient la production
+// -----------------------------------------------------------------------------
+// 0097 a fait de l'absence de preuve un AVERTISSEMENT, pour ne pas rendre non
+// conformes du jour au lendemain les cas d'usage deja en production. Une voie
+// douce sans terme n'est pas une voie douce : cette date lui en donne un.
+//
+// Elle se fixe ici, et non dans le code, parce que c'est un engagement pris
+// envers UN client : il se negocie, se reporte, et doit se lire. La poser
+// declenche les alertes et les rappels (0105) ; la retirer les efface.
+const deadlineSchema = z.object({
+  organizationId: z.string().uuid(),
+  enforcedFrom: z.string().trim().optional().or(z.literal('')),
+})
+
+export async function setEvidenceDeadline(
+  _previous: Result | null,
+  formData: FormData,
+): Promise<Result> {
+  const admin = await requireAdministratedTenant()
+  if (!admin) {
+    return { ok: false, message: "Cette action relève de l'administration de la plateforme." }
+  }
+
+  const parsed = deadlineSchema.safeParse({
+    organizationId: formData.get('organizationId'),
+    enforcedFrom: formData.get('enforcedFrom') ?? '',
+  })
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0]?.message ?? 'Formulaire incomplet.' }
+  }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('organization')
+    .update({ evidence_gate_enforced_from: parsed.data.enforcedFrom || null })
+    .eq('id', parsed.data.organizationId)
+    .select('id, evidence_gate_enforced_from')
+
+  if (error) return { ok: false, message: `Enregistrement refusé : ${error.message}` }
+  if (!data?.length) return { ok: false, message: 'Votre rôle ne permet pas cette écriture.' }
+
+  revalidatePath(`/admin/organizations/${parsed.data.organizationId}`, 'layout')
+  revalidatePath('/admin/alertes')
+
+  return {
+    ok: true,
+    message: parsed.data.enforcedFrom
+      ? 'Échéance posée. L’AI Governance Officer et l’Administrateur client en sont avertis, chaque cas d’usage qui porte un écart est relancé, et les rappels J-30 et J-7 sont en place.'
+      : 'Échéance retirée. Les alertes qui l’annonçaient sont effacées, et l’écart de preuve redevient un simple avertissement.',
   }
 }
 
