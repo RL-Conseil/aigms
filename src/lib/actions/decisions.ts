@@ -3,6 +3,10 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { isBlocking, type GateCheck } from '@/lib/domain/governance'
+import { publicEnv } from '@/lib/env'
+import { isMailerConfigured, sendSystemEmail } from '@/lib/email/mailer'
+import { immediateEmail } from '@/lib/email/notifications'
 
 /**
  * Registre de decisions.
@@ -100,6 +104,12 @@ const submitSchema = z.object({
     .max(2000),
   effectiveFrom: z.string().trim().optional().or(z.literal('')),
   reviewDueAt: z.string().trim().optional().or(z.literal('')),
+  /**
+   * Ce que l'officer dit de l'écart de preuve : remédiation en cours, pièce
+   * non encore présentée. La base l'exige dès que l'écart n'est pas vide
+   * (0098) ; ici on se contente de le transmettre.
+   */
+  evidenceGapStatement: z.string().trim().max(2000).optional().or(z.literal('')),
   // Ce qui change — pour une decision de changement significatif, de
   // suspension ou de retrait : le changement est cree, lie, et qualifie.
   // Les pieces sur lesquelles la decision se fonde, des la soumission.
@@ -134,6 +144,7 @@ export async function submitDecision(
     rationale: formData.get('rationale'),
     effectiveFrom: formData.get('effectiveFrom') ?? '',
     reviewDueAt: formData.get('reviewDueAt') ?? '',
+    evidenceGapStatement: formData.get('evidenceGapStatement') ?? '',
     evidenceIds: formData.getAll('evidenceIds'),
     changeTypes: formData.getAll('changeTypes'),
     increasesAutonomy: formData.get('increasesAutonomy') === 'on',
@@ -176,9 +187,11 @@ export async function submitDecision(
   const milestone = MILESTONES[input.decisionType]
   if (milestone && input.useCaseId) {
     const { data: gate } = await supabase.rpc('evaluate_gate', { p_use_case_id: input.useCaseId, p_target: milestone })
-    const g = gate as { satisfied: boolean; checks: { label: string; satisfied: boolean }[] } | null
+    const g = gate as { satisfied: boolean; checks: GateCheck[] } | null
     if (g && !g.satisfied) {
-      const missing = g.checks.filter((c) => !c.satisfied).map((c) => c.label)
+      // Une vérification d'avertissement ne retient pas la soumission : elle
+      // s'assume à l'approbation (0097).
+      const missing = g.checks.filter((c) => !c.satisfied && isBlocking(c)).map((c) => c.label)
       return {
         ok: false,
         message: `Le jalon n’est pas prêt : ${missing.join(' ; ')}. La décision se soumettra quand les préconditions seront réunies.`,
@@ -212,6 +225,7 @@ export async function submitDecision(
       rationale: input.rationale,
       effective_from: input.effectiveFrom || null,
       review_due_at: input.reviewDueAt || null,
+      evidence_gap_statement: input.evidenceGapStatement || null,
       status: 'submitted',
       submitted_by: user.id,
       submitted_at: new Date().toISOString(),
@@ -220,6 +234,13 @@ export async function submitDecision(
     .single()
 
   if (error) {
+    if (error.message.includes('sans preuve')) {
+      return {
+        ok: false,
+        message: explain(error),
+        fieldErrors: { evidenceGapStatement: 'Dire ce qu’il en est.' },
+      }
+    }
     if (error.message.includes('appelée à se prononcer')) {
       return {
         ok: false,
@@ -229,6 +250,21 @@ export async function submitDecision(
       }
     }
     return { ok: false, message: explain(error) }
+  }
+
+  /*
+   * L'avertissement part maintenant, pas demain matin.
+   *
+   * `decision_to_approve` ne rejoint pas la synthese (0086), mais la tache
+   * planifiee ne tourne qu'une fois par jour : une mise en production soumise
+   * a 8 h attendrait vingt-trois heures. `claim_decision_notices` (0100) rend
+   * les messages ET les marque comme partis — la tache ne les renverra pas.
+   *
+   * L'envoi reste une commodite : s'il echoue, l'alerte demeure lisible dans
+   * « Mes alertes ». On ne fait donc pas echouer la soumission pour cela.
+   */
+  if (input.decisionType === 'go_production') {
+    await notifyProductionDecision(supabase, decision.id)
   }
 
   // Les pieces rattachees des la soumission : c'est sur elles qu'on se
@@ -325,6 +361,8 @@ const rulingSchema = z
     rationale: z.string().trim().min(20, 'Le verdict se motive.').max(2000),
     effectiveFrom: z.string().trim().optional().or(z.literal('')),
     reviewDueAt: z.string().trim().optional().or(z.literal('')),
+    /** « J'ai pris connaissance de l'écart de preuve » (0098). */
+    gapAcknowledged: z.boolean().optional().default(false),
   })
   .refine((v) => v.verdict !== 'approved_with_conditions' || (v.conditions ?? '').length >= 10, {
     message: 'Une approbation sous conditions énonce ses conditions.',
@@ -344,6 +382,7 @@ export async function ruleOnDecision(
     rationale: formData.get('rationale'),
     effectiveFrom: formData.get('effectiveFrom') ?? '',
     reviewDueAt: formData.get('reviewDueAt') ?? '',
+    gapAcknowledged: formData.get('gapAcknowledged') === 'on',
   })
   if (!parsed.success) return firstIssues(parsed.error)
 
@@ -366,12 +405,26 @@ export async function ruleOnDecision(
       approved_at: approving ? new Date().toISOString() : null,
       effective_from: approving ? input.effectiveFrom || null : null,
       review_due_at: input.reviewDueAt || null,
+      // La prise de connaissance se date au moment où elle est déclarée. La
+      // base refuse l'approbation sans elle quand l'écart existe (0098) : cette
+      // ligne transmet, elle ne juge pas.
+      ...(approving && input.gapAcknowledged
+        ? { evidence_gap_acknowledged_at: new Date().toISOString(), evidence_gap_acknowledged_by: user.id }
+        : {}),
     })
     .eq('id', input.decisionId)
     .select('id')
 
   if (error) {
     // La separation des roles est prononcee par la base, avec son message.
+    if (error.message.includes('écart de preuve')) {
+      return {
+        ok: false,
+        message:
+          'Cette décision porte un écart de preuve : déclarez en avoir pris connaissance avant d’approuver.',
+        fieldErrors: { gapAcknowledged: 'À cocher.' },
+      }
+    }
     if (error.message.includes('Séparation des rôles')) {
       return {
         ok: false,
@@ -451,4 +504,41 @@ export async function linkDecisionEvidence(
 
   revalidatePath(`/admin/organizations/${parsed.data.organizationId}/decisions`)
   return { ok: true, message: 'Élément probant rattaché à la décision.' }
+}
+
+/**
+ * Envoie sans attendre les avertissements d'une decision de mise en
+ * production : celui qui doit se prononcer, et l'officer en copie.
+ *
+ * Volontairement silencieuse en cas d'echec — courrier non configure, adresse
+ * refusee. Une alerte qui n'a pas pu partir reste lisible dans l'application,
+ * et une mise en production ne se refuse pas parce qu'un courriel a echoue.
+ */
+async function notifyProductionDecision(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  decisionId: string,
+): Promise<void> {
+  try {
+    if (!isMailerConfigured()) return
+    const { data } = await supabase.rpc('claim_decision_notices', { p_decision_id: decisionId })
+    const notices = (data ?? []) as {
+      email: string
+      kind: string
+      title: string
+      body: string | null
+      href: string | null
+      organization_name: string | null
+    }[]
+    if (!notices.length) return
+
+    const siteUrl = publicEnv().NEXT_PUBLIC_SITE_URL
+    await Promise.all(
+      notices.map((notice) => {
+        const mail = immediateEmail(notice, siteUrl)
+        return sendSystemEmail({ to: notice.email, subject: mail.subject, text: mail.text })
+      }),
+    )
+  } catch {
+    // Journalise par la base ; l'ecran n'a rien a en dire.
+  }
 }

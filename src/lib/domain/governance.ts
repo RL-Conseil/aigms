@@ -67,6 +67,27 @@ export type GateCheck = {
   label: string
   satisfied: boolean
   detail: string
+  /**
+   * `blocking` retient le jalon ; `warning` se lit et s'assume. Absente sur
+   * les vérifications d'avant 0097, qui sont toutes bloquantes — d'où le
+   * `?? 'blocking'` partout où on la lit.
+   */
+  severity?: 'blocking' | 'warning'
+  /** Ce que la vérification a constaté, quand elle porte un détail nommé. */
+  gap?: { control_id: string; code: string; name: string; is_mandatory: boolean }[]
+}
+
+/** Un contrôle applicable qu'aucune preuve validée ne démontre (0097). */
+export type EvidenceGap = {
+  control_id: string
+  code: string
+  name: string
+  is_mandatory: boolean
+}
+
+/** Une vérification retient-elle le jalon ? */
+export function isBlocking(check: GateCheck): boolean {
+  return (check.severity ?? 'blocking') === 'blocking'
 }
 
 export type GateResult = {

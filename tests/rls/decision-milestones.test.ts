@@ -62,8 +62,8 @@ describe('Décision et jalon', () => {
   it('une mise en production ne s’approuve pas sans preuve validée rattachée', async () => {
     const r = await asUser(db, DEMO.officerA, async (c) => {
       const { rows } = await c.query<{ id: string }>(
-        `insert into public.governance_decision (tenant_id, organization_id, use_case_id, decision_type, subject, context, decision_statement, rationale, status, submitted_by, submitted_at)
-         values ($1, $2, $3, 'go_production', 'Production sans preuve', 'Contexte.', 'Mise en service.', 'Justification.', 'submitted', $4, now()) returning id`,
+        `insert into public.governance_decision (tenant_id, organization_id, use_case_id, decision_type, subject, context, decision_statement, rationale, status, submitted_by, submitted_at, evidence_gap_statement)
+         values ($1, $2, $3, 'go_production', 'Production sans preuve', 'Contexte.', 'Mise en service.', 'Justification.', 'submitted', $4, now(), 'Remédiation en cours : preuves attendues de l’organisation.') returning id`,
         [DEMO.tenantA, DEMO.orgA, DEMO.useCaseProduction, DEMO.officerA],
       )
       await becomeUser(c, DEMO.reviewerA)

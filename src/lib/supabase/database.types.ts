@@ -3115,6 +3115,10 @@ export type Database = {
             | "suspension"
             | "retirement"
           effective_from: string | null
+          evidence_gap: Json | null
+          evidence_gap_acknowledged_at: string | null
+          evidence_gap_acknowledged_by: string | null
+          evidence_gap_statement: string | null
           expected_approver_user_id: string | null
           id: string
           options_considered: string | null
@@ -3157,6 +3161,10 @@ export type Database = {
             | "suspension"
             | "retirement"
           effective_from?: string | null
+          evidence_gap?: Json | null
+          evidence_gap_acknowledged_at?: string | null
+          evidence_gap_acknowledged_by?: string | null
+          evidence_gap_statement?: string | null
           expected_approver_user_id?: string | null
           id?: string
           options_considered?: string | null
@@ -3199,6 +3207,10 @@ export type Database = {
             | "suspension"
             | "retirement"
           effective_from?: string | null
+          evidence_gap?: Json | null
+          evidence_gap_acknowledged_at?: string | null
+          evidence_gap_acknowledged_by?: string | null
+          evidence_gap_statement?: string | null
           expected_approver_user_id?: string | null
           id?: string
           options_considered?: string | null
@@ -3226,6 +3238,13 @@ export type Database = {
           {
             foreignKeyName: "governance_decision_approver_user_id_fkey"
             columns: ["approver_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "governance_decision_evidence_gap_acknowledged_by_fkey"
+            columns: ["evidence_gap_acknowledged_by"]
             isOneToOne: false
             referencedRelation: "user_profile"
             referencedColumns: ["id"]
@@ -4447,6 +4466,7 @@ export type Database = {
             | "impact_signature"
             | "impact_signature_late"
             | "impact_returned"
+            | "decision_gap_notice"
           organization_id: string | null
           read_at: string | null
           recipient_user_id: string
@@ -4491,6 +4511,7 @@ export type Database = {
             | "impact_signature"
             | "impact_signature_late"
             | "impact_returned"
+            | "decision_gap_notice"
           organization_id?: string | null
           read_at?: string | null
           recipient_user_id: string
@@ -4535,6 +4556,7 @@ export type Database = {
             | "impact_signature"
             | "impact_signature_late"
             | "impact_returned"
+            | "decision_gap_notice"
           organization_id?: string | null
           read_at?: string | null
           recipient_user_id?: string
@@ -6263,6 +6285,7 @@ export type Database = {
           use_case_count: number
         }[]
       }
+      control_evidence_gap: { Args: { p_use_case_id: string }; Returns: Json }
       control_graph: {
         Args: { p_activity_id?: string; p_organization_id: string }
         Returns: Json
@@ -6519,6 +6542,7 @@ export type Database = {
             | "impact_signature"
             | "impact_signature_late"
             | "impact_returned"
+            | "decision_gap_notice"
           organization_id: string
           read_at: string
           title: string

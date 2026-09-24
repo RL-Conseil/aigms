@@ -17,7 +17,8 @@ describe('Outillage des contrôles', () => {
     const r = await asUser(db, DEMO.officerA, async (c) => {
       const { rows: before } = await c.query<{ n: number; declared: number }>(
         `select jsonb_array_length(m -> 'families') as n,
-                (select count(*) from jsonb_array_elements(m -> 'families') f where f -> 'declared' <> 'null'::jsonb) as declared
+                (select count(*) from jsonb_array_elements(m -> 'families') f
+                  where jsonb_array_length(f -> 'declared') > 0) as declared
            from public.organization_tooling_map($1) m`,
         [DEMO.orgA],
       )
@@ -27,7 +28,7 @@ describe('Outillage des contrôles', () => {
         [DEMO.tenantA, DEMO.orgA],
       )
       const { rows: after } = await c.query<{ product: string; used_by: number }>(
-        `select f -> 'declared' ->> 'product' as product, (f -> 'declared' ->> 'used_by')::int as used_by
+        `select f -> 'declared' -> 0 ->> 'product' as product, (f -> 'declared' -> 0 ->> 'used_by')::int as used_by
            from public.organization_tooling_map($1) m, jsonb_array_elements(m -> 'families') f
           where f ->> 'code' = 'CTRL-OPS-007'`,
         [DEMO.orgA],
@@ -62,7 +63,7 @@ describe('Outillage des contrôles', () => {
         'select count(*)::int as n from public.catalog_tool_control',
       )
       const { rows: used } = await c.query<{ used_by: number }>(
-        `select (f -> 'declared' ->> 'used_by')::int as used_by
+        `select (f -> 'declared' -> 0 ->> 'used_by')::int as used_by
            from public.organization_tooling_map($1) m, jsonb_array_elements(m -> 'families') f
           where f ->> 'code' = 'CTRL-OPS-007'`,
         [DEMO.orgA],

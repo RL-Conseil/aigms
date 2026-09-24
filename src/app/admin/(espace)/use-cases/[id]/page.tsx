@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getViewerContext } from '@/lib/auth/context'
 import { InfoTip } from '@/components/info-tip'
+import { EvidenceGapNotice } from '@/components/governance/evidence-gap-notice'
 import { Shell } from '@/components/shell'
 import { UseCaseLabelForm } from '@/components/governance/use-case-label-form'
 import { Badge, Card, Empty, Field, Stat, StatStrip } from '@/components/ui'
@@ -78,6 +79,7 @@ import {
   MEASURE_KIND_HINTS,
   MEASURE_KIND_LABELS,
   APPLICABILITY_LABELS,
+  type EvidenceGap,
   DECISION_STATUS_LABELS,
   INCIDENT_STATUS_LABELS,
   DECISION_TYPE_LABELS,
@@ -256,7 +258,7 @@ export default async function UseCasePage({
     supabase
       .from('governance_decision')
       .select(
-        'id, business_ref, decision_type, subject, decision_statement, conditions, rationale, status, effective_from, review_due_at, approved_at',
+        'id, business_ref, decision_type, subject, decision_statement, conditions, rationale, status, effective_from, review_due_at, approved_at, evidence_gap, evidence_gap_statement, evidence_gap_acknowledged_at',
       )
       .eq('use_case_id', id)
       .order('approved_at', { ascending: false, nullsFirst: false }),
@@ -419,6 +421,22 @@ export default async function UseCasePage({
   const useCaseAssets = (assetsData ?? []) as UseCaseAsset[]
 
   // Les preuves validees de l'organisation : ce sur quoi une decision se fonde.
+  /*
+   * Les contrôles applicables que rien ne prouve (0097). Le gate en avertit
+   * sans bloquer ; le formulaire de décision le dit avant qu'on soumette, et
+   * non après.
+   */
+  const { data: evidenceGapData } =
+    tab === 'decisions' || tab === 'avancement'
+      ? await supabase.rpc('control_evidence_gap', { p_use_case_id: id })
+      : { data: null }
+  const evidenceGap = (evidenceGapData ?? []) as {
+    control_id: string
+    code: string
+    name: string
+    is_mandatory: boolean
+  }[]
+
   const { data: validatedEvidence } = await supabase
     .from('evidence')
     .select('id, business_ref, title')
@@ -432,6 +450,19 @@ export default async function UseCasePage({
       ? await supabase.rpc('decisions_and_changes', { p_organization_id: useCase.organization_id, p_use_case_id: id })
       : { data: null }
   const timelineEntries = (timelineData ?? []) as TimelineEntry[]
+  /*
+   * L'écart de preuve assumé, par décision. Le fil vient d'une fonction de
+   * base qui ne le porte pas ; plutôt que de la réécrire pour trois colonnes,
+   * on l'apparie ici sur des décisions déjà lues.
+   */
+  const gapByDecision = new Map(
+    ((decisions ?? []) as unknown as {
+      id: string
+      evidence_gap: EvidenceGap[] | null
+      evidence_gap_statement: string | null
+      evidence_gap_acknowledged_at: string | null
+    }[]).map((d) => [d.id, d]),
+  )
 
   const planControlIds = planControls.map((p) => p.control.id)
   const evidenceControlIds = [...new Set([...applicableControlIds, ...planControlIds])]
@@ -1510,6 +1541,7 @@ export default async function UseCasePage({
                     allowedTypes={DECISION_TYPES_BY_STATUS[status]}
                     people={reviewers}
                     evidence={validatedEvidence ?? []}
+                    evidenceGap={evidenceGap}
                   />
                 ) : null}
                 <ChangeRequestForm
@@ -1554,6 +1586,13 @@ export default async function UseCasePage({
                         {e.body ? <p className="mt-1 text-sm text-ink-600">{e.body}</p> : null}
                         {e.conditions ? (
                           <p className="mt-1 text-xs text-amber-800">Conditions : {e.conditions}</p>
+                        ) : null}
+                        {e.kind === 'decision' ? (
+                          <EvidenceGapNotice
+                            gap={gapByDecision.get(e.id)?.evidence_gap ?? null}
+                            statement={gapByDecision.get(e.id)?.evidence_gap_statement ?? null}
+                            acknowledgedAt={gapByDecision.get(e.id)?.evidence_gap_acknowledged_at ?? null}
+                          />
                         ) : null}
                         {e.kind === 'decision' ? (
                           <p className="mt-1 text-xs text-ink-400">

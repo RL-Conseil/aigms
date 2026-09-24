@@ -10,6 +10,8 @@ import {
   DecisionRulingForm,
 } from '@/components/governance/decision-forms'
 import { describePerson, organizationPeople } from '@/lib/governance/people'
+import type { EvidenceGap } from '@/lib/domain/governance'
+import { EvidenceGapNotice } from '@/components/governance/evidence-gap-notice'
 import {
   CHANGE_STATUS_LABELS,
   DECISION_STATUS_LABELS,
@@ -45,6 +47,10 @@ type Decision = {
   submitted_at: string | null
   use_case_id: string | null
   expected_approver_user_id: string | null
+  /** L'écart de preuve figé à la soumission, et ce qu'on en a dit (0098). */
+  evidence_gap: EvidenceGap[] | null
+  evidence_gap_statement: string | null
+  evidence_gap_acknowledged_at: string | null
 }
 
 const STATUS_FILTERS = [
@@ -83,7 +89,7 @@ export default async function DecisionsPage({
     supabase
       .from('governance_decision')
       .select(
-        'id, business_ref, decision_type, subject, decision_statement, conditions, rationale, status, effective_from, review_due_at, approved_at, applied_at, submitted_at, use_case_id, expected_approver_user_id',
+        'id, business_ref, decision_type, subject, decision_statement, conditions, rationale, status, effective_from, review_due_at, approved_at, applied_at, submitted_at, use_case_id, expected_approver_user_id, evidence_gap, evidence_gap_statement, evidence_gap_acknowledged_at',
       )
       .eq('organization_id', id)
       .order('submitted_at', { ascending: false, nullsFirst: false }),
@@ -373,6 +379,12 @@ export default async function DecisionsPage({
                       </p>
                     ) : null}
 
+                    <EvidenceGapNotice
+                      gap={decision.evidence_gap}
+                      statement={decision.evidence_gap_statement}
+                      acknowledgedAt={decision.evidence_gap_acknowledged_at}
+                    />
+
                     <p className="mt-2 text-xs text-ink-400">
                       {linkCount.get(decision.id)
                         ? `${linkCount.get(decision.id)} élément(s) probant(s)`
@@ -414,6 +426,8 @@ export default async function DecisionsPage({
                         rationale={decision.rationale}
                         conditions={decision.conditions}
                         awaiting={['draft', 'submitted'].includes(decision.status)}
+                        evidenceGap={(decision.evidence_gap ?? []) as EvidenceGap[]}
+                        evidenceGapStatement={decision.evidence_gap_statement}
                       />
                       <DecisionLinkForm
                         organizationId={id}

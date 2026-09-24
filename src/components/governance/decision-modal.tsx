@@ -16,6 +16,7 @@ export function DecisionModal({
   allowedTypes,
   people,
   evidence,
+  evidenceGap = [],
   trigger = 'Soumettre une décision',
 }: {
   organizationId: string
@@ -23,6 +24,8 @@ export function DecisionModal({
   allowedTypes: string[]
   people: { userId: string; label: string }[]
   evidence: { id: string; business_ref: string; title: string }[]
+  /** Les contrôles applicables que rien ne prouve : la mise en production s'explique (0098). */
+  evidenceGap?: { control_id: string; code: string; name: string; is_mandatory: boolean }[]
   trigger?: string
 }) {
   return (
@@ -39,6 +42,7 @@ export function DecisionModal({
           fixedUseCaseId={useCaseId}
           allowedTypes={allowedTypes}
           evidence={evidence}
+          evidenceGap={evidenceGap}
         />
       )}
     </Modal>
