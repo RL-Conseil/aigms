@@ -174,6 +174,17 @@ insert into public.organization (id, tenant_id, name, legal_name, sector, countr
    'SIREN 812 345 678', 'FR00812345678', 'https://izarlink.example',
    'Claire Ferrand', 'claire.ferrand@izarlink.example', '+33 5 59 00 00 00',
    'Confidentiel', 'Diffusion restreinte — comité de gouvernance'),
+  -- Seconde organisation du MEME tenant : le portefeuille d'un cabinet, et le
+  -- terrain du scenario de demonstration BTP (Shadow AI sur la generation de
+  -- devis). `business_user` = exploitant d'une solution tierce : on ne repond
+  -- pas de l'entrainement d'un modele qu'on n'entraine pas.
+  ('cccccccc-0000-4000-8000-000000000002', 'aaaaaaaa-0000-4000-8000-000000000001',
+   'BATIVAL Construction', 'BATIVAL Construction SAS', 'Bâtiment et travaux publics', 'FR', 340,
+   'active', 'business_user',
+   '12 avenue des Chantiers', '33000', 'Bordeaux',
+   '902 145 776 R.C.S. Bordeaux', null, 'https://bativalconstruction.example',
+   'Marc Lecomte', 'dsi-admin@aigms.eu', '+33 5 56 00 00 00',
+   'Diffusion restreinte', 'Société fictive — jeu de démonstration AIGMS.'),
   ('dddddddd-0000-4000-8000-000000000002', 'bbbbbbbb-0000-4000-8000-000000000002',
    -- Archivee : elle ne sert qu'aux tests d'etancheite, pas a la demonstration.
    'Client Concurrent', 'Concurrent SA', 'Industrie', 'FR', 90, 'archived',
@@ -205,6 +216,25 @@ insert into public.role_assignment (tenant_id, organization_id, user_id, role) v
   -- Sans lui, une mise en production n'a personne à qui s'adresser, et
   -- l'avertissement d'écart de preuve n'a pas de destinataire (0098, 0105).
   ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
+   '6c7e46ef-80f1-4054-82bb-7bc8c19a584a', 'client_admin'),
+
+  -- BATIVAL Construction : les MEMES personnes, sur une seconde organisation.
+  -- C'est la realite d'un cabinet — un officer, plusieurs clients — et c'est ce
+  -- que le pilotage de portefeuille donne a voir. Une adresse de courriel ne
+  -- porte qu'une identite : on ne duplique pas les comptes, on affecte.
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000002',
+   '11111111-1111-4111-8111-111111111111', 'governance_officer'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000002',
+   '22222222-2222-4222-8222-222222222222', 'system_owner'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000002',
+   '33333333-3333-4333-8333-333333333333', 'risk_owner'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000002',
+   '44444444-4444-4444-8444-444444444444', 'auditor'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000002',
+   '77777777-7777-4777-8777-777777777777', 'reviewer'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000002',
+   '88888888-8888-4888-8888-888888888888', 'executive_viewer'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000002',
    '6c7e46ef-80f1-4054-82bb-7bc8c19a584a', 'client_admin')
 on conflict do nothing;
 

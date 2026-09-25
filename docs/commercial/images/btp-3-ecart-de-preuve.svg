@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1763" height="586" viewBox="0 0 1763 586" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<rect width="1763" height="586" fill="#ffffff"/>
+<text x="40" y="26" font-size="26" fill="#101c28">Le moment qui emporte la décision</text>
+<text x="40" y="56" font-size="16" fill="#535c66">Une mise en production à laquelle il manque des preuves. AIGMS ne l’interdit pas — il la fait assumer.</text>
+<rect x="40" y="110" width="330" height="70" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="205" y="140.5" font-size="15" fill="#101c28" text-anchor="middle">L’officer soumet</text>
+<text x="205" y="160" font-size="15" fill="#101c28" text-anchor="middle">la mise en production</text>
+<defs><marker id="m4510" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#f59e0b"/></marker></defs>
+<line x1="380" y1="145" x2="460" y2="145" stroke="#f59e0b" stroke-width="2"  marker-end="url(#m4510)"/>
+<rect x="470" y="100" width="380" height="90" rx="12" fill="#ffd8a8" fill-opacity="1" stroke="#f59e0b" stroke-width="2" stroke-opacity="1"/>
+<text x="660" y="130.75" font-size="15" fill="#101c28" text-anchor="middle">Le gate compte 3 contrôles</text>
+<text x="660" y="150.25" font-size="15" fill="#101c28" text-anchor="middle">applicables sans preuve</text>
+<text x="660" y="169.75" font-size="15" fill="#101c28" text-anchor="middle">CTL-05, CTL-08, CTL-09</text>
+<text x="470" y="214" font-size="14" fill="#f59e0b">Avertissement — il ne retient pas le jalon.</text>
+<defs><marker id="m7490" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#f59e0b"/></marker></defs>
+<line x1="660" y1="245" x2="660" y2="305" stroke="#f59e0b" stroke-width="2"  marker-end="url(#m7490)"/>
+<rect x="613.96" y="262" width="92.08000000000001" height="21" fill="#ffffff" opacity="0.92"/>
+<text x="660" y="278.25" font-size="13" fill="#f59e0b" text-anchor="middle">obligatoire</text>
+<rect x="470" y="320" width="380" height="70" rx="12" fill="#fff3bf" fill-opacity="1" stroke="#f59e0b" stroke-width="2" stroke-opacity="1"/>
+<text x="660" y="350.5" font-size="15" fill="#101c28" text-anchor="middle">L’officer DOIT dire</text>
+<text x="660" y="370" font-size="15" fill="#101c28" text-anchor="middle">ce qu’il en est</text>
+<text x="470" y="414" font-size="14" fill="#535c66">« Charte signée le 12/11, console</text>
+<text x="470" y="432.2" font-size="14" fill="#535c66">Enterprise livrée, DLP en recette. »</text>
+<defs><marker id="m8830" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#09aeae"/></marker></defs>
+<line x1="870" y1="355" x2="960" y2="175" stroke="#09aeae" stroke-width="2"  marker-end="url(#m8830)"/>
+<rect x="847.12" y="252" width="135.76" height="21" fill="#ffffff" opacity="0.92"/>
+<text x="915" y="268.25" font-size="13" fill="#09aeae" text-anchor="middle">alerte + courriel</text>
+<rect x="980" y="90" width="420" height="400" rx="12" fill="#dbe4ff" fill-opacity="0.35" stroke="#4a9eed" stroke-width="1" stroke-opacity="0.35"/>
+<text x="996" y="116" font-size="16" fill="#4a9eed">Marc Lecomte — Administrateur client</text>
+<rect x="1010" y="145" width="360" height="60" rx="12" fill="#c3fae8" fill-opacity="1" stroke="#09aeae" stroke-width="2" stroke-opacity="1"/>
+<text x="1190" y="170.5" font-size="15" fill="#101c28" text-anchor="middle">Reçoit le courriel,</text>
+<text x="1190" y="190" font-size="15" fill="#101c28" text-anchor="middle">immédiatement</text>
+<rect x="1010" y="225" width="360" height="60" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="1190" y="250.5" font-size="15" fill="#101c28" text-anchor="middle">Lit les contrôles nommés</text>
+<text x="1190" y="270" font-size="15" fill="#101c28" text-anchor="middle">et la parole de l’officer</text>
+<rect x="1010" y="305" width="360" height="60" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="1190" y="330.5" font-size="15" fill="#101c28" text-anchor="middle">☑ J’ai pris connaissance</text>
+<text x="1190" y="350" font-size="15" fill="#101c28" text-anchor="middle">de cet écart</text>
+<rect x="1010" y="385" width="360" height="60" rx="12" fill="#b2f2bb" fill-opacity="1" stroke="#22c55e" stroke-width="2" stroke-opacity="1"/>
+<text x="1190" y="420.25" font-size="15" fill="#101c28" text-anchor="middle">Approuve — daté, nominatif</text>
+<text x="980" y="520" font-size="15" fill="#101c28">Sans la case cochée, la base refuse l’approbation. Ce n’est pas un écran, c’est une règle.</text>
+<text x="40" y="520" font-size="15" fill="#09aeae">À montrer en direct : la boîte de réception. C’est ce qui fait la différence</text>
+<text x="40" y="539.5" font-size="15" fill="#09aeae">avec une démonstration de maquette.</text>
+</svg>

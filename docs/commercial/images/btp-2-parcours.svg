@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1360" height="641" viewBox="0 0 1360 641" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<rect width="1360" height="641" fill="#ffffff"/>
+<text x="40" y="26" font-size="26" fill="#101c28">Le parcours de démonstration — huit gestes, douze minutes</text>
+<text x="40" y="56" font-size="16" fill="#535c66">Chaque étape a un acteur nommé. C’est ce qui distingue un registre d’un tableur.</text>
+<rect x="40" y="110" width="290" height="110" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="185" y="141" font-size="15" fill="#101c28" text-anchor="middle">1. Déclarer</text>
+<text x="185" y="160.5" font-size="15" fill="#101c28" text-anchor="middle"></text>
+<text x="185" y="180" font-size="15" fill="#101c28" text-anchor="middle">Le cas d’usage entre</text>
+<text x="185" y="199.5" font-size="15" fill="#101c28" text-anchor="middle">au registre</text>
+<text x="48" y="241" font-size="13" fill="#535c66">↳ Officer</text>
+<defs><marker id="m4132" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="336" y1="165" x2="362" y2="165" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m4132)"/>
+<rect x="370" y="110" width="290" height="110" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="515" y="141" font-size="15" fill="#101c28" text-anchor="middle">2. Trier</text>
+<text x="515" y="160.5" font-size="15" fill="#101c28" text-anchor="middle"></text>
+<text x="515" y="180" font-size="15" fill="#101c28" text-anchor="middle">La grille de criticité</text>
+<text x="515" y="199.5" font-size="15" fill="#101c28" text-anchor="middle">écrit des faits</text>
+<text x="378" y="241" font-size="13" fill="#535c66">↳ Officer</text>
+<defs><marker id="m6442" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="666" y1="165" x2="692" y2="165" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m6442)"/>
+<rect x="700" y="110" width="290" height="110" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="845" y="141" font-size="15" fill="#101c28" text-anchor="middle">3. Qualifier</text>
+<text x="845" y="160.5" font-size="15" fill="#101c28" text-anchor="middle"></text>
+<text x="845" y="180" font-size="15" fill="#101c28" text-anchor="middle">Déployeur, données</text>
+<text x="845" y="199.5" font-size="15" fill="#101c28" text-anchor="middle">personnelles</text>
+<text x="708" y="241" font-size="13" fill="#535c66">↳ Officer</text>
+<defs><marker id="m8752" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="996" y1="165" x2="1022" y2="165" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m8752)"/>
+<rect x="1030" y="110" width="290" height="110" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="1175" y="141" font-size="15" fill="#101c28" text-anchor="middle">4. Coter le risque</text>
+<text x="1175" y="160.5" font-size="15" fill="#101c28" text-anchor="middle"></text>
+<text x="1175" y="180" font-size="15" fill="#101c28" text-anchor="middle">Fuite de données</text>
+<text x="1175" y="199.5" font-size="15" fill="#101c28" text-anchor="middle">commerciales</text>
+<text x="1038" y="241" font-size="13" fill="#535c66">↳ Comité des risques</text>
+<rect x="40" y="340" width="290" height="110" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="185" y="371" font-size="15" fill="#101c28" text-anchor="middle">5. Retenir les contrôles</text>
+<text x="185" y="390.5" font-size="15" fill="#101c28" text-anchor="middle"></text>
+<text x="185" y="410" font-size="15" fill="#101c28" text-anchor="middle">Et dire avec quoi</text>
+<text x="185" y="429.5" font-size="15" fill="#101c28" text-anchor="middle">ils se tiennent</text>
+<text x="48" y="471" font-size="13" fill="#535c66">↳ Officer</text>
+<defs><marker id="m6432" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="336" y1="395" x2="362" y2="395" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m6432)"/>
+<rect x="370" y="340" width="290" height="110" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="515" y="371" font-size="15" fill="#101c28" text-anchor="middle">6. Produire les preuves</text>
+<text x="515" y="390.5" font-size="15" fill="#101c28" text-anchor="middle"></text>
+<text x="515" y="410" font-size="15" fill="#101c28" text-anchor="middle">La pastille passe</text>
+<text x="515" y="429.5" font-size="15" fill="#101c28" text-anchor="middle">au vert</text>
+<text x="378" y="471" font-size="13" fill="#535c66">↳ Porteur</text>
+<defs><marker id="m8742" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="666" y1="395" x2="692" y2="395" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m8742)"/>
+<rect x="700" y="340" width="290" height="110" rx="12" fill="#a5d8ff" fill-opacity="1" stroke="#4a9eed" stroke-width="2" stroke-opacity="1"/>
+<text x="845" y="371" font-size="15" fill="#101c28" text-anchor="middle">7. Conduire l’AIIA</text>
+<text x="845" y="390.5" font-size="15" fill="#101c28" text-anchor="middle"></text>
+<text x="845" y="410" font-size="15" fill="#101c28" text-anchor="middle">Deux signatures,</text>
+<text x="845" y="429.5" font-size="15" fill="#101c28" text-anchor="middle">deux actes</text>
+<text x="708" y="471" font-size="13" fill="#535c66">↳ Officer + Porteur</text>
+<defs><marker id="m11052" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 z" fill="#4a9eed"/></marker></defs>
+<line x1="996" y1="395" x2="1022" y2="395" stroke="#4a9eed" stroke-width="2"  marker-end="url(#m11052)"/>
+<rect x="1030" y="340" width="290" height="110" rx="12" fill="#c3fae8" fill-opacity="1" stroke="#09aeae" stroke-width="2" stroke-opacity="1"/>
+<text x="1175" y="371" font-size="15" fill="#101c28" text-anchor="middle">8. Décider</text>
+<text x="1175" y="390.5" font-size="15" fill="#101c28" text-anchor="middle"></text>
+<text x="1175" y="410" font-size="15" fill="#101c28" text-anchor="middle">Il reçoit, il lit,</text>
+<text x="1175" y="429.5" font-size="15" fill="#101c28" text-anchor="middle">il assume</text>
+<text x="1038" y="471" font-size="13" fill="#535c66">↳ Administrateur client</text>
+<text x="40" y="595" font-size="15" fill="#09aeae">Les étapes 6 et 8 portent les confirmations visibles : la pastille de preuve, et le courriel reçu en direct.</text>
+</svg>
