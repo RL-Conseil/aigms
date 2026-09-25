@@ -7,7 +7,7 @@ import { expect, test } from '@playwright/test'
  * classifier, coter — et verifie que les gates repondent a la saisie.
  */
 
-const OFFICER = { email: 'officer@rl-conseil.demo', password: 'Demo!Passw0rd' }
+const OFFICER = { email: 'officer@aigms.eu', password: 'Demo!Passw0rd' }
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/')

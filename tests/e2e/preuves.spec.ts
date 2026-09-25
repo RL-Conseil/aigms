@@ -8,7 +8,7 @@ import { expect, test } from '@playwright/test'
  * controle cesse d'etre demuni.
  */
 
-const OFFICER = { email: 'officer@rl-conseil.demo', password: 'Demo!Passw0rd' }
+const OFFICER = { email: 'officer@aigms.eu', password: 'Demo!Passw0rd' }
 const ORG = 'cccccccc-0000-4000-8000-000000000001'
 
 test.beforeEach(async ({ page }) => {

@@ -36,7 +36,7 @@ describe('Import des cas d’usage', () => {
           activity: 'Traitement des demandes clients',
           involves_personal_data: 'oui',
           autonomy_level: 'L1',
-          owner_email: 'owner@izarlink.demo',
+          owner_email: 'devsecops@aigms.eu',
           assets: 'Assistant support client, Inconnu au bataillon',
           vendors: 'Nordic LLM Cloud',
         },
@@ -66,7 +66,7 @@ describe('Import des cas d’usage', () => {
     expect(r.row.status).toBe('DRAFT')
     expect(r.row.activity).toBe('Traitement des demandes clients')
     expect(r.row.personal).toBe(true)
-    expect(r.row.owner).toBe('owner@izarlink.demo')
+    expect(r.row.owner).toBe('devsecops@aigms.eu')
     expect(r.row.assets).toBe(1)
     expect(r.row.vendors).toBe(1)
     // Deux signalements : l'actif inconnu, et la ligne sans finalité.

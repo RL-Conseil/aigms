@@ -44,17 +44,22 @@ npm run db:reset            # migrations + jeu de demonstration « IzarLink Demo
 npm run dev
 ```
 
-Comptes de démonstration — mot de passe `Demo!Passw0rd` :
+Comptes de démonstration — mot de passe `Demo!Passw0rd`. Les adresses sont sur
+`aigms.eu`, domaine vérifié chez le fournisseur de courrier : **les alertes leur
+parviennent réellement**. C'est ce qui permet de montrer une relance ou une
+demande d'approbation de bout en bout — et ce qui interdit de se servir de ces
+comptes pour autre chose qu'une démonstration.
 
 | Compte | Rôle |
 |---|---|
-| `admin@rl-conseil.demo` | administration de la plateforme — organisations, comptes et rôles |
-| `officer@rl-conseil.demo` | AI Governance Officer |
-| `owner@izarlink.demo` | Porteur de l'IA |
-| `risk@izarlink.demo` | Comité des risques |
-| `reviewer@izarlink.demo` | Expert métier (DPO / RSSI) |
-| `board@izarlink.demo` | Comité de direction — arbitre les productions critiques et les exceptions |
-| `auditor@rl-conseil.demo` | Auditeur, lecture seule |
+| `admin@aigms.eu` | administration de la plateforme — organisations, comptes et rôles |
+| `officer@aigms.eu` | AI Governance Officer |
+| `devsecops@aigms.eu` | Porteur de l'IA |
+| `risk-comity@aigms.eu` | Comité des risques |
+| `rssi@aigms.eu` | Expert métier (DPO / RSSI) |
+| `direction@aigms.eu` | Comité de direction — arbitre les productions critiques et les exceptions |
+| `dsi-admin@aigms.eu` | Administrateur client — la DSI côté client ; approuve les mises en production |
+| `audit@aigms.eu` | Auditeur, lecture seule |
 | `officer@autre-cabinet.demo` | second tenant, pour vérifier l'étanchéité — avec `owner@`, `risk@`, `reviewer@`, `board@`, `auditor@autre-cabinet.demo` |
 
 Une organisation n'est **opérationnelle** qu'avec ses six rôles tenus (migration

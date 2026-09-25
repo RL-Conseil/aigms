@@ -5,8 +5,8 @@ import { readFileSync } from 'node:fs'
  * Espace d'administration technique : connecteurs et referentiels de controles.
  */
 
-const ADMIN = { email: 'admin@rl-conseil.demo', password: 'Demo!Passw0rd' }
-const OFFICER = { email: 'officer@rl-conseil.demo', password: 'Demo!Passw0rd' }
+const ADMIN = { email: 'admin@aigms.eu', password: 'Demo!Passw0rd' }
+const OFFICER = { email: 'officer@aigms.eu', password: 'Demo!Passw0rd' }
 
 async function signIn(page: import('@playwright/test').Page, who: typeof ADMIN) {
   await page.goto('/')

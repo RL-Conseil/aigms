@@ -9,11 +9,11 @@ import { expect, test } from '@playwright/test'
  * base et non par l'ecran.
  */
 
-const OFFICER = { email: 'officer@rl-conseil.demo', password: 'Demo!Passw0rd' }
+const OFFICER = { email: 'officer@aigms.eu', password: 'Demo!Passw0rd' }
 // Se prononcer releve de `app.roles_review()` : officer, client_admin,
 // reviewer. Un responsable du risque cote et accepte des risques, il ne tranche
 // pas les decisions de gouvernance.
-const REVIEWER = { email: 'reviewer@izarlink.demo', password: 'Demo!Passw0rd' }
+const REVIEWER = { email: 'rssi@aigms.eu', password: 'Demo!Passw0rd' }
 const ORG = 'cccccccc-0000-4000-8000-000000000001'
 
 async function signIn(page: import('@playwright/test').Page, who: typeof OFFICER) {
