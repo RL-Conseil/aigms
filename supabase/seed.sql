@@ -23,40 +23,47 @@ insert into auth.users (id, instance_id, aud, role, email, encrypted_password,
                         phone_change_token, reauthentication_token)
 values
   ('11111111-1111-4111-8111-111111111111', '00000000-0000-0000-0000-000000000000',
-   'authenticated', 'authenticated', 'officer@rl-conseil.demo',
+   'authenticated', 'authenticated', 'officer@aigms.eu',
    extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Camille Rousset"}', now(), now(),
    '', '', '', '', '', '', '', ''),
   ('22222222-2222-4222-8222-222222222222', '00000000-0000-0000-0000-000000000000',
-   'authenticated', 'authenticated', 'owner@izarlink.demo',
+   'authenticated', 'authenticated', 'devsecops@aigms.eu',
    extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Dominique Etchart"}', now(), now(),
    '', '', '', '', '', '', '', ''),
   ('33333333-3333-4333-8333-333333333333', '00000000-0000-0000-0000-000000000000',
-   'authenticated', 'authenticated', 'risk@izarlink.demo',
+   'authenticated', 'authenticated', 'risk-comity@aigms.eu',
    extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Sacha Belarbi"}', now(), now(),
    '', '', '', '', '', '', '', ''),
   ('44444444-4444-4444-8444-444444444444', '00000000-0000-0000-0000-000000000000',
-   'authenticated', 'authenticated', 'auditor@rl-conseil.demo',
+   'authenticated', 'authenticated', 'audit@aigms.eu',
    extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Noa Lasserre"}', now(), now(),
    '', '', '', '', '', '', '', ''),
   ('77777777-7777-4777-8777-777777777777', '00000000-0000-0000-0000-000000000000',
-   'authenticated', 'authenticated', 'reviewer@izarlink.demo',
+   'authenticated', 'authenticated', 'rssi@aigms.eu',
    extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Yann Cazaux"}', now(), now(),
    '', '', '', '', '', '', '', ''),
   ('66666666-6666-4666-8666-666666666666', '00000000-0000-0000-0000-000000000000',
-   'authenticated', 'authenticated', 'admin@rl-conseil.demo',
+   'authenticated', 'authenticated', 'admin@aigms.eu',
    extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Inès Duhamel"}', now(), now(),
    '', '', '', '', '', '', '', ''),
   -- Comité de direction : l'arbitrage critique lui revient (0055).
   ('88888888-8888-4888-8888-888888888888', '00000000-0000-0000-0000-000000000000',
-   'authenticated', 'authenticated', 'board@izarlink.demo',
+   'authenticated', 'authenticated', 'direction@aigms.eu',
    extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Élodie Marchetti"}', now(), now(),
+   '', '', '', '', '', '', '', ''),
+  -- Administrateur client : la DSI côté client. C'est lui qui approuve une mise
+  -- en production, et qui reçoit l'avertissement d'écart de preuve (0098).
+  ('6c7e46ef-80f1-4054-82bb-7bc8c19a584a', '00000000-0000-0000-0000-000000000000',
+   'authenticated', 'authenticated', 'dsi-admin@aigms.eu',
+   extensions.crypt('Demo!Passw0rd', extensions.gen_salt('bf')), now(),
+   '{"provider":"email","providers":["email"]}', '{"full_name":"Marc Lecomte"}', now(), now(),
    '', '', '', '', '', '', '', ''),
   -- Second tenant, complet lui aussi : une organisation n'est opérationnelle
   -- qu'avec ses six rôles tenus (0056).
@@ -115,6 +122,8 @@ update public.user_profile set job_title = 'Directeur des opérations'
  where id = '77777777-7777-4777-8777-777777777777';
 update public.user_profile set job_title = 'Directrice générale'
  where id = '88888888-8888-4888-8888-888888888888';
+update public.user_profile set job_title = 'DSI'
+ where id = '6c7e46ef-80f1-4054-82bb-7bc8c19a584a';
 
 -- Administration plateforme : accède au suivi des demandes de contact. Ce
 -- privilège traverse les tenants, il est donc porté par un compte dédié et
@@ -139,6 +148,7 @@ insert into public.membership (tenant_id, user_id, role) values
   ('aaaaaaaa-0000-4000-8000-000000000001', '77777777-7777-4777-8777-777777777777', 'reviewer'),
   ('aaaaaaaa-0000-4000-8000-000000000001', '88888888-8888-4888-8888-888888888888', 'executive_viewer'),
   ('aaaaaaaa-0000-4000-8000-000000000001', '66666666-6666-4666-8666-666666666666', 'platform_admin'),
+  ('aaaaaaaa-0000-4000-8000-000000000001', '6c7e46ef-80f1-4054-82bb-7bc8c19a584a', 'client_admin'),
   ('bbbbbbbb-0000-4000-8000-000000000002', '55555555-5555-4555-8555-555555555555', 'governance_officer'),
   ('bbbbbbbb-0000-4000-8000-000000000002', 'e1000000-0000-4000-8000-000000000001', 'system_owner'),
   ('bbbbbbbb-0000-4000-8000-000000000002', 'e1000000-0000-4000-8000-000000000002', 'risk_owner'),
@@ -191,7 +201,11 @@ insert into public.role_assignment (tenant_id, organization_id, user_id, role) v
   ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
    '77777777-7777-4777-8777-777777777777', 'reviewer'),
   ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
-   '88888888-8888-4888-8888-888888888888', 'executive_viewer')
+   '88888888-8888-4888-8888-888888888888', 'executive_viewer'),
+  -- Sans lui, une mise en production n'a personne à qui s'adresser, et
+  -- l'avertissement d'écart de preuve n'a pas de destinataire (0098, 0105).
+  ('aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001',
+   '6c7e46ef-80f1-4054-82bb-7bc8c19a584a', 'client_admin')
 on conflict do nothing;
 
 -- -----------------------------------------------------------------------------

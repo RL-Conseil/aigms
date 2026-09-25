@@ -64,7 +64,7 @@ Effectuée par appels API le 7 septembre 2026 :
 | Lecture anonyme de `tenant` et `ai_use_case` | refusée (42501) |
 | Écriture anonyme de `tenant` | refusée (42501) |
 | `app.log_audit` atteignable depuis l'API publique | non — le schéma `app` n'est pas exposé |
-| Connexion `officer@rl-conseil.demo` puis lecture | 3 cas d'usage de son tenant |
+| Connexion `officer@aigms.eu` puis lecture | 3 cas d'usage de son tenant |
 | `evaluate_gate` sur `UC-2026-0001` | 8/8 préconditions satisfaites |
 | Lecture par l'officer du second tenant | tableau vide |
 

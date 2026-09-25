@@ -9,7 +9,7 @@ import { expect, test } from '@playwright/test'
  * n'existent que par le cas d'usage : le parcours suit cette difference.
  */
 
-const OFFICER = { email: 'officer@rl-conseil.demo', password: 'Demo!Passw0rd' }
+const OFFICER = { email: 'officer@aigms.eu', password: 'Demo!Passw0rd' }
 const ORG = 'cccccccc-0000-4000-8000-000000000001'
 const USE_CASE = 'b1000000-0000-4000-8000-000000000001'
 

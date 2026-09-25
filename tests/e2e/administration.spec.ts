@@ -4,8 +4,8 @@ import { expect, test } from '@playwright/test'
  * Espace d'administration : ce qu'il montre, et ce qu'il refuse.
  */
 
-const ADMIN = { email: 'admin@rl-conseil.demo', password: 'Demo!Passw0rd' }
-const OFFICER = { email: 'officer@rl-conseil.demo', password: 'Demo!Passw0rd' }
+const ADMIN = { email: 'admin@aigms.eu', password: 'Demo!Passw0rd' }
+const OFFICER = { email: 'officer@aigms.eu', password: 'Demo!Passw0rd' }
 
 async function signIn(page: import('@playwright/test').Page, who: typeof ADMIN) {
   await page.goto('/')
@@ -82,7 +82,7 @@ test('la page des comptes liste les rôles attribués', async ({ page }) => {
   await page.getByRole('link', { name: 'Comptes et rôles' }).click()
 
   await expect(page.getByRole('heading', { name: 'Comptes déclarés' })).toBeVisible()
-  await expect(page.getByText('officer@rl-conseil.demo')).toBeVisible()
+  await expect(page.getByText('officer@aigms.eu')).toBeVisible()
   await expect(page.getByText('Non modifiable depuis l’application')).toBeVisible()
 })
 
@@ -240,6 +240,8 @@ test("l'administration déclare un compte à la main, affecté à une organisati
 
   const stamp = Date.now().toString().slice(-6)
   await page.getByLabel('Nom et prénom').fill(`Compte E2E ${stamp}`)
+  // Domaine d essai, jamais @aigms.eu : le courrier est configure, et un compte
+  // cree ici ferait partir un vrai message vers une boite inexistante.
   await page.getByLabel('Adresse électronique').fill(`e2e-${stamp}@izarlink.demo`)
   await page.locator('#role').selectOption('auditor')
   await page.getByLabel(/^Organisation/).selectOption({ label: 'IzarLink Demo' })
