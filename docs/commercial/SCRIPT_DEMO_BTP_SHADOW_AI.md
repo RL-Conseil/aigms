@@ -163,25 +163,76 @@ Niveau inhérent obtenu : **Critique**.
 
 ### Étape 5 — Retenir les contrôles, et dire avec quoi ils se tiennent
 
-**Onglet *Contrôles affectés* → Laisser l'assistant proposer → retenir**
+**Onglet *Contrôles affectés* → « Laisser l'assistant proposer »**
 
-Retenez quatre contrôles, ceux qui répondent à la fiche du prospect :
-encadrement de l'usage, sécurité des données, journalisation, supervision
-humaine. Statuez-les **Applicable** au crayon de la ligne.
+L'assistant rend **44 propositions**, en deux groupes : *déclenchées* par les
+faits que vous venez de déclarer, et *socle* attendues de tout cas d'usage.
+Vous n'en retenez que quatre — celles qui répondent à la fiche du prospect.
 
-**Puis : Registres → Contrôles et outillages**
+> **Insistez avant de cocher.** « Quarante-quatre propositions, et je n'en
+> garde que quatre. Un outil qui vous en impose quarante-quatre vous fait
+> abandonner au bout de trois. Ici, c'est l'officer qui retient, et le
+> référentiel n'est jamais modifié. »
 
-| Famille | Produit à déclarer |
-|---|---|
-| Passerelle d'appels IA | ChatGPT Enterprise |
-| Prévention des fuites de données | Netskope |
+#### Les trois à cocher dans la liste des propositions
+
+| Code | Intitulé | Groupe | Pourquoi l'assistant le propose |
+|---|---|---|---|
+| **AIGMS-SUP-005** | Utilisation des données par le fournisseur | **déclenchée** | *« Des données personnelles transitent chez un fournisseur : leur usage se borne. »* |
+| **AIGMS-SEC-008** | Prévention de l'exfiltration de données | **déclenchée** | *« Des données personnelles sont mobilisées : le système ne doit pas les laisser sortir. »* |
+| **AIGMS-SEC-006** | Journalisation de sécurité des systèmes d'IA | socle, **obligatoire** | *« Attendu de tout cas d'usage. »* |
+
+Un quatrième est déjà dans le socle et se coche au passage :
+
+| Code | Intitulé | Groupe |
+|---|---|---|
+| **AIGMS-HUM-001** | Niveau de supervision humaine | socle, **obligatoire** |
+
+> **Le geste qui porte.** Les deux premières lignes sont marquées
+> **« déclenchée »** avec leur motif écrit en clair. « Personne n'a coché une
+> case pour les faire apparaître. Elles sont là parce que j'ai répondu
+> *données personnelles* dans la grille de criticité, il y a quatre minutes. »
+
+#### Le cinquième ne se trouve pas dans les propositions
+
+**AIGMS-GOV-008 — Politique d'usage acceptable de l'IA** porte la charte signée
+qu'exige votre fiche. Il n'est **pas** proposé : le moteur le range au socle de
+l'organisation, pas du cas d'usage. Pour le retenir :
+
+**Registres → Contrôles et outillages → Ajouter un contrôle → onglet
+« Depuis le référentiel »**
+
+Filtrez le domaine **GOV — Gouvernance**, ou tapez `GOV-008` dans la recherche.
+Le catalogue proposable à BATIVAL compte **120 contrôles-types** du référentiel
+AIGMS-CF v0.4, dont 12 dans ce domaine.
+
+> **À dire si on vous pose la question.** « L'assistant propose ; il ne décide
+> pas. Ce qui relève de la politique d'entreprise ne se déduit pas d'un cas
+> d'usage — c'est l'officer qui l'inscrit. »
+
+#### Statuer l'applicabilité
+
+De retour sur la fiche, onglet *Contrôles affectés* : chaque ligne porte un
+**crayon** à gauche du code. Statuez **Applicable** sur les quatre, sans
+justification — elle n'est obligatoire que pour une exclusion.
+
+#### Puis l'outillage
+
+**Registres → Contrôles et outillages**
+
+| Famille | Produit à déclarer | Le contrôle qui la retient |
+|---|---|---|
+| Passerelle d'appels IA *(AI Gateway)* | ChatGPT Enterprise | AIGMS-SUP-005 |
+| Prévention des fuites *(DLP)* | Netskope | AIGMS-SEC-008 |
+| Journalisation *(SIEM)* | Splunk | AIGMS-SEC-006 |
+
+AIGMS-SEC-008 affiche déjà les familles attendues — **AI Gateway** et **DLP** —
+avant même que vous ayez rien déclaré.
 
 > **Insistez ici.** « Votre référentiel dit *“ce contrôle se tient avec un outil
 > de prévention des fuites”*. C'est une typologie : elle dit où chercher, pas ce
-> que vous employez. Ici, le contrôle dit **“se tient avec Netskope, chez nous”**
-> — et l'auditeur sait où aller prendre la preuve. »
-
----
+> que vous employez. Ici, le contrôle dit **“se tient avec Netskope, chez
+> nous”** — et l'auditeur sait où aller prendre la preuve. »
 
 ### Étape 6 — Produire une preuve
 
@@ -295,7 +346,7 @@ J-30 est déjà dû : il se lit tout de suite dans *Mes alertes*.
 |---|---|---|---|
 | Charte d'usage signée | Critique | ISO 42001 A.5 | Contrôle d'encadrement + pièce rattachée |
 | Console Enterprise, rétention désactivée | Critique | A.7.2 · ISO 27001 A.18 | Contrôle de sécurité des données + revue du fournisseur |
-| Journaux de la passerelle DLP | Élevé | A.10.6 · AI Act art. 12 | Contrôle de journalisation + outillage nommé |
+| Journaux de la passerelle DLP | Élevé | A.10.6 · AI Act art. 12 | **AIGMS-SEC-008** + **AIGMS-SEC-006** |
 | Rapport d'AIIA signé | Critique | ISO 42001 6.1.2 | Étude d'impact, double signature |
 
 ---
